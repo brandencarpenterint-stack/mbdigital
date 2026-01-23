@@ -367,40 +367,12 @@
             </p>
 
             <div class="cta-container">
-                <!-- Shop Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">👕</div>
-                        <div class="card-title shop-title">MERCHBOY Shop</div>
-                    </div>
-                    
-                    <p class="card-description">
-                        Discover exclusive MERCHBOY apparel, accessories, and collectibles. Fresh drops featuring BroMom, BroDad, BroKid and the whole crew!
-                    </p>
-                    
-                    <a href="https://merchboy.shop" target="_blank" rel="noopener" class="card-button shop-button">
-                        Shop Now →
-                    </a>
-
-                    <div class="features">
-                        <div class="feature">
-                            <div class="feature-icon">✨</div>
-                            <div>Fresh Drops</div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">🎨</div>
-                            <div>Custom Designs</div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">🚚</div>
-                            <div>Fast Shipping</div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">💯</div>
-                            <div>Quality Gear</div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Shop Card with Logo -->
+                <a href="https://merchboy.shop" target="_blank" rel="noopener" class="card shop-card">
+                    <img src="merchboy-logo.png" alt="MERCHBOY Logo" class="shop-logo">
+                    <div class="shop-text">MERCHBOY.SHOP</div>
+                    <div class="shop-subtext">Fresh drops • Quality gear • Free shipping</div>
+                </a>
 
                 <!-- Coloring Studio Card -->
                 <div class="card">
