@@ -35,7 +35,10 @@ const Layout = () => {
                     <nav className="main-nav">
                         <Link to="/coloring" className="nav-link">COLORING</Link>
                         <Link to="/arcade" className="nav-link arcade-link">
-                            ARCADE ZONE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
+                            ARCADE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
+                        </Link>
+                        <Link to="/profile" className="nav-link" style={{ background: '#333', border: '1px solid #555', borderRadius: '15px' }}>
+                            👤 ID
                         </Link>
                         <button
                             onClick={() => setShowProfile(true)}
