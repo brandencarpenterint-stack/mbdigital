@@ -46,16 +46,17 @@ const Layout = () => {
                         </button>
                     </nav>
                     <div className="mascot-section">
-                        <img src="/assets/boy-logo.png" alt="Mascot" className="mascot-logo" />
+                        <img src="/assets/boy_face.png" alt="Mascot" className="mascot-logo" />
                     </div>
                 </header>
             )}
-            <main className="main-content" style={isFishingGame ? { paddingTop: 0 } : {}}>
+            <main className="main-content" style={{ paddingTop: '80px', minHeight: '100vh' }}>
                 <Outlet />
             </main>
             {!isFishingGame && (
-                <footer className="main-footer">
-                    <p>© 2026 MERCHBOY - Color & Play!</p>
+                <footer className="main-footer" style={{ borderTop: 'none', padding: '40px', opacity: 0.5 }}>
+                    <img src="/assets/brokid-logo.png" alt="BroKid" style={{ width: '80px', filter: 'grayscale(100%) invert(1)' }} />
+                    <p style={{ marginTop: '10px' }}>© 2026 DIGITAL PLAYGROUND</p>
                 </footer>
             )}
 

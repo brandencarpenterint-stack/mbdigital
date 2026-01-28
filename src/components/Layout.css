@@ -6,23 +6,28 @@
 
 .main-header {
     height: var(--header-height);
-    background-color: #0f0f1b;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    border-bottom: 4px solid var(--secondary-color);
-    box-shadow: 0 0 15px var(--secondary-color);
-    z-index: 100;
+    padding: 0 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header-logo {
-    height: 50px;
-    transition: transform 0.2s;
+    height: 40px;
+    transition: opacity 0.2s;
 }
 
 .header-logo:hover {
-    transform: scale(1.1) rotate(-5deg);
+    opacity: 0.8;
 }
 
 .main-logo {
