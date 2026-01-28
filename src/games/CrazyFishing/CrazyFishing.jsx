@@ -220,7 +220,9 @@ const CrazyFishing = () => {
     // Let's stick to the requested "Boat Skins".
 
     const [coins, setCoins] = useState(0);
-    // Remove local inventory state, rely on Global
+    const [inventory, setInventory] = useState([]); // Restore local inventory for compatibility
+    const [equippedSkin, setEquippedSkin] = useState('boat_default');
+    const [hasGoldenRod, setHasGoldenRod] = useState(false);
 
     // Refs
     const gameStateRef = useRef('IDLE');
