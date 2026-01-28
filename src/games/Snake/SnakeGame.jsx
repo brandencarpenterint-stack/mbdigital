@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
+import { useGamification } from '../../context/GamificationContext';
 import { triggerConfetti, triggerWinConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 
@@ -18,7 +19,41 @@ const SnakeGame = () => {
 
     // Hooks
     const { playJump, playCrash, playCollect } = useRetroSound();
+    const { shopState } = useGamification() || {};
     const gameLoopRef = useRef();
+
+
+    const getSegmentStyle = (index) => {
+        const skin = shopState?.equipped?.snake || 'snake_default';
+
+        // Base Style
+        let style = {
+            position: 'absolute',
+            left: `${snake[index].x * 5}%`,
+            top: `${snake[index].y * 5}%`,
+            width: '5%',
+            height: '5%',
+            borderRadius: index === 0 ? '4px' : '2px',
+            zIndex: 2,
+            boxShadow: '0 0 5px rgba(0,0,0,0.5)'
+        };
+
+        if (skin === 'snake_gold') {
+            style.backgroundColor = index === 0 ? '#fff' : '#FFD700';
+            style.boxShadow = '0 0 10px #FFD700';
+        } else if (skin === 'snake_rainbow') {
+            style.backgroundColor = `hsl(${(index * 20) % 360}, 100%, 50%)`;
+            style.boxShadow = '0 0 5px white';
+        } else if (skin === 'snake_ghost') {
+            style.backgroundColor = index === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)';
+            style.border = '1px solid white';
+        } else {
+            // Default
+            style.backgroundColor = index === 0 ? '#ccffdd' : '#00ffaa';
+            style.boxShadow = '0 0 5px #00ffaa';
+        }
+        return style;
+    };
 
     // Define moveSnake BEFORE using it in useEffect (to avoid hoisting issues with const)
     // Actually, good practice is to wrap it in useEffect or useCallback, 
@@ -172,17 +207,7 @@ const SnakeGame = () => {
             }}>
                 {/* Snake */}
                 {snake.map((segment, index) => (
-                    <div key={`${segment.x}-${segment.y}`} style={{
-                        position: 'absolute',
-                        left: `${segment.x * 5}%`,
-                        top: `${segment.y * 5}%`,
-                        width: '5%',
-                        height: '5%',
-                        backgroundColor: index === 0 ? '#ccffdd' : '#00ffaa',
-                        boxShadow: '0 0 5px #00ffaa',
-                        borderRadius: index === 0 ? '4px' : '2px',
-                        zIndex: 2
-                    }} />
+                    <div key={`${segment.x}-${segment.y}`} style={getSegmentStyle(index)} />
                 ))}
 
                 {/* Food */}

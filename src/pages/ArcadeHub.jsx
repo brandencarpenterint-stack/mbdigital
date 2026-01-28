@@ -162,6 +162,17 @@ const ArcadeHub = () => {
             {/* DAILY ZONE */}
             <DailyZone />
 
+            <div style={{ marginBottom: '30px' }}>
+                <Link to="/shop" style={{
+                    background: '#FFD700', color: 'black', padding: '15px 40px',
+                    borderRadius: '50px', textDecoration: 'none', fontWeight: '900',
+                    fontSize: '1.2rem', boxShadow: '0 0 20px rgba(255, 215, 0, 0.4)',
+                    display: 'inline-flex', alignItems: 'center', gap: '10px'
+                }}>
+                    <span>🛒</span> VISIT GLOBAL SHOP
+                </Link>
+            </div>
+
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // Lower min width for smaller phones

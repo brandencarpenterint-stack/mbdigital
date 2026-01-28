@@ -65,6 +65,43 @@ export const GamificationProvider = ({ children }) => {
         });
     };
 
+    // --- SHOP LOGIC ---
+    const [shopState, setShopState] = useState(() => {
+        return JSON.parse(localStorage.getItem('merchboy_shop')) || {
+            unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
+            equipped: {
+                snake: 'snake_default',
+                fishing: 'rod_default',
+                brick: 'paddle_default',
+                galaxy: 'ship_default'
+            }
+        };
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
+    }, [shopState]);
+
+    const buyItem = (item) => {
+        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
+        if (currentCoins >= item.price && !shopState.unlocked.includes(item.id)) {
+            localStorage.setItem('arcadeCoins', currentCoins - item.price);
+            setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
+            playWin();
+            return true;
+        }
+        return false;
+    };
+
+    const equipItem = (category, itemId) => {
+        if (shopState.unlocked.includes(itemId)) {
+            setShopState(prev => ({
+                ...prev,
+                equipped: { ...prev.equipped, [category]: itemId }
+            }));
+        }
+    };
+
     const incrementStat = (key, amount = 1) => {
         setStats(prev => {
             const newVal = (prev[key] || 0) + amount;
@@ -115,7 +152,10 @@ export const GamificationProvider = ({ children }) => {
             recentUnlock,
             dailyState,
             claimDailyLogin,
-            claimQuest
+            claimQuest,
+            shopState,
+            buyItem,
+            equipItem
         }}>
             {children}
 
