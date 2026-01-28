@@ -176,6 +176,7 @@ const shareToIG = (fish, weight) => {
 const CrazyFishing = () => {
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+    const { shopState } = useGamification() || {};
 
     useEffect(() => {
         const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -184,18 +185,42 @@ const CrazyFishing = () => {
     }, []);
 
     // --- STATE ---
-    const [gameState, setGameState] = useState('IDLE'); // IDLE, SHOP, CASTING, DROPPING, BATTLE, REELING_UP, CATCH_SCREEN
+    // --- STATE ---
+    const [gameState, setGameState] = useState('IDLE');
     const [score, setScore] = useState(0);
     const [combo, setCombo] = useState(0);
     const [caughtFish, setCaughtFish] = useState(null);
     const [measuredWeight, setMeasuredWeight] = useState(0);
     const [isNewRecord, setIsNewRecord] = useState(false);
 
-    // Inventory
+    // USE GLOBAL SHOP STATE for skin and rod
+    const equippedSkin = shopState?.equipped?.fishing || 'boat_default';
+    const hasGoldenRod = shopState?.equipped?.fishing === 'rod_gold' || shopState?.unlocked?.includes('rod_gold'); // Or separate slot for rod?
+    // Current shop structure uses ONE slot 'fishing' for both rods and boats? 
+    // Wait, shopState.equipped.fishing only holds ONE item.
+    // If user equips a rod, they lose their boat skin?
+    // FIX: CrazyFishing probably needs separate slots in global shop or just support one active "fishing item".
+    // For now, let's assume 'fishing' slot is for the BOAT, and we check 'unlocked' for PASSIVE upgrades like Rods?
+    // No, standard is equipped.
+    // Let's check ShopItems.js categories. 
+    // 'fishing' category contains BOTH rods and boats.
+    // If I equip a rod, `shopState.equipped.fishing` becomes 'rod_gold'.
+    // If I equip a boat, it becomes 'boat_duck'.
+    // This is a conflict!
+    // I should probably split them in the CONTEXT or just handle it here.
+    // Hack for now: check if the equipped item string starts with 'rod_' or 'boat_'.
+    // Ideally, we want to allow BOTH.
+    // But GamificationContext `equipItem` over-writes the category key.
+
+    // TEMPORARY FIX:
+    // We will trust `shopState.equipped.fishing` for the VISUAL (Boat/Rod).
+    // If it's a rod, we show default boat + special rod.
+    // If it's a boat, we show special boat + default rod?
+    // That's annoying.
+    // Let's stick to the requested "Boat Skins".
+
     const [coins, setCoins] = useState(0);
-    const [inventory, setInventory] = useState([]);
-    const [equippedSkin, setEquippedSkin] = useState('default');
-    const [hasGoldenRod, setHasGoldenRod] = useState(false);
+    // Remove local inventory state, rely on Global
 
     // Refs
     const gameStateRef = useRef('IDLE');
@@ -204,18 +229,28 @@ const CrazyFishing = () => {
     const logoImgRef = useRef(null);
 
     // State Refs (For Game Loop)
-    const skinRef = useRef('default');
-    const invRef = useRef([]);
+    const skinRef = useRef('boat_default');
+    const invRef = useRef([]); // Unlocked items for upgrades
     const comboRef = useRef(0);
 
     // Sync Refs on Every Render
     useEffect(() => {
-        skinRef.current = equippedSkin;
-        invRef.current = inventory;
-        comboRef.current = combo;
-    }, [equippedSkin, inventory, combo]);
+        // If the equipped item is a BOAT, use it. If it's a ROD, use default boat but enable rod logic.
+        // Actually, let's just use whatever is equipped as the "Skin". 
+        // If it's a rod, the draw code needs to handle 'rod_gold' case (maybe no boat change).
+        if (shopState?.equipped?.fishing) {
+            skinRef.current = shopState.equipped.fishing;
+        }
 
-    // Physics State
+        // Pass unlocked items for passive bonuses (Hats, Rods, etc)
+        if (shopState?.unlocked) {
+            invRef.current = shopState.unlocked;
+        }
+
+        comboRef.current = combo;
+    }, [shopState, combo]);
+
+    // Physics State...
     const stateRef = useRef({
         hookX: GAME_WIDTH / 2,
         hookY: 100,
@@ -742,25 +777,28 @@ const CrazyFishing = () => {
         ctx.translate(-CX, -CY);
 
         // SKIN LOGIC
-        switch (skinRef.current) {
-            case 'duck': ctx.font = '100px serif'; ctx.fillText('🦆', CX - 50, CY + 30); break;
-            case 'ufo': ctx.font = '100px serif'; ctx.fillText('🛸', CX - 50, CY + 30); break;
-            case 'pirate': ctx.font = '100px serif'; ctx.fillText('🏴‍☠️', CX - 50, CY + 10); ctx.fillStyle = '#5C4033'; ctx.fillRect(CX - 70, CY + 10, 140, 40); break;
-            case 'banana': ctx.font = '100px serif'; ctx.fillText('🍌', CX - 50, CY + 10); break;
-            case 'viking': ctx.font = '100px serif'; ctx.fillText('🛶', CX - 50, CY + 10); ctx.font = '40px serif'; ctx.fillText('🛡️', CX - 30, CY + 30); ctx.fillText('🛡️', CX + 30, CY + 30); break;
+        // Map global IDs (boat_duck) to local logic if needed, or just update cases
+        const skinId = skinRef.current;
+
+        switch (skinId) {
+            case 'boat_duck': case 'duck': ctx.font = '100px serif'; ctx.fillText('🦆', CX - 50, CY + 30); break;
+            case 'boat_ufo': case 'ufo': ctx.font = '100px serif'; ctx.fillText('🛸', CX - 50, CY + 30); break;
+            case 'boat_pirate': case 'pirate': ctx.font = '100px serif'; ctx.fillText('🏴‍☠️', CX - 50, CY + 10); ctx.fillStyle = '#5C4033'; ctx.fillRect(CX - 70, CY + 10, 140, 40); break;
+            case 'boat_banana': case 'banana': ctx.font = '100px serif'; ctx.fillText('🍌', CX - 50, CY + 10); break;
+            case 'boat_viking': case 'viking': ctx.font = '100px serif'; ctx.fillText('🛶', CX - 50, CY + 10); ctx.font = '40px serif'; ctx.fillText('🛡️', CX - 30, CY + 30); ctx.fillText('🛡️', CX + 30, CY + 30); break;
 
             // MEME SKINS
-            case 'box': ctx.font = '100px serif'; ctx.fillText('📦', CX - 50, CY + 20); break;
-            case 'trash': ctx.font = '100px serif'; ctx.fillText('🗑️', CX - 50, CY + 20); break;
-            case 'toilet': ctx.font = '100px serif'; ctx.fillText('🚽', CX - 50, CY + 20); break;
-            case 'tub': ctx.font = '100px serif'; ctx.fillText('🛁', CX - 50, CY + 20); break;
-            case 'chair': ctx.font = '100px serif'; ctx.fillText('💺', CX - 50, CY + 20); break;
-            case 'pizza_raft': ctx.font = '120px serif'; ctx.fillText('🍕', CX - 60, CY + 40); break;
-            case 'carpet': ctx.font = '120px serif'; ctx.fillText('🧞', CX - 60, CY + 40); // Using genie as icon, flat rect for carpet
+            case 'boat_box': case 'box': ctx.font = '100px serif'; ctx.fillText('📦', CX - 50, CY + 20); break;
+            case 'boat_trash': case 'trash': ctx.font = '100px serif'; ctx.fillText('🗑️', CX - 50, CY + 20); break;
+            case 'boat_toilet': case 'toilet': ctx.font = '100px serif'; ctx.fillText('🚽', CX - 50, CY + 20); break;
+            case 'boat_tub': case 'tub': ctx.font = '100px serif'; ctx.fillText('🛁', CX - 50, CY + 20); break;
+            case 'boat_chair': case 'chair': ctx.font = '100px serif'; ctx.fillText('💺', CX - 50, CY + 20); break;
+            case 'boat_pizza': case 'pizza_raft': ctx.font = '120px serif'; ctx.fillText('🍕', CX - 60, CY + 40); break;
+            case 'boat_carpet': case 'carpet': ctx.font = '120px serif'; ctx.fillText('🧞', CX - 60, CY + 40);
                 ctx.fillStyle = 'purple'; ctx.fillRect(CX - 60, CY, 120, 10); break;
-            case 'cloud': ctx.font = '100px serif'; ctx.fillText('☁️', CX - 50, CY + 20); break;
-            case 'invisible': /* Draws nothing */ break;
-            case 'balloon':
+            case 'boat_cloud': case 'cloud': ctx.font = '100px serif'; ctx.fillText('☁️', CX - 50, CY + 20); break;
+            case 'boat_invisible': case 'invisible': /* Draws nothing */ break;
+            case 'boat_balloon': case 'balloon':
                 // Draw Balloon string going UP
                 ctx.strokeStyle = 'white'; ctx.beginPath(); ctx.moveTo(CX, CY - 30); ctx.lineTo(CX, CY - 150); ctx.stroke();
                 ctx.font = '80px serif'; ctx.fillText('🎈', CX - 25, CY - 150);
@@ -773,19 +811,19 @@ const CrazyFishing = () => {
         // Character Position adjustments
         let charY = CY - 30;
         let charX = CX;
-        if (skinRef.current === 'balloon') charY = CY - 50; // Hanging
-        if (skinRef.current === 'chair' || skinRef.current === 'toilet') charY = CY - 10; // Sitting
+        if (skinId.includes('balloon')) charY = CY - 50; // Hanging
+        if (skinId.includes('chair') || skinId.includes('toilet')) charY = CY - 10; // Sitting
 
         // Stick Figure
         ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(charX, charY); ctx.lineTo(charX, charY - 50); // Body
 
         // Legs
-        if (skinRef.current === 'balloon') {
+        if (skinId.includes('balloon')) {
             // Legs dangling
             ctx.moveTo(charX, charY); ctx.lineTo(charX - 10, charY + 20);
             ctx.moveTo(charX, charY); ctx.lineTo(charX + 10, charY + 20);
-        } else if (skinRef.current === 'chair' || skinRef.current === 'toilet') {
+        } else if (skinId.includes('chair') || skinId.includes('toilet')) {
             // Sitting legs
             ctx.moveTo(charX, charY); ctx.lineTo(charX + 20, charY); ctx.lineTo(charX + 20, charY + 20);
         } else {

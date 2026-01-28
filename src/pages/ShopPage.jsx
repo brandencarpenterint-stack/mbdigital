@@ -86,16 +86,22 @@ const ShopPage = () => {
                             background: '#161625', borderRadius: '20px', padding: '25px',
                             border: isEquipped ? '2px solid #00FA9A' : '1px solid #333',
                             position: 'relative', overflow: 'hidden',
-                            boxShadow: isEquipped ? '0 0 20px rgba(0, 250, 154, 0.2)' : '0 10px 30px rgba(0,0,0,0.3)'
+                            boxShadow: isEquipped ? '0 0 20px rgba(0, 250, 154, 0.2)' : '0 10px 30px rgba(0,0,0,0.3)',
+                            textAlign: 'center'
                         }}>
                             {/* STATUS BADGE */}
                             {isEquipped && (
                                 <div style={{
                                     position: 'absolute', top: '15px', right: '15px',
                                     background: '#00FA9A', color: 'black', padding: '5px 10px',
-                                    fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '10px'
+                                    fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '10px', zIndex: 2
                                 }}>EQUIPPED</div>
                             )}
+
+                            {/* ITEM ICON */}
+                            <div style={{ fontSize: '4rem', marginBottom: '15px', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
+                                {item.icon}
+                            </div>
 
                             <h3 style={{ margin: '0 0 5px 0', fontSize: '1.4rem' }}>{item.name}</h3>
                             <p style={{ color: '#888', margin: '0 0 20px 0', minHeight: '40px' }}>{item.description}</p>
