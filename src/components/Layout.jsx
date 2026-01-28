@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = () => {
     const [coins, setCoins] = useState(0);
+    const location = useLocation();
+    const isFishingGame = location.pathname === '/arcade/fishing';
 
     useEffect(() => {
         const updateCoins = () => {
@@ -16,28 +18,32 @@ const Layout = () => {
 
     return (
         <div className="layout-container">
-            <header className="main-header">
-                <div className="logo-section">
-                    <Link to="/" className="home-link">
-                        <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" />
-                    </Link>
-                </div>
-                <nav className="main-nav">
-                    <Link to="/coloring" className="nav-link">COLORING</Link>
-                    <Link to="/arcade" className="nav-link arcade-link">
-                        ARCADE ZONE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
-                    </Link>
-                </nav>
-                <div className="mascot-section">
-                    <img src="/assets/boy-logo.png" alt="Mascot" className="mascot-logo" />
-                </div>
-            </header>
-            <main className="main-content">
+            {!isFishingGame && (
+                <header className="main-header">
+                    <div className="logo-section">
+                        <Link to="/" className="home-link">
+                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" />
+                        </Link>
+                    </div>
+                    <nav className="main-nav">
+                        <Link to="/coloring" className="nav-link">COLORING</Link>
+                        <Link to="/arcade" className="nav-link arcade-link">
+                            ARCADE ZONE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
+                        </Link>
+                    </nav>
+                    <div className="mascot-section">
+                        <img src="/assets/boy-logo.png" alt="Mascot" className="mascot-logo" />
+                    </div>
+                </header>
+            )}
+            <main className="main-content" style={isFishingGame ? { paddingTop: 0 } : {}}>
                 <Outlet />
             </main>
-            <footer className="main-footer">
-                <p>© 2026 MERCHBOY - Color & Play!</p>
-            </footer>
+            {!isFishingGame && (
+                <footer className="main-footer">
+                    <p>© 2026 MERCHBOY - Color & Play!</p>
+                </footer>
+            )}
         </div>
     );
 };
