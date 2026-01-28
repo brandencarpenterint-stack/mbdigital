@@ -532,17 +532,46 @@ const CrazyFishing = () => {
             }
             state.fishPos = Math.max(0, Math.min(maxFish, state.fishPos));
 
-            // Catch Logic (Buffed)
+            // Catch Logic (Buffed & Dynamic)
             const barB = state.barPos; const barT = state.barPos + BAR_HEIGHT;
             const fishB = state.fishPos; const fishT = state.fishPos + 40;
             const overlap = (barB < fishT && barT > fishB);
 
+            // DIFFICULTY SCALING
+            // Base gain: 0.5
+            // Base drain: 0.18 + (score * 0.0015)
+            // Legendary (300) -> 0.18 + 0.45 = 0.63 drain per frame (HARD)
+            // Normal (10) -> 0.18 + 0.015 = 0.195 drain per frame (EASY)
+
+            const difficultyMod = (state.battleFish.score || 10) * 0.0015;
+
             if (overlap) {
-                state.catchPercent += 0.5; // Buffed from 0.4
-                if (Math.random() > 0.8) state.particles.push({ x: 300, y: 200, life: 1, char: '✨', dx: 0, dy: 0 });
+                state.catchPercent += 0.5;
+
+                // JUICE: Sparks on catch
+                if (Math.random() > 0.7) {
+                    state.particles.push({
+                        x: 300 + (Math.random() - 0.5) * 50,
+                        y: state.fishPos + 100, // Relative to bar area
+                        life: 0.5, char: '⚡', color: '#ff0', size: 20, dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10
+                    });
+                }
             }
             else {
-                state.catchPercent -= 0.18; // Increased difficulty (was 0.15)
+                // PENALTY
+                const drain = 0.2 + difficultyMod;
+                state.catchPercent -= drain;
+
+                // JUICE: Screen Shake on heavy loss (Legendaries)
+                if (state.battleFish.legendary && Math.random() > 0.8) {
+                    // Shake effect handled by render offset if possible, 
+                    // but for now let's spawn "stress" particles
+                    state.particles.push({
+                        x: Math.random() * GAME_WIDTH,
+                        y: Math.random() * GAME_HEIGHT,
+                        life: 0.3, char: '💢', color: 'red', size: 30, dx: 0, dy: 0
+                    });
+                }
             }
 
             if (state.catchPercent < 0) state.catchPercent = 0;
