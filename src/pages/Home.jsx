@@ -9,7 +9,7 @@ const Home = () => {
             {/* HERO SECTION */}
             <header className="hero-section">
                 <div className="mascot-float">
-                    <img src="/assets/boy-logo.png" alt="Merchboy" style={{ width: '120px', height: 'auto', marginBottom: '20px' }} />
+                    <img src="/assets/boy_face.png" alt="Merchboy" style={{ width: '120px', height: 'auto', marginBottom: '20px', filter: 'drop-shadow(0 0 15px rgba(0,255,255,0.5))' }} />
                 </div>
                 <h1 className="hero-title">DIGITAL PLAYGROUND</h1>
                 <p className="hero-subtitle">SHOP • CREATE • PLAY</p>
@@ -42,6 +42,9 @@ const Home = () => {
                 {/* 3. ARCADE ZONE CARD */}
                 <Link to="/arcade" className="hub-card card-arcade">
                     <div className="bg-pattern arcade-pattern"></div>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#ff0055', color: 'white', padding: '5px 10px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.8rem', zIndex: 5, animation: 'pulse 2s infinite' }}>
+                        NEW GAMES!
+                    </div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
                         <span className="card-icon">🕹️</span>
                         <h2 className="card-title">Arcade Zone</h2>

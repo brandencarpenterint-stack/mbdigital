@@ -183,3 +183,17 @@
         linear-gradient(90deg, transparent 95%, #00FA9A 95%);
     background-size: 30px 30px;
 }
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
