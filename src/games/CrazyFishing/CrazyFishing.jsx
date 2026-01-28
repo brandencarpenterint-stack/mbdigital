@@ -318,10 +318,16 @@ const CrazyFishing = () => {
             console.error("Save file corrupted, resetting", e);
         }
 
-        // Start Loop
-        requestRef.current = requestAnimationFrame(gameLoop);
+        // Start Loop (Continuous)
+        if (!stateRef.current.isRunning) {
+            stateRef.current.isRunning = true;
+            requestRef.current = requestAnimationFrame(gameLoop);
+        }
 
-        return () => cancelAnimationFrame(requestRef.current);
+        return () => {
+            stateRef.current.isRunning = false;
+            cancelAnimationFrame(requestRef.current);
+        };
     }, []);
 
     const buyItem = (item) => {
@@ -356,11 +362,10 @@ const CrazyFishing = () => {
 
     // --- LOOP ---
     const gameLoop = () => {
+        if (!stateRef.current.isRunning) return;
+
         try {
             const currentMode = gameStateRef.current;
-            // Allow IDLE to render (so we see the boat)
-            if (currentMode === 'CATCH_SCREEN') return;
-
             const state = stateRef.current;
             const ctx = canvasRef.current?.getContext('2d');
 
@@ -542,97 +547,105 @@ const CrazyFishing = () => {
 
         // BATTLE
         if (mode === 'BATTLE' && state.battleFish) {
-            // Bar Logic
-            // ACCESSIBILITY TWEAK: Slower acceleration (was 0.5)
-            if (isMouseDown.current) state.barVel += 0.25; else state.barVel -= 0.25;
+            // Bar Logic (Inertia based - Stardew style)
+            if (isMouseDown.current) state.barVel += 0.2; else state.barVel -= 0.2; // Slightly heavies
             state.barPos += state.barVel;
-            if (state.barPos < 0) { state.barPos = 0; state.barVel *= -0.4; }
+
+            // Bounce/Clamping
             const maxBar = BAR_AREA_HEIGHT - BAR_HEIGHT;
+            if (state.barPos < 0) { state.barPos = 0; state.barVel = 0; } // Floor stop (easier than bounce)
             if (state.barPos > maxBar) { state.barPos = maxBar; state.barVel = 0; }
 
-            // Fish AI
+            // Fish AI (Smoother, Stardew-like patterns)
             const { pattern } = state.battleFish;
-            // Add RNG helper: Each fish instance has slightly diff speed trait
-            // CHALLENGE TWEAK: Increased speed variance (0.8 -> 1.0, +0.6 variance)
-            const speed = (state.battleFish.speed || 1) * (1.0 + Math.random() * 0.6);
+            // Base speed reduced for readable pace
+            const speed = (state.battleFish.speed || 1) * 0.8;
 
             state.fishTimer++;
             const maxFish = BAR_AREA_HEIGHT - 40;
 
+            // Target seeking logic (Lerp for smoothness)
+            if (!state.fishTarget) state.fishTarget = state.fishPos;
+
             if (pattern === 'FLOAT') {
-                // Relaxed movement
+                // Chill, changes mind every 1s
                 if (state.fishTimer % 60 === 0) state.fishTarget = Math.random() * maxFish;
+                // Move towards target
                 const d = state.fishTarget - state.fishPos;
-                state.fishPos += Math.sign(d) * Math.min(Math.abs(d), speed * 1.5);
+                state.fishPos += Math.sign(d) * Math.min(Math.abs(d), speed);
             }
             else if (pattern === 'DART') {
-                // Telegraphing: Wait... Wait... DASH!
-                if (state.fishTimer % 90 === 0) state.fishTarget = Math.random() * maxFish;
+                // Sits still, then DASHES
+                if (state.fishTimer % 120 === 0) {
+                    state.fishTarget = Math.random() * maxFish;
+                }
                 const d = state.fishTarget - state.fishPos;
-                // Only move if far, else drift
-                if (Math.abs(d) > 30) state.fishPos += Math.sign(d) * speed * 5;
-                else state.fishPos += Math.sin(state.fishTimer / 10) * 0.5; // Idle wobble
+                // Only move if we have a target delta, else drift
+                if (Math.abs(d) > 10) {
+                    // Dash speed
+                    state.fishPos += Math.sign(d) * Math.min(Math.abs(d), speed * 4);
+                } else {
+                    // Drift
+                    state.fishPos += Math.sin(state.fishTimer / 20) * 0.5;
+                }
             }
             else if (pattern === 'SINE') {
-                // Predictable rhythm
-                state.fishPos = (maxFish / 2) + Math.sin(Date.now() / 600 * speed) * (maxFish / 2 - 20);
+                // Predictable Wave
+                state.fishPos = (maxFish / 2) + Math.sin(Date.now() / 800) * (maxFish / 2 - 10);
             }
             else if (pattern === 'GLITCH') {
-                // Fair Glitch: Teleport less often, drift more
-                if (state.fishTimer % 50 === 0 && Math.random() > 0.6) {
-                    state.fishPos = Math.random() * maxFish; // Teleport
+                // Teleport rarely
+                if (state.fishTimer % 60 === 0 && Math.random() > 0.7) {
+                    state.fishPos = Math.random() * maxFish;
                 }
-                // Chase target wildly between teleports
-                if (state.fishTimer % 20 === 0) state.fishTarget = Math.random() * maxFish;
-                const d = state.fishTarget - state.fishPos;
-                state.fishPos += Math.sign(d) * Math.min(Math.abs(d), speed * 2);
+                // Jitter
+                state.fishPos += (Math.random() - 0.5) * speed * 4;
             }
+
+            // Bounds check
             state.fishPos = Math.max(0, Math.min(maxFish, state.fishPos));
 
-            // Catch Logic (Buffed & Dynamic)
+            // Catch Logic (Stardew Mechanics)
             const barB = state.barPos; const barT = state.barPos + BAR_HEIGHT;
             const fishB = state.fishPos; const fishT = state.fishPos + 40;
-            const overlap = (barB < fishT && barT > fishB);
+            // Generous overlap detection
+            const overlap = (barB < fishT - 5 && barT > fishB + 5);
 
-            // DIFFICULTY SCALING
-            // Base gain: 0.5
-            // Base drain: 0.18 + (score * 0.0015)
-            // Legendary (300) -> 0.18 + 0.45 = 0.63 drain per frame (HARD)
-            // Normal (10) -> 0.18 + 0.015 = 0.195 drain per frame (EASY)
-
-            const difficultyMod = (state.battleFish.score || 10) * 0.0015;
+            // BALANCING
+            // Gain: Constant steady rate
+            // Drain: Scales gently with fish Score logic
+            const difficultyMod = Math.min((state.battleFish.score || 10) * 0.0005, 0.3); // Cap max drain penalty
 
             if (overlap) {
-                state.catchPercent += 0.5;
+                state.catchPercent += 0.3; // Steady progress (approx 5-6s to catch if perfect)
 
-                // JUICE: Sparks on catch
-                if (Math.random() > 0.7) {
+                // JUICE: Sparks
+                if (Math.random() > 0.8) {
                     state.particles.push({
                         x: 300 + (Math.random() - 0.5) * 50,
-                        y: state.fishPos + 100, // Relative to bar area
-                        life: 0.5, char: '⚡', color: '#ff0', size: 20, dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10
+                        y: state.fishPos + 100,
+                        life: 0.5, char: '✨', color: '#ff0', size: 15, dx: 0, dy: -2
                     });
                 }
             }
             else {
-                // PENALTY
-                const drain = 0.2 + difficultyMod;
+                // DRAIN (Fish escaping)
+                const drain = 0.1 + difficultyMod; // Base drain 0.1, Max drain 0.4
                 state.catchPercent -= drain;
 
-                // JUICE: Screen Shake on heavy loss (Legendaries)
-                if (state.battleFish.legendary && Math.random() > 0.8) {
-                    // Shake effect handled by render offset if possible, 
-                    // but for now let's spawn "stress" particles
-                    state.particles.push({
-                        x: Math.random() * GAME_WIDTH,
-                        y: Math.random() * GAME_HEIGHT,
-                        life: 0.3, char: '💢', color: 'red', size: 30, dx: 0, dy: 0
-                    });
+                // Shake bar if losing
+                if (state.fishTimer % 5 === 0) {
+                    state.barPos += (Math.random() - 0.5) * 5;
                 }
             }
 
-            if (state.catchPercent < 0) state.catchPercent = 0;
-            if (state.catchPercent >= 100) startReelUp();
+            // WIN / LOSE
+            if (state.catchPercent >= 100) {
+                startReelUp();
+            } else if (state.catchPercent <= 0) {
+                // FAIL CONDITION
+                loseBattle();
+            }
         }
 
         // REELING UP (Reverse Journey)
@@ -1012,7 +1025,7 @@ const CrazyFishing = () => {
     // --- ACTIONS ---
     const startCast = () => {
         if (gameStateRef.current === 'CASTING') return; // Prevent double-trigger
-        gameStateRef.current = 'CASTING'; setGameState('CASTING'); stateRef.current.castTimer = 0; playBeep(); requestRef.current = requestAnimationFrame(gameLoop);
+        gameStateRef.current = 'CASTING'; setGameState('CASTING'); stateRef.current.castTimer = 0; playBeep();
     };
     const startDrop = () => { gameStateRef.current = 'DROPPING'; setGameState('DROPPING'); stateRef.current.depth = 0; stateRef.current.fish = []; stateRef.current.particles = []; stateRef.current.bossSpawned = false; playJump(); };
     const startBattle = (fish) => {
@@ -1035,7 +1048,7 @@ const CrazyFishing = () => {
         }
 
         gameStateRef.current = 'BATTLE'; setGameState('BATTLE'); setCaughtFish(fish);
-        stateRef.current.battleFish = fish; stateRef.current.barPos = 0; stateRef.current.catchPercent = 20;
+        stateRef.current.battleFish = fish; stateRef.current.barPos = 0; stateRef.current.catchPercent = 25;
         playBeep();
     };
     const startReelUp = () => {
@@ -1104,13 +1117,32 @@ const CrazyFishing = () => {
 
         // Submit Score to Global Leaderboard (Total Score Accumulation)
         LeaderboardService.submitScore('crazy_fishing', 'Player1', score + value);
-
-        cancelAnimationFrame(requestRef.current);
     };
 
     // ... (loseBattle same as before)
     const loseBattle = () => {
-        gameStateRef.current = 'IDLE'; setGameState('IDLE'); setCaughtFish(null); setCombo(0); playCrash(); cancelAnimationFrame(requestRef.current);
+        // Just return to IDLE with visual feedback needed?
+        // Ideally we show "FISH ESCAPED" text.
+        // For now, simpler reset to keep flow.
+        gameStateRef.current = 'IDLE';
+        setGameState('IDLE');
+        setCaughtFish(null);
+        setCombo(0);
+        playCrash();
+
+        // Add a particle effect for "Snap"
+        const state = stateRef.current;
+        for (let i = 0; i < 10; i++) {
+            state.particles.push({
+                x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2,
+                dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10,
+                life: 1.0, char: '💨', size: 30
+            });
+        }
+        state.particles.push({
+            x: GAME_WIDTH / 2 - 100, y: GAME_HEIGHT / 2,
+            dx: 0, dy: -1, life: 2.0, char: 'ESCAPED!', color: 'red', size: 40
+        });
     };
 
     // Controls
