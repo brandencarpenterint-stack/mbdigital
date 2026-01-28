@@ -5,8 +5,14 @@ import { useGamification } from '../context/GamificationContext';
 import './Layout.css';
 
 const Layout = () => {
+    const location = useLocation();
     const [showProfile, setShowProfile] = useState(false);
+    const [coins, setCoins] = useState(0);
     const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
+
+    const isFishingGame = location.pathname.includes('/crazy-fishing') ||
+        location.pathname.includes('/neon-brick-breaker') ||
+        location.pathname.includes('/galaxy-defender');
 
     useEffect(() => {
         const updateCoins = () => {
