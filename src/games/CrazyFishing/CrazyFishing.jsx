@@ -172,6 +172,15 @@ const shareToIG = (fish, weight) => {
 };
 
 const CrazyFishing = () => {
+    // Orientation Check
+    const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // --- STATE ---
     const [gameState, setGameState] = useState('IDLE'); // IDLE, SHOP, CASTING, DROPPING, BATTLE, REELING_UP, CATCH_SCREEN
     const [score, setScore] = useState(0);
@@ -1052,6 +1061,43 @@ const CrazyFishing = () => {
         };
     }, []);
 
+    // OVERLAY HELPER COMPONENT
+    const Overlay = ({ title, onClose, children, color = 'cyan' }) => (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(0, 10, 30, 0.95)',
+            zIndex: 2000,
+            display: 'flex', flexDirection: 'column',
+            padding: '20px',
+            boxSizing: 'border-box',
+            backdropFilter: 'blur(5px)'
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: `2px solid ${color}`, paddingBottom: '10px' }}>
+                <h2 style={{ margin: 0, color: color, fontSize: '2rem' }}>{title}</h2>
+                <SquishyButton onClick={onClose} style={{ background: '#333', fontSize: '1.5rem', padding: '10px 20px' }}>X</SquishyButton>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+                {children}
+            </div>
+        </div>
+    );
+
+    // ROTATE OVERLAY
+    if (isPortrait && window.innerWidth < 768) { // Only force on mobile
+        return (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                background: '#001133', color: 'white',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                zIndex: 9999, textAlign: 'center', padding: '20px'
+            }}>
+                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔄</div>
+                <h1>Please Rotate Your Phone</h1>
+                <p>Designed for Landscape Mode</p>
+            </div>
+        );
+    }
+
     // RENDER UI
     return (
         <div
@@ -1137,50 +1183,69 @@ const CrazyFishing = () => {
 
                     {/* OVERLAYS */}
                     {gameState === 'FISHDEX' && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '10px', overflowY: 'auto', zIndex: 100 }}>
-                            <h2 style={{ color: 'cyan', textAlign: 'center' }}>📘 FISHDEX</h2>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginBottom: '10px', width: '100%', background: 'gray' }}>CLOSE</SquishyButton>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px' }}>
+                        <Overlay title="📘 FISHDEX" onClose={() => setGameState('IDLE')} color="cyan">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '10px' }}>
                                 {FISH_DATA.map(fish => {
                                     const records = JSON.parse(localStorage.getItem('fishingRecords')) || {};
                                     const best = records[fish.id];
                                     const unlocked = best !== undefined;
                                     return (
-                                        <div key={fish.id} style={{ border: unlocked ? (fish.legendary ? '2px solid gold' : '1px solid cyan') : '1px solid #333', background: unlocked ? '#111' : '#000', padding: '5px', textAlign: 'center', opacity: unlocked ? 1 : 0.5 }}>
-                                            <div style={{ fontSize: '1.5rem' }}>{unlocked ? fish.emoji : '❓'}</div>
-                                            {unlocked && <div style={{ fontSize: '0.6rem', color: 'lime' }}>{best}kg</div>}
+                                        <div key={fish.id} style={{
+                                            border: unlocked ? (fish.legendary ? '2px solid gold' : '1px solid cyan') : '1px solid #333',
+                                            background: unlocked ? '#111' : '#000',
+                                            padding: '10px',
+                                            borderRadius: '10px',
+                                            textAlign: 'center',
+                                            opacity: unlocked ? 1 : 0.5,
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            <div style={{ fontSize: '3rem' }}>{unlocked ? fish.emoji : '❓'}</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginTop: '5px', color: 'white' }}>{unlocked ? fish.name : '???'}</div>
+                                            {unlocked && <div style={{ fontSize: '0.7rem', color: 'lime' }}>Max: {best}kg</div>}
                                         </div>
                                     );
                                 })}
                             </div>
-                        </div>
+                        </Overlay>
                     )}
 
                     {gameState === 'SHOP' && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '10px', overflowY: 'auto', zIndex: 100 }}>
-                            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                                <h2 style={{ color: 'gold', margin: 0 }}>GILL'S BAZAAR</h2>
-                                <p style={{ color: 'yellow' }}>Wallet: {coins} 💰</p>
+                        <Overlay title="🛍️ SHOP" onClose={() => setGameState('IDLE')} color="gold">
+                            <div style={{ textAlign: 'center', marginBottom: '20px', color: 'yellow', fontSize: '1.5rem' }}>
+                                Wallet: {coins} 💰
                             </div>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginBottom: '10px', width: '100%', background: 'red' }}>LEAVE</SquishyButton>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                 {SHOP_ITEMS.map(item => {
                                     const owned = inventory.includes(item.id);
                                     const equipped = equippedSkin === item.id;
                                     return (
-                                        <div key={item.id} onClick={() => buyItem(item)} style={{ border: owned ? (equipped ? '2px solid lime' : '2px solid gray') : '2px solid white', padding: '10px', borderRadius: '10px', cursor: 'pointer', background: owned ? '#333' : '#000' }}>
-                                            <div style={{ fontSize: '2rem' }}>{item.icon}</div>
-                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.name}</div>
-                                            {owned ? (
-                                                <div style={{ color: equipped ? 'lime' : 'white', fontSize: '0.8rem' }}>{item.type === 'skin' ? (equipped ? 'EQUIPPED' : 'OWNED') : 'UNLOCKED'}</div>
-                                            ) : (
-                                                <div style={{ color: 'gold' }}>{item.price} 💰</div>
-                                            )}
+                                        <div key={item.id} onClick={() => buyItem(item)} style={{
+                                            border: owned ? (equipped ? '2px solid lime' : '2px solid gray') : '2px solid white',
+                                            padding: '15px',
+                                            borderRadius: '15px',
+                                            cursor: 'pointer',
+                                            background: owned ? '#222' : '#000',
+                                            display: 'flex', alignItems: 'center', gap: '20px'
+                                        }}>
+                                            <div style={{ fontSize: '3rem' }}>{item.icon}</div>
+                                            <div style={{ flex: 1, textAlign: 'left' }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'white' }}>{item.name}</div>
+                                                <div style={{ fontSize: '0.9rem', color: '#aaa' }}>{item.desc}</div>
+                                            </div>
+                                            <div>
+                                                {owned ? (
+                                                    <div style={{ color: equipped ? 'lime' : 'white', fontWeight: 'bold' }}>
+                                                        {item.type === 'skin' ? (equipped ? 'EQUIPPED' : 'OWNED') : 'UNLOCKED'}
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ color: 'gold', fontWeight: 'bold', fontSize: '1.2rem' }}>{item.price} 💰</div>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
-                        </div>
+                        </Overlay>
                     )}
 
                     {gameState === 'CATCH_SCREEN' && caughtFish && (
