@@ -4,13 +4,16 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { GamificationProvider } from './context/GamificationContext'
+import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GamificationProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </GamificationProvider>
+    <ErrorBoundary>
+      <GamificationProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </GamificationProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
