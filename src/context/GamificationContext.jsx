@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import { DAILY_TEMPLATES } from '../config/DailyQuests';
+import { SHOP_ITEMS } from '../config/ShopItems';
 import useRetroSound from '../hooks/useRetroSound';
 
 const GamificationContext = createContext();
@@ -143,17 +144,30 @@ export const GamificationProvider = ({ children }) => {
 
     // --- SHOP LOGIC ---
     const [shopState, setShopState] = useState(() => {
+        const defaults = {
+            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy'],
+            equipped: {
+                snake: 'snake_default',
+                fishing_rod: 'rod_default',
+                fishing_boat: 'boat_default',
+                brick: 'paddle_default',
+                galaxy: 'ship_default',
+                flappy: 'flappy_boy'
+            }
+        };
+
         try {
-            return JSON.parse(localStorage.getItem('merchboy_shop')) || {
-                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
-                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default', flappy: 'flappy_boy' }
-            };
+            const saved = JSON.parse(localStorage.getItem('merchboy_shop'));
+            if (saved) {
+                return {
+                    unlocked: [...new Set([...defaults.unlocked, ...(saved.unlocked || [])])],
+                    equipped: { ...defaults.equipped, ...(saved.equipped || {}) }
+                };
+            }
+            return defaults;
         } catch (e) {
             console.error("Shop State Corrupt:", e);
-            return {
-                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default', 'flappy_boy'],
-                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default', flappy: 'flappy_boy' }
-            };
+            return defaults;
         }
     });
 
@@ -174,9 +188,12 @@ export const GamificationProvider = ({ children }) => {
 
     const equipItem = (category, itemId) => {
         if (shopState.unlocked.includes(itemId)) {
+            const itemDef = SHOP_ITEMS.find(i => i.id === itemId);
+            const slot = itemDef?.slot || category;
+
             setShopState(prev => ({
                 ...prev,
-                equipped: { ...prev.equipped, [category]: itemId }
+                equipped: { ...prev.equipped, [slot]: itemId }
             }));
         }
     };

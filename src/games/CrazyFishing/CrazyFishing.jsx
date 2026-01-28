@@ -236,21 +236,33 @@ const CrazyFishing = () => {
 
     // Sync Refs on Every Render
     useEffect(() => {
-        // If the equipped item is a BOAT, use it. If it's a ROD, use default boat but enable rod logic.
-        // Actually, let's just use whatever is equipped as the "Skin". 
-        // If it's a rod, the draw code needs to handle 'rod_gold' case (maybe no boat change).
-        if (shopState?.equipped?.fishing) {
-            skinRef.current = shopState.equipped.fishing;
-            setEquippedSkin(shopState.equipped.fishing);
-            if (shopState.equipped.fishing === 'rod_gold' || shopState.equipped.fishing.includes('rod')) {
-                // logic for rod
+        // --- SYNC SKINS & RODS ---
+        let skin = 'boat_default';
+        let useGoldRod = false;
+
+        if (shopState?.equipped) {
+            // New Granular Slots
+            if (shopState.equipped.fishing_boat) skin = shopState.equipped.fishing_boat;
+            if (shopState.equipped.fishing_rod === 'rod_gold') useGoldRod = true;
+
+            // Legacy / Fallback (if mixed)
+            if (shopState.equipped.fishing) {
+                const item = shopState.equipped.fishing;
+                if (item.includes('boat')) skin = item;
+                if (item === 'rod_gold') useGoldRod = true;
             }
         }
 
-        // Sync Golden Rod specifically if unlocked or equipped
-        if (shopState?.equipped?.fishing === 'rod_gold' || shopState?.unlocked?.includes('rod_gold')) {
-            setHasGoldenRod(true);
-        }
+        // Apply Skin
+        skinRef.current = skin;
+        setEquippedSkin(skin);
+
+        // Apply Rod
+        if (shopState?.unlocked?.includes('rod_gold')) useGoldRod = true;
+
+        setHasGoldenRod(useGoldRod);
+
+
 
         // Pass unlocked items for passive bonuses (Hats, Rods, etc)
         if (shopState?.unlocked) {
