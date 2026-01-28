@@ -22,16 +22,20 @@ export const GamificationProvider = ({ children }) => {
     console.log('GamificationProvider: Initializing Daily State...');
 
     const [dailyState, setDailyState] = useState(() => {
-        return JSON.parse(localStorage.getItem('merchboy_daily')) || {
-            lastCheckIn: null, // Date string
-            streak: 0,
-            questDate: null,
-            quests: []
-        };
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_daily')) || {
+                lastCheckIn: null, streak: 0, questDate: null, quests: []
+            };
+        } catch (e) {
+            console.error("Daily State Corrupt:", e);
+            return { lastCheckIn: null, streak: 0, questDate: null, quests: [] };
+        }
     });
 
     const [unlockedAchievements, setUnlockedAchievements] = useState(() => {
-        return JSON.parse(localStorage.getItem('merchboy_achievements')) || [];
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_achievements')) || [];
+        } catch (e) { return []; }
     });
 
     const [recentUnlock, setRecentUnlock] = useState(null); // For Toast
@@ -139,15 +143,18 @@ export const GamificationProvider = ({ children }) => {
 
     // --- SHOP LOGIC ---
     const [shopState, setShopState] = useState(() => {
-        return JSON.parse(localStorage.getItem('merchboy_shop')) || {
-            unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
-            equipped: {
-                snake: 'snake_default',
-                fishing: 'rod_default',
-                brick: 'paddle_default',
-                galaxy: 'ship_default'
-            }
-        };
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_shop')) || {
+                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
+                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default' }
+            };
+        } catch (e) {
+            console.error("Shop State Corrupt:", e);
+            return {
+                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
+                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default' }
+            };
+        }
     });
 
     useEffect(() => {

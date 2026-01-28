@@ -18,7 +18,19 @@ const ShopPage = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (!shopState) return <div className="page-enter">Loading Shop...</div>;
+    // Debug Overlay
+    if (!shopState) {
+        return (
+            <div style={{ padding: '50px', color: 'white', textAlign: 'center' }}>
+                <h1>LOADING SHOP DATA...</h1>
+                <p>Status: {shopState ? 'Defined' : 'Undefined'}</p>
+                <p>Check Console for "ShopPage Debug"</p>
+                <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', marginTop: '20px' }}>
+                    Reload Page
+                </button>
+            </div>
+        );
+    }
 
     const filteredItems = SHOP_ITEMS.filter(item => item.category === activeCategory);
 
