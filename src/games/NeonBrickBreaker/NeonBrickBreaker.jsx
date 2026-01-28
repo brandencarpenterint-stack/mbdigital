@@ -310,11 +310,47 @@ const NeonBrickBreaker = () => {
         };
     }, []);
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#cc00ff' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>NEON BRICK BREAKER</h1>
+    // Orientation Logic
+    const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+    useEffect(() => {
+        const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
+        window.addEventListener('resize', checkOrientation);
+        return () => window.removeEventListener('resize', checkOrientation);
+    }, []);
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '600px', marginBottom: '10px', fontSize: '1.2rem' }}>
+    if (isPortrait && window.innerWidth < 768) {
+        return (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                background: '#111', color: '#cc00ff',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                zIndex: 9999, textAlign: 'center', padding: '20px'
+            }}>
+                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔄</div>
+                <h1>Please Rotate Your Phone</h1>
+                <p>Neon Brick Breaker requires Landscape Mode</p>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center', // Center vertically
+            width: '100vw', // Full width
+            height: '100vh', // Full height
+            position: 'fixed', // Fix to screen
+            top: 0,
+            left: 0,
+            background: '#111',
+            color: '#cc00ff',
+            zIndex: 100 // Top of standard layout
+        }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '5px 0' }}>NEON BRICK BREAKER</h1>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '90vw', maxWidth: '600px', marginBottom: '5px', fontSize: '1.2rem' }}>
                 <span>SCORE: {score}</span>
                 <span>HIGH: {highScore}</span>
             </div>
@@ -345,7 +381,17 @@ const NeonBrickBreaker = () => {
                         const canvasX = x * scaleX;
                         gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
                     }}
-                    style={{ border: '4px solid #cc00ff', background: 'black', borderRadius: '10px', cursor: 'none', touchAction: 'none' }}
+                    style={{
+                        border: '4px solid #cc00ff',
+                        background: 'black',
+                        borderRadius: '10px',
+                        cursor: 'none',
+                        touchAction: 'none',
+                        maxWidth: '95vw', // Responsive width
+                        maxHeight: '80vh', // Responsive height
+                        width: 'auto',
+                        height: 'auto'
+                    }}
                 />
 
                 {!gameActive && !gameOver && (
@@ -365,7 +411,7 @@ const NeonBrickBreaker = () => {
                     </div>
                 )}
             </div>
-            <p style={{ marginTop: '10px', color: '#666' }}>Use Mouse to Move. Catch ⚡ for MULTIBALL!</p>
+            <p style={{ marginTop: '5px', color: '#666', fontSize: '0.8rem' }}>Drag to Move. Catch ⚡ for MULTIBALL!</p>
         </div>
     );
 };
