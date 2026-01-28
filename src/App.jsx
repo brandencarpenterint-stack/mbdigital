@@ -12,12 +12,15 @@ import NeonBrickBreaker from './games/NeonBrickBreaker/NeonBrickBreaker';
 import FlappyMascot from './games/FlappyMascot/FlappyMascot';
 import CrazyFishing from './games/CrazyFishing/CrazyFishing';
 
+import BeatLab from './pages/BeatLab';
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="coloring" element={<Coloring />} />
+        <Route path="beatlab" element={<BeatLab />} />
         <Route path="arcade" element={<ArcadeHub />} />
         <Route path="shop" element={<ShopPage />} />
 

@@ -64,6 +64,44 @@ const Home = () => {
                     </div>
                 </Link>
 
+                {/* 3. BEAT LAB CARD (New Feature) */}
+                <Link to="/beatlab" className="hub-card card-beatlab" style={{ background: '#111', border: '1px solid #7000ff', textDecoration: 'none' }}>
+                    <div className="card-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '2.5rem' }}>🎹</span>
+                            <h2 className="card-title" style={{ margin: 0, color: '#aa00ff' }}>Beat Lab</h2>
+                        </div>
+
+                        <p style={{ color: '#aaa' }}>
+                            Create your own lo-fi beats and rhythms with our in-browser sequencer.
+                        </p>
+
+                        <span style={{
+                            background: 'linear-gradient(90deg, #7000ff 0%, #aa00ff 100%)',
+                            color: 'white',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            marginTop: '20px',
+                            fontWeight: 'bold',
+                            display: 'inline-block'
+                        }}>
+                            MAKE MUSIC →
+                        </span>
+
+                        {/* Visual EQ Bars Decoration */}
+                        <div style={{ display: 'flex', gap: '5px', marginTop: '30px', height: '40px', alignItems: 'flex-end', justifyContent: 'center', opacity: 0.5 }}>
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} style={{
+                                    width: '10px',
+                                    height: `${Math.random() * 100}%`,
+                                    background: '#aa00ff',
+                                    animation: `pulse 0.${i + 5}s infinite`
+                                }}></div>
+                            ))}
+                        </div>
+                    </div>
+                </Link>
+
                 {/* 3. ARCADE ZONE CARD */}
                 <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
