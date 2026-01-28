@@ -62,6 +62,8 @@ const getHighScore = (id) => {
 };
 
 const ArcadeHub = () => {
+    const [selectedLeaderboard, setSelectedLeaderboard] = useState('fishing');
+
     return (
         <div className="page-enter" style={{ textAlign: 'center', padding: '20px', width: '100%', boxSizing: 'border-box' }}>
             <h1 style={{
