@@ -65,17 +65,49 @@ const Home = () => {
                 </Link>
 
                 {/* 3. ARCADE ZONE CARD */}
-                <Link to="/arcade" className="hub-card card-arcade">
-                    <div className="arcade-bg"></div>
-                    <div className="new-badge">NEW GAMES!</div>
+                <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
-                    <div className="card-content">
-                        <span style={{ fontSize: '3rem', marginBottom: '20px', filter: 'drop-shadow(0 0 10px #00ffaa)' }}>🕹️</span>
-                        <h2 className="card-title">ARCADE ZONE</h2>
-                        <p>Play retro games, earn coins, and climb the global leaderboards.</p>
-                        <span className="arcade-btn">INSERT COIN</span>
+                    <div className="new-badge" style={{ right: '10%', top: '0' }}>NEW GAMES!</div>
 
-                        {/* Decorative Grid SVG or small details could act here */}
+                    <div className="card-content" style={{ padding: 0, justifyContent: 'flex-end', height: '100%' }}>
+                        <img
+                            src="/assets/arcade_cabinet.png"
+                            alt="Arcade Cabinet"
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: '500px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))',
+                                transition: 'transform 0.3s ease, filter 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.filter = 'drop-shadow(0 0 30px rgba(0, 255, 170, 0.8))';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.filter = 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))';
+                            }}
+                        />
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '12%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: '#00ffaa',
+                            color: 'black',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            fontWeight: '900',
+                            fontFamily: 'Courier New',
+                            boxShadow: '0 0 20px #00ffaa',
+                            opacity: 0.9,
+                            zIndex: 10,
+                            whiteSpace: 'nowrap'
+                        }}>
+                            PLAY NOW
+                        </div>
                     </div>
                 </Link>
 
