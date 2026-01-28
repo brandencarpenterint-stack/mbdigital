@@ -27,18 +27,23 @@ const Home = () => {
                 </Link>
                 <Link to="/arcade" style={{
                     display: 'block',
-                    width: '250px',
-                    padding: '30px',
-                    backgroundColor: 'var(--accent-color)',
-                    color: 'black',
+                    width: '300px', // Slightly larger for the image
                     textDecoration: 'none',
-                    borderRadius: '15px',
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    boxShadow: '0 10px 0 #cccc00',
-                    transition: 'transform 0.1s, box-shadow 0.1s'
-                }}>
-                    PLAY ARCADE
+                    transition: 'transform 0.2s ease',
+                    filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))'
+                }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05) rotate(2deg)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
+                >
+                    <img
+                        src="/assets/arcade-cabinet.png"
+                        alt="Play Arcade"
+                        style={{
+                            width: '100%',
+                            height: 'auto',
+                            display: 'block'
+                        }}
+                    />
                 </Link>
             </div>
 
