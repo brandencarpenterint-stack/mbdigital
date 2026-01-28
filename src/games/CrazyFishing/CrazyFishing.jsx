@@ -990,7 +990,10 @@ const CrazyFishing = () => {
     };
 
     // --- ACTIONS ---
-    const startCast = () => { gameStateRef.current = 'CASTING'; setGameState('CASTING'); stateRef.current.castTimer = 0; playBeep(); requestRef.current = requestAnimationFrame(gameLoop); };
+    const startCast = () => {
+        if (gameStateRef.current === 'CASTING') return; // Prevent double-trigger
+        gameStateRef.current = 'CASTING'; setGameState('CASTING'); stateRef.current.castTimer = 0; playBeep(); requestRef.current = requestAnimationFrame(gameLoop);
+    };
     const startDrop = () => { gameStateRef.current = 'DROPPING'; setGameState('DROPPING'); stateRef.current.depth = 0; stateRef.current.fish = []; stateRef.current.particles = []; stateRef.current.bossSpawned = false; playJump(); };
     const startBattle = (fish) => {
         if (!fish) return;
@@ -1095,7 +1098,7 @@ const CrazyFishing = () => {
     const handleKeyUp = (e) => { if (e.code === 'Space') isMouseDown.current = false; };
     const handleInputStart = (e) => {
         if (e.type === 'touchstart') {
-            // e.preventDefault(); // Don't prevent default here if we want buttons to work, but for canvas it's ok
+            e.preventDefault(); // Prevent default to avoid ghost clicks and scrolling
         }
         isMouseDown.current = true;
 
