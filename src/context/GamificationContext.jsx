@@ -18,6 +18,9 @@ export const GamificationProvider = ({ children }) => {
     });
 
     // --- DAILY REWARDS STATE ---
+    // v2 Fix: Moved to top to prevent ReferenceError
+    console.log('GamificationProvider: Initializing Daily State...');
+
     const [dailyState, setDailyState] = useState(() => {
         return JSON.parse(localStorage.getItem('merchboy_daily')) || {
             lastCheckIn: null, // Date string
