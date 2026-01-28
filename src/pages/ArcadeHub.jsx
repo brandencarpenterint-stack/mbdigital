@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import LeaderboardTable from '../components/LeaderboardTable';
 
 const games = [
     {
@@ -138,6 +139,45 @@ const ArcadeHub = () => {
                         </Link>
                     </div>
                 ))}
+            </div>
+
+            {/* LEADERBOARDS SECTION */}
+            <div style={{
+                marginTop: '60px',
+                padding: '20px',
+                background: '#0f0f1b',
+                borderTop: '2px solid #333',
+                width: '100%',
+                maxWidth: '800px',
+                margin: '60px auto 20px auto',
+                borderRadius: '20px'
+            }}>
+                <h2 style={{ color: 'gold', marginBottom: '20px' }}>🌍 GLOBAL LEADERBOARDS</h2>
+
+                {/* Game Selector */}
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {games.map(g => (
+                        <button
+                            key={g.id}
+                            onClick={() => setSelectedLeaderboard(g.id)}
+                            style={{
+                                background: selectedLeaderboard === g.id ? g.color : '#333',
+                                color: selectedLeaderboard === g.id ? 'black' : 'white',
+                                border: 'none',
+                                padding: '8px 15px',
+                                borderRadius: '20px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {g.title}
+                        </button>
+                    ))}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <LeaderboardTable gameId={selectedLeaderboard} />
+                </div>
             </div>
         </div>
     );

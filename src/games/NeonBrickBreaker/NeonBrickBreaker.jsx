@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import { useGamification } from '../../context/GamificationContext';
+import { LeaderboardService } from '../../services/LeaderboardService';
 
 const GAME_WIDTH = 600;
 const GAME_HEIGHT = 400;
@@ -13,6 +14,7 @@ const BRICK_ROWS = 5;
 const BRICK_COLS = 8;
 
 const NeonBrickBreaker = () => {
+    const { updateStat, incrementStat } = useGamification() || { updateStat: () => { }, incrementStat: () => { } };
     const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('brickHighScore')) || 0);
@@ -121,6 +123,11 @@ const NeonBrickBreaker = () => {
 
         const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
         localStorage.setItem('arcadeCoins', currentCoins + Math.floor(score / 5));
+
+        // Gamification
+        LeaderboardService.submitScore('neon_brick', 'Player1', score);
+        updateStat('brickHighScore', (prev) => Math.max(prev, score));
+        incrementStat('gamesPlayed', 'brick');
     };
 
     const gameLoop = () => {

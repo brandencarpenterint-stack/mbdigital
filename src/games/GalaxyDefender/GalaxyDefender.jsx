@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import { useGamification } from '../../context/GamificationContext';
+import { LeaderboardService } from '../../services/LeaderboardService';
 
 const GAME_WIDTH = 600;
 const GAME_HEIGHT = 400;
@@ -16,6 +17,7 @@ const BOSS_HP_MAX = 30;
 const MAX_LIVES = 3;
 
 const GalaxyDefender = () => {
+    const { updateStat, incrementStat } = useGamification() || { updateStat: () => { }, incrementStat: () => { } };
     const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(MAX_LIVES);
@@ -114,6 +116,11 @@ const GalaxyDefender = () => {
             setHighScore(finalScore);
             localStorage.setItem('galaxyHighScore', finalScore);
         }
+
+        // Gamification
+        LeaderboardService.submitScore('galaxy_defender', 'Player1', finalScore);
+        updateStat('galaxyHighScore', (prev) => Math.max(prev, finalScore));
+        incrementStat('gamesPlayed', 'galaxy');
 
         const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
         localStorage.setItem('arcadeCoins', currentCoins + Math.floor(finalScore / 10));
@@ -236,7 +243,11 @@ const GalaxyDefender = () => {
                     state.boss.flash = 3;
                     hit = true;
                     playCollect();
-                    if (state.boss.hp <= 0) { endGame(true); return; }
+                    if (state.boss.hp <= 0) {
+                        incrementStat('bossKills', 1);
+                        endGame(true);
+                        return;
+                    }
                 }
             }
 

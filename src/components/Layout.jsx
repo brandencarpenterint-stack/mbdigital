@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import ProfileModal from './ProfileModal';
+import { useGamification } from '../context/GamificationContext';
 import './Layout.css';
 
 const Layout = () => {
-    const [coins, setCoins] = useState(0);
-    const location = useLocation();
-    const isFishingGame = location.pathname === '/arcade/fishing';
+    const [showProfile, setShowProfile] = useState(false);
+    const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
 
     useEffect(() => {
         const updateCoins = () => {
@@ -30,6 +31,13 @@ const Layout = () => {
                         <Link to="/arcade" className="nav-link arcade-link">
                             ARCADE ZONE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
                         </Link>
+                        <button
+                            onClick={() => setShowProfile(true)}
+                            className="nav-link"
+                            style={{ background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        >
+                            🏆 <span style={{ fontSize: '0.6em', background: 'red', borderRadius: '50%', padding: '2px 6px', marginLeft: '5px' }}>{unlockedAchievements.length}</span>
+                        </button>
                     </nav>
                     <div className="mascot-section">
                         <img src="/assets/boy-logo.png" alt="Mascot" className="mascot-logo" />
@@ -44,6 +52,8 @@ const Layout = () => {
                     <p>© 2026 MERCHBOY - Color & Play!</p>
                 </footer>
             )}
+
+            {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
         </div>
     );
 };

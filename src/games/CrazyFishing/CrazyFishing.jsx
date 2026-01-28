@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import { useGamification } from '../../context/GamificationContext';
+import { LeaderboardService } from '../../services/LeaderboardService';
 
 // --- DATA & CONFIG ---
 
@@ -999,6 +1001,17 @@ const CrazyFishing = () => {
         setScore(s => s + value);
         const coins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
         localStorage.setItem('arcadeCoins', coins + value);
+
+        // --- GAMIFICATION INTEGRATION ---
+        incrementStat('fishCaught', 1);
+        incrementStat('gamesPlayed', 'fishing'); // Ensure 'fishing' is added to played list
+
+        if (fish.legendary) {
+            incrementStat('legendariesCaught', 1);
+        }
+
+        // Submit Score to Global Leaderboard (Total Score Accumulation)
+        LeaderboardService.submitScore('crazy_fishing', 'Player1', score + value);
 
         cancelAnimationFrame(requestRef.current);
     };
