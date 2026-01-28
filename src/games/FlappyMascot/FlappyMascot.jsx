@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import { useGamification } from '../../context/GamificationContext';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
@@ -13,41 +14,49 @@ const PIPE_SPACING = 200;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [
-    { id: 'boy', type: 'image', content: '/assets/boy-logo.png', name: 'MerchBoy', rarity: 'Common' },
-    { id: 'brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid', rarity: 'Common' },
-    { id: 'cat', type: 'emoji', content: '🐱', name: 'Kitty', rarity: 'Common' },
-    { id: 'dog', type: 'emoji', content: '🐶', name: 'Puppy', rarity: 'Common' },
-    { id: 'frog', type: 'emoji', content: '🐸', name: 'Froggo', rarity: 'Common' },
-    { id: 'unicorn', type: 'emoji', content: '🦄', name: 'Uni', rarity: 'Legendary' },
-    { id: 'rainbow', type: 'emoji', content: '🌈', name: 'Pride Heart', rarity: 'Rare' },
-    { id: 'ghost', type: 'emoji', content: '👻', name: 'Spooky', rarity: 'Rare' },
-    { id: 'zombie', type: 'emoji', content: '🧟', name: 'Walker', rarity: 'Rare' },
-    { id: 'vampire', type: 'emoji', content: '🧛', name: 'Drac', rarity: 'Rare' },
-    { id: 'clown', type: 'emoji', content: '🤡', name: 'Bozo', rarity: 'Uncommon' },
-    { id: 'poop', type: 'emoji', content: '💩', name: 'Stinky', rarity: 'Common' },
-    { id: 'hotdog', type: 'emoji', content: '🌭', name: 'Glizzy', rarity: 'Uncommon' },
-    { id: 'taco', type: 'emoji', content: '🌮', name: 'Crunch', rarity: 'Uncommon' },
-    { id: 'burger', type: 'emoji', content: '🍔', name: 'Beefy', rarity: 'Uncommon' },
-    { id: 'alien', type: 'emoji', content: '👽', name: 'Paul', rarity: 'Rare' },
-    { id: 'robot', type: 'emoji', content: '🤖', name: 'BeepBoop', rarity: 'Rare' },
-    { id: 'cowboy', type: 'emoji', content: '🤠', name: 'Sheriff', rarity: 'Uncommon' },
-    { id: 'monster', type: 'emoji', content: '👾', name: '8-Bit', rarity: 'Legendary' },
-    { id: 'diamond', type: 'emoji', content: '💎', name: 'Richie', rarity: 'Legendary' },
-    { id: 'crown', type: 'emoji', content: '👑', name: 'King', rarity: 'Legendary' },
-    { id: 'catdog', type: 'emoji', content: '😺', name: 'CatDog?', rarity: 'Legendary' }, // Pretend CatDog
+    { id: 'flappy_boy', type: 'image', content: '/assets/boy-logo.png', name: 'MerchBoy' },
+    { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
+    { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
+    { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
+    { id: 'flappy_frog', type: 'emoji', content: '🐸', name: 'Froggo' },
+    { id: 'flappy_unicorn', type: 'emoji', content: '🦄', name: 'Uni' },
+    { id: 'flappy_rainbow', type: 'emoji', content: '🌈', name: 'Pride' },
+    { id: 'flappy_ghost', type: 'emoji', content: '👻', name: 'Spooky' },
+    { id: 'flappy_zombie', type: 'emoji', content: '🧟', name: 'Walker' }, // Missing in Shop? Add it there later if needed
+    { id: 'flappy_vampire', type: 'emoji', content: '🧛', name: 'Drac' }, // Missing in Shop
+    { id: 'flappy_clown', type: 'emoji', content: '🤡', name: 'Bozo' }, // Missing in Shop
+    { id: 'flappy_poop', type: 'emoji', content: '💩', name: 'Stinky' },
+    { id: 'flappy_hotdog', type: 'emoji', content: '🌭', name: 'Glizzy' }, // Missing
+    { id: 'flappy_taco', type: 'emoji', content: '🌮', name: 'Crunch' }, // Missing
+    { id: 'flappy_burger', type: 'emoji', content: '🍔', name: 'Beefy' }, // Missing
+    { id: 'flappy_alien', type: 'emoji', content: '👽', name: 'Paul' },
+    { id: 'flappy_robot', type: 'emoji', content: '🤖', name: 'Bot' },
+    { id: 'flappy_cowboy', type: 'emoji', content: '🤠', name: 'Sheriff' },
+    { id: 'flappy_monster', type: 'emoji', content: '👾', name: '8-Bit' },
+    { id: 'flappy_diamond', type: 'emoji', content: '💎', name: 'Richie' },
+    { id: 'flappy_crown', type: 'emoji', content: '👑', name: 'King' }, // Missing
+    { id: 'flappy_catdog', type: 'emoji', content: '😺', name: 'CatDog' }, // Missing
 ];
 
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
+    // Global Shop State
+    const { shopState, updateStat, incrementStat } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
     const [gameActive, setGameActive] = useState(false);
 
-    // Gacha State
-    const [coins, setCoins] = useState(parseInt(localStorage.getItem('arcadeCoins')) || 0);
-    const [unlockedIds, setUnlockedIds] = useState(JSON.parse(localStorage.getItem('flappyUnlocked')) || ['boy']);
-    const [selectedId, setSelectedId] = useState(localStorage.getItem('flappySelected') || 'boy');
+    // Character Logic
+    // Default to 'flappy_boy' if nothing equipped, but strip prefix for internal lookup if needed
+    // OR just update lookups to match global IDs.
+    // Global IDs are 'flappy_boy', 'flappy_cat', etc.
+    // Local IDs were 'boy', 'cat'.
+    // I need to update the CHARACTERS array or mapping.
+    // Let's update CHARACTERS array to match Global IDs.
+
+    // Initial Sync
+    const selectedId = shopState?.equipped?.flappy || 'flappy_boy';
 
     // Sync Ref
     const gameActiveRef = useRef(false);
@@ -120,42 +129,7 @@ const FlappyMascot = () => {
         setCoins(newCoins);
     };
 
-    const unlockCharacter = () => {
-        if (coins < 500) {
-            alert("Not enough coins! You need 500.");
-            return;
-        }
 
-        const locked = CHARACTERS.filter(c => !unlockedIds.includes(c.id));
-        if (locked.length === 0) {
-            alert("You've unlocked everyone! 🏆");
-            return;
-        }
-
-        const randomChar = locked[Math.floor(Math.random() * locked.length)];
-        const newUnlocked = [...unlockedIds, randomChar.id];
-        setUnlockedIds(newUnlocked);
-        localStorage.setItem('flappyUnlocked', JSON.stringify(newUnlocked));
-
-        // Deduct Coins
-        const newCoins = coins - 500;
-        localStorage.setItem('arcadeCoins', newCoins);
-        setCoins(newCoins);
-
-        // Auto-select
-        setSelectedId(randomChar.id);
-        localStorage.setItem('flappySelected', randomChar.id);
-
-        triggerConfetti();
-        playWin();
-        alert(`You unlocked: ${randomChar.name} ${randomChar.type === 'emoji' ? randomChar.content : ''}!`);
-    };
-
-    const selectCharacter = (id) => {
-        setSelectedId(id);
-        localStorage.setItem('flappySelected', id);
-        playBeep();
-    };
 
     const gameLoop = () => {
         if (!gameActiveRef.current) return;
@@ -347,47 +321,14 @@ const FlappyMascot = () => {
                 )}
             </div>
 
-            {/* GACHA SHOP */}
-            <div style={{ marginTop: '20px', width: '400px', background: '#222', padding: '15px', borderRadius: '10px', border: '2px solid #555' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <h3 style={{ color: 'gold', margin: 0 }}>CHOOSE PILOT</h3>
-                    <SquishyButton onClick={unlockCharacter} style={{ fontSize: '0.9rem', background: 'gold', color: 'black', border: 'none', padding: '5px 10px', borderRadius: '5px' }}>
-                        UNLOCK RANDOM (500 🪙)
-                    </SquishyButton>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '5px' }}>
-                    {CHARACTERS.map(char => {
-                        const isUnlocked = unlockedIds.includes(char.id);
-                        const isSelected = selectedId === char.id;
-                        return (
-                            <button
-                                key={char.id}
-                                onClick={() => isUnlocked && selectCharacter(char.id)}
-                                title={isUnlocked ? char.name : 'Allocated'}
-                                style={{
-                                    background: isSelected ? '#ff9900' : (isUnlocked ? '#333' : '#111'),
-                                    border: isSelected ? '2px solid white' : '1px solid #444',
-                                    borderRadius: '5px',
-                                    height: '50px',
-                                    fontSize: '1.5rem',
-                                    cursor: isUnlocked ? 'pointer' : 'not-allowed',
-                                    opacity: isUnlocked ? 1 : 0.3,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '5px'
-                                }}
-                            >
-                                {isUnlocked ? (
-                                    char.type === 'image' ?
-                                        <img src={char.content} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> :
-                                        char.content
-                                ) : '?'}
-                            </button>
-                        );
-                    })}
-                </div>
+            {/* PILOT SELECTOR */}
+            <div style={{ marginTop: '20px', width: '400px', textAlign: 'center' }}>
+                <p style={{ color: '#fff' }}>Playing as: <span style={{ color: 'gold', fontWeight: 'bold' }}>
+                    {CHARACTERS.find(c => c.id === selectedId)?.name || 'Pilot'}
+                </span></p>
+                <Link to="/shop" style={{ display: 'inline-block', padding: '10px 20px', background: '#333', color: 'gold', borderRadius: '10px', textDecoration: 'none', border: '1px solid gold' }}>
+                    🛍️ Unlock Pilots in Global Shop
+                </Link>
             </div>
 
             <p style={{ marginTop: '10px', color: '#666' }}>Space or Click to Flap</p>

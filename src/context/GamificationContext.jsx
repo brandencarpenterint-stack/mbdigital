@@ -146,13 +146,13 @@ export const GamificationProvider = ({ children }) => {
         try {
             return JSON.parse(localStorage.getItem('merchboy_shop')) || {
                 unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
-                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default' }
+                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default', flappy: 'flappy_boy' }
             };
         } catch (e) {
             console.error("Shop State Corrupt:", e);
             return {
-                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default'],
-                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default' }
+                unlocked: ['snake_default', 'rod_default', 'paddle_default', 'ship_default', 'flappy_boy'],
+                equipped: { snake: 'snake_default', fishing: 'rod_default', brick: 'paddle_default', galaxy: 'ship_default', flappy: 'flappy_boy' }
             };
         }
     });

@@ -41,6 +41,22 @@ export const SHOP_ITEMS = [
     // --- GALAXY SHIPS ---
     { id: 'ship_default', type: 'galaxy_ship', name: 'Interceptor', price: 0, category: 'galaxy', description: 'Standard issue.', icon: '🚀' },
     { id: 'ship_ufo', type: 'galaxy_ship', name: 'Invader', price: 1200, category: 'galaxy', description: 'Fly the enemy ship!', icon: '🛸' },
+
+    // --- FLAPPY PILOTS ---
+    { id: 'flappy_boy', type: 'flappy_skin', name: 'MerchBoy', price: 0, category: 'flappy', description: 'The original.', icon: '👦', skinType: 'image', skinContent: '/assets/boy-logo.png' },
+    { id: 'flappy_brokid', type: 'flappy_skin', name: 'BroKid', price: 500, category: 'flappy', description: 'The sidekick.', icon: '🧢', skinType: 'image', skinContent: '/assets/brokid-logo.png' },
+    { id: 'flappy_cat', type: 'flappy_skin', name: 'Kitty', price: 500, category: 'flappy', description: 'Meow.', icon: '🐱', skinType: 'emoji', skinContent: '🐱' },
+    { id: 'flappy_dog', type: 'flappy_skin', name: 'Puppy', price: 500, category: 'flappy', description: 'Woof.', icon: '🐶', skinType: 'emoji', skinContent: '🐶' },
+    { id: 'flappy_frog', type: 'flappy_skin', name: 'Froggo', price: 500, category: 'flappy', description: 'Ribbit.', icon: '🐸', skinType: 'emoji', skinContent: '🐸' },
+    { id: 'flappy_unicorn', type: 'flappy_skin', name: 'Uni', price: 2000, category: 'flappy', description: 'Magical!', icon: '🦄', skinType: 'emoji', skinContent: '🦄' },
+    { id: 'flappy_rainbow', type: 'flappy_skin', name: 'Pride Heart', price: 1000, category: 'flappy', description: 'Love wins.', icon: '🌈', skinType: 'emoji', skinContent: '🌈' },
+    { id: 'flappy_ghost', type: 'flappy_skin', name: 'Spooky', price: 1000, category: 'flappy', description: 'Boo!', icon: '👻', skinType: 'emoji', skinContent: '👻' },
+    { id: 'flappy_alien', type: 'flappy_skin', name: 'Paul', price: 1500, category: 'flappy', description: 'Take me to your leader.', icon: '👽', skinType: 'emoji', skinContent: '👽' },
+    { id: 'flappy_robot', type: 'flappy_skin', name: 'BeepBoop', price: 1500, category: 'flappy', description: 'Start Program.', icon: '🤖', skinType: 'emoji', skinContent: '🤖' },
+    { id: 'flappy_cowboy', type: 'flappy_skin', name: 'Sheriff', price: 800, category: 'flappy', description: 'Yeehaw.', icon: '🤠', skinType: 'emoji', skinContent: '🤠' },
+    { id: 'flappy_monster', type: 'flappy_skin', name: '8-Bit', price: 2500, category: 'flappy', description: 'Pixel Perfect.', icon: '👾', skinType: 'emoji', skinContent: '👾' },
+    { id: 'flappy_diamond', type: 'flappy_skin', name: 'Richie', price: 5000, category: 'flappy', description: 'So shiny.', icon: '💎', skinType: 'emoji', skinContent: '💎' },
+    { id: 'flappy_poop', type: 'flappy_skin', name: 'Stinky', price: 100, category: 'flappy', description: 'Uh oh.', icon: '💩', skinType: 'emoji', skinContent: '💩' },
 ];
 
 export const CATEGORIES = [
@@ -48,4 +64,5 @@ export const CATEGORIES = [
     { id: 'fishing', name: 'Crazy Fishing', icon: '🎣' },
     { id: 'brick', name: 'Neon Bricks', icon: '🧱' },
     { id: 'galaxy', name: 'Galaxy Defender', icon: '🚀' },
+    { id: 'flappy', name: 'Flappy Mascot', icon: '🐥' },
 ];
