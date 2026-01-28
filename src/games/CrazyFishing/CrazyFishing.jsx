@@ -1054,17 +1054,23 @@ const CrazyFishing = () => {
 
     // RENDER UI
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '10px',
-            color: '#00ccff',
-            minHeight: '100vh',
-            background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)',
-            touchAction: 'none' // Prevent browser zooming/scrolling on the container
-        }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '10px 0', textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white', textAlign: 'center' }}>
+        <div
+            onContextMenu={(e) => e.preventDefault()}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '10px',
+                color: '#00ccff',
+                minHeight: '100vh',
+                background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)',
+                touchAction: 'none', // Prevent browser zooming/scrolling on the container
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                outline: 'none',
+                overscrollBehavior: 'none'
+            }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '10px 0', textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white', textAlign: 'center', pointerEvents: 'none' }}>
                 {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
             </h1>
 
@@ -1094,7 +1100,10 @@ const CrazyFishing = () => {
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: '0 0 20px rgba(0,255,255,0.2)',
-                    touchAction: 'none'
+                    touchAction: 'none',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    WebkitTouchCallout: 'none'
                 }}>
                     <canvas
                         ref={canvasRef}
@@ -1114,7 +1123,9 @@ const CrazyFishing = () => {
                             width: '100%',
                             height: '100%',
                             cursor: gameState === 'IDLE' ? 'pointer' : 'none',
-                            touchAction: 'none'
+                            touchAction: 'none',
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none'
                         }}
                     />
 
