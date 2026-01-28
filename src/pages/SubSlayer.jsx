@@ -1,14 +1,42 @@
 import React, { useState, useEffect } from 'react';
 
 const COMMON_SUBS = [
+    // STREAMING
     { id: 'netflix', name: 'Netflix', price: 15.49, color: '#E50914', cancelUrl: 'https://www.netflix.com/youraccount' },
-    { id: 'spotify', name: 'Spotify', price: 10.99, color: '#1DB954', cancelUrl: 'https://www.spotify.com/us/account/subscription' },
-    { id: 'prime', name: 'Amazon Prime', price: 14.99, color: '#00A8E1', cancelUrl: 'https://www.amazon.com/mc/pipeline/cancellation' },
-    { id: 'disney', name: 'Disney+', price: 13.99, color: '#113CCF', cancelUrl: 'https://www.disneyplus.com/account' },
     { id: 'hulu', name: 'Hulu', price: 7.99, color: '#1CE783', cancelUrl: 'https://secure.hulu.com/account' },
+    { id: 'disney', name: 'Disney+', price: 13.99, color: '#113CCF', cancelUrl: 'https://www.disneyplus.com/account' },
+    { id: 'hbo', name: 'Max (HBO)', price: 15.99, color: '#5426C9', cancelUrl: 'https://auth.max.com/subscription' },
+    { id: 'prime', name: 'Amazon Prime', price: 14.99, color: '#00A8E1', cancelUrl: 'https://www.amazon.com/mc/pipeline/cancellation' },
+    { id: 'peacock', name: 'Peacock', price: 5.99, color: '#000000', cancelUrl: 'https://www.peacocktv.com/account' },
+    { id: 'paramount', name: 'Paramount+', price: 5.99, color: '#0066FF', cancelUrl: 'https://www.paramountplus.com/account/' },
+    { id: 'appletv', name: 'Apple TV+', price: 9.99, color: '#000000', cancelUrl: 'https://tv.apple.com/settings' },
     { id: 'youtube', name: 'YouTube Premium', price: 13.99, color: '#FF0000', cancelUrl: 'https://www.youtube.com/paid_memberships' },
-    { id: 'apple', name: 'Apple One', price: 19.95, color: '#000000', cancelUrl: 'https://support.apple.com/en-us/HT202039' },
+    { id: 'crunchyroll', name: 'Crunchyroll', price: 7.99, color: '#F47521', cancelUrl: 'https://www.crunchyroll.com/account/membership' },
+
+    // MUSIC
+    { id: 'spotify', name: 'Spotify', price: 10.99, color: '#1DB954', cancelUrl: 'https://www.spotify.com/us/account/subscription' },
+    { id: 'applemusic', name: 'Apple Music', price: 10.99, color: '#FA243C', cancelUrl: 'https://music.apple.com/account' },
+    { id: 'tidal', name: 'Tidal', price: 10.99, color: '#000000', cancelUrl: 'https://account.tidal.com' },
+    { id: 'soundcloud', name: 'SoundCloud', price: 9.99, color: '#FF5500', cancelUrl: 'https://soundcloud.com/you/subscriptions' },
+
+    // TECH / PROD
     { id: 'chatgpt', name: 'ChatGPT Plus', price: 20.00, color: '#10A37F', cancelUrl: 'https://chat.openai.com/#settings/DataControls' },
+    { id: 'adobe', name: 'Adobe Creative Cloud', price: 54.99, color: '#FF0000', cancelUrl: 'https://account.adobe.com/plans' },
+    { id: 'dropbox', name: 'Dropbox', price: 11.99, color: '#0061FF', cancelUrl: 'https://www.dropbox.com/account/plan' },
+    { id: 'midjourney', name: 'Midjourney', price: 10.00, color: '#FFFFFF', cancelUrl: 'https://www.midjourney.com/account' },
+    { id: 'github', name: 'GitHub Copilot', price: 10.00, color: '#171515', cancelUrl: 'https://github.com/settings/billing' },
+
+    // GAMING
+    { id: 'xbox', name: 'Xbox Game Pass', price: 16.99, color: '#107C10', cancelUrl: 'https://account.microsoft.com/services' },
+    { id: 'psn', name: 'PlayStation Plus', price: 9.99, color: '#00439C', cancelUrl: 'https://www.playstation.com/acct/management' },
+    { id: 'nintendo', name: 'Nintendo Switch Online', price: 3.99, color: '#E60012', cancelUrl: 'https://ec.nintendo.com/my/membership' },
+
+    // LIFESTYLE
+    { id: 'peloton', name: 'Peloton', price: 44.00, color: '#FF3347', cancelUrl: 'https://www.onepeloton.com/profile/subscriptions' },
+    { id: 'audible', name: 'Audible', price: 14.95, color: '#F7991C', cancelUrl: 'https://www.audible.com/account/overview' },
+    { id: 'duolingo', name: 'Duolingo Plus', price: 6.99, color: '#58CC02', cancelUrl: 'https://www.duolingo.com/settings/plus' },
+    { id: 'dashpass', name: 'DoorDash DashPass', price: 9.99, color: '#FF3008', cancelUrl: 'https://www.doordash.com/consumer/checkout/dashpass_management' },
+    { id: 'uberone', name: 'Uber One', price: 9.99, color: '#000000', cancelUrl: 'https://wallet.uber.com/' },
 ];
 
 const SubSlayer = () => {
