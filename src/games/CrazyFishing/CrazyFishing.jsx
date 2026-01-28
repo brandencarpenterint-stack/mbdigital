@@ -540,7 +540,7 @@ const CrazyFishing = () => {
                 if (Math.random() > 0.8) state.particles.push({ x: 300, y: 200, life: 1, char: '✨', dx: 0, dy: 0 });
             }
             else {
-                state.catchPercent -= 0.15; // Nerfed drain from 0.2
+                state.catchPercent -= 0.18; // Increased difficulty (was 0.15)
             }
 
             if (state.catchPercent < 0) state.catchPercent = 0;
@@ -989,7 +989,12 @@ const CrazyFishing = () => {
 
         // Coins
         const streakMult = 1 + (comboRef.current * 0.1);
-        const value = Math.floor(fish.score * streakMult);
+        let baseScore = fish.score;
+        if (baseScore > 75) {
+            // "Grind" Update: Heavily tax high value fish
+            baseScore = 75 + Math.floor((baseScore - 75) * 0.1);
+        }
+        const value = Math.floor(baseScore * streakMult);
         setCombo(c => c + 1);
         setScore(s => s + value);
         const coins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
