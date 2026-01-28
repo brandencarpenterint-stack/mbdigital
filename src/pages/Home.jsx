@@ -96,6 +96,51 @@ const Home = () => {
                     </div>
                 </a>
 
+                {/* ARCADE ZONE CARD */}
+                <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
+                    <div className="new-badge" style={{ right: '10%', top: '0' }}>NEW GAMES!</div>
+                    <div className="card-content" style={{ padding: 0, justifyContent: 'flex-end', height: '100%' }}>
+                        <img
+                            src="/assets/arcade_cabinet.png"
+                            alt="Arcade Cabinet"
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: '500px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))',
+                                transition: 'transform 0.3s ease, filter 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.filter = 'drop-shadow(0 0 30px rgba(0, 255, 170, 0.8))';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.filter = 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))';
+                            }}
+                        />
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '12%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: '#00ffaa',
+                            color: 'black',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            fontWeight: '900',
+                            fontFamily: 'Courier New',
+                            boxShadow: '0 0 20px #00ffaa',
+                            opacity: 0.9,
+                            zIndex: 10,
+                            whiteSpace: 'nowrap'
+                        }}>
+                            PLAY NOW
+                        </div>
+                    </div>
+                </Link>
+
                 {/* 2. COLORING STUDIO CARD */}
                 <Link to="/coloring" className="hub-card card-studio">
                     <div className="card-content">
@@ -246,52 +291,7 @@ const Home = () => {
                     </div>
                 </Link>
 
-                {/* 3. ARCADE ZONE CARD */}
-                <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
-                    <div className="new-badge" style={{ right: '10%', top: '0' }}>NEW GAMES!</div>
-
-                    <div className="card-content" style={{ padding: 0, justifyContent: 'flex-end', height: '100%' }}>
-                        <img
-                            src="/assets/arcade_cabinet.png"
-                            alt="Arcade Cabinet"
-                            style={{
-                                width: '100%',
-                                height: 'auto',
-                                maxHeight: '500px',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))',
-                                transition: 'transform 0.3s ease, filter 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.05)';
-                                e.currentTarget.style.filter = 'drop-shadow(0 0 30px rgba(0, 255, 170, 0.8))';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.filter = 'drop-shadow(0 0 20px rgba(0, 255, 170, 0.4))';
-                            }}
-                        />
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '12%',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            background: '#00ffaa',
-                            color: 'black',
-                            padding: '10px 30px',
-                            borderRadius: '50px',
-                            fontWeight: '900',
-                            fontFamily: 'Courier New',
-                            boxShadow: '0 0 20px #00ffaa',
-                            opacity: 0.9,
-                            zIndex: 10,
-                            whiteSpace: 'nowrap'
-                        }}>
-                            PLAY NOW
-                        </div>
-                    </div>
-                </Link>
 
             </div>
 
