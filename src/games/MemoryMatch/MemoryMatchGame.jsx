@@ -7,7 +7,7 @@ import SquishyButton from '../../components/SquishyButton';
 const CARDS = [
     { id: 1, type: 'image', content: '/assets/boy-logo.png', alt: 'Boy' },
     { id: 2, type: 'image', content: '/assets/brokid-logo.png', alt: 'Brokid' },
-    { id: 3, type: 'image', content: '/assets/merchboy_face.png', alt: 'Merchboy' },
+    { id: 3, type: 'image', content: '/assets/boy_face.png', alt: 'Merchboy' },
     { id: 4, type: 'emoji', content: '🌈' },
     { id: 5, type: 'emoji', content: '🎮' },
     { id: 6, type: 'emoji', content: '👻' },
