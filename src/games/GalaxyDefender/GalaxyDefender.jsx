@@ -6,14 +6,14 @@ import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
 import { LeaderboardService } from '../../services/LeaderboardService';
 
-const GAME_WIDTH = 600;
-const GAME_HEIGHT = 400;
+const GAME_WIDTH = 480; // Reduced by 20%
+const GAME_HEIGHT = 320;
 const LANES = 5;
-const LANE_WIDTH = GAME_WIDTH / LANES; // 120px
-const PLAYER_SIZE = 60;
-const BULLET_SIZE = 10;
-const ENEMY_SIZE = 50;
-const BOSS_SIZE = 120;
+const LANE_WIDTH = GAME_WIDTH / LANES; // 96px
+const PLAYER_SIZE = 50; // Scaled down
+const BULLET_SIZE = 8;
+const ENEMY_SIZE = 40;
+const BOSS_SIZE = 100;
 const BOSS_HP_MAX = 30;
 const MAX_LIVES = 3;
 
@@ -447,11 +447,11 @@ const GalaxyDefender = () => {
     }, []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#00ccff' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>GALAXY DEFENDER</h1>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '600px', marginBottom: '10px', fontSize: '1.2rem' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
+            {/* Header Removed for space */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', gap: '5px' }}>
                     {Array.from({ length: MAX_LIVES }).map((_, i) => (
                         <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
                     ))}
