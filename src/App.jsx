@@ -14,6 +14,8 @@ import CrazyFishing from './games/CrazyFishing/CrazyFishing';
 
 import BeatLab from './pages/BeatLab';
 
+import PocketBro from './pages/PocketBro';
+
 function App() {
   return (
     <Routes>
@@ -21,6 +23,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="coloring" element={<Coloring />} />
         <Route path="beatlab" element={<BeatLab />} />
+        <Route path="pocketbro" element={<PocketBro />} />
         <Route path="arcade" element={<ArcadeHub />} />
         <Route path="shop" element={<ShopPage />} />
 

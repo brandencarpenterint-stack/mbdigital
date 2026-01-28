@@ -102,6 +102,33 @@ const Home = () => {
                     </div>
                 </Link>
 
+                {/* 4. POCKET BRO CARD (New Feature) */}
+                <Link to="/pocketbro" className="hub-card card-pocketbro" style={{ background: '#E0F7FA', border: '4px solid #87CEEB', textDecoration: 'none' }}>
+                    <div className="card-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '2.5rem' }}>🥚</span>
+                            <h2 className="card-title" style={{ margin: 0, color: '#00838F' }}>Pocket Bro</h2>
+                        </div>
+
+                        <p style={{ color: '#006064' }}>
+                            Adopt your own digital pet. Feed it, play games, and watch it grow (even when you're offline!)
+                        </p>
+
+                        <span style={{
+                            background: '#00ACC1',
+                            color: 'white',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            marginTop: '20px',
+                            fontWeight: 'bold',
+                            display: 'inline-block',
+                            boxShadow: '0 5px 0 #00838F'
+                        }}>
+                            ADOPT NOW
+                        </span>
+                    </div>
+                </Link>
+
                 {/* 3. ARCADE ZONE CARD */}
                 <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
