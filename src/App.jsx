@@ -16,6 +16,7 @@ import BeatLab from './pages/BeatLab';
 
 import PocketBro from './pages/PocketBro';
 import SubSlayer from './pages/SubSlayer';
+import HustleMode from './pages/HustleMode';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="beatlab" element={<BeatLab />} />
         <Route path="pocketbro" element={<PocketBro />} />
         <Route path="subslayer" element={<SubSlayer />} />
+        <Route path="hustle" element={<HustleMode />} />
         <Route path="arcade" element={<ArcadeHub />} />
         <Route path="shop" element={<ShopPage />} />
 

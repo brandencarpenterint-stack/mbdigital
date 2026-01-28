@@ -156,6 +156,33 @@ const Home = () => {
                     </div>
                 </Link>
 
+                {/* 6. HUSTLE MODE CARD (New Feature) */}
+                <Link to="/hustle" className="hub-card card-hustle" style={{ background: '#1a0505', border: '1px solid #ff4400', textDecoration: 'none' }}>
+                    <div className="card-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '2.5rem' }}>⏳</span>
+                            <h2 className="card-title" style={{ margin: 0, color: '#ff4400' }}>Hustle Mode</h2>
+                        </div>
+
+                        <p style={{ color: '#aaa' }}>
+                            Get paid to focus. Use our Pomodoro timer to crush your work and earn Arcade Coins for every session.
+                        </p>
+
+                        <span style={{
+                            background: 'linear-gradient(45deg, #ff4400, #ff8800)',
+                            color: 'white',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            marginTop: '20px',
+                            fontWeight: 'bold',
+                            display: 'inline-block',
+                            boxShadow: '0 0 15px rgba(255, 68, 0, 0.4)'
+                        }}>
+                            START TIMER
+                        </span>
+                    </div>
+                </Link>
+
                 {/* 3. ARCADE ZONE CARD */}
                 <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
