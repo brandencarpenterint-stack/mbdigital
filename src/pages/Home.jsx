@@ -2,9 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 
+import DailyStash from '../components/DailyStash';
+
 const Home = () => {
+    const [showDaily, setShowDaily] = React.useState(false);
+
     return (
         <div className="home-container">
+            {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
 
             {/* HERO SECTION */}
             <header className="hero-section">
@@ -13,6 +18,28 @@ const Home = () => {
                 </div>
                 <h1 className="hero-title">DIGITAL PLAYGROUND</h1>
                 <p className="hero-subtitle">SHOP • CREATE • PLAY</p>
+
+                {/* DAILY STASH BUTTON */}
+                <button
+                    onClick={() => setShowDaily(true)}
+                    style={{
+                        position: 'absolute',
+                        top: '100px',
+                        right: '20px',
+                        background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                        border: 'none',
+                        borderRadius: '50px',
+                        padding: '10px 20px',
+                        color: 'black',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 20px rgba(255, 215, 0, 0.6)',
+                        animation: 'pulse 2s infinite',
+                        zIndex: 100
+                    }}
+                >
+                    🎁 DAILY GIFT
+                </button>
             </header>
 
             {/* MAIN HUB GRID */}
