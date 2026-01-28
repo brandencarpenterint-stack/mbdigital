@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Coloring from './pages/Coloring';
 import ArcadeHub from './pages/ArcadeHub';
+import ShopPage from './pages/ShopPage';
 import SnakeGame from './games/Snake/SnakeGame';
 import WhackAMoleGame from './games/WhackAMole/WhackAMoleGame';
 import MemoryMatchGame from './games/MemoryMatch/MemoryMatchGame';
@@ -18,6 +19,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="coloring" element={<Coloring />} />
         <Route path="arcade" element={<ArcadeHub />} />
+        <Route path="shop" element={<ShopPage />} />
 
         {/* Game Routes Placeholders */}
         <Route path="arcade/snake" element={<SnakeGame />} />
