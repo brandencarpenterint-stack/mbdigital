@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
+import ArcadeHero from '../components/ArcadeHero';
 
 const DailyZone = () => {
     const { dailyState, claimDailyLogin, claimQuest } = useGamification() || {};
@@ -149,7 +150,17 @@ const ArcadeHub = () => {
     const [selectedLeaderboard, setSelectedLeaderboard] = useState('fishing');
 
     return (
-        <div className="page-enter" style={{ textAlign: 'center', padding: '20px', width: '100%', boxSizing: 'border-box' }}>
+        <div className="page-enter" style={{
+            textAlign: 'center',
+            padding: '20px',
+            width: '100%',
+            boxSizing: 'border-box',
+            background: 'linear-gradient(to bottom, #050510, #1a0b2e)',
+            minHeight: '100vh',
+            color: 'white'
+        }}>
+            <ArcadeHero />
+
             <h1 style={{
                 fontSize: 'clamp(2.5rem, 8vw, 4rem)', // Responsive Text
                 textShadow: '3px 3px #ff0055',
