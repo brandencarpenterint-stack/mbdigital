@@ -17,7 +17,7 @@ const BOSS_HP_MAX = 30;
 const MAX_LIVES = 3;
 
 const GalaxyDefender = () => {
-    const { updateStat, incrementStat } = useGamification() || { updateStat: () => { }, incrementStat: () => { } };
+    const { updateStat, incrementStat, shopState } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
     const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(MAX_LIVES);
@@ -318,25 +318,47 @@ const GalaxyDefender = () => {
             ctx.fill();
 
             // Ship
-            ctx.fillStyle = '#ccc';
-            ctx.beginPath();
-            ctx.moveTo(0, -30);
-            ctx.lineTo(20, 10);
-            ctx.lineTo(10, 20);
-            ctx.lineTo(-10, 20);
-            ctx.lineTo(-20, 10);
-            ctx.closePath();
-            ctx.fill();
+            const currentSkin = shopState?.equipped?.galaxy || 'ship_default';
 
-            // Cockpit
-            ctx.fillStyle = '#00ccff';
-            ctx.beginPath();
-            ctx.ellipse(0, -5, 5, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (currentSkin === 'ship_ufo') {
+                // UFO Skin
+                ctx.fillStyle = '#00ff88';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 25, 10, 0, 0, Math.PI * 2); // Saucer
+                ctx.fill();
 
-            ctx.strokeStyle = '#555';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+                // Dome
+                ctx.fillStyle = 'rgba(200, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(0, -5, 12, Math.PI, 0);
+                ctx.fill();
+
+                // Lights
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(-15, 0, 3, 0, Math.PI * 2);
+                ctx.arc(0, 5, 3, 0, Math.PI * 2);
+                ctx.arc(15, 0, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else {
+                // Default Ship
+                ctx.fillStyle = '#ccc';
+                ctx.beginPath();
+                ctx.moveTo(0, -30);
+                ctx.lineTo(20, 10);
+                ctx.lineTo(10, 20);
+                ctx.lineTo(-10, 20);
+                ctx.lineTo(-20, 10);
+                ctx.closePath();
+                ctx.fill();
+
+                // Cockpit
+                ctx.fillStyle = '#00ccff';
+                ctx.beginPath();
+                ctx.ellipse(0, -5, 5, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.restore();
         }

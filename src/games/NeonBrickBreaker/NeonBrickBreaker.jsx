@@ -16,7 +16,7 @@ const BRICK_COLS = 8;
 const CONTROL_HEIGHT = 120; // Height of the touch zone
 
 const NeonBrickBreaker = () => {
-    const { updateStat, incrementStat } = useGamification() || { updateStat: () => { }, incrementStat: () => { } };
+    const { updateStat, incrementStat, shopState } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
     const canvasRef = useRef(null);
 
     // Game State
@@ -348,10 +348,28 @@ const NeonBrickBreaker = () => {
         state.powerups.forEach(p => ctx.fillText('⚡', p.x, p.y));
 
         // Paddle
-        ctx.fillStyle = '#00ffaa';
+        const currentSkin = shopState?.equipped?.brick || 'paddle_default';
+        let paddleColor = '#00ffaa';
+        let paddleGlow = '#00ffaa';
+
+        if (currentSkin === 'paddle_flame') {
+            paddleColor = '#ff4500'; // OrangeRed
+            paddleGlow = '#ff8c00';  // DarkOrange
+        } else if (currentSkin === 'paddle_ice') {
+            paddleColor = '#00bfff'; // DeepSkyBlue
+            paddleGlow = '#e0ffff';  // LightCyan
+        }
+
+        ctx.fillStyle = paddleColor;
         ctx.shadowBlur = 20;
-        ctx.shadowColor = '#00ffaa';
+        ctx.shadowColor = paddleGlow;
         ctx.fillRect(state.paddleX, GAME_HEIGHT - PADDLE_HEIGHT - 10, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+        // Skin Details
+        if (currentSkin === 'paddle_flame') {
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(state.paddleX + 10, GAME_HEIGHT - PADDLE_HEIGHT - 5, PADDLE_WIDTH - 20, 2);
+        }
         ctx.shadowBlur = 0;
 
         // Balls
