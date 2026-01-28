@@ -15,6 +15,7 @@ import CrazyFishing from './games/CrazyFishing/CrazyFishing';
 import BeatLab from './pages/BeatLab';
 
 import PocketBro from './pages/PocketBro';
+import SubSlayer from './pages/SubSlayer';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="coloring" element={<Coloring />} />
         <Route path="beatlab" element={<BeatLab />} />
         <Route path="pocketbro" element={<PocketBro />} />
+        <Route path="subslayer" element={<SubSlayer />} />
         <Route path="arcade" element={<ArcadeHub />} />
         <Route path="shop" element={<ShopPage />} />
 

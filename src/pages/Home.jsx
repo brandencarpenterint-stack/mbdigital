@@ -129,6 +129,33 @@ const Home = () => {
                     </div>
                 </Link>
 
+                {/* 5. SUB SLAYER CARD (New Service) */}
+                <Link to="/subslayer" className="hub-card card-subslayer" style={{ background: '#0a0a0a', border: '1px solid #ff0055', textDecoration: 'none' }}>
+                    <div className="card-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '2.5rem' }}>⚔️</span>
+                            <h2 className="card-title" style={{ margin: 0, color: '#ff0055' }}>Sub Slayer</h2>
+                        </div>
+
+                        <p style={{ color: '#aaa' }}>
+                            Audit your monthly bleed. One-click access to cancel unwanted subscriptions and save cash.
+                        </p>
+
+                        <span style={{
+                            background: '#ff0055',
+                            color: 'white',
+                            padding: '10px 30px',
+                            borderRadius: '50px',
+                            marginTop: '20px',
+                            fontWeight: 'bold',
+                            display: 'inline-block',
+                            boxShadow: '0 0 15px rgba(255, 0, 85, 0.4)'
+                        }}>
+                            SLAY BILLS
+                        </span>
+                    </div>
+                </Link>
+
                 {/* 3. ARCADE ZONE CARD */}
                 <Link to="/arcade" className="hub-card card-arcade" style={{ border: 'none', background: 'transparent', boxShadow: 'none', overflow: 'visible' }}>
 
