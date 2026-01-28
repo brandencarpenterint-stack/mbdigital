@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
