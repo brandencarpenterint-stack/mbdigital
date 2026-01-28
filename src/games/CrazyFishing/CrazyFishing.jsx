@@ -1103,14 +1103,17 @@ const CrazyFishing = () => {
         <div
             onContextMenu={(e) => e.preventDefault()}
             style={{
+                position: 'fixed', // Force fixed to cover header/nav
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                zIndex: 9999, // Ensure it's on top of everything
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center', // Snap to center vertically
-                width: '100vw',
-                height: '100vh', // Force full screen height
-                overflow: 'hidden', // No scrolling allowed
-                color: '#00ccff',
+                justifyContent: 'center',
+                overflow: 'hidden',
                 background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)',
                 touchAction: 'none',
                 userSelect: 'none',

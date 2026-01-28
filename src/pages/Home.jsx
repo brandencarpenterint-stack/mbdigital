@@ -28,10 +28,10 @@ const Home = () => {
                 {/* SHOP CARD */}
                 <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                     <div style={{
-                        background: 'linear-gradient(135deg, #FF69B4 0%, #FF4500 100%)',
+                        background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)', // Pastel Pink Gradient
                         borderRadius: '25px', padding: '40px 20px',
                         textAlign: 'center', color: 'white',
-                        boxShadow: '0 10px 25px rgba(255, 69, 0, 0.4)',
+                        boxShadow: '0 10px 25px rgba(255, 105, 180, 0.4)',
                         transition: 'transform 0.2s',
                         cursor: 'pointer',
                         position: 'relative', overflow: 'hidden'
@@ -42,7 +42,9 @@ const Home = () => {
                         {/* Decorative Circle */}
                         <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%' }}></div>
 
-                        <div style={{ fontSize: '4rem', marginBottom: '15px', filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.2))' }}>⚡</div>
+                        <div style={{ marginBottom: '15px', filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.2))' }}>
+                            <img src="/assets/boy-logo.png" alt="Merchboy Face" style={{ width: '80px', height: 'auto' }} />
+                        </div>
                         <h2 style={{ fontSize: '2rem', margin: '0 0 10px 0', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>MERCHBOY.SHOP</h2>
                         <p style={{ margin: 0, opacity: 0.95, fontSize: '1rem', fontWeight: '500' }}>Fresh drops • Quality gear • Free shipping</p>
                     </div>
