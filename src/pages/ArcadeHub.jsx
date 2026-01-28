@@ -62,24 +62,25 @@ const getHighScore = (id) => {
 
 const ArcadeHub = () => {
     return (
-        <div className="page-enter" style={{ textAlign: 'center', padding: '20px' }}>
+        <div className="page-enter" style={{ textAlign: 'center', padding: '20px', width: '100%', boxSizing: 'border-box' }}>
             <h1 style={{
-                fontSize: '4rem',
+                fontSize: 'clamp(2.5rem, 8vw, 4rem)', // Responsive Text
                 color: 'var(--accent-color)',
-                textShadow: '5px 5px #ff0055',
+                textShadow: '3px 3px #ff0055',
                 marginBottom: '10px'
             }}>
                 ARCADE ZONE
             </h1>
-            <p>Select a game to start playing!</p>
+            <p style={{ fontSize: 'clamp(1rem, 4vw, 1.2rem)' }}>Select a game to start playing!</p>
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '30px',
-                padding: '40px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // Lower min width for smaller phones
+                gap: '20px',
+                padding: '10px',
                 maxWidth: '1200px',
-                margin: '0 auto'
+                margin: '0 auto',
+                width: '100%'
             }}>
                 {games.map(game => (
                     <div key={game.id} style={{
@@ -115,7 +116,11 @@ const ArcadeHub = () => {
                             justifyContent: 'center',
                             border: '1px solid #333'
                         }}>
-                            <span style={{ color: '#555' }}>Preview</span>
+                            <span style={{ fontSize: '3rem' }}>
+                                {game.id === 'snake' ? '🐍' :
+                                    game.id === 'whack' ? '🔨' :
+                                        game.id === 'fishing' ? '🎣' : '🎮'}
+                            </span>
                         </div>
                         <p>{game.description}</p>
                         <Link to={`/arcade/${game.id}`} style={{

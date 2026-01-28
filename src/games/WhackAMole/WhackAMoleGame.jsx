@@ -96,10 +96,10 @@ const WhackAMoleGame = () => {
     }, []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#ff0055' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>WHACK-A-MOLE</h1>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#ff0055', width: '100%', minHeight: '100vh', touchAction: 'manipulation' }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>WHACK-A-MOLE</h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '500px', marginBottom: '20px', fontSize: '1.5rem', fontWeight: 'bold' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '500px', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
                 <span>SCORE: {score}</span>
                 <span>TIME: {timeLeft}s</span>
                 <span>HIGH: {highScore}</span>
@@ -123,8 +123,11 @@ const WhackAMoleGame = () => {
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '20px',
-                padding: '20px',
+                gap: '10px',
+                padding: '10px',
+                width: '100%',
+                maxWidth: '500px',
+                aspectRatio: '1/1', // Keep square aspect ratio for the whole board
                 backgroundColor: '#2a2a40',
                 borderRadius: '20px',
                 border: '4px solid #ff0055',
@@ -133,16 +136,18 @@ const WhackAMoleGame = () => {
                 {moles.map((isUp, index) => (
                     <div
                         key={index}
-                        onClick={() => handleWhack(index)}
+                        onMouseDown={() => handleWhack(index)} // Mouse
+                        onTouchStart={(e) => { e.preventDefault(); handleWhack(index); }} // Touch (prevent ghost clicks)
                         style={{
-                            width: '100px',
-                            height: '100px',
+                            width: '100%',
+                            height: '100%', // Fill grid cell
                             backgroundColor: '#1a1a2e',
                             borderRadius: '50%',
                             position: 'relative',
                             cursor: 'pointer',
                             overflow: 'hidden',
-                            border: '2px solid #333'
+                            border: '2px solid #333',
+                            touchAction: 'none'
                         }}
                     >
                         {/* Hole Bottom */}
@@ -151,7 +156,7 @@ const WhackAMoleGame = () => {
                             bottom: 0,
                             left: '10%',
                             width: '80%',
-                            height: '30px',
+                            height: '30%',
                             backgroundColor: '#000',
                             borderRadius: '50%'
                         }} />
@@ -159,7 +164,7 @@ const WhackAMoleGame = () => {
                         {/* Mole (Mascot) */}
                         <div style={{
                             position: 'absolute',
-                            bottom: isUp ? '10px' : '-100px',
+                            bottom: isUp ? '10%' : '-100%', // Use % for responsiveness
                             left: '10%',
                             width: '80%',
                             height: '80%',
@@ -184,7 +189,9 @@ const WhackAMoleGame = () => {
                     borderRadius: '20px',
                     border: '4px solid #ff0055',
                     textAlign: 'center',
-                    zIndex: 100
+                    zIndex: 100,
+                    width: '90%',
+                    maxWidth: '400px'
                 }}>
                     <h2 style={{ fontSize: '3rem', color: '#ff0055', margin: '0 0 20px 0' }}>TIME'S UP!</h2>
                     <p style={{ fontSize: '2rem', marginBottom: '30px', color: 'white' }}>Final Score: {score}</p>
@@ -197,7 +204,7 @@ const WhackAMoleGame = () => {
                             border: 'none',
                             borderRadius: '5px',
                         }}>
-                            PLAY AGAIN
+                            AGAIN
                         </SquishyButton>
                         <Link to="/arcade" style={{
                             padding: '10px 20px',
@@ -215,7 +222,7 @@ const WhackAMoleGame = () => {
             )}
 
             <div style={{ marginTop: '20px' }}>
-                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '150px', opacity: 0.6 }} />
+                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '100px', opacity: 0.6 }} />
             </div>
         </div>
     );

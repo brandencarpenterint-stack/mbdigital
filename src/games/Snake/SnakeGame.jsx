@@ -141,22 +141,34 @@ const SnakeGame = () => {
         setIsPaused(false);
     };
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#00ffaa' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>NEON SNAKE</h1>
+    // D-Pad Helper
+    const handleDir = (d) => {
+        if (direction === 'UP' && d === 'DOWN') return;
+        if (direction === 'DOWN' && d === 'UP') return;
+        if (direction === 'LEFT' && d === 'RIGHT') return;
+        if (direction === 'RIGHT' && d === 'LEFT') return;
+        setDirection(d);
+        playJump();
+    };
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '400px', marginBottom: '10px', fontSize: '1.2rem' }}>
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ffaa', width: '100%', maxWidth: '100%' }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>NEON SNAKE</h1>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px', marginBottom: '10px', fontSize: '1.2rem' }}>
                 <span>SCORE: {score}</span>
-                <span>HIGH SCORE: {highScore}</span>
+                <span>HIGH: {highScore}</span>
             </div>
 
             <div style={{
                 position: 'relative',
-                width: '400px',
-                height: '400px',
+                width: '100%',
+                maxWidth: '400px',
+                aspectRatio: '1/1',
                 backgroundColor: '#000',
                 border: '4px solid #00ffaa',
-                boxShadow: '0 0 20px #00ffaa40'
+                boxShadow: '0 0 20px #00ffaa40',
+                touchAction: 'none' // Prevent scroll while swiping if we added swipe (we are using buttons for now)
             }}>
                 {/* Snake */}
                 {snake.map((segment, index) => (
@@ -219,9 +231,19 @@ const SnakeGame = () => {
                 )}
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center', color: '#666' }}>
-                <p>Use Arrow Keys to Move • Space to Pause</p>
-                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '100px', marginTop: '10px', opacity: 0.5 }} />
+            {/* Mobile Controls (D-Pad) */}
+            <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 60px)', gap: '10px', justifyContent: 'center' }}>
+                <div />
+                <SquishyButton onClick={() => handleDir('UP')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬆️</SquishyButton>
+                <div />
+                <SquishyButton onClick={() => handleDir('LEFT')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬅️</SquishyButton>
+                <SquishyButton onClick={() => handleDir('DOWN')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬇️</SquishyButton>
+                <SquishyButton onClick={() => handleDir('RIGHT')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>➡️</SquishyButton>
+            </div>
+
+            <div style={{ marginTop: '20px', textAlign: 'center', color: '#666', fontSize: '0.8rem' }}>
+                <p>Use Arrow Keys or Buttons to Move • Space to Pause</p>
+                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '80px', marginTop: '10px', opacity: 0.5 }} />
             </div>
 
             <style>{`

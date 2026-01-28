@@ -997,12 +997,40 @@ const CrazyFishing = () => {
     // Controls
     const handleKeyDown = (e) => { if (e.code === 'Space') isMouseDown.current = true; };
     const handleKeyUp = (e) => { if (e.code === 'Space') isMouseDown.current = false; };
-    const handleMouseDown = () => { isMouseDown.current = true; };
-    const handleMouseUp = () => { isMouseDown.current = false; };
-    const handleMouseMove = (e) => {
+    const handleInputStart = (e) => {
+        if (e.type === 'touchstart') {
+            // e.preventDefault(); // Don't prevent default here if we want buttons to work, but for canvas it's ok
+        }
+        isMouseDown.current = true;
+
+        if (gameStateRef.current === 'IDLE') {
+            startCast();
+        }
+    };
+
+    const handleInputEnd = () => {
+        isMouseDown.current = false;
+        if (gameStateRef.current === 'CASTING') {
+            startDrop();
+        }
+    };
+
+    const handleInputMove = (e) => {
         if (gameStateRef.current === 'DROPPING') {
-            const rect = canvasRef.current.getBoundingClientRect();
-            const x = e.clientX - rect.left;
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            // Handle Touch or Mouse
+            let clientX;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const x = (clientX - rect.left) * scaleX;
             stateRef.current.hookX = Math.max(20, Math.min(GAME_WIDTH - 20, x));
         }
     };
@@ -1010,95 +1038,120 @@ const CrazyFishing = () => {
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
-        window.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mouseup', handleMouseUp);
-        window.addEventListener('mousemove', handleMouseMove);
+
+        // Global release safety
+        const handleGlobalUp = () => { isMouseDown.current = false; };
+        window.addEventListener('mouseup', handleGlobalUp);
+        window.addEventListener('touchend', handleGlobalUp);
+
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
-            window.removeEventListener('mousedown', handleMouseDown);
-            window.removeEventListener('mouseup', handleMouseUp);
-            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleGlobalUp);
+            window.removeEventListener('touchend', handleGlobalUp);
         };
     }, []);
 
     // RENDER UI
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#00ccff', height: '100vh', background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0', textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white' }}>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '10px',
+            color: '#00ccff',
+            minHeight: '100vh',
+            background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)',
+            touchAction: 'none' // Prevent browser zooming/scrolling on the container
+        }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '10px 0', textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white', textAlign: 'center' }}>
                 {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
             </h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '800px', marginBottom: '10px', fontSize: '1.2rem', color: 'white', fontWeight: 'bold' }}>
-                <span>SCORE: {score}</span>
-                <span>STREAK: {combo}🔥</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '800px', marginBottom: '10px', fontSize: '1rem', color: 'white', fontWeight: 'bold' }}>
+                <span>💰 {coins}</span>
+                <span>🔥 {combo}</span>
             </div>
 
-            {/* MAIN GAME CONTAINER LAYOUT - Sidebar + Canvas */}
-            <div style={{ display: 'flex', gap: '20px' }}>
+            {/* MAIN GAME CONTAINER LAYOUT - Stack on mobile, Row on desktop */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column-reverse', // Controls below on mobile usually better, or above? Let's do standard column for now
+                gap: '10px',
+                alignItems: 'center',
+                width: '100%',
+                maxWidth: '100%'
+            }}>
 
-                {/* 1. LEFT SIDEBAR (Controls/Shop) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                    <SquishyButton onClick={() => setGameState('FISHDEX')} style={{ background: '#006994', width: '80px', height: '80px', borderRadius: '50%', border: '4px solid cyan', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', boxShadow: '0 0 10px cyan' }}>
-                        🤖
-                    </SquishyButton>
-                    <SquishyButton onClick={() => setGameState('SHOP')} style={{ background: 'orange', width: '80px', height: '80px', borderRadius: '50%', border: '4px solid gold', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', boxShadow: '0 0 10px gold' }}>
-                        🛍️
-                    </SquishyButton>
-                    {/* Instructions */}
-                    <div style={{ color: 'white', opacity: 0.7, textAlign: 'center', marginTop: '20px' }}>
-                        <p>Click & Hold</p><p>To Move</p>
-                    </div>
-                </div>
-
-                {/* 2. GAME CANVAS */}
+                {/* GAME CANVAS CONTAINER */}
                 <div style={{
-                    width: '800px', height: '600px', border: hasGoldenRod ? '4px solid gold' : '4px solid white', borderRadius: '20px',
-                    backgroundColor: '#000', position: 'relative', overflow: 'hidden',
-                    boxShadow: '0 0 20px rgba(0,255,255,0.2)'
+                    width: '100%',
+                    maxWidth: '800px',
+                    aspectRatio: '4/3', // Maintain 800x600 ratio
+                    border: hasGoldenRod ? '4px solid gold' : '4px solid white',
+                    borderRadius: '20px',
+                    backgroundColor: '#000',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 0 20px rgba(0,255,255,0.2)',
+                    touchAction: 'none'
                 }}>
                     <canvas
-                        ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT}
-                        onClick={gameState === 'IDLE' ? startCast : null}
-                        onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
-                        onMouseMove={handleMouseMove}
-                        style={{ width: '100%', height: '100%', cursor: gameState === 'IDLE' ? 'pointer' : 'none' }}
+                        ref={canvasRef}
+                        width={GAME_WIDTH}
+                        height={GAME_HEIGHT}
+                        // Touch & Mouse Events
+                        onMouseDown={handleInputStart}
+                        onMouseUp={handleInputEnd}
+                        onMouseLeave={handleInputEnd}
+                        onMouseMove={handleInputMove}
+
+                        onTouchStart={handleInputStart}
+                        onTouchEnd={handleInputEnd}
+                        onTouchMove={handleInputMove}
+
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            cursor: gameState === 'IDLE' ? 'pointer' : 'none',
+                            touchAction: 'none'
+                        }}
                     />
 
                     {gameState === 'IDLE' && (
                         <div style={{ position: 'absolute', top: '30%', width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
-                            <h2 style={{ color: 'white', textShadow: '2px 2px black' }}>CLICK TO CAST</h2>
+                            <h2 style={{ color: 'white', textShadow: '2px 2px black', fontSize: '5vw' }}>TAP TO CAST</h2>
                         </div>
                     )}
 
-                    {/* ... (Shop and Dex Overlays logic moved to inside canvas container so they obscure game) */}
+                    {/* OVERLAYS */}
                     {gameState === 'FISHDEX' && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '20px', overflowY: 'auto', zIndex: 100 }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '10px', overflowY: 'auto', zIndex: 100 }}>
                             <h2 style={{ color: 'cyan', textAlign: 'center' }}>📘 FISHDEX</h2>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '5px' }}> {/* More columns for density */}
+                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginBottom: '10px', width: '100%', background: 'gray' }}>CLOSE</SquishyButton>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px' }}>
                                 {FISH_DATA.map(fish => {
                                     const records = JSON.parse(localStorage.getItem('fishingRecords')) || {};
                                     const best = records[fish.id];
                                     const unlocked = best !== undefined;
                                     return (
                                         <div key={fish.id} style={{ border: unlocked ? (fish.legendary ? '2px solid gold' : '1px solid cyan') : '1px solid #333', background: unlocked ? '#111' : '#000', padding: '5px', textAlign: 'center', opacity: unlocked ? 1 : 0.5 }}>
-                                            <div style={{ fontSize: '2rem' }}>{unlocked ? fish.emoji : '❓'}</div>
-                                            <div style={{ fontSize: '0.6rem' }}>{unlocked ? fish.name : '???'}</div>
-                                            {unlocked && <div style={{ fontSize: '0.7rem', color: 'lime' }}>PB: {best}kg</div>}
+                                            <div style={{ fontSize: '1.5rem' }}>{unlocked ? fish.emoji : '❓'}</div>
+                                            {unlocked && <div style={{ fontSize: '0.6rem', color: 'lime' }}>{best}kg</div>}
                                         </div>
                                     );
                                 })}
                             </div>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '20px', width: '100%', background: 'gray' }}>CLOSE</SquishyButton>
                         </div>
                     )}
 
                     {gameState === 'SHOP' && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '20px', overflowY: 'auto', zIndex: 100 }}>
-                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', color: 'white', padding: '10px', overflowY: 'auto', zIndex: 100 }}>
+                            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                                 <h2 style={{ color: 'gold', margin: 0 }}>GILL'S BAZAAR</h2>
                                 <p style={{ color: 'yellow' }}>Wallet: {coins} 💰</p>
                             </div>
+                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginBottom: '10px', width: '100%', background: 'red' }}>LEAVE</SquishyButton>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                 {SHOP_ITEMS.map(item => {
                                     const owned = inventory.includes(item.id);
@@ -1106,12 +1159,9 @@ const CrazyFishing = () => {
                                     return (
                                         <div key={item.id} onClick={() => buyItem(item)} style={{ border: owned ? (equipped ? '2px solid lime' : '2px solid gray') : '2px solid white', padding: '10px', borderRadius: '10px', cursor: 'pointer', background: owned ? '#333' : '#000' }}>
                                             <div style={{ fontSize: '2rem' }}>{item.icon}</div>
-                                            <div style={{ fontWeight: 'bold' }}>{item.name}</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#aaa' }}>{item.desc}</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.name}</div>
                                             {owned ? (
-                                                <div style={{ color: equipped ? 'lime' : 'white' }}>
-                                                    {item.type === 'skin' ? (equipped ? 'EQUIPPED' : 'OWNED') : 'UNLOCKED'}
-                                                </div>
+                                                <div style={{ color: equipped ? 'lime' : 'white', fontSize: '0.8rem' }}>{item.type === 'skin' ? (equipped ? 'EQUIPPED' : 'OWNED') : 'UNLOCKED'}</div>
                                             ) : (
                                                 <div style={{ color: 'gold' }}>{item.price} 💰</div>
                                             )}
@@ -1119,35 +1169,42 @@ const CrazyFishing = () => {
                                     );
                                 })}
                             </div>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '20px', width: '100%', background: 'red' }}>LEAVE</SquishyButton>
                         </div>
                     )}
 
                     {gameState === 'CATCH_SCREEN' && caughtFish && (
-                        /* Updated Catch Screen with Name & Bounty */
                         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
-                            <h2 style={{ color: 'gold', fontSize: '3rem', margin: 0 }}>CAUGHT!</h2>
-                            <div style={{ fontSize: '6rem', margin: '20px' }}>{caughtFish.type === 'image' ? <img src={caughtFish.src} style={{ width: '100px' }} /> : caughtFish.emoji}</div>
-
-                            <h3 style={{ color: 'white', fontSize: '2rem', margin: '10px' }}>{caughtFish.name}</h3>
-                            <div style={{ color: isNewRecord ? '#00ff00' : '#ccc', fontSize: '1.2rem' }}>{measuredWeight}kg {isNewRecord && "🏆 NEW RECORD!"}</div>
-
-                            {/* Bounty Breakdown */}
-                            <div style={{ margin: '20px', textAlign: 'center' }}>
-                                <div style={{ color: '#aaa', fontSize: '1rem' }}>BASE: {caughtFish.score} 💰</div>
-                                {combo > 1 && <div style={{ color: 'orange', fontSize: '1rem' }}>STREAK BONUS: x{(1 + ((combo - 1) * 0.1)).toFixed(1)} 🔥</div>}
-                                <div style={{ color: 'gold', fontSize: '2.5rem', fontWeight: 'bold', textShadow: '0 0 10px gold' }}>
+                            <h2 style={{ color: 'gold', fontSize: '2rem', margin: 0 }}>CAUGHT!</h2>
+                            <div style={{ fontSize: '4rem', margin: '10px' }}>{caughtFish.type === 'image' ? <img src={caughtFish.src} style={{ width: '80px' }} /> : caughtFish.emoji}</div>
+                            <h3 style={{ color: 'white', fontSize: '1.5rem', margin: '5px' }}>{caughtFish.name}</h3>
+                            <div style={{ color: isNewRecord ? '#00ff00' : '#ccc', fontSize: '1rem' }}>{measuredWeight}kg {isNewRecord && "🏆 NEW PB!"}</div>
+                            <div style={{ margin: '15px', textAlign: 'center' }}>
+                                <div style={{ color: 'gold', fontSize: '2rem', fontWeight: 'bold' }}>
                                     +{Math.floor(caughtFish.score * (1 + (combo * 0.1)))} COINS
                                 </div>
                             </div>
-
-                            <SquishyButton onClick={startCast} style={{ marginTop: '20px', background: '#00ccff', color: 'white', padding: '15px 40px', fontSize: '1.5rem', borderRadius: '50px' }}>🎣 Cast Again</SquishyButton>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '10px', background: 'transparent', border: '1px solid white', color: '#999', padding: '8px 20px', borderRadius: '20px' }}>Return to Dock</SquishyButton>
+                            <SquishyButton onClick={startCast} style={{ marginTop: '10px', background: '#00ccff', color: 'white', padding: '10px 30px', fontSize: '1.2rem', borderRadius: '50px' }}>🎣 Cast Again</SquishyButton>
+                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '10px', background: 'transparent', border: '1px solid white', color: '#999', padding: '5px 20px', borderRadius: '20px' }}>Dock</SquishyButton>
                         </div>
                     )}
                 </div>
+
+                {/* CONTROLS / SHOP BUTTONS (Bottom on mobile) */}
+                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                    <SquishyButton onClick={() => setGameState('FISHDEX')} style={{ background: '#006994', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid cyan', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px cyan' }}>
+                        🤖
+                    </SquishyButton>
+                    <SquishyButton onClick={() => setGameState('SHOP')} style={{ background: 'orange', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid gold', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px gold' }}>
+                        🛍️
+                    </SquishyButton>
+                </div>
             </div>
-            <Link to="/arcade" style={{ marginTop: '20px', color: 'white', textDecoration: 'underline', fontSize: '1.5rem' }}>Exit Dock</Link>
+
+            <div style={{ marginTop: '10px', textAlign: 'center', color: '#ccc', fontSize: '0.8rem' }}>
+                <p>Tap & Hold to Cast/Reel • Drag to Move Hook</p>
+            </div>
+
+            <Link to="/arcade" style={{ marginTop: '20px', color: 'white', textDecoration: 'underline', fontSize: '1rem' }}>Exit Dock</Link>
         </div>
     );
 };
