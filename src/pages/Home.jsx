@@ -42,6 +42,42 @@ const Home = () => {
                 </button>
             </header>
 
+            {/* SQUAD WARS BAR */}
+            <div style={{ padding: '0 20px', maxWidth: '800px', margin: '-30px auto 40px', position: 'relative', zIndex: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                    <span style={{ color: '#00f2ff', textShadow: '0 0 10px #00f2ff' }}>TEAM NEON</span>
+                    <span style={{ color: '#ff0055', textShadow: '0 0 10px #ff0055' }}>TEAM ZEN</span>
+                </div>
+
+                <div style={{ height: '30px', background: '#222', borderRadius: '15px', overflow: 'hidden', position: 'relative', border: '2px solid white', boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}>
+                    <div style={{
+                        width: '100%', height: '100%',
+                        background: 'linear-gradient(90deg, #00f2ff 50%, #ff0055 50%)',
+                        position: 'absolute', top: 0, left: 0
+                    }}>
+                        <div style={{
+                            position: 'absolute', top: 0, bottom: 0,
+                            left: '50%', width: '10px', background: 'white',
+                            transform: 'skewX(-20deg) translateX(-50%)',
+                            boxShadow: '0 0 10px white',
+                            animation: 'warShift 5s infinite ease-in-out'
+                        }}></div>
+                    </div>
+                </div>
+
+                <div style={{ textAlign: 'center', marginTop: '5px', color: '#aaa', fontSize: '0.8rem' }}>
+                    GLOBAL SQUAD WAR: LIVE
+                </div>
+
+                <style>{`
+                    @keyframes warShift {
+                        0% { left: 48%; }
+                        50% { left: 52%; }
+                        100% { left: 48%; }
+                    }
+                `}</style>
+            </div>
+
             {/* MAIN HUB GRID */}
             <div className="hub-grid">
 
