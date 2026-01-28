@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
+import { DAILY_TEMPLATES } from '../config/DailyQuests';
 import useRetroSound from '../hooks/useRetroSound';
 
 const GamificationContext = createContext();
@@ -51,32 +52,58 @@ export const GamificationProvider = ({ children }) => {
         setTimeout(() => setRecentUnlock(null), 3000);
     };
 
-    const updateStat = (key, value) => {
-        setStats(prev => {
-            // Handle arrays (e.g. gamesPlayed)
-            if (Array.isArray(prev[key])) {
-                if (!prev[key].includes(value)) {
-                    return { ...prev, [key]: [...prev[key], value] };
+    // Helper to update daily quest progress (High Score type)
+    const checkHighscoreQuest = (key, value) => {
+        setDailyState(dPrev => {
+            const updatedQuests = dPrev.quests.map(q => {
+                if (!q.claimed && q.type === key && q.condition === 'gt') {
+                    if (value >= q.target) return { ...q, progress: value }; // Instant complete
                 }
-                return prev;
-            }
-            // Handle increment (if functionality meant to add) or replace?
-            // For now, let's assume direct replacement for HighScores, implementation specific for accumulation
-            // But wait, fishCaught needs to increment.
-
-            // Simple logic: If existing is number and new is number -> replace? 
-            // Better: updateStat('fishCaught', (prev) => prev + 1) pattern support?
-
-            const newValue = typeof value === 'function' ? value(prev[key] || 0) : value;
-            return { ...prev, [key]: newValue };
+                return q;
+            });
+            return { ...dPrev, quests: updatedQuests };
         });
     };
 
     const incrementStat = (key, amount = 1) => {
-        setStats(prev => ({
-            ...prev,
-            [key]: (prev[key] || 0) + amount
-        }));
+        setStats(prev => {
+            const newVal = (prev[key] || 0) + amount;
+
+            // DAILY QUEST TRACKING HOOK
+            setDailyState(dPrev => {
+                const updatedQuests = dPrev.quests.map(q => {
+                    if (!q.claimed && q.type === key && !q.condition) {
+                        return { ...q, progress: q.progress + amount };
+                    }
+                    return q;
+                });
+                return { ...dPrev, quests: updatedQuests };
+            });
+
+            return { ...prev, [key]: newVal };
+        });
+    };
+
+    const updateStat = (key, value) => {
+        setStats(prev => {
+            // 1. Highscore Quest Check
+            if (typeof value === 'number' && (!prev[key] || value > prev[key])) {
+                checkHighscoreQuest(key, value);
+            }
+
+            // 2. Array Handling (gamesPlayed)
+            if (Array.isArray(prev[key])) {
+                if (!prev[key].includes(value)) {
+                    if (key === 'gamesPlayed') incrementStat('gamesPlayedCount', 1);
+                    return { ...prev, [key]: [...prev[key], value] };
+                }
+                return prev;
+            }
+
+            // 3. Standard Replacement
+            const newValue = typeof value === 'function' ? value(prev[key] || 0) : value;
+            return { ...prev, [key]: newValue };
+        });
     };
 
     return (
@@ -85,7 +112,10 @@ export const GamificationProvider = ({ children }) => {
             unlockedAchievements,
             updateStat,
             incrementStat,
-            recentUnlock
+            recentUnlock,
+            dailyState,
+            claimDailyLogin,
+            claimQuest
         }}>
             {children}
 
