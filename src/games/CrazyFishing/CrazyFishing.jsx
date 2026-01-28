@@ -194,9 +194,8 @@ const CrazyFishing = () => {
     const [isNewRecord, setIsNewRecord] = useState(false);
 
     // USE GLOBAL SHOP STATE for skin and rod
-    const equippedSkin = shopState?.equipped?.fishing || 'boat_default';
-    const hasGoldenRod = shopState?.equipped?.fishing === 'rod_gold' || shopState?.unlocked?.includes('rod_gold'); // Or separate slot for rod?
-    // Current shop structure uses ONE slot 'fishing' for both rods and boats? 
+    // USE GLOBAL SHOP STATE for skin and rod
+    // (Syncing handled in useEffect below)
     // Wait, shopState.equipped.fishing only holds ONE item.
     // If user equips a rod, they lose their boat skin?
     // FIX: CrazyFishing probably needs separate slots in global shop or just support one active "fishing item".
@@ -242,6 +241,15 @@ const CrazyFishing = () => {
         // If it's a rod, the draw code needs to handle 'rod_gold' case (maybe no boat change).
         if (shopState?.equipped?.fishing) {
             skinRef.current = shopState.equipped.fishing;
+            setEquippedSkin(shopState.equipped.fishing);
+            if (shopState.equipped.fishing === 'rod_gold' || shopState.equipped.fishing.includes('rod')) {
+                // logic for rod
+            }
+        }
+
+        // Sync Golden Rod specifically if unlocked or equipped
+        if (shopState?.equipped?.fishing === 'rod_gold' || shopState?.unlocked?.includes('rod_gold')) {
+            setHasGoldenRod(true);
         }
 
         // Pass unlocked items for passive bonuses (Hats, Rods, etc)
