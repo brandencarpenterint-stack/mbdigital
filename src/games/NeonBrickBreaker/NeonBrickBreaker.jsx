@@ -324,7 +324,28 @@ const NeonBrickBreaker = () => {
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
-                    style={{ border: '4px solid #cc00ff', background: 'black', borderRadius: '10px', cursor: 'none' }}
+                    // Touch Support
+                    onTouchMove={(e) => {
+                        if (!gameActiveRef.current) return;
+                        e.preventDefault(); // Stop scroll
+                        const rect = e.target.getBoundingClientRect();
+                        const x = e.touches[0].clientX - rect.left;
+                        // Scale for canvas resolution vs css size
+                        const scaleX = GAME_WIDTH / rect.width;
+                        const canvasX = x * scaleX;
+
+                        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
+                    }}
+                    onTouchStart={(e) => {
+                        if (!gameActiveRef.current) return;
+                        // Optional: Allow tap to snap paddle
+                        const rect = e.target.getBoundingClientRect();
+                        const x = e.touches[0].clientX - rect.left;
+                        const scaleX = GAME_WIDTH / rect.width;
+                        const canvasX = x * scaleX;
+                        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
+                    }}
+                    style={{ border: '4px solid #cc00ff', background: 'black', borderRadius: '10px', cursor: 'none', touchAction: 'none' }}
                 />
 
                 {!gameActive && !gameOver && (

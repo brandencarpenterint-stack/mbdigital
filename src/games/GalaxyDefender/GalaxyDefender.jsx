@@ -379,27 +379,33 @@ const GalaxyDefender = () => {
     };
 
     // Controls
+    // Mobile Actions
+    const moveLeft = () => {
+        if (!gameActiveRef.current) return;
+        if (gameState.current.lane > 0) gameState.current.lane--;
+    };
+    const moveRight = () => {
+        if (!gameActiveRef.current) return;
+        if (gameState.current.lane < LANES - 1) gameState.current.lane++;
+    };
+    const fire = () => {
+        if (!gameActiveRef.current) return;
+        const state = gameState.current;
+        const now = Date.now();
+        if (now - state.lastShotTime > 200) {
+            const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
+            state.bullets.push({ x: startX, y: GAME_HEIGHT - 80 });
+            state.lastShotTime = now;
+            playBeep();
+        }
+    };
+
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (!gameActiveRef.current) return;
-            const state = gameState.current;
-
-            if (e.key === 'ArrowLeft') {
-                if (state.lane > 0) state.lane--;
-            }
-            if (e.key === 'ArrowRight') {
-                if (state.lane < LANES - 1) state.lane++;
-            }
-
-            if (e.key === ' ') {
-                const now = Date.now();
-                if (now - state.lastShotTime > 200) {
-                    const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
-                    state.bullets.push({ x: startX, y: GAME_HEIGHT - 80 });
-                    state.lastShotTime = now;
-                    playBeep();
-                }
-            }
+            if (e.key === 'ArrowLeft') moveLeft();
+            if (e.key === 'ArrowRight') moveRight();
+            if (e.key === ' ') fire();
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -454,6 +460,16 @@ const GalaxyDefender = () => {
                     </div>
                 )}
             </div>
+
+            {/* MOBILE CONTROLS */}
+            <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
+                    <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
+                </div>
+                <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
+            </div>
+
             <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
         </div>
     );
