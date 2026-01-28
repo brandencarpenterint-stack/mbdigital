@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
@@ -6,33 +7,41 @@ import { useGamification } from '../../context/GamificationContext';
 import { LeaderboardService } from '../../services/LeaderboardService';
 
 const GAME_WIDTH = 600;
-const GAME_HEIGHT = 400;
+const GAME_HEIGHT = 400; // Canvas size
 const PADDLE_WIDTH = 80;
-const PADDLE_HEIGHT = 10;
-const BALL_SIZE = 15; // Slightly larger for logo
-const BRICK_ROWS = 5;
+const PADDLE_HEIGHT = 12;
+const BALL_SIZE = 16;
+const BRICK_ROWS = 6;
 const BRICK_COLS = 8;
+const CONTROL_HEIGHT = 120; // Height of the touch zone
 
 const NeonBrickBreaker = () => {
     const { updateStat, incrementStat } = useGamification() || { updateStat: () => { }, incrementStat: () => { } };
     const canvasRef = useRef(null);
+
+    // Game State
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('brickHighScore')) || 0);
+    const [level, setLevel] = useState(1);
+    const [lives, setLives] = useState(3);
     const [gameOver, setGameOver] = useState(false);
     const [gameActive, setGameActive] = useState(false);
+    const [shake, setShake] = useState({ x: 0, y: 0 }); // Screen shake offset
 
     const gameActiveRef = useRef(false);
     const ballImgRef = useRef(null);
+    const shakeTimeoutRef = useRef(null);
 
     const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
 
     const gameState = useRef({
         paddleX: GAME_WIDTH / 2 - PADDLE_WIDTH / 2,
-        balls: [], // {x, y, dx, dy, rot}
+        balls: [],
         bricks: [],
-        powerups: [], // {x, y, type}
-        particles: [], // {x, y, dx, dy, life, color}
-        animationId: null
+        powerups: [],
+        particles: [],
+        animationId: null,
+        shakeTime: 0
     });
 
     useEffect(() => {
@@ -41,49 +50,108 @@ const NeonBrickBreaker = () => {
         ballImgRef.current = img;
     }, []);
 
-    const initBricks = () => {
+    // --- LEVEL GENERATION ---
+    const generateLevel = (lvl) => {
         const bricks = [];
         const brickWidth = GAME_WIDTH / BRICK_COLS;
-        const brickHeight = 20;
+        const brickHeight = 25;
 
+        const addBrick = (c, r, color) => {
+            bricks.push({
+                x: c * brickWidth,
+                y: r * brickHeight + 50, // Top padding
+                width: brickWidth - 6,
+                height: brickHeight - 6,
+                active: true,
+                color: color || `hsl(${c * 40 + r * 20}, 100%, 50%)`,
+                value: 10 + (lvl * 5)
+            });
+        };
+
+        // Pattern Logic
         for (let r = 0; r < BRICK_ROWS; r++) {
             for (let c = 0; c < BRICK_COLS; c++) {
-                bricks.push({
-                    x: c * brickWidth,
-                    y: r * brickHeight + 40,
-                    width: brickWidth - 4,
-                    height: brickHeight - 4,
-                    active: true,
-                    color: `hsl(${c * 45 + r * 20}, 100%, 50%)`
-                });
+                // Level 1: Standard Rows
+                if (lvl === 1) {
+                    if (r < 4) addBrick(c, r);
+                }
+                // Level 2: Pyramid
+                else if (lvl === 2) {
+                    const mid = BRICK_COLS / 2;
+                    if (c >= mid - r && c < mid + r) addBrick(c, r, '#ff0055');
+                }
+                // Level 3: Space Invaders (Gaps)
+                else if (lvl === 3) {
+                    if ((c + r) % 2 === 0) addBrick(c, r, '#00ffaa');
+                }
+                // Level 4: Walls
+                else if (lvl === 4) {
+                    if (c === 0 || c === BRICK_COLS - 1 || r === 0 || r === BRICK_ROWS - 1) addBrick(c, r, '#ffff00');
+                    else if (r === 3 && c > 2 && c < 5) addBrick(c, r, 'red'); // Core
+                }
+                // Level 5+: Chaos / Random
+                else {
+                    if (Math.random() > 0.3) addBrick(c, r, `hsl(${Math.random() * 360}, 100%, 50%)`);
+                }
             }
         }
         return bricks;
     };
 
-    const startGame = () => {
-        setScore(0);
-        setGameOver(false);
+    const triggerShake = (amount = 5) => {
+        if (gameState.current.shakeTime <= 0) {
+            gameState.current.shakeTime = 10; // Frames to shake
+        }
+        // Visual react state update for DOM shaking (optional/heavy) 
+        // OR just canvas offset. Let's do DOM for "JUICE".
+        setShake({ x: (Math.random() - 0.5) * amount, y: (Math.random() - 0.5) * amount });
+        if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
+        shakeTimeoutRef.current = setTimeout(() => setShake({ x: 0, y: 0 }), 100);
+    };
+
+    const startLevel = (lvl) => {
+        setLevel(lvl);
+
+        // Speed Up per level
+        const speedBase = 4 + (lvl * 0.5);
+
+        gameState.current.balls = [{
+            x: GAME_WIDTH / 2,
+            y: GAME_HEIGHT - 40,
+            dx: speedBase * (Math.random() > 0.5 ? 1 : -1),
+            dy: -speedBase,
+            rot: 0
+        }];
+        gameState.current.bricks = generateLevel(lvl);
+        gameState.current.paddleX = GAME_WIDTH / 2 - PADDLE_WIDTH / 2;
+        gameState.current.powerups = [];
+        gameState.current.particles = []; // Keep old particles? Nah, clear em.
+
         setGameActive(true);
         gameActiveRef.current = true;
 
-        gameState.current = {
-            paddleX: GAME_WIDTH / 2 - PADDLE_WIDTH / 2,
-            balls: [{ x: GAME_WIDTH / 2, y: GAME_HEIGHT - 30, dx: 4, dy: -4, rot: 0 }],
-            bricks: initBricks(),
-            powerups: [],
-            particles: [],
-            animationId: null
-        };
+        // Gamification
+        if (lvl === 5) {
+            incrementStat('brickMaxLevel', 5); // Trigger achievement
+        } else if (lvl > 1) {
+            updateStat('brickMaxLevel', (prev) => Math.max(prev, lvl));
+        }
+    };
+
+    const startGame = () => {
+        setScore(0);
+        setLives(3);
+        setGameOver(false);
+        startLevel(1);
         requestAnimationFrame(gameLoop);
     };
 
     const spawnParticles = (x, y, color) => {
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 10; i++) {
             gameState.current.particles.push({
                 x, y,
-                dx: (Math.random() - 0.5) * 5,
-                dy: (Math.random() - 0.5) * 5,
+                dx: (Math.random() - 0.5) * 8,
+                dy: (Math.random() - 0.5) * 8,
                 life: 1.0,
                 color
             });
@@ -93,32 +161,23 @@ const NeonBrickBreaker = () => {
     const activateMultiball = () => {
         const newBalls = [];
         gameState.current.balls.forEach(ball => {
-            // Clone 2 more balls per existing ball
-            newBalls.push({ ...ball, dx: ball.dx * 0.8 + 1, dy: ball.dy * 0.8 });
-            newBalls.push({ ...ball, dx: ball.dx * 0.8 - 1, dy: ball.dy * 0.8 });
+            newBalls.push({ ...ball, dx: ball.dx + 1, dy: ball.dy });
+            newBalls.push({ ...ball, dx: ball.dx - 1, dy: ball.dy });
         });
         gameState.current.balls.push(...newBalls);
         playWin(); // Powerup sound
         triggerConfetti();
     };
 
-    const endGame = (win = false) => {
+    const endGame = (win) => {
         setGameActive(false);
         gameActiveRef.current = false;
         setGameOver(true);
         cancelAnimationFrame(gameState.current.animationId);
 
-        if (win) {
-            playWin();
-            triggerConfetti();
-        } else {
-            playCrash();
-        }
-
         if (score > highScore) {
             setHighScore(score);
             localStorage.setItem('brickHighScore', score);
-            if (!win) triggerConfetti();
         }
 
         const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
@@ -138,14 +197,13 @@ const NeonBrickBreaker = () => {
 
         // --- UPDATE ---
 
-        // 1. Update Balls
+        // 1. Balls
         const { balls, paddleX } = state;
-
         for (let i = balls.length - 1; i >= 0; i--) {
             const ball = balls[i];
             ball.x += ball.dx;
             ball.y += ball.dy;
-            ball.rot += 0.1;
+            ball.rot += 0.2; // Spin faster
 
             // Walls
             if (ball.x + BALL_SIZE > GAME_WIDTH || ball.x < 0) {
@@ -164,7 +222,7 @@ const NeonBrickBreaker = () => {
 
                 // English/Spin
                 const hitPoint = ball.x - (paddleX + PADDLE_WIDTH / 2);
-                ball.dx = hitPoint * 0.15; // Curve based on where it hit
+                ball.dx = hitPoint * 0.2;
                 ball.dy = -Math.abs(ball.dy); // Force up
                 playBeep();
             }
@@ -172,15 +230,30 @@ const NeonBrickBreaker = () => {
             // Death
             if (ball.y > GAME_HEIGHT) {
                 balls.splice(i, 1);
+                triggerShake(10);
+                playCrash();
             }
         }
 
+        // Life Loss Check
         if (balls.length === 0) {
-            endGame(false);
-            return;
+            if (lives > 1) {
+                setLives(l => l - 1);
+                // Respawn ball
+                state.balls.push({
+                    x: GAME_WIDTH / 2,
+                    y: GAME_HEIGHT - 40,
+                    dx: 4 * (Math.random() > 0.5 ? 1 : -1),
+                    dy: -4,
+                    rot: 0
+                });
+            } else {
+                endGame(false);
+                return;
+            }
         }
 
-        // 2. Bricks & Powerups
+        // 2. Bricks
         let activeBricks = 0;
         state.bricks.forEach(brick => {
             if (!brick.active) return;
@@ -195,11 +268,11 @@ const NeonBrickBreaker = () => {
 
                     ball.dy = -ball.dy;
                     brick.active = false;
-                    setScore(prev => prev + 10);
+                    setScore(prev => prev + brick.value);
                     playCollect();
                     spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                    triggerShake(3);
 
-                    // 15% Chance for Powerup
                     if (Math.random() < 0.15) {
                         state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
                     }
@@ -208,74 +281,80 @@ const NeonBrickBreaker = () => {
         });
 
         if (activeBricks === 0) {
-            endGame(true);
+            // NEXT LEVEL
+            triggerConfetti();
+            playWin();
+            setTimeout(() => {
+                startLevel(level + 1);
+            }, 1000);
             return;
         }
 
-        // 3. Update Powerups
+        // 3. Powerups
         for (let i = state.powerups.length - 1; i >= 0; i--) {
             const p = state.powerups[i];
-            p.y += 2; // Fall down
-
-            // Catch
+            p.y += 3;
             if (p.y > GAME_HEIGHT - PADDLE_HEIGHT - 10 &&
                 p.y < GAME_HEIGHT - 10 &&
                 p.x > state.paddleX &&
                 p.x < state.paddleX + PADDLE_WIDTH) {
                 if (p.type === 'multiball') activateMultiball();
                 state.powerups.splice(i, 1);
-            }
-            // Miss
-            else if (p.y > GAME_HEIGHT) {
+            } else if (p.y > GAME_HEIGHT) {
                 state.powerups.splice(i, 1);
             }
         }
 
-        // 4. Update Particles
+        // 4. Particles
         for (let i = state.particles.length - 1; i >= 0; i--) {
             const p = state.particles[i];
             p.x += p.dx;
             p.y += p.dy;
-            p.life -= 0.05;
+            p.life -= 0.04;
             if (p.life <= 0) state.particles.splice(i, 1);
         }
 
         // --- DRAW ---
+        // Clear with slight trail effect? No, clean clear.
         ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Particles
+        // Shake Canvas (Software Shake) - Optional addition to DOM shake
+        ctx.save();
+        // If we wanted canvas shake: ctx.translate(Math.random()*2, Math.random()*2);
+
+        // Draw Particles
         state.particles.forEach(p => {
             ctx.globalAlpha = p.life;
             ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 4, 4);
+            ctx.fillRect(p.x, p.y, 5, 5);
         });
         ctx.globalAlpha = 1;
 
-        // Bricks
+        // Draw Bricks
         state.bricks.forEach(brick => {
             if (brick.active) {
                 ctx.fillStyle = brick.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = brick.color;
                 ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+                ctx.shadowBlur = 0;
             }
         });
 
-        // Powerups (⚡ Bolt)
-        ctx.font = '20px serif';
+        // Powerups
+        ctx.font = '24px serif';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        state.powerups.forEach(p => {
-            ctx.fillText('⚡', p.x, p.y);
-        });
+        state.powerups.forEach(p => ctx.fillText('⚡', p.x, p.y));
 
         // Paddle
         ctx.fillStyle = '#00ffaa';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = '#00ffaa';
         ctx.fillRect(state.paddleX, GAME_HEIGHT - PADDLE_HEIGHT - 10, PADDLE_WIDTH, PADDLE_HEIGHT);
         ctx.shadowBlur = 0;
 
-        // Balls (Logos)
+        // Balls
         state.balls.forEach(ball => {
             ctx.save();
             ctx.translate(ball.x + BALL_SIZE / 2, ball.y + BALL_SIZE / 2);
@@ -291,134 +370,134 @@ const NeonBrickBreaker = () => {
             ctx.restore();
         });
 
+        ctx.restore();
         state.animationId = requestAnimationFrame(gameLoop);
     };
 
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            if (!gameActiveRef.current) return;
-            const canvas = canvasRef.current;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, x - PADDLE_WIDTH / 2));
-        };
+    // --- CONTROLS ---
+    // Handle touch/mouse on the Control Bar
+    const handleControlInput = (clientX, rect) => {
+        if (!gameActiveRef.current) return;
 
-        const handleKeyDown = (e) => {
-            if (!gameActiveRef.current) return;
-            if (e.key === 'ArrowLeft') gameState.current.paddleX = Math.max(0, gameState.current.paddleX - 40);
-            if (e.key === 'ArrowRight') gameState.current.paddleX = Math.min(GAME_WIDTH - PADDLE_WIDTH, gameState.current.paddleX + 40);
-        };
+        // Relative X within the control bar
+        const x = clientX - rect.left;
+        const scaleX = GAME_WIDTH / rect.width;
+        const canvasX = x * scaleX;
 
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, []);
+        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
+    };
 
-    // Orientation Logic
+    // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     useEffect(() => {
-        const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
-        window.addEventListener('resize', checkOrientation);
-        return () => window.removeEventListener('resize', checkOrientation);
+        const check = () => setIsPortrait(window.innerHeight > window.innerWidth);
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
     }, []);
 
     if (isPortrait && window.innerWidth < 768) {
         return (
-            <div style={{
-                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                background: '#111', color: '#cc00ff',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                zIndex: 9999, textAlign: 'center', padding: '20px'
-            }}>
+            <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#cc00ff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, textAlign: 'center' }}>
                 <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔄</div>
-                <h1>Please Rotate Your Phone</h1>
-                <p>Neon Brick Breaker requires Landscape Mode</p>
+                <h1>Rotate Phone</h1>
+                <p>Landscape required!</p>
             </div>
         );
     }
 
     return (
         <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center', // Center vertically
-            width: '100vw', // Full width
-            height: '100vh', // Full height
-            position: 'fixed', // Fix to screen
-            top: 0,
-            left: 0,
-            background: '#111',
-            color: '#cc00ff',
-            zIndex: 100 // Top of standard layout
+            position: 'fixed', inset: 0, background: '#050505',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            transform: `translate(${shake.x}px, ${shake.y}px)`, // JUICE: Screen Shake
+            transition: 'transform 0.05s'
         }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '5px 0' }}>NEON BRICK BREAKER</h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '90vw', maxWidth: '600px', marginBottom: '5px', fontSize: '1.2rem' }}>
+            {/* HUD */}
+            <div style={{
+                position: 'absolute', top: 10, width: '90%', maxWidth: '600px',
+                display: 'flex', justifyContent: 'space-between',
+                color: '#cc00ff', fontFamily: 'monospace', fontSize: '1.2rem', fontWeight: 'bold', zIndex: 10
+            }}>
                 <span>SCORE: {score}</span>
-                <span>HIGH: {highScore}</span>
+                <span style={{ color: 'white' }}>LVL {level}</span>
+                <span style={{ color: 'red' }}>❤️ {lives}</span>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            {/* CANVAS */}
+            <div style={{
+                position: 'relative',
+                boxShadow: '0 0 20px #cc00ff40',
+                border: '2px solid #333',
+                borderRadius: '8px',
+                overflow: 'hidden'
+            }}>
                 <canvas
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
-                    // Touch Support
-                    onTouchMove={(e) => {
-                        if (!gameActiveRef.current) return;
-                        e.preventDefault(); // Stop scroll
-                        const rect = e.target.getBoundingClientRect();
-                        const x = e.touches[0].clientX - rect.left;
-                        // Scale for canvas resolution vs css size
-                        const scaleX = GAME_WIDTH / rect.width;
-                        const canvasX = x * scaleX;
-
-                        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
-                    }}
-                    onTouchStart={(e) => {
-                        if (!gameActiveRef.current) return;
-                        // Optional: Allow tap to snap paddle
-                        const rect = e.target.getBoundingClientRect();
-                        const x = e.touches[0].clientX - rect.left;
-                        const scaleX = GAME_WIDTH / rect.width;
-                        const canvasX = x * scaleX;
-                        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
-                    }}
                     style={{
-                        border: '4px solid #cc00ff',
-                        background: 'black',
-                        borderRadius: '10px',
-                        cursor: 'none',
-                        touchAction: 'none',
-                        maxWidth: '95vw', // Responsive width
-                        maxHeight: '80vh', // Responsive height
+                        background: '#111',
+                        display: 'block',
+                        maxWidth: '95vw',
+                        maxHeight: '65vh', // Save room for controls
                         width: 'auto',
                         height: 'auto'
                     }}
                 />
 
                 {!gameActive && !gameOver && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                        <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#cc00ff', border: 'none', borderRadius: '10px', color: 'white' }}>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                        <h1 style={{ color: '#00ffaa', textShadow: '0 0 10px #00ffaa' }}>NEON BRICK BREAKER</h1>
+                        <SquishyButton onClick={startGame} style={{ marginTop: '20px', padding: '15px 40px', fontSize: '1.5rem', background: '#cc00ff' }}>
                             START GAME
                         </SquishyButton>
                     </div>
                 )}
 
                 {gameOver && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: '#cc00ff' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
-                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#cc00ff', border: 'none', borderRadius: '5px', color: 'white' }}>Play Again</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit to Arcade</Link>
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <h2 style={{ fontSize: '3rem', color: 'red' }}>GAME OVER</h2>
+                        <p style={{ fontSize: '1.5rem', color: 'white' }}>Score: {score}</p>
+                        <SquishyButton onClick={startGame} style={{ marginTop: '10px', background: '#cc00ff' }}>Try Again</SquishyButton>
+                        <Link to="/arcade" style={{ color: '#666', marginTop: '15px' }}>Exit</Link>
                     </div>
                 )}
             </div>
-            <p style={{ marginTop: '5px', color: '#666', fontSize: '0.8rem' }}>Drag to Move. Catch ⚡ for MULTIBALL!</p>
+
+            {/* CONTROL ZONE */}
+            <div
+                className="control-zone"
+                onTouchMove={(e) => {
+                    e.preventDefault();
+                    handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
+                }}
+                onTouchStart={(e) => {
+                    handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
+                }}
+                onMouseMove={(e) => {
+                    // Support mouse too for testing
+                    if (e.buttons === 1) handleControlInput(e.clientX, e.currentTarget.getBoundingClientRect());
+                }}
+                style={{
+                    width: '95vw',
+                    maxWidth: '800px', // Wider than game to catch edges
+                    height: '100px',
+                    marginTop: '10px',
+                    background: 'linear-gradient(to bottom, #222, #111)',
+                    borderRadius: '15px',
+                    border: '2px dashed #444',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#666',
+                    userSelect: 'none',
+                    touchAction: 'none', // Critical
+                    cursor: 'grab'
+                }}
+            >
+                <span>&lt;&lt;&lt; SLIDE TO MOVE &gt;&gt;&gt;</span>
+            </div>
         </div>
     );
 };

@@ -52,6 +52,24 @@ export const ACHIEVEMENTS = [
         game: 'Neon Brick Breaker',
         condition: (stats) => stats.brickHighScore >= 500
     },
+    {
+        id: 'brick_survivor',
+        title: 'Neon Survivor',
+        description: 'Reach Level 5 in Brick Breaker.',
+        reward: 'Flame Paddle',
+        game: 'Neon Brick Breaker',
+        condition: (stats) => stats.brickMaxLevel >= 5
+    },
+
+    // --- SNAKE ---
+    {
+        id: 'snake_survivor',
+        title: 'Serpent Survivor',
+        description: 'Survive for 5 minutes in one run.',
+        reward: 'Golden Scale',
+        game: 'Neon Snake',
+        condition: (stats) => stats.snakeMaxTime >= 300 // seconds
+    },
 
     // --- GENERAL ---
     {
