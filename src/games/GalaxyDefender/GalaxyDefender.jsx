@@ -50,7 +50,7 @@ const GalaxyDefender = () => {
 
     useEffect(() => {
         const img = new Image();
-        img.src = '/assets/boy-logo.png'; // Head Logo
+        img.src = '/assets/boy_face.png'; // Head Logo
         bossImgRef.current = img;
     }, []);
 

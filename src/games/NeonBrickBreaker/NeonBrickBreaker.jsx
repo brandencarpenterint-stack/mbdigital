@@ -46,7 +46,7 @@ const NeonBrickBreaker = () => {
 
     useEffect(() => {
         const img = new Image();
-        img.src = '/assets/boy-logo.png';
+        img.src = '/assets/boy_face.png';
         ballImgRef.current = img;
     }, []);
 

@@ -14,7 +14,7 @@ const PIPE_SPACING = 200;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [
-    { id: 'flappy_boy', type: 'image', content: '/assets/boy-logo.png', name: 'MerchBoy' },
+    { id: 'flappy_boy', type: 'image', content: '/assets/boy_face.png', name: 'MerchBoy' },
     { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
     { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
     { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
@@ -79,7 +79,7 @@ const FlappyMascot = () => {
     useEffect(() => {
         // Preload images
         const img1 = new Image();
-        img1.src = '/assets/boy-logo.png';
+        img1.src = '/assets/boy_face.png';
         birdImgRef.current = img1;
 
         const img2 = new Image();

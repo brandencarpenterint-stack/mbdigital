@@ -43,7 +43,7 @@ export const SHOP_ITEMS = [
     { id: 'ship_ufo', type: 'galaxy_ship', name: 'Invader', price: 1200, category: 'galaxy', slot: 'galaxy', description: 'Fly the enemy ship!', icon: '🛸' },
 
     // --- FLAPPY PILOTS ---
-    { id: 'flappy_boy', type: 'flappy_skin', name: 'MerchBoy', price: 0, category: 'flappy', slot: 'flappy', description: 'The original.', icon: '👦', skinType: 'image', skinContent: '/assets/boy-logo.png' },
+    { id: 'flappy_boy', type: 'flappy_skin', name: 'MerchBoy', price: 0, category: 'flappy', slot: 'flappy', description: 'The original.', icon: '👦', skinType: 'image', skinContent: '/assets/boy_face.png' },
     { id: 'flappy_brokid', type: 'flappy_skin', name: 'BroKid', price: 500, category: 'flappy', slot: 'flappy', description: 'The sidekick.', icon: '🧢', skinType: 'image', skinContent: '/assets/brokid-logo.png' },
     { id: 'flappy_cat', type: 'flappy_skin', name: 'Kitty', price: 500, category: 'flappy', slot: 'flappy', description: 'Meow.', icon: '🐱', skinType: 'emoji', skinContent: '🐱' },
     { id: 'flappy_dog', type: 'flappy_skin', name: 'Puppy', price: 500, category: 'flappy', slot: 'flappy', description: 'Woof.', icon: '🐶', skinType: 'emoji', skinContent: '🐶' },
