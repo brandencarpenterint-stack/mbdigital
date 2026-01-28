@@ -8,6 +8,8 @@ const ShopPage = () => {
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [coins, setCoins] = useState(0);
 
+    console.log('ShopPage Debug:', { shopState, items: SHOP_ITEMS.length });
+
     // Coin Sync
     useEffect(() => {
         const updateCoins = () => setCoins(parseInt(localStorage.getItem('arcadeCoins')) || 0);

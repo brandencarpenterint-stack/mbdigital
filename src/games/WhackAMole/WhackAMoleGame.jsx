@@ -168,7 +168,7 @@ const WhackAMoleGame = () => {
                             left: '10%',
                             width: '80%',
                             height: '80%',
-                            backgroundImage: 'url(/assets/boy-logo.png)',
+                            backgroundImage: 'url(/assets/merchboy_face.png)',
                             backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
