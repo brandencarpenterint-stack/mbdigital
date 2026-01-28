@@ -1106,40 +1106,47 @@ const CrazyFishing = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '10px',
+                justifyContent: 'center', // Snap to center vertically
+                width: '100vw',
+                height: '100vh', // Force full screen height
+                overflow: 'hidden', // No scrolling allowed
                 color: '#00ccff',
-                minHeight: '100vh',
                 background: 'linear-gradient(to bottom, #001133 0%, #006994 100%)',
-                touchAction: 'none', // Prevent browser zooming/scrolling on the container
+                touchAction: 'none',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 outline: 'none',
                 overscrollBehavior: 'none'
             }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2rem', margin: '10px 0', textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white', textAlign: 'center', pointerEvents: 'none' }}>
-                {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
-            </h1>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '800px', marginBottom: '10px', fontSize: '1rem', color: 'white', fontWeight: 'bold' }}>
-                <span>💰 {coins}</span>
-                <span>🔥 {combo}</span>
+            {/* COMPACT HEADER */}
+            <div style={{ position: 'absolute', top: '10px', width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 10 }}>
+                <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '1.5rem', margin: 0, textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white' }}>
+                    {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
+                </h1>
             </div>
 
-            {/* MAIN GAME CONTAINER LAYOUT - Stack on mobile, Row on desktop */}
+            <div style={{ position: 'absolute', top: '10px', right: '20px', fontSize: '1rem', color: 'white', fontWeight: 'bold', zIndex: 10 }}>
+                <span>💰 {coins}</span> <span style={{ marginLeft: '10px' }}>🔥 {combo}</span>
+            </div>
+
+            {/* MAIN GAME CONTAINER - Centered */}
             <div style={{
                 display: 'flex',
-                flexDirection: 'column-reverse', // Controls below on mobile usually better, or above? Let's do standard column for now
-                gap: '10px',
+                flexDirection: 'row', // Side-by-side for landscape controls if needed, or overlay. Keeping column for now but centered.
                 alignItems: 'center',
+                justifyContent: 'center',
                 width: '100%',
-                maxWidth: '100%'
+                height: '100%',
+                position: 'relative'
             }}>
 
                 {/* GAME CANVAS CONTAINER */}
                 <div style={{
-                    width: '100%',
-                    maxWidth: '800px',
-                    aspectRatio: '4/3', // Maintain 800x600 ratio
+                    width: 'auto', // Allow width to shrink
+                    height: 'auto', // Allow height to shrink
+                    maxWidth: '95vw',
+                    maxHeight: '80vh', // Leave room for controls
+                    aspectRatio: '4/3', // Enforce aspect ratio
                     border: hasGoldenRod ? '4px solid gold' : '4px solid white',
                     borderRadius: '20px',
                     backgroundColor: '#000',
@@ -1149,7 +1156,8 @@ const CrazyFishing = () => {
                     touchAction: 'none',
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
-                    WebkitTouchCallout: 'none'
+                    WebkitTouchCallout: 'none',
+                    flexShrink: 0
                 }}>
                     <canvas
                         ref={canvasRef}
