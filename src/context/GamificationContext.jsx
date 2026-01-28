@@ -17,6 +17,16 @@ export const GamificationProvider = ({ children }) => {
         };
     });
 
+    // --- DAILY REWARDS STATE ---
+    const [dailyState, setDailyState] = useState(() => {
+        return JSON.parse(localStorage.getItem('merchboy_daily')) || {
+            lastCheckIn: null, // Date string
+            streak: 0,
+            questDate: null,
+            quests: []
+        };
+    });
+
     const [unlockedAchievements, setUnlockedAchievements] = useState(() => {
         return JSON.parse(localStorage.getItem('merchboy_achievements')) || [];
     });
@@ -50,6 +60,65 @@ export const GamificationProvider = ({ children }) => {
 
         // Clear toast after 3s
         setTimeout(() => setRecentUnlock(null), 3000);
+    };
+
+
+
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        setDailyState(prev => {
+            let newState = { ...prev };
+
+            // 1. QUEST GENERATION (Midnight Reset)
+            if (prev.questDate !== today) {
+                const shuffled = [...DAILY_TEMPLATES].sort(() => 0.5 - Math.random());
+                const newQuests = shuffled.slice(0, 3).map(q => ({ ...q, progress: 0, claimed: false }));
+
+                newState.questDate = today;
+                newState.quests = newQuests;
+            }
+            return newState;
+        });
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_daily', JSON.stringify(dailyState));
+    }, [dailyState]);
+
+    const claimDailyLogin = () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (dailyState.lastCheckIn === today) return false;
+
+        setDailyState(prev => ({
+            ...prev,
+            lastCheckIn: today,
+            streak: prev.streak + 1
+        }));
+
+        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
+        localStorage.setItem('arcadeCoins', currentCoins + 100);
+
+        return true;
+    };
+
+    const claimQuest = (questId) => {
+        let reward = 0;
+        setDailyState(prev => {
+            const quests = prev.quests.map(q => {
+                if (q.id === questId && !q.claimed && q.progress >= q.target) {
+                    reward = q.reward;
+                    return { ...q, claimed: true };
+                }
+                return q;
+            });
+            return { ...prev, quests };
+        });
+
+        if (reward > 0) {
+            const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
+            localStorage.setItem('arcadeCoins', currentCoins + reward);
+            playWin();
+        }
     };
 
     // Helper to update daily quest progress (High Score type)
