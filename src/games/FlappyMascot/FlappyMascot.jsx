@@ -46,6 +46,7 @@ const FlappyMascot = () => {
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
     const [gameActive, setGameActive] = useState(false);
+    const [coins, setCoins] = useState(parseInt(localStorage.getItem('arcadeCoins')) || 0);
 
     // Character Logic
     // Default to 'flappy_boy' if nothing equipped, but strip prefix for internal lookup if needed
