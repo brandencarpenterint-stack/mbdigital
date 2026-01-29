@@ -129,6 +129,12 @@ const games = [
         title: 'CRAZY FISHING',
         description: 'Catch the Mer-Logo!',
         color: '#00ccff'
+    },
+    {
+        id: 'face-runner',
+        title: 'FACE RUNNER',
+        description: 'Infinite Glitch Runner!',
+        color: '#ff0055'
     }
 ];
 
@@ -142,6 +148,7 @@ const getHighScore = (id) => {
     if (id === 'brick') storageKey = 'brickHighScore';
     if (id === 'flappy') storageKey = 'flappyHighScore';
     if (id === 'fishing') storageKey = 'fishingHighScore';
+    if (id === 'face-runner') storageKey = 'faceRunnerHighScore';
 
     return localStorage.getItem(storageKey) || 0;
 };
@@ -230,7 +237,8 @@ const ArcadeHub = () => {
                             <span style={{ fontSize: '3rem' }}>
                                 {game.id === 'snake' ? '🐍' :
                                     game.id === 'whack' ? '🔨' :
-                                        game.id === 'fishing' ? '🎣' : '🎮'}
+                                        game.id === 'fishing' ? '🎣' :
+                                            game.id === 'face-runner' ? '🏃' : '🎮'}
                             </span>
                         </div>
                         <p>{game.description}</p>

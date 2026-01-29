@@ -11,6 +11,7 @@ import GalaxyDefender from './games/GalaxyDefender/GalaxyDefender';
 import NeonBrickBreaker from './games/NeonBrickBreaker/NeonBrickBreaker';
 import FlappyMascot from './games/FlappyMascot/FlappyMascot';
 import CrazyFishing from './games/CrazyFishing/CrazyFishing';
+import FaceRunner from './games/FaceRunner/FaceRunner';
 
 import BeatLab from './pages/BeatLab';
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="arcade/brick" element={<NeonBrickBreaker />} />
         <Route path="arcade/flappy" element={<FlappyMascot />} />
         <Route path="arcade/fishing" element={<CrazyFishing />} />
+        <Route path="arcade/face-runner" element={<FaceRunner />} />
       </Route>
     </Routes>
   );
