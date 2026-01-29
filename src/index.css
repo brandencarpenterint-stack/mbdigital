@@ -5,17 +5,33 @@
   --secondary-color: #00ffaa;
   --accent-color: #ffff00;
   --bg-dark: #050510;
-  --text-color: #333333;
+  --text-color: #2d3748;
   --header-height: 80px;
   --font-main: 'Inter', sans-serif;
   --font-display: 'Kanit', sans-serif;
+
+  /* NEON BENTO PALETTE */
+  --color-bg-mesh: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  --color-card-bg: rgba(255, 255, 255, 0.9);
+  --shadow-pop: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-deep: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-main);
-  background: #fdfdfd;
+  background-color: #f0f9ff;
+  background-image:
+    radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(340, 100%, 76%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(328, 100%, 54%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(22, 100%, 77%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(242, 100%, 70%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, hsla(343, 100%, 76%, 1) 0px, transparent 50%);
+  background-attachment: fixed;
+  background-size: cover;
   color: var(--text-color);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -27,71 +43,35 @@ h3,
 h4,
 .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
-button {
-  cursor: pointer;
-  font-family: inherit;
+/* CARDS */
+.bento-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-pop);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
+.bento-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: var(--shadow-deep);
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 10;
 }
 
-::-webkit-scrollbar-track {
-  background: #0f0f1b;
+/* UTILS */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
-}
-
-/* Animations */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes wiggle {
-
-  0%,
-  100% {
-    transform: rotate(-3deg);
-  }
-
-  50% {
-    transform: rotate(3deg);
-  }
-}
-
-@keyframes pop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(0.95);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Squishy Button Class */
 .squishy-btn {
   transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
@@ -102,42 +82,20 @@ button {
   transform: scale(0.9) !important;
 }
 
-.squishy-btn:hover {
-  transform: scale(1.05);
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Page Transitions */
-.page-enter {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: slideUp 0.5s forwards;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@keyframes slideUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
-/* --- THE GLITCH MODE --- */
-body.glitch-active {
-  filter: invert(1) hue-rotate(180deg);
-  font-family: 'Courier New', monospace !important;
-  background: black !important;
-}
-
-body.glitch-active img {
-  filter: invert(1) hue-rotate(-180deg);
-  /* Keep images normal-ish but weird */
-}
-
-body.glitch-active .header-logo {
-  animation: shake 0.5s infinite;
-}
-
-body.glitch-active button {
-  border-radius: 0 !important;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
