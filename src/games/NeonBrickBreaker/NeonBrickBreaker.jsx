@@ -225,6 +225,7 @@ const NeonBrickBreaker = () => {
                 ball.dx = hitPoint * 0.2;
                 ball.dy = -Math.abs(ball.dy); // Force up
                 playBeep();
+                if (navigator.vibrate) navigator.vibrate(15);
             }
 
             // Death

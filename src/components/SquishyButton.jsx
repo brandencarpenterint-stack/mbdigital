@@ -7,8 +7,10 @@ const SquishyButton = ({ children, onClick, style, ...props }) => {
     const handleClick = (e) => {
         playBeep();
 
-        // Create a temporary scale effect using DOM manipulation for 'juice'
-        // or rely on CSS :active. We'll enhance CSS for this specific class.
+        // Haptic Feedback (Mobile)
+        if (navigator.vibrate) {
+            navigator.vibrate(10); // Tiny tick
+        }
 
         if (onClick) onClick(e);
     };

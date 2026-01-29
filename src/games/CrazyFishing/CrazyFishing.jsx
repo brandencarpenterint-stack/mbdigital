@@ -1049,6 +1049,7 @@ const CrazyFishing = () => {
 
         gameStateRef.current = 'BATTLE'; setGameState('BATTLE'); setCaughtFish(fish);
         stateRef.current.battleFish = fish; stateRef.current.barPos = 0; stateRef.current.catchPercent = 25;
+        if (navigator.vibrate) navigator.vibrate(200); // Heavy buzz
         playBeep();
     };
     const startReelUp = () => {

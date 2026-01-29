@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import ProfileModal from './ProfileModal';
 import { useGamification } from '../context/GamificationContext';
+import { useSettings } from '../context/SettingsContext';
 import './Layout.css';
 
 const Layout = () => {
@@ -9,6 +10,7 @@ const Layout = () => {
     const [showProfile, setShowProfile] = useState(false);
     const [coins, setCoins] = useState(0);
     const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
+    const { soundEnabled, toggleSound } = useSettings();
 
     const isFishingGame = location.pathname.includes('/crazy-fishing') ||
         location.pathname.includes('/neon-brick-breaker') ||
@@ -40,6 +42,13 @@ const Layout = () => {
                         <Link to="/profile" className="nav-link" style={{ background: '#333', border: '1px solid #555', borderRadius: '15px' }}>
                             👤 ID
                         </Link>
+                        <button
+                            onClick={toggleSound}
+                            className="nav-link"
+                            style={{ background: 'transparent', cursor: 'pointer', fontSize: '1.2rem', padding: '0 10px' }}
+                        >
+                            {soundEnabled ? '🔊' : '🔇'}
+                        </button>
                         <button
                             onClick={() => setShowProfile(true)}
                             className="nav-link"

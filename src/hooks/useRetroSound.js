@@ -1,17 +1,19 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
+import { useSettings } from '../context/SettingsContext';
 
 const useRetroSound = () => {
+    // We handle the hook check gracefull in case context is missing during tests
+    let soundEnabled = true;
+    try {
+        const settings = useSettings();
+        if (settings) soundEnabled = settings.soundEnabled;
+    } catch (e) { /* ignore */ }
+
+    // Audio Context (Lazy load)
     const audioContextRef = useRef(null);
 
-    useEffect(() => {
-        // Initialize AudioContext on first user interaction if possible, 
-        // or just lazily when playing sound.
-        return () => {
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
-            }
-        };
-    }, []);
+    // Helper to check mute status
+    const shouldPlay = () => soundEnabled;
 
     const getContext = () => {
         if (!audioContextRef.current) {
@@ -22,6 +24,7 @@ const useRetroSound = () => {
     };
 
     const playTone = (freq, type, duration, vol = 0.1) => {
+        if (!shouldPlay()) return;
         const ctx = getContext();
         if (ctx.state === 'suspended') {
             ctx.resume();
@@ -48,6 +51,7 @@ const useRetroSound = () => {
     const playBoop = () => playTone(300, 'square', 0.1);
 
     const playJump = () => {
+        if (!shouldPlay()) return;
         const ctx = getContext();
         if (ctx.state === 'suspended') ctx.resume();
 
@@ -69,6 +73,7 @@ const useRetroSound = () => {
     };
 
     const playCollect = () => {
+        if (!shouldPlay()) return;
         const ctx = getContext();
         if (ctx.state === 'suspended') ctx.resume();
 
@@ -94,6 +99,7 @@ const useRetroSound = () => {
     };
 
     const playCrash = () => {
+        if (!shouldPlay()) return;
         const ctx = getContext();
         if (ctx.state === 'suspended') ctx.resume();
 
@@ -115,6 +121,7 @@ const useRetroSound = () => {
     };
 
     const playWin = () => {
+        if (!shouldPlay()) return;
         const ctx = getContext();
         if (ctx.state === 'suspended') ctx.resume();
         const now = ctx.currentTime;
