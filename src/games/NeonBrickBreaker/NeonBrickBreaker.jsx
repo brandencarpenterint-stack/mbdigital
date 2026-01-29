@@ -435,10 +435,11 @@ const NeonBrickBreaker = () => {
 
     if (isPortrait && window.innerWidth < 768) {
         return (
-            <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#cc00ff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, textAlign: 'center' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔄</div>
-                <h1>Rotate Phone</h1>
-                <p>Landscape required!</p>
+            <div style={{ position: 'fixed', inset: 0, background: '#000', color: 'var(--neon-blue)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, textAlign: 'center', fontFamily: '"Orbitron", sans-serif' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '20px', animation: 'spin 2s infinite linear' }}>🔄</div>
+                <h1 style={{ margin: 0 }}>ROTATE DEVICE</h1>
+                <p style={{ color: '#888' }}>LANDSCAPE MODE REQUIRED</p>
+                <style>{`@keyframes spin { 100% { transform: rotate(90deg); } }`}</style>
             </div>
         );
     }
@@ -449,7 +450,8 @@ const NeonBrickBreaker = () => {
                 position: 'fixed', inset: 0, background: '#050505',
                 touchAction: 'none', // Critical for preventing scroll while playing
                 overflow: 'hidden',
-                cursor: gameActive ? 'none' : 'default' // Hide cursor while playing!
+                cursor: gameActive ? 'none' : 'default', // Hide cursor while playing!
+                fontFamily: '"Orbitron", sans-serif'
             }}
             onTouchMove={(e) => {
                 if (gameActive) {
@@ -462,20 +464,20 @@ const NeonBrickBreaker = () => {
         >
             <div style={{
                 position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                backgroundImage: 'radial-gradient(circle at 50% 50%, #222 0%, #000 100%)',
+                backgroundImage: 'radial-gradient(circle at 50% 50%, #1a0b2e 0%, #000 100%)',
                 zIndex: -1
             }} />
 
             {/* HUD */}
             <div style={{
                 position: 'absolute', top: 10, width: '100%',
-                display: 'flex', justifyContent: 'space-between', padding: '0 20px',
-                color: '#cc00ff', fontFamily: '"Press Start 2P", monospace', fontSize: '1rem', zIndex: 10,
-                textShadow: '0 0 5px #cc00ff'
+                display: 'flex', justifyContent: 'space-between', padding: '0 30px',
+                color: 'var(--neon-pink)', fontSize: '1.2rem', zIndex: 10,
+                textShadow: '0 0 10px var(--neon-pink)', fontWeight: 'bold'
             }}>
                 <span>SCORE: {score}</span>
                 <span style={{ color: 'white' }}>LVL {level}</span>
-                <span style={{ color: 'red' }}>lives: {lives}</span>
+                <span style={{ color: 'var(--neon-green)' }}>LIVES: {lives}</span>
             </div>
 
             <div style={{
@@ -486,16 +488,16 @@ const NeonBrickBreaker = () => {
                 {/* CANVAS */}
                 <div style={{
                     position: 'relative',
-                    boxShadow: '0 0 50px rgba(204, 0, 255, 0.2)',
-                    border: '4px solid #333',
-                    borderRadius: '4px',
+                    boxShadow: '0 0 50px rgba(255, 0, 85, 0.2)',
+                    border: '2px solid var(--neon-blue)',
+                    borderRadius: '8px',
+                    background: '#000'
                 }}>
                     <canvas
                         ref={canvasRef}
                         width={GAME_WIDTH}
                         height={GAME_HEIGHT}
                         style={{
-                            background: '#000',
                             display: 'block',
                             maxWidth: '100vw',
                             maxHeight: '100vh',
@@ -511,24 +513,32 @@ const NeonBrickBreaker = () => {
                         <div style={{
                             position: 'absolute', inset: 0,
                             background: 'rgba(0,0,0,0.7)',
-                            backdropFilter: 'blur(5px)',
+                            backdropFilter: 'blur(8px)',
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                         }}>
                             <h1 style={{
-                                color: '#cc00ff',
-                                fontFamily: '"Press Start 2P"',
-                                fontSize: '2rem',
+                                color: 'var(--neon-pink)',
+                                fontSize: '4rem',
                                 textAlign: 'center',
-                                textShadow: '4px 4px 0 #00ffaa',
-                                lineHeight: '1.5',
-                                marginBottom: '2rem'
+                                textShadow: '0 0 30px var(--neon-pink)',
+                                lineHeight: '1',
+                                marginBottom: '2rem',
+                                letterSpacing: '4px'
                             }}>
                                 NEON<br />BRICKS
                             </h1>
-                            <SquishyButton onClick={startGame} style={{ padding: '20px 60px', fontSize: '1.2rem', background: '#00ffaa', color: 'black', border: 'none' }}>
-                                INSERT COIN
+                            <SquishyButton onClick={startGame} style={{
+                                padding: '15px 50px',
+                                fontSize: '1.5rem',
+                                background: 'var(--neon-green)',
+                                color: 'black',
+                                border: 'none',
+                                fontWeight: '900',
+                                boxShadow: '0 0 20px var(--neon-green)'
+                            }}>
+                                PLAY NOW
                             </SquishyButton>
-                            <p style={{ marginTop: '20px', color: '#888', fontFamily: 'monospace' }}>MOUSE / TOUCH TO MOVE</p>
+                            <p style={{ marginTop: '20px', color: '#888', fontSize: '0.8rem', letterSpacing: '2px' }}>MOUSE / TOUCH TO MOVE</p>
                         </div>
                     )}
 
@@ -537,14 +547,15 @@ const NeonBrickBreaker = () => {
                         <div style={{
                             position: 'absolute', inset: 0,
                             background: 'rgba(0,0,0,0.85)',
+                            backdropFilter: 'blur(10px)',
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                         }}>
-                            <h2 style={{ fontSize: '3rem', color: 'red', fontFamily: '"Press Start 2P"', marginBottom: '20px' }}>GAME OVER</h2>
-                            <p style={{ fontSize: '1.2rem', color: 'white', fontFamily: 'monospace', marginBottom: '30px' }}>FINAL SCORE: {score}</p>
+                            <h2 style={{ fontSize: '3.5rem', color: '#ff0055', textShadow: '0 0 20px red', marginBottom: '10px' }}>GAME OVER</h2>
+                            <p style={{ fontSize: '1.5rem', color: 'white', marginBottom: '30px' }}>FINAL SCORE: <span style={{ color: 'var(--neon-green)' }}>{score}</span></p>
                             <div style={{ display: 'flex', gap: '20px' }}>
-                                <SquishyButton onClick={startGame} style={{ background: '#cc00ff' }}>RETRY</SquishyButton>
+                                <SquishyButton onClick={startGame} style={{ background: 'var(--neon-blue)', color: 'black', fontWeight: 'bold' }}>RETRY</SquishyButton>
                                 <Link to="/arcade">
-                                    <SquishyButton style={{ background: '#333' }}>EXIT</SquishyButton>
+                                    <SquishyButton style={{ background: '#333', color: '#fff' }}>EXIT</SquishyButton>
                                 </Link>
                             </div>
                         </div>
