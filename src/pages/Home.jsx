@@ -3,9 +3,14 @@ import { Link } from 'react-router-dom';
 import './Home.css';
 
 import DailyStash from '../components/DailyStash';
+import { useSquad } from '../context/SquadContext';
 
 const Home = () => {
     const [showDaily, setShowDaily] = React.useState(false);
+    const { squadScores, userSquad } = useSquad();
+
+    const totalScore = squadScores ? (squadScores.NEON + squadScores.ZEN) : 100;
+    const neonPercent = squadScores ? (squadScores.NEON / totalScore) * 100 : 50;
 
     return (
         <div className="home-container">
@@ -57,17 +62,26 @@ const Home = () => {
                     }}>
                         <div style={{
                             position: 'absolute', top: 0, bottom: 0,
-                            left: '50%', width: '10px', background: 'white',
+                            width: '10px', background: 'white',
                             transform: 'skewX(-20deg) translateX(-50%)',
+                            left: `${neonPercent}%`,
                             boxShadow: '0 0 10px white',
-                            animation: 'warShift 5s infinite ease-in-out'
+                            transition: 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
                         }}></div>
                     </div>
                 </div>
 
-                <div style={{ textAlign: 'center', marginTop: '5px', color: '#aaa', fontSize: '0.8rem' }}>
-                    GLOBAL SQUAD WAR: LIVE
+                <div style={{ textAlign: 'center', marginTop: '10px', color: '#aaa', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                    <span>{squadScores?.NEON.toLocaleString()}</span>
+                    <span style={{ color: 'white', fontWeight: 'bold' }}>WAR FOR DOMINANCE</span>
+                    <span>{squadScores?.ZEN.toLocaleString()}</span>
                 </div>
+
+                {userSquad && (
+                    <div style={{ textAlign: 'center', marginTop: '10px', color: userSquad === 'NEON' ? '#00f2ff' : '#ff0055', fontWeight: 'bold' }}>
+                        ALLEGIANCE: {userSquad} {userSquad === 'NEON' ? '⚡' : '🌀'}
+                    </div>
+                )}
 
                 <style>{`
                     @keyframes warShift {

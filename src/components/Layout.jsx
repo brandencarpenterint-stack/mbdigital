@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import ProfileModal from './ProfileModal';
+import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
@@ -103,6 +104,7 @@ const Layout = () => {
             )}
 
             {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+            <SquadSelector />
         </div>
     );
 };
