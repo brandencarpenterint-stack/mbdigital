@@ -236,7 +236,7 @@ const NeonBrickBreaker = () => {
         setScore(0);
         setLives(3);
         setGameOver(false);
-        startLevel(1);
+        startLevel(4); // Start at Hard Levels
         requestAnimationFrame(gameLoop);
     };
 
@@ -253,12 +253,19 @@ const NeonBrickBreaker = () => {
     };
 
     const activateMultiball = () => {
-        const newBalls = [];
-        gameState.current.balls.forEach(ball => {
-            newBalls.push({ ...ball, dx: ball.dx + 1, dy: ball.dy });
-            newBalls.push({ ...ball, dx: ball.dx - 1, dy: ball.dy });
-        });
-        gameState.current.balls.push(...newBalls);
+        // Spawn 4 balls (One of each face type) from the paddle
+        const paddleCenter = gameState.current.paddleX + PADDLE_WIDTH / 2;
+
+        for (let i = 0; i < 4; i++) {
+            gameState.current.balls.push({
+                x: paddleCenter,
+                y: GAME_HEIGHT - 60,
+                dx: (Math.random() - 0.5) * 6, // Spread out
+                dy: -Math.abs((Math.random() * 2) + 4), // Go Up
+                rot: 0,
+                imgIndex: i // Force different face
+            });
+        }
         playWin(); // Powerup sound
         triggerConfetti();
     };
@@ -297,7 +304,7 @@ const NeonBrickBreaker = () => {
             const ball = balls[i];
             ball.x += ball.dx;
             ball.y += ball.dy;
-            ball.rot += 0.05; // Slow rotation
+            ball.rot += 0.005; // Almost zero rotation
 
             // Walls
             if (ball.x + BALL_SIZE > GAME_WIDTH || ball.x < 0) {
