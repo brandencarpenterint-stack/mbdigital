@@ -220,12 +220,29 @@ const SnakeGame = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ffaa', width: '100%', maxWidth: '100%' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>NEON SNAKE</h1>
+        <div className="page-enter" style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            minHeight: '100vh', padding: '20px', paddingBottom: '120px',
+            color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif'
+        }}>
+            <h1 style={{
+                fontSize: '2.5rem', margin: '0 0 20px 0', textAlign: 'center',
+                textShadow: '0 0 20px var(--neon-green)', letterSpacing: '2px'
+            }}>NEON SNAKE</h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px', marginBottom: '10px', fontSize: '1.2rem' }}>
-                <span>SCORE: {score}</span>
-                <span>HIGH: {highScore}</span>
+            <div className="glass-panel" style={{
+                display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px',
+                marginBottom: '20px', padding: '15px 25px', fontSize: '1.2rem',
+                border: '1px solid var(--neon-green)', background: 'rgba(0, 20, 0, 0.6)'
+            }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#888' }}>SCORE</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{score}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#888' }}>HIGH SCORE</span>
+                    <div style={{ fontSize: '1.5rem', color: 'var(--neon-gold)', textShadow: '0 0 10px var(--neon-gold)' }}>{highScore}</div>
+                </div>
             </div>
 
             <div style={{
@@ -233,12 +250,14 @@ const SnakeGame = () => {
                 width: '100%',
                 maxWidth: '400px',
                 aspectRatio: '1/1',
-                backgroundColor: '#000',
-                border: '4px solid #00ffaa',
-                boxShadow: '0 0 20px #00ffaa40, inset 0 0 30px rgba(0,255,170, 0.1)',
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                border: '2px solid var(--neon-green)',
+                borderRadius: '10px',
+                boxShadow: '0 0 30px rgba(0, 255, 170, 0.3), inset 0 0 50px rgba(0, 255, 170, 0.1)',
                 touchAction: 'none', // Prevent scroll while swiping
                 backgroundImage: 'linear-gradient(rgba(0, 255, 170, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 170, 0.1) 1px, transparent 1px)',
-                backgroundSize: '20px 20px' // Grid size matching visual
+                backgroundSize: '20px 20px',
+                overflow: 'hidden'
             }}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
@@ -253,68 +272,91 @@ const SnakeGame = () => {
                     position: 'absolute',
                     left: `${food.x * 5}%`,
                     top: `${food.y * 5}%`,
-                    width: '6%', // Slightly larger than grid for pop
-                    height: '6%',
-                    backgroundImage: 'url(/assets/merchboy_face.png)',
-                    backgroundSize: 'cover',
-                    borderRadius: '50%',
+                    width: '5%',
+                    height: '5%',
                     zIndex: 1,
-                    animation: 'pulse 0.8s infinite ease-in-out',
-                    filter: 'drop-shadow(0 0 5px #ff00ff)'
-                }} />
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <div style={{
+                        width: '140%', height: '140%',
+                        background: 'radial-gradient(circle, #ff0055 30%, transparent 70%)',
+                        borderRadius: '50%',
+                        animation: 'pulse 1s infinite alternate',
+                        boxShadow: '0 0 10px #ff0055'
+                    }} />
+                    {/* Inner Core */}
+                    <div style={{ width: '40%', height: '40%', background: '#fff', borderRadius: '50%', position: 'absolute' }} />
+                </div>
 
                 {/* Game Over */}
                 {gameOver && (
                     <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        position: 'absolute', inset: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backdropFilter: 'blur(5px)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                         zIndex: 10
                     }}>
-                        <h2 style={{ fontSize: '3rem', color: '#ff0055', textShadow: '0 0 10px red' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
-                        <SquishyButton onClick={restartGame} style={{
-                            padding: '10px 20px',
-                            fontSize: '1.2rem',
-                            backgroundColor: '#00ffaa',
-                            border: 'none',
-                            borderRadius: '5px',
-                            fontWeight: 'bold'
-                        }}>
-                            PLAY AGAIN
-                        </SquishyButton>
-                        <Link to="/arcade" style={{ marginTop: '15px', color: '#fff', textDecoration: 'underline' }}>Back to Arcade</Link>
+                        <h2 style={{ fontSize: '2.5rem', color: '#ff0055', textShadow: '0 0 20px #ff0055', marginBottom: '10px' }}>GAME OVER</h2>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '30px', color: '#ccc' }}>SCORE: <span style={{ color: 'white' }}>{score}</span></p>
+
+                        <button
+                            onClick={restartGame}
+                            className="squishy-btn"
+                            style={{
+                                padding: '15px 40px', fontSize: '1.2rem',
+                                background: 'var(--neon-green)', color: 'black',
+                                border: 'none', borderRadius: '30px', fontWeight: '900',
+                                boxShadow: '0 0 20px var(--neon-green)'
+                            }}
+                        >
+                            RETRY
+                        </button>
+                        <Link to="/arcade" style={{ marginTop: '20px', color: '#888', textDecoration: 'none', fontSize: '0.8rem' }}>EXIT TO ARCADE</Link>
                     </div>
                 )}
             </div>
 
             {/* Mobile Controls (D-Pad) */}
-            <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 60px)', gap: '10px', justifyContent: 'center' }}>
+            <div style={{
+                marginTop: '30px', display: 'grid', gridTemplateColumns: 'repeat(3, 70px)', gap: '10px',
+                justifyContent: 'center'
+            }}>
                 <div />
-                <SquishyButton onClick={() => handleDir('UP')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬆️</SquishyButton>
+                <button
+                    onPointerDown={() => handleDir('UP')}
+                    className="glass-panel"
+                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
+                >⬆️</button>
                 <div />
-                <SquishyButton onClick={() => handleDir('LEFT')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬅️</SquishyButton>
-                <SquishyButton onClick={() => handleDir('DOWN')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>⬇️</SquishyButton>
-                <SquishyButton onClick={() => handleDir('RIGHT')} style={{ width: '60px', height: '60px', background: '#333', borderRadius: '10px', fontSize: '24px' }}>➡️</SquishyButton>
+
+                <button
+                    onPointerDown={() => handleDir('LEFT')}
+                    className="glass-panel"
+                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
+                >⬅️</button>
+                <button
+                    onPointerDown={() => handleDir('DOWN')}
+                    className="glass-panel"
+                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
+                >⬇️</button>
+                <button
+                    onPointerDown={() => handleDir('RIGHT')}
+                    className="glass-panel"
+                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
+                >➡️</button>
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center', color: '#666', fontSize: '0.8rem' }}>
-                <p>Use Arrow Keys or Buttons to Move • Space to Pause</p>
-                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '80px', marginTop: '10px', opacity: 0.5 }} />
+            <div style={{ marginTop: '30px', textAlign: 'center', color: '#555', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span>SWIPE or TAP CONTROLS</span>
+                <span style={{ width: '1px', height: '10px', background: '#333' }}></span>
+                <span>SPACE TO PAUSE</span>
             </div>
 
             <style>{`
                 @keyframes pulse {
-                    0% { transform: scale(0.9); }
-                    50% { transform: scale(1.1); }
-                    100% { transform: scale(0.9); }
+                    0% { transform: scale(0.8); opacity: 0.8; }
+                    100% { transform: scale(1.2); opacity: 1; }
                 }
             `}</style>
         </div>
