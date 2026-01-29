@@ -13,6 +13,15 @@ const BeatLab = () => {
 
     const audioCtx = useRef(null);
     const timerRef = useRef(null);
+    const stepRef = useRef(0); // Track step in Ref to avoid stale closure issues completely
+
+    // PRESETS
+    const BASIC_BEAT = {
+        kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+        snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+        hihat: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+        synth: [true, false, false, true, false, false, true, false, false, false, false, false, false, false, false, true]
+    };
 
     // Initialize AudioContext
     const initAudio = () => {
@@ -100,12 +109,14 @@ const BeatLab = () => {
     // Sequencer Logic
     useEffect(() => {
         if (isPlaying) {
+            // Reset Ref
+            stepRef.current = currentStep;
+
             timerRef.current = setInterval(() => {
-                setCurrentStep(prev => {
-                    const next = (prev + 1) % 16;
-                    playStep(next);
-                    return next;
-                });
+                const next = (stepRef.current + 1) % 16;
+                stepRef.current = next;
+                setCurrentStep(next);
+                playStep(next);
             }, (60 / bpm) * 1000 / 4); // 16th notes
         } else {
             clearInterval(timerRef.current);
@@ -134,6 +145,22 @@ const BeatLab = () => {
         const newTracks = { ...activeTracks };
         newTracks[track][index] = !newTracks[track][index];
         setActiveTracks(newTracks);
+        if (navigator.vibrate) navigator.vibrate(5);
+    };
+
+    const loadPreset = () => {
+        setActiveTracks(BASIC_BEAT);
+        if (navigator.vibrate) navigator.vibrate(20);
+    };
+
+    const clearPattern = () => {
+        setActiveTracks({
+            kick: Array(16).fill(false),
+            snare: Array(16).fill(false),
+            hihat: Array(16).fill(false),
+            synth: Array(16).fill(false),
+        });
+        if (navigator.vibrate) navigator.vibrate(20);
     };
 
     const togglePlay = () => {
@@ -180,6 +207,15 @@ const BeatLab = () => {
                         style={{ accentColor: '#00ffaa' }}
                     />
                 </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '20px' }}>
+                <button onClick={loadPreset} style={{ padding: '8px 15px', background: '#333', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                    LOAD PRESET
+                </button>
+                <button onClick={clearPattern} style={{ padding: '8px 15px', background: '#333', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                    CLEAR
+                </button>
             </div>
 
             <div style={{
