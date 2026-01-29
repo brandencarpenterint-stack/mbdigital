@@ -48,7 +48,7 @@ const Home = () => {
                     <div>
                         <h2 style={{ fontSize: '1.2rem', color: '#006064', margin: 0 }}>POCKET BRO</h2>
                         <p style={{ color: '#00838F', fontSize: '0.9rem', marginTop: '5px' }}>
-                            Lvl {stats.stage} • {Math.round(stats.energy)}% Energy
+                            Lvl {stats.stage || 'EGG'} • {Math.round(stats.energy || 0)}% Energy
                         </p>
                     </div>
                     <div style={{ fontSize: '3rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.1))' }}>
