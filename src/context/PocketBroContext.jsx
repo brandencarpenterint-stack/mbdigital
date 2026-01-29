@@ -5,18 +5,6 @@ const PocketBroContext = createContext();
 export const usePocketBro = () => useContext(PocketBroContext);
 
 export const PocketBroProvider = ({ children }) => {
-    // Stats: 0 to 100
-    const [stats, setStats] = useState({
-        hunger: 80,
-        happy: 80,
-        energy: 80,
-        age: 0,
-        xp: 0,
-        stage: 'EGG', // EGG, BABY, CHILD, TEEN, ADULT
-        isSleeping: false,
-        lastInteraction: Date.now()
-    });
-
     const STAGES = {
         EGG: { threshold: 0, icon: '🥚', name: 'Egg' },
         BABY: { threshold: 50, icon: '👶', name: 'Baby' },
@@ -26,29 +14,45 @@ export const PocketBroProvider = ({ children }) => {
         ELDER: { threshold: 10000, icon: '🧙‍♂️', name: 'Elder' }
     };
 
-    // Load State
-    useEffect(() => {
-        const saved = localStorage.getItem('pocketBroState');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            const now = Date.now();
-            const hoursPassed = (now - parsed.lastInteraction) / (1000 * 60 * 60);
-            const decay = Math.floor(hoursPassed * 4); // ~4 pts/hr decay
+    // Initialize State (Lazy Load for Safety)
+    const [stats, setStats] = useState(() => {
+        try {
+            const saved = localStorage.getItem('pocketBroState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const now = Date.now();
+                const hoursPassed = (now - parsed.lastInteraction) / (1000 * 60 * 60);
+                const decay = Math.floor(hoursPassed * 4);
 
-            // Validate Stage to prevent crashes
-            const safeStage = STAGES[parsed.stage] ? parsed.stage : 'EGG';
+                // Validate Stage immediately
+                const safeStage = STAGES[parsed.stage] ? parsed.stage : 'EGG';
 
-            setStats({
-                ...parsed,
-                stage: safeStage,
-                hunger: Math.max(0, parsed.hunger - decay),
-                happy: Math.max(0, parsed.happy - decay),
-                energy: Math.max(0, parsed.energy - decay),
-                isSleeping: false, // Wake up
-                lastInteraction: now
-            });
+                return {
+                    ...parsed,
+                    stage: safeStage,
+                    hunger: Math.max(0, parsed.hunger - decay),
+                    happy: Math.max(0, parsed.happy - decay),
+                    energy: Math.max(0, parsed.energy - decay),
+                    isSleeping: false,
+                    lastInteraction: now
+                };
+            }
+        } catch (e) {
+            console.error("Corrupt Save Data Reset", e);
         }
-    }, []);
+
+        // Default New State
+        return {
+            hunger: 80,
+            happy: 80,
+            energy: 80,
+            age: 0,
+            xp: 0,
+            stage: 'EGG',
+            isSleeping: false,
+            lastInteraction: Date.now()
+        };
+    });
 
     // Game Loop (Global Heartbeat)
     useEffect(() => {
