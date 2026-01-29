@@ -38,27 +38,32 @@ const ShopPage = () => {
     const filteredItems = SHOP_ITEMS.filter(item => item.category === activeCategory);
 
     return (
-        <div className="page-enter" style={{ padding: '20px', minHeight: '100vh', paddingBottom: '100px' }}>
-            {/* HEADER */}
+        <div className="page-enter" style={{ padding: '20px', minHeight: '100vh', paddingBottom: '120px' }}>
             {/* HEADER */}
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h1 className="text-gradient" style={{
-                    fontSize: '3rem', margin: '0 0 10px 0',
-                    lineHeight: 1
+                <h1 style={{
+                    fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                    margin: '0 0 10px 0',
+                    lineHeight: 1,
+                    fontFamily: '"Orbitron", sans-serif',
+                    color: 'var(--neon-blue)',
+                    textShadow: '0 0 20px rgba(0, 204, 255, 0.5)'
                 }}>GLOBAL SHOP</h1>
                 <div style={{
-                    fontSize: '1.2rem', background: 'white', display: 'inline-block',
-                    padding: '8px 25px', borderRadius: '50px',
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                    color: '#333', fontWeight: 'bold'
+                    fontSize: '1.5rem',
+                    background: 'rgba(0,0,0,0.6)',
+                    display: 'inline-flex', alignItems: 'center', gap: '10px',
+                    padding: '10px 30px', borderRadius: '50px',
+                    border: '1px solid var(--neon-gold)',
+                    color: 'var(--neon-gold)', fontWeight: 'bold',
+                    boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
                 }}>
                     🪙 {coins.toLocaleString()}
                 </div>
             </div>
 
             {/* CATEGORY TABS */}
-            {/* CATEGORY TABS */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '30px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}>
                 {CATEGORIES.map(cat => (
                     <button
                         key={cat.id}
@@ -68,13 +73,15 @@ const ShopPage = () => {
                             if (navigator.vibrate) navigator.vibrate(10);
                         }}
                         style={{
-                            padding: '10px 20px', borderRadius: '25px', border: 'none',
-                            background: activeCategory === cat.id ? '#0ea5e9' : 'rgba(255,255,255,0.5)',
-                            color: activeCategory === cat.id ? 'white' : '#555',
+                            padding: '12px 25px', borderRadius: '30px',
+                            border: activeCategory === cat.id ? '2px solid var(--neon-pink)' : '1px solid rgba(255,255,255,0.2)',
+                            background: activeCategory === cat.id ? 'rgba(255, 0, 128, 0.2)' : 'transparent',
+                            color: activeCategory === cat.id ? 'white' : '#888',
                             fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer',
                             display: 'flex', alignItems: 'center', gap: '8px',
-                            transition: 'all 0.2s',
-                            boxShadow: activeCategory === cat.id ? '0 5px 15px rgba(14, 165, 233, 0.3)' : 'none'
+                            transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                            boxShadow: activeCategory === cat.id ? '0 0 20px rgba(255, 0, 128, 0.4)' : 'none',
+                            transform: activeCategory === cat.id ? 'scale(1.05)' : 'scale(1)'
                         }}
                     >
                         <span>{cat.icon}</span> {cat.name}
@@ -83,16 +90,17 @@ const ShopPage = () => {
             </div>
 
             {/* MYSTERY CRATE */}
-            <div className="bento-card" style={{
-                maxWidth: '600px', margin: '0 auto 40px auto',
-                background: 'linear-gradient(45deg, #FF0080, #7928CA)',
-                color: 'white', padding: '20px', textAlign: 'center',
+            <div className="glass-panel" style={{
+                maxWidth: '600px', margin: '0 auto 50px auto',
+                background: 'linear-gradient(135deg, rgba(255, 0, 128, 0.1) 0%, rgba(121, 40, 202, 0.1) 100%)',
+                color: 'white', padding: '30px', textAlign: 'center',
                 position: 'relative', overflow: 'hidden',
-                border: '4px solid gold', boxShadow: '0 0 30px rgba(255, 215, 0, 0.3)'
+                border: '1px solid var(--neon-pink)',
+                boxShadow: '0 0 30px rgba(255, 0, 128, 0.2)'
             }}>
                 <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h2 style={{ margin: '0 0 10px 0', fontSize: '2rem', textShadow: '0 2px 0 black' }}>❓ MYSTERY CRATE ❓</h2>
-                    <p style={{ margin: '0 0 20px 0', fontWeight: 'bold' }}>Get a RANDOM item for cheap!</p>
+                    <h2 style={{ margin: '0 0 10px 0', fontSize: '2rem', fontFamily: '"Orbitron", sans-serif', color: 'var(--neon-pink)' }}>MYSTERY CRATE</h2>
+                    <p style={{ margin: '0 0 25px 0', color: '#ccc' }}>Get a RANDOM item for cheap!</p>
 
                     <button
                         onClick={() => {
@@ -117,42 +125,48 @@ const ShopPage = () => {
 
                             alert(`You won: ${winner.name}!`);
                         }}
+                        className={coins >= 250 ? "squishy-btn" : ""}
                         style={{
-                            padding: '15px 40px', fontSize: '1.5rem', borderRadius: '30px',
-                            border: 'none', background: 'gold', color: 'black', fontWeight: 'bold',
+                            padding: '15px 40px', fontSize: '1.2rem', borderRadius: '50px',
+                            border: 'none',
+                            background: coins >= 250 ? 'var(--neon-gold)' : '#333',
+                            color: coins >= 250 ? 'black' : '#666',
+                            fontWeight: '900',
                             cursor: coins >= 250 ? 'pointer' : 'not-allowed',
-                            opacity: coins >= 250 ? 1 : 0.5,
-                            boxShadow: '0 5px 0 #b8860b'
+                            boxShadow: coins >= 250 ? '0 0 20px rgba(255, 215, 0, 0.6)' : 'none'
                         }}
                     >
                         SPIN FOR 250 🪙
                     </button>
                 </div>
                 {/* Decoration */}
-                <div style={{ position: 'absolute', top: -20, left: -20, fontSize: '8rem', opacity: 0.2 }}>🎁</div>
-                <div style={{ position: 'absolute', bottom: -20, right: -20, fontSize: '8rem', opacity: 0.2 }}>✨</div>
+                <div style={{ position: 'absolute', top: -30, left: -30, fontSize: '10rem', opacity: 0.1, filter: 'blur(5px)' }}>🎁</div>
+                <div style={{ position: 'absolute', bottom: -30, right: -30, fontSize: '10rem', opacity: 0.1, filter: 'blur(5px)' }}>✨</div>
             </div>
 
-            {/* HERO MERCH CARD */}
-            <div className="bento-card" style={{
+            {/* HERO MERCH CARD (Static) */}
+            <div className="glass-panel" style={{
                 maxWidth: '1200px', margin: '0 auto 40px auto',
-                background: 'linear-gradient(135deg, #111 0%, #333 100%)',
-                color: 'white', padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px'
+                background: 'linear-gradient(90deg, #000 0%, #111 100%)',
+                color: 'white', padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px',
+                border: '1px solid #333'
             }}>
                 <div>
-                    <span style={{ color: '#FFD700', fontWeight: 'bold', letterSpacing: '1px' }}>OFFICIAL MERCH</span>
-                    <h2 style={{ fontSize: '2.5rem', margin: '5px 0' }}>WEAR THE HYPE</h2>
-                    <p style={{ color: '#aaa', margin: '0 0 20px 0' }}>Get the physical gear delivered to your door.</p>
-                    <a href="https://merchboy.shop" target="_blank" rel="noreferrer" style={{ background: 'white', color: 'black', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
-                        VISIT MERCH STORE ↗
+                    <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.8rem' }}>OFFICIAL MERCH</span>
+                    <h2 style={{ fontSize: '2rem', margin: '10px 0', fontFamily: '"Orbitron", sans-serif' }}>WEAR THE HYPE</h2>
+                    <p style={{ color: '#888', margin: '0 0 20px 0' }}>Get physical gear delivered to your door.</p>
+                    <a href="https://merchboy.shop" target="_blank" rel="noreferrer" className="squishy-btn" style={{
+                        background: 'white', color: 'black', padding: '12px 30px', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', display: 'inline-block'
+                    }}>
+                        VISIT STORE ↗
                     </a>
                 </div>
-                <img src="/assets/merchboy_money.png" alt="Merch Boy Money" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+                <img src="/assets/merchboy_money.png" alt="Merch Boy Money" style={{ width: '100px', height: '100px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }} />
             </div>
 
             {/* ITEMS GRID */}
             <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                 gap: '25px', maxWidth: '1200px', margin: '0 auto'
             }}>
                 {filteredItems.map(item => {
@@ -161,28 +175,38 @@ const ShopPage = () => {
                     const canAfford = coins >= item.price;
 
                     return (
-                        <div key={item.id} className="bento-card" style={{
-                            background: 'rgba(255,255,255,0.8)', padding: '25px',
-                            border: isEquipped ? '2px solid #00FA9A' : '1px solid rgba(255,255,255,0.5)',
+                        <div key={item.id} className="glass-panel" style={{
+                            padding: '25px',
+                            border: isEquipped ? '2px solid var(--neon-green)' : '1px solid rgba(255,255,255,0.1)',
                             position: 'relative', overflow: 'hidden',
-                            textAlign: 'center', color: '#333'
+                            textAlign: 'center',
+                            background: isEquipped ? 'rgba(0, 255, 154, 0.05)' : 'rgba(0,0,0,0.4)',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
                         }}>
                             {/* STATUS BADGE */}
                             {isEquipped && (
                                 <div style={{
                                     position: 'absolute', top: '15px', right: '15px',
-                                    background: '#00FA9A', color: 'black', padding: '5px 10px',
-                                    fontSize: '0.7rem', fontWeight: 'bold', borderRadius: '10px', zIndex: 2
-                                }}>EQUIPPED</div>
+                                    background: 'var(--neon-green)', color: 'black', padding: '4px 10px',
+                                    fontSize: '0.7rem', fontWeight: '900', borderRadius: '4px', zIndex: 2,
+                                    boxShadow: '0 0 10px var(--neon-green)'
+                                }}>ACTIVE</div>
                             )}
 
-                            {/* ITEM ICON */}
-                            <div style={{ fontSize: '4rem', marginBottom: '15px', filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.1))' }}>
-                                {item.icon}
-                            </div>
+                            <div>
+                                {/* ITEM ICON */}
+                                <div style={{
+                                    fontSize: '4rem', marginBottom: '20px',
+                                    filter: isEquipped ? 'drop-shadow(0 0 15px var(--neon-green))' : 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))',
+                                    transition: 'filter 0.3s'
+                                }}>
+                                    {item.icon}
+                                </div>
 
-                            <h3 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: '#1a202c' }}>{item.name}</h3>
-                            <p style={{ color: '#718096', margin: '0 0 20px 0', minHeight: '40px', fontSize: '0.9rem' }}>{item.description}</p>
+                                <h3 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: 'white', fontFamily: '"Orbitron", sans-serif' }}>{item.name}</h3>
+                                <p style={{ color: '#888', margin: '0 0 20px 0', minHeight: '40px', fontSize: '0.85rem' }}>{item.description}</p>
+                            </div>
 
                             {/* ACTION BUTTON */}
                             {isUnlocked ? (
@@ -194,13 +218,14 @@ const ShopPage = () => {
                                     }}
                                     disabled={isEquipped}
                                     style={{
-                                        width: '100%', padding: '12px', borderRadius: '15px',
-                                        background: isEquipped ? '#e2e8f0' : '#4f46e5',
-                                        color: isEquipped ? '#a0aec0' : 'white',
-                                        border: 'none', fontWeight: 'bold',
+                                        width: '100%', padding: '12px', borderRadius: '12px',
+                                        background: isEquipped ? 'transparent' : 'var(--neon-blue)',
+                                        color: isEquipped ? 'var(--neon-green)' : 'black',
+                                        border: isEquipped ? '1px solid var(--neon-green)' : 'none',
+                                        fontWeight: 'bold',
                                         cursor: isEquipped ? 'default' : 'pointer',
-                                        opacity: isEquipped ? 0.7 : 1,
-                                        boxShadow: isEquipped ? 'none' : '0 4px 10px rgba(79, 70, 229, 0.3)'
+                                        opacity: isEquipped ? 1 : 1,
+                                        boxShadow: isEquipped ? 'none' : '0 0 20px rgba(0, 204, 255, 0.4)'
                                     }}
                                 >
                                     {isEquipped ? 'EQUIPPED' : 'EQUIP'}
@@ -215,15 +240,15 @@ const ShopPage = () => {
                                     }}
                                     disabled={!canAfford}
                                     style={{
-                                        width: '100%', padding: '12px', borderRadius: '15px',
-                                        background: canAfford ? '#FFD700' : '#cbd5e0',
-                                        color: canAfford ? 'black' : '#fff',
+                                        width: '100%', padding: '12px', borderRadius: '12px',
+                                        background: canAfford ? 'var(--neon-gold)' : '#333',
+                                        color: canAfford ? 'black' : '#666',
                                         border: 'none', fontWeight: 'bold',
                                         cursor: canAfford ? 'pointer' : 'not-allowed',
-                                        boxShadow: canAfford ? '0 4px 10px rgba(255, 215, 0, 0.4)' : 'none'
+                                        boxShadow: canAfford ? '0 0 20px rgba(255, 215, 0, 0.4)' : 'none'
                                     }}
                                 >
-                                    BUY {item.price > 0 ? `${item.price} 🪙` : 'FREE'}
+                                    BUY {item.price > 0 ? `${item.price}` : 'FREE'}
                                 </button>
                             )}
                         </div>
@@ -231,8 +256,8 @@ const ShopPage = () => {
                 })}
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                <Link to="/arcade" style={{ color: '#888', textDecoration: 'none' }}>← Back to Arcade</Link>
+            <div style={{ textAlign: 'center', marginTop: '60px' }}>
+                <Link to="/arcade" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem', letterSpacing: '1px' }}>← RETURN TO ARCADE</Link>
             </div>
         </div>
     );
