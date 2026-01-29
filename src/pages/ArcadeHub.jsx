@@ -26,6 +26,15 @@ const games = [
         leaderboardId: 'face_runner'
     },
     {
+        id: 'merch-jump',
+        title: 'MERCH JUMP',
+        desc: 'Rocket High! 🚀',
+        gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+        icon: '🚀',
+        colSpan: 2,
+        leaderboardId: 'merch_jump'
+    },
+    {
         id: 'fishing',
         title: 'CRAZY FISHING',
         desc: 'Catch the Mer-Logo!',
