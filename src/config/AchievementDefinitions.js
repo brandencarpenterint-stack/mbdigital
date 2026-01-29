@@ -30,7 +30,11 @@ export const ACHIEVEMENTS = [
     // --- GENERAL ---
     { id: 'arcade_gamer', title: 'Gamer', description: 'Play all games.', reward: 'Controller', game: 'General', condition: (s) => ['fishing', 'galaxy', 'brick', 'snake'].every(g => s.gamesPlayed?.includes(g)) },
     { id: 'arcade_rich', title: 'Pocket Money', description: 'Earn 100 coins total.', reward: 'Coin Stack', game: 'General', condition: (s) => getCoins(s) >= 100 },
-    { id: 'arcade_millionaire', title: 'Tycoon', description: 'Earn 1000 coins total.', reward: 'Money Bag', game: 'General', condition: (s) => getCoins(s) >= 1000 }
+    { id: 'arcade_millionaire', title: 'Tycoon', description: 'Earn 1000 coins total.', reward: 'Money Bag', game: 'General', condition: (s) => getCoins(s) >= 1000 },
+
+    // --- STREAK ---
+    { id: 'streak_3', title: 'Habit Former', description: 'Reach 3 Day Streak.', reward: 'Fire Emoji', game: 'General', condition: () => (parseInt(localStorage.getItem('dailyStreak')) || 0) >= 3 },
+    { id: 'streak_7', title: 'Dedicated', description: 'Reach 7 Day Streak.', reward: 'Calendar', game: 'General', condition: () => (parseInt(localStorage.getItem('dailyStreak')) || 0) >= 7 },
 ];
 
 // Helper to get coins safely if not in stats object directly (it's in localStorage usually)
