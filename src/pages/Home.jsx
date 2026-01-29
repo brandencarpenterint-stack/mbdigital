@@ -68,8 +68,11 @@ const Home = () => {
                         }}>
                             <img src="/assets/merchboy_face.png" style={{ width: '100%', height: '100%' }} />
                         </div>
-                        <div>
-                            <div style={{ fontSize: '0.8rem', color: '#888' }}>OPERATOR</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontSize: '0.8rem', color: '#888' }}>OPERATOR</div>
+                                <Link to="/settings" style={{ textDecoration: 'none', fontSize: '1.2rem', opacity: 0.8, filter: 'grayscale(100%) brightness(1.5)' }}>⚙️</Link>
+                            </div>
                             <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{rank}</div>
                             <div style={{ fontSize: '0.6rem', color: 'var(--neon-green)', marginTop: '2px' }}>AUTO-SAVE: ACTIVE 💾</div>
                         </div>

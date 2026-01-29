@@ -20,12 +20,14 @@ import PocketBro from './pages/PocketBro';
 import SubSlayer from './pages/SubSlayer';
 import HustleMode from './pages/HustleMode';
 import BroCard from './pages/BroCard';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="coloring" element={<Coloring />} />
         <Route path="beatlab" element={<BeatLab />} />
         <Route path="pocketbro" element={<PocketBro />} />
