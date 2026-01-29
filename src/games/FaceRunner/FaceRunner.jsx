@@ -19,6 +19,7 @@ const FaceRunner = () => {
     const [selectedFace, setSelectedFace] = useState('face_money'); // default
     // Using Ref for speed to avoid closure staleness in gameLoop
     const speedRef = useRef(20);
+    const playingRef = useRef(false); // Track playing state for loop
 
     // Refs
     const playerRef = useRef({ x: 0, y: 0, tilt: 0, squash: 1 });
@@ -46,6 +47,7 @@ const FaceRunner = () => {
 
     const startGame = () => {
         setGameState('PLAYING');
+        playingRef.current = true;
         setScore(0);
         speedRef.current = 20;
         scoreRef.current = 0;
@@ -164,7 +166,7 @@ const FaceRunner = () => {
                 ctx.restore();
             });
 
-            if (gameState !== 'PLAYING') return;
+            if (!playingRef.current) return;
 
             // 3. Draw Player Face
             // Mouse controls offset
@@ -214,6 +216,7 @@ const FaceRunner = () => {
             localStorage.setItem('faceRunnerHighScore', finalScore);
         }
         setGameState('GAME_OVER');
+        playingRef.current = false;
         playCrash();
         cancelAnimationFrame(requestRef.current);
     };
