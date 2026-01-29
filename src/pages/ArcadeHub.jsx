@@ -27,9 +27,9 @@ const games = [
     {
         id: 'merch-jump',
         title: 'MERCH JUMP',
-        desc: 'Rocket High! 🚀',
-        gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-        icon: '🚀',
+        desc: 'Sky High Streetwear.',
+        gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+        icon: '👟',
         colSpan: 1, // Debug: changed to 1
         leaderboardId: 'merch_jump'
     },
