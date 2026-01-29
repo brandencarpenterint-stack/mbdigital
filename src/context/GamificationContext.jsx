@@ -30,6 +30,23 @@ export const GamificationProvider = ({ children }) => {
         // Trigger storage event for cross-tab? Not needed for single tab app.
     }, [coins]);
 
+    // --- PROFILE STATE ---
+    const [userProfile, setUserProfile] = useState(() => {
+        return JSON.parse(localStorage.getItem('merchboy_profile')) || {
+            name: 'OPERATOR',
+            avatar: '/assets/merchboy_face.png'
+        };
+    });
+
+    const updateProfile = (updates) => {
+        setUserProfile(prev => {
+            const newState = { ...prev, ...updates };
+            localStorage.setItem('merchboy_profile', JSON.stringify(newState));
+            return newState;
+        });
+        showToast('Profile Updated!', 'success');
+    };
+
     // --- DAILY REWARDS STATE ---
 
     const [dailyState, setDailyState] = useState(() => {
@@ -298,6 +315,8 @@ export const GamificationProvider = ({ children }) => {
             addCoins,
             spendCoins,
             coins,
+            userProfile,
+            updateProfile,
             shopState,
             buyItem,
             equipItem,

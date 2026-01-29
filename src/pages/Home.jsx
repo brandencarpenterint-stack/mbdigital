@@ -8,7 +8,7 @@ import { useGamification } from '../context/GamificationContext';
 const Home = () => {
     const { squadScores } = useSquad();
     const { getMood } = usePocketBro();
-    const { getLevelInfo, dailyState } = useGamification();
+    const { getLevelInfo, dailyState, userProfile } = useGamification();
 
     const { level, progress, totalXP } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0, totalXP: 0 };
     const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
@@ -66,11 +66,11 @@ const Home = () => {
                             border: '2px solid var(--neon-pink)',
                             overflow: 'hidden'
                         }}>
-                            <img src="/assets/merchboy_face.png" style={{ width: '100%', height: '100%' }} />
+                            <img src={userProfile?.avatar || "/assets/merchboy_face.png"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ fontSize: '0.8rem', color: '#888' }}>OPERATOR</div>
+                                <div style={{ fontSize: '0.8rem', color: '#888' }}>{userProfile?.name || 'OPERATOR'}</div>
                                 <Link to="/settings" style={{ textDecoration: 'none', fontSize: '1.2rem', opacity: 0.8, filter: 'grayscale(100%) brightness(1.5)' }}>⚙️</Link>
                             </div>
                             <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{rank}</div>

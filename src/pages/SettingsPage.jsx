@@ -8,14 +8,35 @@ import SquishyButton from '../components/SquishyButton';
 
 const SettingsPage = () => {
     const { soundEnabled, toggleSound } = useSettings();
-    const { getLevelInfo } = useGamification();
+    const { getLevelInfo, userProfile, updateProfile } = useGamification();
     const { showToast } = useToast();
-    const { playBeep } = useRetroSound();
+    const { playBeep, playBoop } = useRetroSound();
 
     const [confirmReset, setConfirmReset] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [newName, setNewName] = useState('');
+    const [showAvatarSelect, setShowAvatarSelect] = useState(false);
 
     // Fallback if getLevelInfo isn't ready
     const levelInfo = getLevelInfo ? getLevelInfo() : { level: 1, rank: 'ROOKIE' };
+
+    const AVATARS = [
+        '/assets/merchboy_face.png',
+        '/assets/merchboy_cat.png',
+        '/assets/merchboy_bunny.png',
+        '/assets/merchboy_money.png',
+        '/assets/neon_brick/ball1.png',
+        '/assets/neon_brick/ball2.png',
+        '/assets/neon_brick/ball3.png',
+        '/assets/neon_brick/ball4.png'
+    ];
+
+    const handleNameSave = () => {
+        if (newName.trim()) {
+            updateProfile({ name: newName.trim().toUpperCase() });
+            setIsEditingName(false);
+        }
+    };
 
     const handleReset = () => {
         if (!confirmReset) {
@@ -51,7 +72,88 @@ const SettingsPage = () => {
 
             <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
 
-                {/* 1. AUDIO */}
+                {/* 1. PROFILE SETTINGS */}
+                <section className="glass-panel" style={{ padding: '25px', border: '1px solid var(--neon-pink)' }}>
+                    <h2 style={{ marginTop: 0, color: 'var(--neon-pink)', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,0,255,0.1)', paddingBottom: '15px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>OPERATOR IDENTITY</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--neon-gold)' }}>LVL {levelInfo.level}</span>
+                    </h2>
+
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        {/* AVATAR */}
+                        <div style={{ textAlign: 'center' }}>
+                            <div
+                                onClick={() => setShowAvatarSelect(!showAvatarSelect)}
+                                style={{
+                                    width: '80px', height: '80px', borderRadius: '50%',
+                                    overflow: 'hidden', border: '2px solid white',
+                                    cursor: 'pointer', position: 'relative'
+                                }}>
+                                <img src={userProfile?.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }} className="hover-show">
+                                    EDIT
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '0.6rem', marginTop: '5px', color: '#888' }}>TAP TO CHANGE</div>
+                        </div>
+
+                        {/* NAME */}
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>CODENAME</div>
+                            {isEditingName ? (
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        autoFocus
+                                        value={newName}
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+                                        placeholder={userProfile?.name}
+                                        style={{ background: '#222', border: '1px solid #555', color: 'white', padding: '5px 10px', borderRadius: '5px', width: '100%', fontFamily: 'inherit' }}
+                                    />
+                                    <button onClick={handleNameSave} style={{ background: 'var(--neon-green)', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>💾</button>
+                                </div>
+                            ) : (
+                                <div
+                                    onClick={() => { setIsEditingName(true); setNewName(userProfile?.name); }}
+                                    style={{ fontSize: '1.5rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                                >
+                                    {userProfile?.name} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>✎</span>
+                                </div>
+                            )}
+                            <div style={{ fontSize: '0.8rem', color: 'var(--neon-gold)', marginTop: '5px' }}>{levelInfo.rank} CLASS</div>
+                        </div>
+                    </div>
+
+                    {/* AVATAR SELECTOR */}
+                    {showAvatarSelect && (
+                        <div style={{
+                            marginTop: '20px',
+                            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px',
+                            background: 'rgba(0,0,0,0.5)', padding: '15px', borderRadius: '10px',
+                            animation: 'fadeIn 0.3s'
+                        }}>
+                            {AVATARS.map((src, i) => (
+                                <div key={i}
+                                    onClick={() => {
+                                        updateProfile({ avatar: src });
+                                        setShowAvatarSelect(false);
+                                        playBoop();
+                                    }}
+                                    style={{
+                                        width: '100%', aspectRatio: '1/1', borderRadius: '50%',
+                                        overflow: 'hidden', border: userProfile?.avatar === src ? '2px solid var(--neon-green)' : '2px solid transparent',
+                                        cursor: 'pointer',
+                                        transform: userProfile?.avatar === src ? 'scale(1.1)' : 'scale(1)'
+                                    }}
+                                >
+                                    <img src={src} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#222' }} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* 2. AUDIO */}
                 <section className="glass-panel" style={{ padding: '25px', border: '1px solid rgba(0, 243, 255, 0.3)' }}>
                     <h2 style={{ marginTop: 0, color: 'var(--neon-blue)', fontSize: '1.2rem', borderBottom: '1px solid rgba(0,255,255,0.1)', paddingBottom: '10px' }}>
                         AUDIO
@@ -71,21 +173,6 @@ const SettingsPage = () => {
                         >
                             {soundEnabled ? 'ON' : 'OFF'}
                         </SquishyButton>
-                    </div>
-                </section>
-
-                {/* 2. OPERATOR INFO */}
-                <section className="glass-panel" style={{ padding: '25px', border: '1px solid rgba(255, 0, 255, 0.3)' }}>
-                    <h2 style={{ marginTop: 0, color: 'var(--neon-pink)', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,0,255,0.1)', paddingBottom: '10px' }}>
-                        OPERATOR
-                    </h2>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                        <span style={{ color: '#888' }}>ID</span>
-                        <span>PLAYER_1</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#888' }}>CURRENT RANK</span>
-                        <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px var(--neon-gold)' }}>LVL {levelInfo.level}</span>
                     </div>
                 </section>
 
@@ -139,6 +226,7 @@ const SettingsPage = () => {
                     POWERED BY MBDIGITAL
                 </div>
             </div>
+            <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         </div>
     );
 };
