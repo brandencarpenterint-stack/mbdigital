@@ -64,14 +64,14 @@ const FISH_DATA = [
     { id: 'micro', name: 'Microbe', score: 5, emoji: '🦠', minDepth: 1100, maxDepth: 1200, pattern: 'FLOAT', speed: 0.5, weight: [0.01, 0.05] },
     // NEW Phase 27
     { id: 'flash', name: 'Flashlight', score: 55, emoji: '🔦', minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 4.0, weight: [0.5, 1.0] },
-    { id: 'vamp', name: 'Vampire Squid', score: 60, emoji: '🧛', minDepth: 1100, maxDepth: 1200, pattern: 'GLITCH', speed: 3.0, weight: [5.0, 10.0] },
+    { id: 'vamp', name: 'Vampire Squid', score: 60, emoji: '🦑', minDepth: 1100, maxDepth: 1200, pattern: 'GLITCH', speed: 3.0, weight: [5.0, 10.0] },
 
     // --- MIDNIGHT (1200-1500m) ---
     { id: 'shark', name: 'Sharky', score: 50, emoji: '🦈', minDepth: 1200, maxDepth: 1500, pattern: 'SINE', speed: 2.0, weight: [50.0, 300.0] },
     { id: 'whale', name: 'Whaley', score: 80, emoji: '🐳', minDepth: 1200, maxDepth: 1500, pattern: 'FLOAT', speed: 1.0, weight: [1000.0, 5000.0] },
     { id: 'moon', name: 'Moon Rock', score: 100, emoji: '🌑', minDepth: 1300, maxDepth: 1500, pattern: 'FLOAT', speed: 0.2, weight: [100.0, 200.0] },
     // NEW Phase 27
-    { id: 'wolf', name: 'Wolf Fish', score: 70, emoji: '🐺', minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
+    { id: 'wolf', name: 'Wolf Fish', score: 70, emoji: '🐟', minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
     { id: 'sleep', name: 'Sleeper Shark', score: 75, emoji: '💤', minDepth: 1400, maxDepth: 1500, pattern: 'FLOAT', speed: 0.5, weight: [200.0, 400.0] },
 
     // --- TRENCH (1500-1800m) ---
@@ -82,7 +82,7 @@ const FISH_DATA = [
     { id: 'iso', name: 'Giant Isopod', score: 90, emoji: '🦗', minDepth: 1700, maxDepth: 1800, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
 
     // --- NEON CITY (1800-2100m) ---
-    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '💾', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '🤖🐟', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
     { id: 'robot', name: 'Bot-01', score: 120, emoji: '🤖', minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
     // NEW Phase 27
     { id: 'floppy', name: 'Diskette', score: 50, emoji: '💾', minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
@@ -97,7 +97,7 @@ const FISH_DATA = [
     { id: 'pirate_skull', name: 'Jolly Roger', score: 150, emoji: '🏴‍☠️', minDepth: 2200, maxDepth: 2400, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
 
     // --- MAGMA CORE (2400-2700m) ---
-    { id: 'ember', name: 'Fire Fish', score: 130, emoji: '🔥', minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
+    { id: 'ember', name: 'Fire Fish', score: 130, emoji: '🐠🔥', minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
     { id: 'dragon', name: 'Sea Dragon', score: 150, emoji: '🐉', minDepth: 2450, maxDepth: 2700, pattern: 'SINE', speed: 2.0, weight: [50.0, 200.0] },
     // NEW Phase 27
     { id: 'rock', name: 'Obsidian', score: 40, emoji: '🪨', minDepth: 2400, maxDepth: 2700, pattern: 'FLOAT', speed: 0, weight: [50.0, 100.0] },
@@ -593,10 +593,20 @@ const CrazyFishing = () => {
             // Bounds Collision (Hook)
             const hookRect = { x: state.hookX - 10, y: state.hookY - 10, w: 20, h: 20 };
 
-            // Check Floor (Miss)
-            if (state.depth >= MAX_DEPTH + 5) {
-                // Hit the bottom - Fail/Trash
-                startBattle({ id: 'rock', name: 'Sea Rock', score: 0, emoji: '🪨', pattern: 'FLOAT', speed: 0, weight: [10.0, 50.0] });
+            // Check Floor (Miss/Chest)
+            if (state.depth >= MAX_DEPTH) {
+                // Hit the bottom - ABYSS CHEST
+                const reward = Math.floor(Math.random() * 501); // 0-500
+                startBattle({
+                    id: 'abyss_chest',
+                    name: 'Abyss Chest',
+                    score: reward,
+                    emoji: '🎁',
+                    pattern: 'FLOAT',
+                    speed: 0,
+                    weight: [50, 50],
+                    instant: true
+                });
                 return;
             }
 
