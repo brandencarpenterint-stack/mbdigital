@@ -56,10 +56,10 @@ const Layout = () => {
     return (
         <div className="layout-container" style={{ paddingBottom: '90px' }}> {/* Add padding for bottom shelf */}
             {!isFishingGame && (
-                <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+                <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #eee' }}>
                     <div className="logo-section">
                         <Link to="/" className="home-link" onClick={handleLogoClick}>
-                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" style={{ width: '40px' }} />
+                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" style={{ width: '40px', filter: 'invert(0)' }} />
                         </Link>
                     </div>
 
@@ -92,15 +92,15 @@ const Layout = () => {
                         width: '90%',
                         maxWidth: '500px',
                         height: '70px',
-                        background: 'rgba(20, 20, 20, 0.95)',
+                        background: 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(20px)',
                         borderRadius: '35px',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(0,0,0,0.1)',
                         display: 'flex',
                         justifyContent: 'space-around',
                         alignItems: 'center',
                         padding: '0 10px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
                         zIndex: 999
                     }}>
                         {/* 1. HOME */}
@@ -121,9 +121,9 @@ const Layout = () => {
                                 borderRadius: '50%',
                                 display: 'flex', justifyContent: 'center', alignItems: 'center',
                                 fontSize: '2rem',
-                                color: 'black',
-                                boxShadow: '0 0 20px rgba(0, 242, 255, 0.5)',
-                                border: '4px solid #141414',
+                                color: 'white',
+                                boxShadow: '0 5px 15px rgba(0, 242, 255, 0.4)',
+                                border: '4px solid #fff',
                                 transform: location.pathname === '/beatlab' ? 'scale(1.1) rotate(10deg)' : 'scale(1)',
                                 transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                             }}>
@@ -151,12 +151,12 @@ const Layout = () => {
                             <div style={{
                                 position: 'absolute',
                                 top: '-5px', right: '-5px',
-                                background: isCritical ? '#ff0055' : '#333',
+                                background: isCritical ? '#ff0055' : '#eee',
                                 borderRadius: '50%',
                                 width: '24px', height: '24px',
                                 display: 'flex', justifyContent: 'center', alignItems: 'center',
                                 fontSize: '0.8rem',
-                                border: '2px solid #141414',
+                                border: '2px solid white',
                                 animation: isCritical ? 'shake 0.5s infinite' : 'none'
                             }}>
                                 {getMood()}
@@ -167,7 +167,7 @@ const Layout = () => {
                     <style>{`
                         .dock-icon {
                             font-size: 1.8rem;
-                            color: white;
+                            color: #333; /* Dark icons for light theme */
                             text-decoration: none;
                             transition: transform 0.2s, opacity 0.2s;
                             width: 50px;

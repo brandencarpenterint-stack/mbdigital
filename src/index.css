@@ -5,7 +5,7 @@
   --secondary-color: #00ffaa;
   --accent-color: #ffff00;
   --bg-dark: #050510;
-  --text-color: #ffffff;
+  --text-color: #333333;
   --header-height: 80px;
   --font-main: 'Inter', sans-serif;
   --font-display: 'Kanit', sans-serif;
@@ -15,7 +15,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-main);
-  background: #000000;
+  background: #fdfdfd;
   color: var(--text-color);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;

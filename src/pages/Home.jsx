@@ -38,8 +38,8 @@ const Home = () => {
 
             {/* HEADER / FEED TITLE */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>FOR YOU</h1>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>{new Date().toLocaleDateString()}</div>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: '900', margin: 0, color: '#00af89' }}>PLAYGROUND</h1>
+                <div style={{ fontSize: '0.9rem', color: '#666' }}>Have fun today! ☀️</div>
             </div>
 
             {/* 1. POCKET BRO STATUS CARD */}
@@ -76,15 +76,15 @@ const Home = () => {
                 </div>
             </FeedCard>
 
-            {/* 2. SQUAD WAR CARD */}
-            <FeedCard style={{ background: '#0a0a0a', border: '1px solid #333' }}>
+            {/* 2. SQUAD RALLY CARD */}
+            <FeedCard style={{ background: '#f0f4f8', border: '1px solid #dae1e7' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>
                     <span style={{ color: '#00f2ff' }}>NEON {squadScores?.NEON.toLocaleString()}</span>
                     <span style={{ color: '#ff0055' }}>{squadScores?.ZEN.toLocaleString()} ZEN</span>
                 </div>
 
                 {/* Bar */}
-                <div style={{ height: '10px', background: '#333', borderRadius: '5px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: '15px', background: '#fff', borderRadius: '10px', overflow: 'hidden', position: 'relative', border: '1px solid #eee' }}>
                     <div style={{
                         width: '100%', height: '100%',
                         background: 'linear-gradient(90deg, #00f2ff 50%, #ff0055 50%)',
@@ -100,8 +100,8 @@ const Home = () => {
                     </div>
                 </div>
 
-                <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.8rem', color: '#888' }}>
-                    The war is live. Play games to support your squad.
+                <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.9rem', color: '#555', fontWeight: '600' }}>
+                    Team Rally is Live! Play games to help your team! 🏆
                 </div>
             </FeedCard>
 
