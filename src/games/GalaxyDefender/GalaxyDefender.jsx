@@ -561,6 +561,9 @@ const fire = () => {
 useEffect(() => {
     const handleKeyDown = (e) => {
         if (!gameActiveRef.current) return;
+        if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+            e.preventDefault();
+        }
         if (e.key === 'ArrowLeft') moveLeft();
         if (e.key === 'ArrowRight') moveRight();
         if (e.key === ' ') fire();

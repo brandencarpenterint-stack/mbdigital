@@ -250,8 +250,11 @@ const FlappyMascot = () => {
 
         // 3. Draw Body
         if (charData.type === 'image') {
-            const img = charData.id === 'boy' ? birdImgRef.current : brokidImgRef.current;
+            const img = charData.id === 'flappy_boy' ? birdImgRef.current : brokidImgRef.current;
             if (img && img.complete) {
+                // Determine source rect if sprite sheet, but here we assume single image
+                // Use source dimensions to prevent squashing if not square?
+                // For now, simple draw.
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
             } else {
                 ctx.fillStyle = 'white';
