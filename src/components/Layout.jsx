@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import ProfileModal from './ProfileModal';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
+import { usePocketBro } from '../context/PocketBroContext';
 import './Layout.css';
 
 const Layout = () => {
@@ -11,6 +12,9 @@ const Layout = () => {
     const [coins, setCoins] = useState(0);
     const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
     const { soundEnabled, toggleSound } = useSettings();
+    const { getMood, isCritical } = usePocketBro() || { getMood: () => '🥚', isCritical: false };
+
+
 
     // Glitch State
     const [clickCount, setClickCount] = useState(0);
@@ -61,6 +65,9 @@ const Layout = () => {
                         <Link to="/coloring" className="nav-link">COLORING</Link>
                         <Link to="/arcade" className="nav-link arcade-link">
                             ARCADE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
+                        </Link>
+                        <Link to="/pocketbro" className="nav-link" style={{ background: isCritical ? '#ff0055' : 'transparent', borderRadius: '15px', animation: isCritical ? 'shake 0.5s infinite' : 'none' }}>
+                            {getMood()}
                         </Link>
                         <Link to="/profile" className="nav-link" style={{ background: '#333', border: '1px solid #555', borderRadius: '15px' }}>
                             👤 ID

@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { GamificationProvider } from './context/GamificationContext'
 import { SettingsProvider } from './context/SettingsContext'
+import { PocketBroProvider } from './context/PocketBroContext'
 import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
@@ -12,9 +13,11 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <SettingsProvider>
         <GamificationProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <PocketBroProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </PocketBroProvider>
         </GamificationProvider>
       </SettingsProvider>
     </ErrorBoundary>

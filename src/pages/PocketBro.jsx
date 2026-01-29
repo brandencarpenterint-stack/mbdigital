@@ -1,125 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import { usePocketBro } from '../context/PocketBroContext';
 
 const TASKS = [
-    { id: 'feed', icon: '🍗', label: 'FEED', cost: 0, effect: { hunger: 30, energy: -5 } },
-    { id: 'play', icon: '🎾', label: 'PLAY', cost: 0, effect: { happy: 20, energy: -15, hunger: -10 } },
-    { id: 'sleep', icon: '💤', label: 'SLEEP', cost: 0, effect: { energy: 100 } }, // Instant sleep for MVP, or toggle state
-    { id: 'clean', icon: '🧹', label: 'CLEAN', cost: 0, effect: { happy: 10 } },
+    { id: 'feed', icon: '🍗', label: 'FEED' },
+    { id: 'play', icon: '🎾', label: 'PLAY' },
+    { id: 'sleep', icon: '💤', label: 'SLEEP' },
 ];
 
 const PocketBro = () => {
-    // Stats: 0 to 100
-    const [stats, setStats] = useState({
-        hunger: 80, // High is good (Full)
-        happy: 80, // High is good
-        energy: 80, // High is good
-        age: 0, // Days
-        isSleeping: false,
-        lastInteraction: Date.now()
-    });
-
-    const [message, setMessage] = useState("I'm hatched! 🥚");
-    const [poops, setPoops] = useState([]); // Array of positions or just count
-
-    // Animation State
+    const { stats, feed, play, sleep, getMood } = usePocketBro();
+    const [message, setMessage] = useState("I'm here! 🥚");
     const [bounce, setBounce] = useState(false);
 
-    // Load Game
-    useEffect(() => {
-        const saved = localStorage.getItem('pocketBroState');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Calculate Decay based on time away
-            const now = Date.now();
-            const hoursPassed = (now - parsed.lastInteraction) / (1000 * 60 * 60);
-
-            // Decay formulas (approx 100 points lost in 24 hours = ~4 pts/hr)
-            const decay = Math.floor(hoursPassed * 4);
-
-            setStats({
-                ...parsed,
-                hunger: Math.max(0, parsed.hunger - decay),
-                happy: Math.max(0, parsed.happy - decay),
-                // Energy recovers if sleeping, decays if not (simplified: decay)
-                energy: Math.max(0, parsed.energy - decay),
-                isSleeping: false // Wake up upon return
-            });
-            setMessage(`You were gone for ${hoursPassed.toFixed(1)} hours!`);
-        }
-    }, []);
-
-    // Game Loop (Decay & Age)
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setStats(prev => {
-                const newStats = {
-                    ...prev,
-                    hunger: Math.max(0, prev.hunger - (prev.isSleeping ? 0.05 : 0.2)),
-                    happy: Math.max(0, prev.happy - (prev.isSleeping ? 0.05 : 0.1)),
-                    energy: prev.isSleeping ? Math.min(100, prev.energy + 0.5) : Math.max(0, prev.energy - 0.1),
-                    age: prev.age + 0.0001 // Very slow aging
-                };
-
-                // Random Poop Event (if eaten recently and not sleeping)
-                if (!prev.isSleeping && Math.random() < 0.005) {
-                    setPoops(curr => [...curr, { id: Date.now(), x: Math.random() * 80 + 10 }]);
-                }
-
-                return newStats;
-            });
-        }, 1000); // Run every second
-
-        return () => clearInterval(interval);
-    }, []);
-
-    // Auto-Save
-    useEffect(() => {
-        localStorage.setItem('pocketBroState', JSON.stringify({ ...stats, lastInteraction: Date.now() }));
-    }, [stats]);
-
     const handleAction = (task) => {
-        if (stats.isSleeping && task.id !== 'sleep') {
-            setMessage("Zzz... Wake me up first!");
-            return;
-        }
+        triggerBounce();
 
         if (task.id === 'sleep') {
-            setStats(prev => ({ ...prev, isSleeping: !prev.isSleeping }));
+            sleep();
             setMessage(stats.isSleeping ? "Good morning! ☀️" : "Goodnight! 🌙");
             return;
         }
 
-        if (task.id === 'clean') {
-            setPoops([]);
-            setMessage("All clean! ✨");
-            setStats(prev => ({ ...prev, happy: Math.min(100, prev.happy + 10) }));
-            triggerBounce();
+        if (stats.isSleeping) {
+            setMessage("Zzz... Wake me up!");
             return;
         }
 
-        setStats(prev => ({
-            ...prev,
-            hunger: Math.min(100, Math.max(0, prev.hunger + (task.effect.hunger || 0))),
-            happy: Math.min(100, Math.max(0, prev.happy + (task.effect.happy || 0))),
-            energy: Math.min(100, Math.max(0, prev.energy + (task.effect.energy || 0))),
-        }));
-
-        setMessage(task.id === 'feed' ? "Yum! 😋" : "Wheee! 🎉");
-        triggerBounce();
+        if (task.id === 'feed') {
+            feed();
+            setMessage("Yum! 😋");
+        } else if (task.id === 'play') {
+            play();
+            setMessage("Wheee! 🎉");
+        }
     };
 
     const triggerBounce = () => {
         setBounce(true);
         setTimeout(() => setBounce(false), 500);
-    };
-
-    // Derived State for Visuals
-    const getMood = () => {
-        if (stats.hunger < 20) return '😫'; // Starving
-        if (stats.happy < 20) return '😢'; // Sad
-        if (stats.energy < 20) return '😴'; // Tired
-        if (poops.length > 2) return '🤢'; // Gross
-        return '😃'; // Happy
     };
 
     return (
@@ -129,7 +47,7 @@ const PocketBro = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: '"Press Start 2P", monospace' // If available, otherwise generic monospace
+            fontFamily: '"Press Start 2P", monospace'
         }}>
             <div style={{
                 width: '100%',
@@ -182,18 +100,6 @@ const PocketBro = () => {
                         }}>
                             {stats.isSleeping ? '💤' : getMood()}
                         </div>
-
-                        {/* Poops */}
-                        {poops.map((poop, i) => (
-                            <div key={poop.id} style={{
-                                position: 'absolute',
-                                fontSize: '1.5rem',
-                                bottom: '20px',
-                                left: `${poop.x}%`
-                            }}>
-                                💩
-                            </div>
-                        ))}
                     </div>
 
                     {/* Message */}
@@ -242,5 +148,6 @@ const PocketBro = () => {
         </div>
     );
 };
+
 
 export default PocketBro;
