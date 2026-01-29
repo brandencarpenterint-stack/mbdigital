@@ -70,20 +70,43 @@ const NeonBrickBreaker = () => {
         };
 
         // Pattern Logic
+        // Face / Logo Patterns
+        // Level 2: Brick Logo (Money Face)
+        const moneyFace = [
+            "  XXXX  ",
+            " X    X ",
+            " X$  $X ",
+            " X    X ",
+            "  XXXX  ",
+            "        "
+        ];
+        // Level 3: Brick Logo (Bunny/Cat)
+        const bunnyFace = [
+            "X      X",
+            "X      X",
+            " XXXXXX ",
+            " XO  OX ",
+            "  XXXX  ",
+            "        "
+        ];
+
         for (let r = 0; r < BRICK_ROWS; r++) {
             for (let c = 0; c < BRICK_COLS; c++) {
                 // Level 1: Standard Rows
                 if (lvl === 1) {
                     if (r < 4) addBrick(c, r);
                 }
-                // Level 2: Pyramid
+                // Level 2: Money Face
                 else if (lvl === 2) {
-                    const mid = BRICK_COLS / 2;
-                    if (c >= mid - r && c < mid + r) addBrick(c, r, '#ff0055');
+                    const char = moneyFace[r]?.[c] || ' ';
+                    if (char === 'X') addBrick(c, r, '#ff0055');
+                    if (char === '$') addBrick(c, r, '#00ff00'); // Green Eyes
                 }
-                // Level 3: Space Invaders (Gaps)
+                // Level 3: Bunny Face
                 else if (lvl === 3) {
-                    if ((c + r) % 2 === 0) addBrick(c, r, '#00ffaa');
+                    const char = bunnyFace[r]?.[c] || ' ';
+                    if (char === 'X') addBrick(c, r, '#00ccff');
+                    if (char === 'O') addBrick(c, r, '#ff00ff'); // Eyes
                 }
                 // Level 4: Walls
                 else if (lvl === 4) {
@@ -288,6 +311,7 @@ const NeonBrickBreaker = () => {
             playWin();
             setTimeout(() => {
                 startLevel(level + 1);
+                requestAnimationFrame(gameLoop);
             }, 1000);
             return;
         }
@@ -441,11 +465,23 @@ const NeonBrickBreaker = () => {
             handleInput(e.clientX);
         };
 
+        const onKeyDown = (e) => {
+            if (!gameActiveRef.current) return;
+            const SPEED = 40;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                gameState.current.paddleX = Math.max(0, gameState.current.paddleX - SPEED);
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                gameState.current.paddleX = Math.min(GAME_WIDTH - PADDLE_WIDTH, gameState.current.paddleX + SPEED);
+            }
+        };
+
         window.addEventListener('mousemove', onMouseMove);
-        // We attach touch listener to the container in JSX for better control
+        window.addEventListener('keydown', onKeyDown);
 
         return () => {
             window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('keydown', onKeyDown);
         };
     }, []);
 
