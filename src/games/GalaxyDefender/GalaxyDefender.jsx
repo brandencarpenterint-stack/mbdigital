@@ -73,8 +73,23 @@ const GalaxyDefender = () => {
             scoreInternal: 0,
             invincible: 0,
             shake: 0,
+            stars: [], // Background stars
+            powerups: [], // {x, y, type}
+            weaponLevel: 1,
+            weaponTimer: 0,
+            level: 1, // Difficulty level
+            bossActive: false,
             animationId: null
         };
+        // Init Stars
+        for (let i = 0; i < 50; i++) {
+            gameState.current.stars.push({
+                x: Math.random() * GAME_WIDTH,
+                y: Math.random() * GAME_HEIGHT,
+                size: Math.random() * 2,
+                speed: 0.5 + Math.random() * 2
+            });
+        }
         requestAnimationFrame(gameLoop);
     };
 
@@ -130,15 +145,10 @@ const GalaxyDefender = () => {
     const spawnEnemy = (timestamp) => {
         const lane = Math.floor(Math.random() * LANES);
         const x = lane * LANE_WIDTH + (LANE_WIDTH / 2) - (ENEMY_SIZE / 2);
-        // Variable Speed: 2 is base, + random 0-2
-        const speed = 2 + Math.random() * 2;
+        // Variable Speed based on level
+        const speed = 2 + (gameState.current.level) + Math.random() * 2;
 
-        gameState.current.enemies.push({
-            x,
-            y: -ENEMY_SIZE,
-            lane,
-            speed
-        });
+        gameState.current.enemies.push({ x, y: -ENEMY_SIZE, lane, speed });
         gameState.current.lastEnemySpawn = timestamp;
     };
 
@@ -164,7 +174,21 @@ const GalaxyDefender = () => {
         ctx.fillStyle = '#000';
         ctx.fillRect(-20, -20, GAME_WIDTH + 40, GAME_HEIGHT + 40);
 
-        // Draw Lanes
+        // Draw Starfield
+        ctx.fillStyle = '#fff';
+        state.stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+            // Update Star
+            star.y += star.speed;
+            if (star.y > GAME_HEIGHT) {
+                star.y = 0;
+                star.x = Math.random() * GAME_WIDTH;
+            }
+        });
+
+        // Draw Lanes (Faint)
         ctx.strokeStyle = '#111';
         ctx.lineWidth = 2;
         for (let i = 1; i < LANES; i++) {
@@ -179,46 +203,84 @@ const GalaxyDefender = () => {
 
         // 1. Spawning
         if (!state.boss) {
-            if (state.scoreInternal < 500) {
-                if (timestamp - state.lastEnemySpawn > 1000) {
-                    spawnEnemy(timestamp);
-                }
-            } else if (state.enemies.length === 0) {
+            // Level Up / Spawn Boss check
+            // Every 1000 points = Boss
+            const pointsSinceBoss = state.scoreInternal % 1000;
+            const isBossTime = state.scoreInternal > 0 && pointsSinceBoss >= 900 && !state.bossActive;
+            // We use a flag 'bossActive' to ensure we only spawn once per threshold
+            // Better logic: Target score for next boss
+            const nextBossScore = state.level * 1000;
+
+            if (state.scoreInternal >= nextBossScore) {
                 // SPAWN BOSS
                 state.boss = {
                     x: GAME_WIDTH / 2 - BOSS_SIZE / 2,
                     y: -BOSS_SIZE,
-                    hp: BOSS_HP_MAX,
+                    hp: BOSS_HP_MAX * state.level,
                     dir: 1,
                     flash: 0,
-                    lastAttack: 0
+                    lastAttack: 0,
+                    type: state.level % 3 // Vary boss type (0, 1, 2)
                 };
+                state.bossActive = true;
+                // Clear enemies
+                state.enemies = [];
+            } else {
+                // Normal Spawning
+                const spawnRate = Math.max(400, 1000 - (state.level * 100));
+
+                if (timestamp - state.lastEnemySpawn > spawnRate) {
+                    spawnEnemy(timestamp);
+                }
             }
         }
 
         // 2. Boss Logic
         if (state.boss) {
-            // Movement
+            // Entrance
             if (state.boss.y < 50) {
                 state.boss.y += 1;
             } else {
-                state.boss.x += 2 * state.boss.dir;
+                // Battle phase
+                state.boss.x += (2 + state.level) * state.boss.dir;
                 if (state.boss.x + BOSS_SIZE > GAME_WIDTH || state.boss.x < 0) {
                     state.boss.dir *= -1;
                 }
 
+                // Silly Bounce
+                const bounce = Math.sin(timestamp / 200) * 10;
+
                 // MOUTH LASER ATTACK
-                if (timestamp - state.boss.lastAttack > 2000) {
+                // Fires faster at higher levels
+                const fireRate = Math.max(500, 2000 - (state.level * 200));
+
+                if (timestamp - state.boss.lastAttack > fireRate) {
                     const bossCenterX = state.boss.x + BOSS_SIZE / 2;
+                    // Spread shot at higher levels
+                    if (state.level >= 2) {
+                        state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: -2 });
+                        state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: 2 });
+                    }
                     state.enemyLasers.push({
                         x: bossCenterX - 10,
                         y: state.boss.y + BOSS_SIZE - 20,
                         width: 20,
-                        height: 40, // Laser Bullet Style
-                        speed: 8
+                        height: 40,
+                        speed: 8,
+                        dx: 0
                     });
                     state.boss.lastAttack = timestamp;
                 }
+            }
+        } else {
+            // Powerup Spawning (Random chance when no boss)
+            if (Math.random() < 0.002 && state.powerups.length === 0) {
+                state.powerups.push({
+                    x: Math.random() * (GAME_WIDTH - 40),
+                    y: -40,
+                    type: 'DOUBLE',
+                    speed: 2
+                });
             }
         }
 
@@ -229,7 +291,13 @@ const GalaxyDefender = () => {
         state.enemies.forEach(e => e.y += e.speed);
 
         state.enemyLasers = state.enemyLasers.filter(l => l.y < GAME_HEIGHT);
-        state.enemyLasers.forEach(l => l.y += l.speed);
+        state.enemyLasers.forEach(l => {
+            l.y += l.speed;
+            if (l.dx) l.x += l.dx; // Horizontal movement for boss spread
+        });
+
+        // Move Powerups
+        state.powerups.forEach(p => p.y += p.speed);
 
         // 4. Collision: Player Bullets
         for (let bIdx = state.bullets.length - 1; bIdx >= 0; bIdx--) {
@@ -246,7 +314,12 @@ const GalaxyDefender = () => {
                     playCollect();
                     if (state.boss.hp <= 0) {
                         incrementStat('bossKills', 1);
-                        endGame(true);
+                        // Boss Defeated
+                        state.boss = null;
+                        state.level++;
+                        state.scoreInternal += 500; // Bonus
+                        playWin();
+                        triggerConfetti();
                         return;
                     }
                 }
@@ -299,6 +372,23 @@ const GalaxyDefender = () => {
                 l.y < pRect.y + pRect.h && l.y + l.height > pRect.y) {
                 takeDamage();
                 state.enemyLasers.splice(i, 1);
+            }
+        }
+
+        // Powerup Collection
+        for (let i = state.powerups.length - 1; i >= 0; i--) {
+            const p = state.powerups[i];
+            // Hitbox Check
+            if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
+                p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
+                // Collect
+                state.weaponLevel = 2;
+                state.weaponTimer = 600; // 10 seconds approx (60fps)
+                state.powerups.splice(i, 1);
+                playCollect();
+                triggerConfetti(); // Mini confetti for powerup
+            } else if (p.y > GAME_HEIGHT) {
+                state.powerups.splice(i, 1);
             }
         }
 
@@ -383,6 +473,17 @@ const GalaxyDefender = () => {
             ctx.fillRect(l.x, l.y, l.width, l.height);
         });
 
+        // Powerups
+        state.powerups.forEach(p => {
+            ctx.fillStyle = 'gold';
+            ctx.beginPath();
+            ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('P', p.x + 8, p.y + 22);
+        });
+
         // Boss
         if (state.boss) {
             if (state.boss.flash > 0) {
@@ -390,123 +491,146 @@ const GalaxyDefender = () => {
                 ctx.fillStyle = 'white';
                 state.boss.flash--;
             }
-            if (bossImgRef.current && bossImgRef.current.complete) {
-                ctx.drawImage(bossImgRef.current, state.boss.x, state.boss.y, BOSS_SIZE, BOSS_SIZE);
-            } else {
-                ctx.fillStyle = 'red';
-                ctx.fillRect(state.boss.x, state.boss.y, BOSS_SIZE, BOSS_SIZE);
-            }
+        }
+        if (bossImgRef.current && bossImgRef.current.complete) {
+            // Silly Boss Animations based on state.boss.type
+            ctx.save();
+            ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
 
-            // Boss HP
-            const percent = state.boss.hp / BOSS_HP_MAX;
-            ctx.fillStyle = '#333';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
-            ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
+            // Bobbing effect
+            const bob = Math.sin(Date.now() / 200) * 10;
+            ctx.translate(0, bob);
+
+            // Rotate slightly
+            ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
+
+            ctx.drawImage(bossImgRef.current, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
+            ctx.restore();
+        } else {
+            // Fallback Emoji Boss
+            ctx.font = '80px Arial';
+            ctx.fillText('👹', state.boss.x + 10, state.boss.y + 80);
         }
 
-        ctx.restore(); // Undo shake
+        // Boss HP
+        const percent = state.boss.hp / BOSS_HP_MAX;
+        ctx.fillStyle = '#333';
+        ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
+        ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
+        ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
+    }
 
-        if (gameActiveRef.current) {
-            state.animationId = requestAnimationFrame(gameLoop);
+    ctx.restore(); // Undo shake
+
+    if (gameActiveRef.current) {
+        state.animationId = requestAnimationFrame(gameLoop);
+    }
+};
+
+// Controls
+// Mobile Actions
+const moveLeft = () => {
+    if (!gameActiveRef.current) return;
+    if (gameState.current.lane > 0) gameState.current.lane--;
+};
+const moveRight = () => {
+    if (!gameActiveRef.current) return;
+    if (gameState.current.lane < LANES - 1) gameState.current.lane++;
+};
+const fire = () => {
+    if (!gameActiveRef.current) return;
+    const state = gameState.current;
+    const now = Date.now();
+    if (now - state.lastShotTime > 200) {
+        const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
+
+        // Double Shot Logic
+        if (state.weaponTimer > 0) {
+            state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+            state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+            state.weaponTimer--;
+        } else {
+            state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
         }
-    };
 
-    // Controls
-    // Mobile Actions
-    const moveLeft = () => {
+        state.lastShotTime = now;
+        playBeep();
+    }
+};
+
+useEffect(() => {
+    const handleKeyDown = (e) => {
         if (!gameActiveRef.current) return;
-        if (gameState.current.lane > 0) gameState.current.lane--;
-    };
-    const moveRight = () => {
-        if (!gameActiveRef.current) return;
-        if (gameState.current.lane < LANES - 1) gameState.current.lane++;
-    };
-    const fire = () => {
-        if (!gameActiveRef.current) return;
-        const state = gameState.current;
-        const now = Date.now();
-        if (now - state.lastShotTime > 200) {
-            const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
-            state.bullets.push({ x: startX, y: GAME_HEIGHT - 80 });
-            state.lastShotTime = now;
-            playBeep();
-        }
+        if (e.key === 'ArrowLeft') moveLeft();
+        if (e.key === 'ArrowRight') moveRight();
+        if (e.key === ' ') fire();
     };
 
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (!gameActiveRef.current) return;
-            if (e.key === 'ArrowLeft') moveLeft();
-            if (e.key === 'ArrowRight') moveRight();
-            if (e.key === ' ') fire();
-        };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+}, []);
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
-
-            {/* Header Removed for space */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
-                <div style={{ display: 'flex', gap: '5px' }}>
-                    {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
-                    ))}
-                </div>
-                <span>SCORE: {score}</span>
+        {/* Header Removed for space */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
+            <div style={{ display: 'flex', gap: '5px' }}>
+                {Array.from({ length: MAX_LIVES }).map((_, i) => (
+                    <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
+                ))}
             </div>
-
-            <div style={{ position: 'relative' }}>
-                <canvas
-                    ref={canvasRef}
-                    width={GAME_WIDTH}
-                    height={GAME_HEIGHT}
-                    style={{ border: '4px solid #00ccff', background: 'radial-gradient(circle, #001133 0%, #000000 100%)', borderRadius: '10px', boxShadow: '0 0 20px #00ccff40' }}
-                />
-
-                {!gameActive && !gameOver && !gameWon && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <p style={{ color: 'white', marginBottom: '10px' }}>Use <span style={{ fontWeight: 'bold' }}>ARROWS</span> to move.</p>
-                        <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#00ccff', border: 'none', borderRadius: '10px' }}>
-                            START MISSION
-                        </SquishyButton>
-                    </div>
-                )}
-
-                {gameOver && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
-                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
-                    </div>
-                )}
-
-                {gameWon && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: '#00ffaa' }}>VICTORY!</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '10px', color: '#fff' }}>GALAXY SAVED</p>
-                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: 'gold', color: 'black', border: 'none', borderRadius: '5px' }}>Play Again</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
-                    </div>
-                )}
-            </div>
-
-            {/* MOBILE CONTROLS */}
-            <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
-                    <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
-                </div>
-                <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
-            </div>
-
-            <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
+            <span>SCORE: {score}</span>
         </div>
-    );
+
+        <div style={{ position: 'relative' }}>
+            <canvas
+                ref={canvasRef}
+                width={GAME_WIDTH}
+                height={GAME_HEIGHT}
+                style={{ border: '4px solid #00ccff', background: 'radial-gradient(circle, #001133 0%, #000000 100%)', borderRadius: '10px', boxShadow: '0 0 20px #00ccff40' }}
+            />
+
+            {!gameActive && !gameOver && !gameWon && (
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                    <p style={{ color: 'white', marginBottom: '10px' }}>Use <span style={{ fontWeight: 'bold' }}>ARROWS</span> to move.</p>
+                    <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#00ccff', border: 'none', borderRadius: '10px' }}>
+                        START MISSION
+                    </SquishyButton>
+                </div>
+            )}
+
+            {gameOver && (
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
+                    <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
+                    <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
+                    <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                </div>
+            )}
+
+            {gameWon && (
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <h2 style={{ fontSize: '3rem', color: '#00ffaa' }}>VICTORY!</h2>
+                    <p style={{ fontSize: '1.5rem', marginBottom: '10px', color: '#fff' }}>GALAXY SAVED</p>
+                    <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: 'gold', color: 'black', border: 'none', borderRadius: '5px' }}>Play Again</SquishyButton>
+                    <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                </div>
+            )}
+        </div>
+
+        {/* MOBILE CONTROLS */}
+        <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
+                <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
+            </div>
+            <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
+        </div>
+
+        <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
+    </div>
+);
 };
 
 export default GalaxyDefender;
