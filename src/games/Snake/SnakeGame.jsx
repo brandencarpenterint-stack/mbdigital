@@ -22,6 +22,10 @@ const SnakeGame = () => {
     const { shopState } = useGamification() || {};
     const gameLoopRef = useRef();
 
+    // Swipe Refs
+    const touchStart = useRef({ x: 0, y: 0 });
+    const touchEnd = useRef({ x: 0, y: 0 });
+
 
     const getSegmentStyle = (index) => {
         const skin = shopState?.equipped?.snake || 'snake_default';
@@ -186,6 +190,35 @@ const SnakeGame = () => {
         playJump();
     };
 
+    // Swipe Handlers
+    const handleTouchStart = (e) => {
+        touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+
+    const handleTouchEnd = (e) => {
+        touchEnd.current = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        handleSwipe();
+    };
+
+    const handleSwipe = () => {
+        const dx = touchEnd.current.x - touchStart.current.x;
+        const dy = touchEnd.current.y - touchStart.current.y;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // Horizontal
+            if (Math.abs(dx) > 30) { // Threshold
+                if (dx > 0) handleDir('RIGHT');
+                else handleDir('LEFT');
+            }
+        } else {
+            // Vertical
+            if (Math.abs(dy) > 30) {
+                if (dy > 0) handleDir('DOWN');
+                else handleDir('UP');
+            }
+        }
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ffaa', width: '100%', maxWidth: '100%' }}>
             <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>NEON SNAKE</h1>
@@ -203,8 +236,11 @@ const SnakeGame = () => {
                 backgroundColor: '#000',
                 border: '4px solid #00ffaa',
                 boxShadow: '0 0 20px #00ffaa40',
-                touchAction: 'none' // Prevent scroll while swiping if we added swipe (we are using buttons for now)
-            }}>
+                touchAction: 'none' // Prevent scroll while swiping
+            }}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+            >
                 {/* Snake */}
                 {snake.map((segment, index) => (
                     <div key={`${segment.x}-${segment.y}`} style={getSegmentStyle(index)} />

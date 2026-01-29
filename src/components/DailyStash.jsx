@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SquishyButton from './SquishyButton';
 import { useGamification } from '../context/GamificationContext';
-import confetti from '../utils/confetti';
+import { triggerConfetti } from '../utils/confetti';
 
 const REWARDS = [
     { type: 'coins', amount: 50, label: '50 COINS', rare: false },
@@ -59,7 +59,7 @@ const DailyStash = ({ onClose }) => {
         setTimeout(() => {
             setReward(selected);
             setStatus('OPENED');
-            confetti();
+            triggerConfetti();
 
             // Apply Reward
             if (selected.type === 'coins') {

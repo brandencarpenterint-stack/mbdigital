@@ -301,7 +301,12 @@ const FlappyMascot = () => {
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
                     onMouseDown={handleInput}
-                    style={{ border: '4px solid #fff', borderRadius: '10px', boxShadow: '0 0 20px rgba(0,0,0,0.2)', cursor: 'pointer' }}
+                    onTouchStart={(e) => {
+                        // Prevent default to avoid scroll or ghost clicks
+                        if (e.cancelable) e.preventDefault();
+                        handleInput();
+                    }}
+                    style={{ border: '4px solid #fff', borderRadius: '10px', boxShadow: '0 0 20px rgba(0,0,0,0.2)', cursor: 'pointer', touchAction: 'none' }}
                 />
 
                 {!gameActive && !gameOver && (

@@ -454,13 +454,22 @@ const NeonBrickBreaker = () => {
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
+                    onTouchStart={(e) => {
+                        handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
+                    }}
+                    onTouchMove={(e) => {
+                        // Prevent default to stop scrolling
+                        if (e.cancelable) e.preventDefault();
+                        handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
+                    }}
                     style={{
                         background: '#111',
                         display: 'block',
                         maxWidth: '95vw',
                         maxHeight: '65vh', // Save room for controls
                         width: 'auto',
-                        height: 'auto'
+                        height: 'auto',
+                        touchAction: 'none'
                     }}
                 />
 
@@ -500,7 +509,7 @@ const NeonBrickBreaker = () => {
                 style={{
                     width: '95vw',
                     maxWidth: '800px', // Wider than game to catch edges
-                    height: '100px',
+                    height: '150px', // Taller for easier grabbing
                     marginTop: '10px',
                     background: 'linear-gradient(to bottom, #222, #111)',
                     borderRadius: '15px',

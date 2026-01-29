@@ -104,9 +104,19 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
 
     const getCoordinates = (e) => {
         const rect = colorCanvasRef.current.getBoundingClientRect();
+        let clientX, clientY;
+
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
         return {
-            x: Math.floor(e.clientX - rect.left),
-            y: Math.floor(e.clientY - rect.top)
+            x: Math.floor(clientX - rect.left),
+            y: Math.floor(clientY - rect.top)
         };
     };
 
@@ -240,6 +250,11 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
+
+                    onTouchStart={(e) => { e.preventDefault(); handleMouseDown(e); }}
+                    onTouchMove={(e) => { e.preventDefault(); handleMouseMove(e); }}
+                    onTouchEnd={(e) => { e.preventDefault(); handleMouseUp(); }}
+
                     style={{ position: 'absolute', top: 0, left: 0, touchAction: 'none' }}
                 />
                 <canvas
