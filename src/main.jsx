@@ -7,6 +7,7 @@ import { GamificationProvider } from './context/GamificationContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { PocketBroProvider } from './context/PocketBroContext'
 import { SquadProvider } from './context/SquadContext'
+import { InventoryProvider } from './context/InventoryContext'
 import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
@@ -16,9 +17,11 @@ createRoot(document.getElementById('root')).render(
         <GamificationProvider>
           <PocketBroProvider>
             <SquadProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
+              <InventoryProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </InventoryProvider>
             </SquadProvider>
           </PocketBroProvider>
         </GamificationProvider>

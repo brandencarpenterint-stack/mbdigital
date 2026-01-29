@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePocketBro } from '../context/PocketBroContext';
+import { useInventory } from '../context/InventoryContext';
 
 const TASKS = [
     { id: 'feed', icon: '🍗', label: 'FEED' },
@@ -9,6 +10,7 @@ const TASKS = [
 
 const PocketBro = () => {
     const { stats, feed, play, sleep, getMood } = usePocketBro();
+    const { activeSkin } = useInventory();
     const [message, setMessage] = useState("I'm here! 🥚");
     const [bounce, setBounce] = useState(false);
 
