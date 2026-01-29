@@ -204,6 +204,7 @@ const CrazyFishing = () => {
     const [caughtFish, setCaughtFish] = useState(null);
     const [measuredWeight, setMeasuredWeight] = useState(0);
     const [isNewRecord, setIsNewRecord] = useState(false);
+    const [zoneNotification, setZoneNotification] = useState(null);
 
     // USE GLOBAL SHOP STATE for skin and rod
     // USE GLOBAL SHOP STATE for skin and rod
@@ -307,7 +308,8 @@ const CrazyFishing = () => {
         castTimer: 0,
         particles: [],
         shake: 0,
-        bossSpawned: false
+        bossSpawned: false,
+        lastBiomeIndex: -1 // Track zones
     });
 
     const isMouseDown = useRef(false);
@@ -413,6 +415,12 @@ const CrazyFishing = () => {
         });
         state.particles = state.particles.filter(p => p.life > 0 && p.y > -100);
 
+        // Shake Decay
+        if (state.shake > 0) {
+            state.shake *= 0.9;
+            if (state.shake < 0.5) state.shake = 0;
+        }
+
         // --- BOBBER TRAILS ---
         if (equippedBobber && state.depth >= 0) {
             const isMoving = mode === 'DROPPING' || mode === 'REELING_UP';
@@ -461,7 +469,17 @@ const CrazyFishing = () => {
             state.depth += 0.45;
             if (state.depth > MAX_DEPTH) state.depth = MAX_DEPTH;
 
+            // Biome Check
             const currentBiome = BIOMES.find(b => state.depth <= b.maxDepth) || BIOMES[0];
+            const biomeIndex = BIOMES.indexOf(currentBiome);
+            if (biomeIndex !== state.lastBiomeIndex) {
+                state.lastBiomeIndex = biomeIndex;
+                if (biomeIndex > 0) {
+                    setZoneNotification(currentBiome.name);
+                    setTimeout(() => setZoneNotification(null), 3000);
+                    if (navigator.vibrate) navigator.vibrate(200);
+                }
+            }
 
             // 1. ATMOSPHERIC EFFECTS (25% Chance Activity)
             if (Math.random() > 0.98) { // Rare tick
@@ -748,6 +766,13 @@ const CrazyFishing = () => {
     };
 
     const drawGame = (ctx, mode, state) => {
+        ctx.save();
+        // Screen Shake
+        if (state.shake > 0) {
+            const dx = (Math.random() - 0.5) * state.shake;
+            const dy = (Math.random() - 0.5) * state.shake;
+            ctx.translate(dx, dy);
+        }
         // 1. DYNAMIC BACKGROUND (BIOME)
         const currentBiome = BIOMES.find(b => state.depth <= b.maxDepth) || BIOMES[0];
         // Gradient
@@ -981,6 +1006,7 @@ const CrazyFishing = () => {
             if (lineEndY >= CY) { ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(lineEndX, CY, (t - 80), 0, Math.PI); ctx.fill(); }
         }
 
+        ctx.restore();
         ctx.restore();
     };
 
@@ -1512,6 +1538,21 @@ const CrazyFishing = () => {
                             <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '15px', background: 'transparent', border: '1px solid #555', color: '#888', padding: '10px 30px', borderRadius: '20px' }}>DOCK</SquishyButton>
                         </div>
                     )}
+                    {/* ZONE NOTIFICATION */}
+                    <div style={{
+                        position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)',
+                        color: 'white', fontSize: '4rem', fontWeight: 'bold', textShadow: '0 0 20px cyan',
+                        opacity: zoneNotification ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: 'none',
+                        zIndex: 10, textAlign: 'center', fontFamily: '"Impact", sans-serif'
+                    }}>
+                        {zoneNotification && (
+                            <>
+                                <div style={{ fontSize: '1.2rem', color: '#aaf', letterSpacing: '5px' }}>ENTERING ZONE</div>
+                                {zoneNotification.toUpperCase()}
+                            </>
+                        )}
+                    </div>
+
                     {/* CONTROLS OVERLAY (Moved Inside) */}
                     <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', gap: '20px', justifyContent: 'center', pointerEvents: 'auto' }}>
                         <SquishyButton onClick={() => setGameState('FISHDEX')} style={{ background: '#006994', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid cyan', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px cyan' }}>
