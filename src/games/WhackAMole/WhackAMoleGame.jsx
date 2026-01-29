@@ -4,7 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 
-const MOLE_COUNT = 9;
+const MOLE_COUNT = 16;
 const GAME_DURATION = 30;
 
 const WhackAMoleGame = () => {
@@ -153,11 +153,11 @@ const WhackAMoleGame = () => {
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: 'repeat(4, 1fr)',
                 gap: '10px',
                 padding: '10px',
                 width: '100%',
-                maxWidth: '500px',
+                maxWidth: '600px',
                 aspectRatio: '1/1', // Keep square aspect ratio for the whole board
                 backgroundColor: '#2a2a40',
                 borderRadius: '20px',
@@ -167,44 +167,46 @@ const WhackAMoleGame = () => {
                 {moles.map((isUp, index) => (
                     <div
                         key={index}
-                        onMouseDown={() => handleWhack(index)} // Mouse
-                        onTouchStart={(e) => { e.preventDefault(); handleWhack(index); }} // Touch (prevent ghost clicks)
+                        onMouseDown={() => handleWhack(index)}
+                        onTouchStart={(e) => { e.preventDefault(); handleWhack(index); }}
                         style={{
                             width: '100%',
-                            height: '100%', // Fill grid cell
-                            backgroundColor: '#1a1a2e',
-                            borderRadius: '50%',
+                            height: '100%',
+                            backgroundColor: '#151525', // Darker cell background (Ground)
+                            borderRadius: '15px', // Rounded square
                             position: 'relative',
                             cursor: 'pointer',
-                            overflow: 'hidden',
+                            overflow: 'hidden', // Clip the mole when down
                             border: '2px solid #333',
-                            touchAction: 'none'
+                            touchAction: 'none',
+                            boxShadow: 'inset 0 0 10px #000'
                         }}
                     >
-                        {/* Hole Bottom */}
+                        {/* Hole Visual (Shadow) */}
                         <div style={{
                             position: 'absolute',
-                            bottom: 0,
+                            bottom: '10%',
                             left: '10%',
                             width: '80%',
-                            height: '30%',
+                            height: '25%',
                             backgroundColor: '#000',
-                            borderRadius: '50%'
+                            borderRadius: '50%',
+                            opacity: 0.6
                         }} />
 
-                        {/* Mole (Mascot) */}
+                        {/* Mole */}
                         <div style={{
                             position: 'absolute',
-                            bottom: isUp ? '10%' : '-150%', // Move further down
-                            left: '-20%', // Center the 140% width (20% overflow on each side)
-                            width: '140%', // Double-ish size
-                            height: '140%',
+                            bottom: isUp ? '15%' : '-100%', // Pop up position
+                            left: '0',
+                            width: '100%', // Full width of cell to maximize size
+                            height: '90%',
                             backgroundImage: `url(${IMAGES[moleTypes[index]] || IMAGES.default})`,
                             backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'center',
-                            transition: 'bottom 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Bouncy
-                            animation: isUp ? 'fullSpin 2s linear infinite' : 'none', // ROTATION
+                            backgroundPosition: 'bottom center',
+                            transition: 'bottom 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            animation: isUp ? 'fullSpin 2s linear infinite' : 'none',
                             zIndex: 10
                         }} />
                     </div>
