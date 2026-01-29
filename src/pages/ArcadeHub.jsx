@@ -15,10 +15,10 @@ const games = [
     },
     {
         id: 'face-runner',
-        title: 'FACE RUNNER',
-        desc: 'Infinite Glitch Runner',
-        gradient: 'linear-gradient(135deg, #FF0080 0%, #FF8C00 100%)',
-        icon: '🏃',
+        title: 'FACE WARP',
+        desc: '3D Tunnel Chaos',
+        gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
+        icon: '🌀',
         colSpan: 2,
         leaderboardId: 'face_runner'
     },

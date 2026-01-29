@@ -1,287 +1,295 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import SquishyButton from '../../components/SquishyButton';
+import useRetroSound from '../../hooks/useRetroSound';
 
 const FaceRunner = () => {
     const canvasRef = useRef(null);
     const { soundEnabled } = useSettings();
-    const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
-    const [score, setScore] = useState(0);
+    const { playCrash, playCollect, playWin } = useRetroSound();
 
     // Game Constants
-    const GRAVITY = 0.6;
-    const JUMP_FORCE = -10;
-    const SPEED = 5;
+    const CANVAS_WIDTH = 800;
+    const CANVAS_HEIGHT = 600;
+    const TUNNEL_DEPTH = 2000;
 
-    // Refs for game loop state (to avoid closure stale state)
-    const playerRef = useRef({ y: 0, dy: 0, grounded: false });
-    const obstaclesRef = useRef([]);
+    // State
+    const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
+    const [score, setScore] = useState(0);
+    const [selectedFace, setSelectedFace] = useState('face_money'); // default
+    const [speed, setSpeed] = useState(20);
+
+    // Refs
+    const playerRef = useRef({ x: 0, y: 0, tilt: 0, squash: 1 });
+    const obstaclesRef = useRef([]); // {x, y, z, type}
+    const particlesRef = useRef([]);
     const scoreRef = useRef(0);
-    const frameRef = useRef(0);
-    const animationFrameId = useRef(null);
+    const requestRef = useRef(null);
 
-    // Audio Context (Lazy load)
-    const audioCtxRef = useRef(null);
-    const playSound = (type) => {
-        if (!soundEnabled) return;
-        if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    // Assets
+    const faceImgs = useRef({});
 
-        const ctx = audioCtxRef.current;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        const now = ctx.currentTime;
-        if (type === 'jump') {
-            osc.frequency.setValueAtTime(300, now);
-            osc.frequency.linearRampToValueAtTime(500, now + 0.1);
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now);
-            osc.stop(now + 0.1);
-        } else if (type === 'hit') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(100, now);
-            osc.frequency.exponentialRampToValueAtTime(20, now + 0.3);
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        }
-    };
+    useEffect(() => {
+        // Preload Faces
+        const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default', 'face_cat'];
+        faces.forEach(f => {
+            const img = new Image();
+            img.src = `/assets/skins/${f}.png`;
+            faceImgs.current[f] = img;
+        });
+    }, []);
 
     const startGame = () => {
-        playerRef.current = { y: 200, dy: 0, grounded: false, rotation: 0 };
-        obstaclesRef.current = [];
-        scoreRef.current = 0;
-        frameRef.current = 0;
-        setScore(0);
         setGameState('PLAYING');
+        setScore(0);
+        setSpeed(20);
+        scoreRef.current = 0;
+        playerRef.current = { x: 0, y: 0, tilt: 0, squash: 1 };
+        obstaclesRef.current = [];
+        particlesRef.current = [];
+
+        // Init Loop
+        requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const jump = () => {
-        if (gameState !== 'PLAYING') return;
-        if (playerRef.current.grounded) {
-            playerRef.current.dy = JUMP_FORCE;
-            playerRef.current.grounded = false;
-            playSound('jump');
-            if (navigator.vibrate) navigator.vibrate(10);
+    const spawnObstacle = () => {
+        // Spawn far away (z = TUNNEL_DEPTH)
+        // x,y range: -width/2 to width/2
+        const spread = 800;
+        obstaclesRef.current.push({
+            x: (Math.random() - 0.5) * spread,
+            y: (Math.random() - 0.5) * spread,
+            z: TUNNEL_DEPTH,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            rot: Math.random() * Math.PI
+        });
+    };
+
+    const gameLoop = () => {
+        const ctx = canvasRef.current.getContext('2d');
+        const width = CANVAS_WIDTH;
+        const height = CANVAS_HEIGHT;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        // --- UPDATE ---
+
+        // Spawn
+        if (Math.random() < 0.05 + (scoreRef.current * 0.0001)) {
+            spawnObstacle();
         }
-    };
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        let groundY = canvas.height - 50;
+        // Move Obstacles
+        for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
+            const obs = obstaclesRef.current[i];
+            obs.z -= speed;
 
-        // Assets
-        const faceImg = new Image();
-        faceImg.src = '/assets/merchboy_face.png'; // Using Face as the Runner
-
-        const obstacleImg = new Image();
-        obstacleImg.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjZmYwMDU1Ii8+PC9zdmc+'; // Red Block
-
-        const loop = () => {
-            if (gameState !== 'PLAYING') return;
-
-            // Clear
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Ground
-            ctx.fillStyle = '#333';
-            ctx.fillRect(0, groundY, canvas.width, 50);
-
-            // Update Player
-            const p = playerRef.current;
-            p.dy += GRAVITY;
-            p.y += p.dy;
-
-            // Ground Collision
-            if (p.y + 40 > groundY) { // Assuming player is 40px
-                p.y = groundY - 40;
-                p.dy = 0;
-                p.grounded = true;
-                p.rotation = 0; // Reset rotation on land
-            } else {
-                p.grounded = false;
-                p.rotation += 5; // Spin in air!
+            if (obs.z <= 0) {
+                obstaclesRef.current.splice(i, 1);
+                scoreRef.current += 10;
+                setScore(scoreRef.current);
+                setSpeed(prev => Math.min(prev + 0.1, 80)); // Max Speed
             }
+        }
 
-            // Draw Player (Stick Figure + Face)
-            const x = 70; // Fixed x position
-            const y = p.y + 20; // Center y
-            const isGrounded = p.grounded;
-            const frame = frameRef.current;
+        // --- DRAW ---
+        // 1. Clear & Background
+        ctx.fillStyle = '#110022';
+        ctx.fillRect(0, 0, width, height);
+
+        // Tunnel Grid Effect
+        ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < 20; i++) {
+            // Concentric Lines
+            const z = (performance.now() * speed * 0.1 + i * 200) % 2000;
+            const s = 400 / (z + 1);
+            if (s > 0) {
+                ctx.rect(cx - width * s, cy - height * s, width * s * 2, height * s * 2);
+            }
+        }
+        // Radial Lines
+        ctx.moveTo(cx, cy); ctx.lineTo(0, 0);
+        ctx.moveTo(cx, cy); ctx.lineTo(width, 0);
+        ctx.moveTo(cx, cy); ctx.lineTo(0, height);
+        ctx.moveTo(cx, cy); ctx.lineTo(width, height);
+        ctx.stroke();
+
+
+        // 2. Draw Obstacles (Back to Front)
+        obstaclesRef.current.sort((a, b) => b.z - a.z); // Draw farthest first
+
+        obstaclesRef.current.forEach(obs => {
+            if (obs.z < 10) return; // Too close / behind
+
+            const fov = 600;
+            const scale = fov / obs.z;
+            const sx = cx + obs.x * scale;
+            const sy = cy + obs.y * scale;
+            const size = 150 * scale; // Base size of obstacle
 
             ctx.save();
-            ctx.translate(x, y);
+            ctx.translate(sx, sy);
+            ctx.rotate(obs.rot + (performance.now() * 0.005));
 
-            // Stick Styling
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#333';
-            ctx.lineCap = 'round';
-
-            // Animation Cycle
-            const runCycle = Math.sin(frame * 0.2) * 0.8;
-            const legL = isGrounded ? runCycle : -0.5; // Split if jumping
-            const legR = isGrounded ? -runCycle : 0.8;
-
-            // LEGS
-            // Left Leg
-            ctx.beginPath();
-            ctx.moveTo(0, 10); // Hip
-            ctx.lineTo(Math.sin(legL) * 20, 30 + Math.cos(legL) * 10);
-            ctx.stroke();
-
-            // Right Leg
-            ctx.beginPath();
-            ctx.moveTo(0, 10); // Hip
-            ctx.lineTo(Math.sin(legR) * 20, 30 + Math.cos(legR) * 10);
-            ctx.stroke();
-
-            // BODY (Tiny neck/body)
-            // ctx.beginPath();
-            // ctx.moveTo(0, 0);
-            // ctx.lineTo(0, 10);
-            // ctx.stroke();
-
-            // ARMS (Swinging)
-            const armL = isGrounded ? -runCycle : -2; // Hands up if jumping
-            const armR = isGrounded ? runCycle : -2;
-
-            // Left Arm
-            ctx.beginPath();
-            ctx.moveTo(-5, 5);
-            ctx.lineTo(-15 + Math.sin(armL) * 15, 15 + Math.cos(armL) * 10);
-            ctx.stroke();
-
-            // Right Arm
-            ctx.beginPath();
-            ctx.moveTo(5, 5);
-            ctx.lineTo(15 + Math.sin(armR) * 15, 15 + Math.cos(armR) * 10);
-            ctx.stroke();
-
-            // DRAW FACE
-            if (p.rotation !== 0) ctx.rotate(p.rotation * Math.PI / 180);
-
-            if (faceImg.complete) {
-                ctx.drawImage(faceImg, -20, -20, 40, 40);
-            } else {
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill();
-                ctx.stroke();
+            // Check Collision here where we know Screen X/Y
+            // Player is at PlayerRef.x + cx, PlayerRef.y + cy
+            if (obs.z < 100) {
+                const dx = sx - (cx + playerRef.current.x);
+                const dy = sy - (cy + playerRef.current.y);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < (size / 2 + 40)) { // 40 is player radius
+                    // CRASH
+                    handleCrash(ctx);
+                    return;
+                }
             }
+
+            ctx.fillStyle = obs.color;
+            ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
+            ctx.fillRect(-size / 2, -size / 2, size, size);
+
+            // Inner
+            ctx.fillStyle = 'black';
+            ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
 
             ctx.restore();
+        });
 
-            // Spawn Obstacles
-            frameRef.current++;
-            if (frameRef.current % 100 === 0) { // Every ~1.6 seconds
-                obstaclesRef.current.push({ x: canvas.width, w: 30, h: 50 }); // Tall block
-            }
+        if (gameState !== 'PLAYING') return;
 
-            // Update & Draw Obstacles
-            ctx.fillStyle = '#ff0055';
-            obstaclesRef.current.forEach((obs, i) => {
-                obs.x -= SPEED;
-                // Draw Spikes/Block
-                ctx.fillRect(obs.x, groundY - obs.h, obs.w, obs.h);
+        // 3. Draw Player Face
+        // Mouse controls offset
+        const p = playerRef.current;
+        p.tilt *= 0.9;
+        p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05; // Breathing
 
-                // Collision Detection
-                // Simple AABB
-                if (
-                    50 < obs.x + obs.w &&
-                    50 + 30 > obs.x &&
-                    p.y < groundY &&
-                    p.y + 40 > groundY - obs.h
-                ) {
-                    setGameState('GAME_OVER');
-                    playSound('hit');
-                    if (navigator.vibrate) navigator.vibrate(200);
-                }
+        ctx.save();
+        ctx.translate(cx + p.x, cy + p.y);
+        ctx.rotate(p.x * 0.001); // Tilt based on movement
+        ctx.scale(p.squash, 1 / p.squash);
 
-                // Cleanup
-                if (obs.x + obs.w < 0) {
-                    obstaclesRef.current.shift();
-                    scoreRef.current += 1;
-                    setScore(scoreRef.current);
-                }
-            });
-
-            animationFrameId.current = requestAnimationFrame(loop);
-        };
-
-        if (gameState === 'PLAYING') {
-            animationFrameId.current = requestAnimationFrame(loop);
+        const img = faceImgs.current[selectedFace];
+        const faceSize = 120; // Big face!
+        if (img && img.complete) {
+            ctx.drawImage(img, -faceSize / 2, -faceSize / 2, faceSize, faceSize);
+        } else {
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(0, 0, faceSize / 2, 0, Math.PI * 2); ctx.fill();
         }
 
-        return () => cancelAnimationFrame(animationFrameId.current);
-    }, [gameState]);
+        ctx.restore();
 
-    // Handle Input
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp') {
-                if (gameState === 'START' || gameState === 'GAME_OVER') startGame();
-                else jump();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [gameState]);
+        requestRef.current = requestAnimationFrame(gameLoop);
+    };
+
+    const handleCrash = (ctx) => {
+        const finalScore = scoreRef.current;
+        const highScore = parseInt(localStorage.getItem('faceRunnerHighScore')) || 0;
+        if (finalScore > highScore) {
+            localStorage.setItem('faceRunnerHighScore', finalScore);
+        }
+        setGameState('GAME_OVER');
+        playCrash();
+        cancelAnimationFrame(requestRef.current);
+    };
+
+    const handleMouseMove = (e) => {
+        if (gameState !== 'PLAYING') return;
+        const rect = canvasRef.current.getBoundingClientRect();
+        const scaleX = CANVAS_WIDTH / rect.width;
+        const scaleY = CANVAS_HEIGHT / rect.height;
+
+        // Relative to center
+        // Limit movement
+        const rawX = (e.clientX - rect.left) * scaleX - (CANVAS_WIDTH / 2);
+        const rawY = (e.clientY - rect.top) * scaleY - (CANVAS_HEIGHT / 2);
+
+        playerRef.current.x = rawX;
+        playerRef.current.y = rawY;
+    };
 
     return (
         <div style={{
-            width: '100%',
-            height: '100vh',
-            background: 'linear-gradient(180deg, #87CEEB 0%, #fff 100%)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: '"Press Start 2P", monospace'
-        }}
-            onClick={() => {
-                if (gameState === 'START' || gameState === 'GAME_OVER') startGame();
-                else jump();
-            }}
-        >
-            <h1 style={{ color: '#ff0055', textShadow: '2px 2px #333', marginBottom: '20px' }}>FACE RUNNER</h1>
+            width: '100%', minHeight: '100vh',
+            background: '#0a0a1a',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontFamily: '"Orbitron", sans-serif',
+            overflow: 'hidden'
+        }}>
+            <h1 style={{ fontSize: '3rem', color: '#00ffaa', textShadow: '0 0 20px #00ffaa', marginBottom: '10px' }}>FACE WARP</h1>
 
-            <div style={{ position: 'relative', border: '4px solid #333', boxShadow: '10px 10px 0 rgba(0,0,0,0.2)' }}>
+            <div style={{
+                position: 'relative',
+                border: '4px solid #00ffaa',
+                boxShadow: '0 0 50px rgba(0, 255, 170, 0.2)',
+                cursor: 'none' // Hide cursor for immersion
+            }}>
                 <canvas
                     ref={canvasRef}
-                    width={800}
-                    height={400}
-                    style={{ background: '#f0f0f0', maxWidth: '100%' }}
+                    width={CANVAS_WIDTH}
+                    height={CANVAS_HEIGHT}
+                    onMouseMove={handleMouseMove}
+                    onTouchMove={(e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+                    }}
+                    style={{ background: 'black', display: 'block', maxWidth: '100vw' }}
                 />
 
+                {/* UI OVERLAY */}
                 {gameState !== 'PLAYING' && (
                     <div style={{
-                        position: 'absolute',
-                        top: 0, left: 0, width: '100%', height: '100%',
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        color: 'white'
+                        position: 'absolute', inset: 0,
+                        background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'default'
                     }}>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>
-                            {gameState === 'START' ? 'TAP TO RUN' : 'GAME OVER'}
-                        </h2>
-                        {gameState === 'GAME_OVER' && <p>Score: {score}</p>}
-                        <p className="blink">Press Space or Tap</p>
+                        {gameState === 'GAME_OVER' && (
+                            <>
+                                <h2 style={{ fontSize: '4rem', color: '#ff0055', margin: 0 }}>CRASHED!</h2>
+                                <p style={{ fontSize: '2rem' }}>Score: {score}</p>
+                            </>
+                        )}
+
+                        <div style={{ margin: '30px 0', display: 'flex', gap: '20px' }}>
+                            {['face_money', 'face_bear', 'face_bunny', 'face_cat', 'face_default'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setSelectedFace(f)}
+                                    style={{
+                                        background: selectedFace === f ? '#00ffaa' : '#333',
+                                        border: 'none', borderRadius: '10px', padding: '10px',
+                                        transform: selectedFace === f ? 'scale(1.1)' : 'scale(1)',
+                                        transition: 'all 0.2s',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <img src={`/assets/skins/${f}.png`} width="60" height="60" style={{ display: 'block' }} />
+                                </button>
+                            ))}
+                        </div>
+
+                        <SquishyButton onClick={startGame} style={{
+                            fontSize: '2rem', padding: '20px 60px',
+                            background: 'linear-gradient(45deg, #00ffaa, #00ccff)',
+                            color: 'black', fontWeight: '900'
+                        }}>
+                            {gameState === 'START' ? 'ENTER TUNNEL' : 'WARP AGAIN'}
+                        </SquishyButton>
                     </div>
                 )}
 
-                <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '1.5rem', color: '#333' }}>
-                    SCORE: {score}
-                </div>
+                {gameState === 'PLAYING' && (
+                    <div style={{ position: 'absolute', top: 20, right: 20, fontSize: '2rem', fontWeight: 'bold' }}>
+                        SCORE: {score}
+                    </div>
+                )}
             </div>
 
-            <p style={{ marginTop: '20px', color: '#666' }}>Jump over the glitches!</p>
+            <p style={{ marginTop: '20px', color: '#888' }}>Use Mouse/Touch to dodge the blocks!</p>
         </div>
     );
 };
