@@ -108,127 +108,163 @@ const SubSlayer = () => {
     const totalSavedYearly = slainSubs.reduce((acc, sub) => acc + sub.price, 0) * 12;
 
     return (
-        <div style={{
-            background: 'linear-gradient(to bottom right, #1a0b2e, #000000)',
+        <div className="page-enter" style={{
+            background: 'linear-gradient(to bottom right, #000000, #1a0b2e)',
             minHeight: '100vh',
             color: 'white',
-            padding: '100px 20px 40px',
+            padding: '40px 20px 120px',
             fontFamily: 'Inter, sans-serif'
         }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
                 {/* Header Stats */}
                 <div style={{
-                    textAlign: 'center',
-                    marginBottom: '50px',
-                    animation: 'fadeIn 1s ease'
+                    textAlign: 'center', marginBottom: '50px'
                 }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '10px' }}>⚔️</div>
                     <h1 style={{
-                        fontFamily: 'Kanit, sans-serif',
-                        fontSize: '3rem',
+                        fontFamily: '"Orbitron", sans-serif',
+                        fontSize: '3.5rem',
                         margin: '0',
-                        background: 'linear-gradient(to right, #ff0055, #ff4d4d)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        textTransform: 'uppercase'
+                        color: 'var(--neon-pink)',
+                        textShadow: '0 0 30px rgba(255, 0, 85, 0.4)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px'
                     }}>
-                        Sub Slayer
+                        SUB SLAYER
                     </h1>
-                    <p style={{ color: '#aaa', marginTop: '10px' }}>Audit your recurring expenses. Kill the waste.</p>
+                    <p style={{ color: '#aaa', marginTop: '10px', fontSize: '1.1rem' }}>Audit your recurring expenses. <span style={{ color: 'var(--neon-pink)', fontWeight: 'bold' }}>Kill the waste.</span></p>
                 </div>
 
                 {/* Dashboard Cards */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                     gap: '20px',
-                    marginBottom: '40px'
+                    marginBottom: '50px'
                 }}>
-                    <div style={{ background: '#111', padding: '20px', borderRadius: '15px', border: '1px solid #333', textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.9rem', color: '#888', textTransform: 'uppercase' }}>Monthly Cost</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#fff' }}>${totalMonthly.toFixed(2)}</div>
+                    <div className="glass-panel" style={{ padding: '25px', textAlign: 'center', borderTop: '4px solid #fff' }}>
+                        <div style={{ fontSize: '0.9rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Monthly Cost</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#fff', fontFamily: '"Orbitron", sans-serif' }}>${totalMonthly.toFixed(2)}</div>
                     </div>
 
-                    <div style={{ background: '#111', padding: '20px', borderRadius: '15px', border: '1px solid #ff0055', textAlign: 'center', boxShadow: '0 0 20px rgba(255, 0, 85, 0.2)' }}>
-                        <div style={{ fontSize: '0.9rem', color: '#ff4d4d', textTransform: 'uppercase', fontWeight: 'bold' }}>Yearly Bleed</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ff0055' }}>${totalYearly.toFixed(2)}</div>
+                    <div className="glass-panel" style={{
+                        padding: '25px', textAlign: 'center',
+                        borderTop: '4px solid var(--neon-pink)',
+                        background: 'rgba(255, 0, 85, 0.05)'
+                    }}>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--neon-pink)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }}>Yearly Bleed</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--neon-pink)', fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 15px rgba(255, 0, 85, 0.4)' }}>
+                            ${totalYearly.toFixed(2)}
+                        </div>
                     </div>
 
-                    <div style={{ background: '#0a2a1a', padding: '20px', borderRadius: '15px', border: '1px solid #00ffaa', textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.9rem', color: '#00ffaa', textTransform: 'uppercase' }}>Total Saved / Yr</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#00ffaa' }}>${totalSavedYearly.toFixed(2)}</div>
+                    <div className="glass-panel" style={{
+                        padding: '25px', textAlign: 'center',
+                        borderTop: '4px solid var(--neon-green)',
+                        background: 'rgba(0, 255, 170, 0.05)'
+                    }}>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--neon-green)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Saved / Yr</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 15px rgba(0, 255, 170, 0.4)' }}>
+                            ${totalSavedYearly.toFixed(2)}
+                        </div>
                     </div>
                 </div>
 
                 {/* Active Subs List */}
-                <h2 style={{ borderBottom: '1px solid #333', paddingBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>Active Subscriptions ({mySubs.length})</span>
+                <h2 style={{
+                    borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    fontFamily: '"Orbitron", sans-serif', letterSpacing: '1px'
+                }}>
+                    <span>ACTIVE SUBS ({mySubs.length})</span>
                     <button
+                        className="squishy-btn"
                         onClick={() => setIsAdding(!isAdding)}
-                        style={{ background: '#0070f3', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{
+                            background: 'var(--neon-blue)', color: 'black',
+                            border: 'none', padding: '10px 20px', borderRadius: '30px',
+                            cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem'
+                        }}
                     >
-                        + Add New
+                        + ADD NEW
                     </button>
                 </h2>
 
                 {/* Add Menu */}
                 {isAdding && (
-                    <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '15px', marginBottom: '20px', animation: 'slideDown 0.3s' }}>
-                        <h3 style={{ marginTop: 0 }}>Quick Add</h3>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+                    <div className="glass-panel" style={{ padding: '25px', marginBottom: '30px', animation: 'slideDown 0.3s' }}>
+                        <h3 style={{ marginTop: 0, color: 'var(--neon-blue)', fontFamily: '"Orbitron", sans-serif' }}>QUICK ADD</h3>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px' }}>
                             {COMMON_SUBS.map(sub => (
                                 <button
                                     key={sub.id}
                                     onClick={() => addSub(sub)}
                                     disabled={mySubs.some(s => s.id === sub.id)}
                                     style={{
-                                        padding: '8px 15px',
-                                        borderRadius: '20px',
-                                        border: '1px solid #333',
-                                        background: mySubs.some(s => s.id === sub.id) ? '#333' : 'black',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        opacity: mySubs.some(s => s.id === sub.id) ? 0.5 : 1
+                                        padding: '10px 20px',
+                                        borderRadius: '25px',
+                                        border: mySubs.some(s => s.id === sub.id) ? '1px solid #333' : '1px solid rgba(255,255,255,0.2)',
+                                        background: mySubs.some(s => s.id === sub.id) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.1)',
+                                        color: mySubs.some(s => s.id === sub.id) ? '#555' : 'white',
+                                        cursor: mySubs.some(s => s.id === sub.id) ? 'default' : 'pointer',
+                                        fontWeight: 'bold',
+                                        transition: 'background 0.2s'
                                     }}
                                 >
-                                    {sub.name} (${sub.price})
+                                    {sub.name} <span style={{ opacity: 0.7 }}>${sub.price}</span>
                                 </button>
                             ))}
                         </div>
 
-                        <h3 style={{ marginTop: 0 }}>Custom Sub</h3>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <h3 style={{ marginTop: 0, color: 'var(--neon-blue)', fontFamily: '"Orbitron", sans-serif' }}>CUSTOM SUB</h3>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                             <input
                                 placeholder="Service Name"
                                 value={customName}
                                 onChange={e => setCustomName(e.target.value)}
-                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#333', color: 'white' }}
+                                style={{
+                                    flex: 1, padding: '15px', borderRadius: '10px',
+                                    border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white',
+                                    minWidth: '200px'
+                                }}
                             />
                             <input
                                 type="number"
-                                placeholder="Monthly Cost"
+                                placeholder="Cost"
                                 value={customPrice}
                                 onChange={e => setCustomPrice(e.target.value)}
-                                style={{ width: '100px', padding: '10px', borderRadius: '8px', border: 'none', background: '#333', color: 'white' }}
+                                style={{
+                                    width: '100px', padding: '15px', borderRadius: '10px',
+                                    border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white'
+                                }}
                             />
-                            <button onClick={addCustomSub} style={{ background: '#00ffaa', border: 'none', borderRadius: '8px', padding: '0 20px', cursor: 'pointer', color: 'black', fontWeight: 'bold' }}>Add</button>
+                            <button
+                                onClick={addCustomSub}
+                                className="squishy-btn"
+                                style={{
+                                    background: 'var(--neon-green)', border: 'none', borderRadius: '10px',
+                                    padding: '0 30px', cursor: 'pointer', color: 'black', fontWeight: 'bold'
+                                }}
+                            >
+                                ADD
+                            </button>
                         </div>
                     </div>
                 )}
 
                 {/* Subscription Cards */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '50px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '60px' }}>
                     {mySubs.length === 0 && !isAdding && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#555', border: '2px dashed #333', borderRadius: '15px' }}>
-                            No active subscriptions. Are you sure? That's impressive.
+                        <div style={{ textAlign: 'center', padding: '60px', color: '#555', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '15px' }}>
+                            <div style={{ fontSize: '3rem', opacity: 0.3, marginBottom: '10px' }}>🧘</div>
+                            No active subscriptions.<br />Are you sure? That's impressive.
                         </div>
                     )}
 
                     {mySubs.map((sub, i) => (
-                        <div key={i} style={{
-                            background: '#111',
-                            padding: '20px',
-                            borderRadius: '15px',
+                        <div key={i} className="glass-panel" style={{
+                            padding: '20px 25px',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
@@ -237,25 +273,29 @@ const SubSlayer = () => {
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <div>
-                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{sub.name}</div>
-                                    <div style={{ color: '#888', fontSize: '0.9rem' }}>${sub.price}/mo &bull; <span style={{ color: '#ff4d4d' }}>${(sub.price * 12).toFixed(2)}/yr</span></div>
+                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '5px' }}>{sub.name}</div>
+                                    <div style={{ color: '#aaa', fontSize: '0.9rem' }}>
+                                        ${sub.price}/mo <span style={{ opacity: 0.3 }}>|</span> <span style={{ color: 'var(--neon-pink)' }}>${(sub.price * 12).toFixed(2)}/yr</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <button
+                                className="squishy-btn"
                                 onClick={() => slaySub(sub)}
                                 style={{
-                                    background: '#ff0055',
+                                    background: 'var(--neon-pink)',
                                     color: 'white',
                                     border: 'none',
-                                    padding: '10px 20px',
+                                    padding: '10px 25px',
                                     borderRadius: '50px',
                                     cursor: 'pointer',
-                                    fontWeight: 'bold',
+                                    fontWeight: '900',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '5px',
-                                    boxShadow: '0 4px 10px rgba(255, 0, 85, 0.4)'
+                                    gap: '8px',
+                                    boxShadow: '0 5px 15px rgba(255, 0, 85, 0.3)',
+                                    fontSize: '0.9rem'
                                 }}
                             >
                                 ⚔️ SLAY
@@ -266,23 +306,23 @@ const SubSlayer = () => {
 
                 {/* Graveyard */}
                 {slainSubs.length > 0 && (
-                    <div style={{ opacity: 0.6 }}>
-                        <h3 style={{ color: '#888' }}>Graveyard (Saved Money)</h3>
+                    <div className="glass-panel" style={{ padding: '30px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <h3 style={{ color: '#666', marginTop: 0, fontFamily: '"Orbitron", sans-serif', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            🪦 GRAVEYARD <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>(SAVED MONEY)</span>
+                        </h3>
                         {slainSubs.map((sub, i) => (
                             <div key={i} style={{
-                                background: '#1a0b0b',
                                 padding: '15px',
-                                borderRadius: '10px',
-                                marginBottom: '10px',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                border: '1px solid #331111'
+                                color: '#666'
                             }}>
-                                <span style={{ textDecoration: 'line-through', color: '#666' }}>{sub.name}</span>
-                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                    <span style={{ color: '#00ffaa' }}>+${(sub.price * 12).toFixed(2)}/yr</span>
-                                    <button onClick={() => restoreSub(sub)} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer' }}>↺</button>
+                                <span style={{ textDecoration: 'line-through' }}>{sub.name}</span>
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--neon-green)', fontWeight: 'bold' }}>+${(sub.price * 12).toFixed(2)}/yr</span>
+                                    <button onClick={() => restoreSub(sub)} style={{ background: 'transparent', border: 'none', color: '#444', cursor: 'pointer', fontSize: '1.2rem', title: 'Restore' }}>↺</button>
                                 </div>
                             </div>
                         ))}
