@@ -581,10 +581,18 @@ const CrazyFishing = () => {
                             shiny: isShiny
                         };
 
+                        // SPAWN LOGIC: 20% Top Down
+                        const fromTop = Math.random() > 0.8;
+                        const isEel = type.id === 'eel' || type.id === 'snake';
+                        const swimUp = isEel && Math.random() > 0.5;
+
                         state.fish.push({
                             x: Math.random() * (GAME_WIDTH - 40),
-                            y: GAME_HEIGHT + 50,
-                            type, id: Math.random(), dir: Math.random() > 0.5 ? 1 : -1
+                            y: fromTop ? -50 : (swimUp ? GAME_HEIGHT + 50 : GAME_HEIGHT + 50),
+                            type, id: Math.random(),
+                            dir: Math.random() > 0.5 ? 1 : -1,
+                            fromTop: fromTop,
+                            swimUp: swimUp
                         });
                     }
                 }
@@ -593,9 +601,17 @@ const CrazyFishing = () => {
             // Move Fish
             state.fish.forEach(f => {
                 if (mode === 'REELING_UP') {
-                    f.y += 25; // Faster Zoom down during ascent
+                    f.y += 25;
                 } else {
-                    f.y -= 3; // Parallax up during descent
+                    // Normal Dropping Movement
+                    if (f.fromTop) {
+                        f.y += 1; // Moves slightly UP screen (slower than camera)
+                    } else if (f.swimUp) {
+                        f.y -= 6; // Swim UP fast
+                        f.x += Math.sin(state.depth * 0.1) * 5; // Squiggly
+                    } else {
+                        f.y -= 3; // Standard Parallax
+                    }
                 }
 
                 f.x += f.dir * 2;
@@ -767,6 +783,12 @@ const CrazyFishing = () => {
 
     const drawGame = (ctx, mode, state) => {
         ctx.save();
+        if (state.shake > 0) {
+            const dx = (Math.random() - 0.5) * state.shake;
+            const dy = (Math.random() - 0.5) * state.shake;
+            ctx.translate(dx, dy);
+        }
+        ctx.save();
         // Screen Shake
         if (state.shake > 0) {
             const dx = (Math.random() - 0.5) * state.shake;
@@ -791,12 +813,14 @@ const CrazyFishing = () => {
         if (mode === 'CASTING' || mode === 'IDLE' || mode === 'SHOP' || mode === 'FISHDEX') {
             // In IDLE/SHOP/DEX, we still want to show the boat background
             drawCasting(ctx, state);
+            ctx.restore();
             return;
         }
 
         // 3. SHOWCASE ANIMATION
         if (mode === 'SHOWCASE_CATCH') {
             drawShowcase(ctx, state);
+            ctx.restore();
             return;
         }
 
