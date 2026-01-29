@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useGamification } from '../context/GamificationContext';
+import useRetroSound from '../hooks/useRetroSound';
+import { triggerConfetti } from '../utils/confetti';
 
 const COMMON_SUBS = [
     // STREAMING
@@ -56,6 +59,9 @@ const SubSlayer = () => {
     const [customName, setCustomName] = useState('');
     const [customPrice, setCustomPrice] = useState('');
 
+    const { addCoins } = useGamification() || { addCoins: () => { } };
+    const { playWin, playCollect } = useRetroSound();
+
     useEffect(() => {
         localStorage.setItem('subSlayerData', JSON.stringify(mySubs));
         localStorage.setItem('subSlayerKills', JSON.stringify(slainSubs));
@@ -95,6 +101,14 @@ const SubSlayer = () => {
         } else {
             alert(`No direct link for ${sub.name}. Check your bank statement or settings!`);
         }
+
+        // GAMIFICATION REWARD
+        const coinReward = Math.floor(sub.price * 100);
+        addCoins(coinReward);
+        playWin();
+        triggerConfetti();
+        // Delay alert slightly to allow confetti to start
+        setTimeout(() => alert(`⚔️ SUBSCRIPTION SLAIN! ⚔️\n\nTo reward your fiscal responsibility, you have been awarded:\n💰 ${coinReward} ARCADE COINS!`), 500);
     };
 
     const restoreSub = (sub) => {
