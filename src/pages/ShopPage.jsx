@@ -167,7 +167,7 @@ const ShopPage = () => {
 
             {/* ITEMS GRID */}
             <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))',
                 gap: '25px', maxWidth: '1200px', margin: '0 auto'
             }}>
                 {filteredItems.map(item => {
