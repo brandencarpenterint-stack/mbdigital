@@ -1,5 +1,8 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import DailyZone from '../components/DailyZone';
+import LiveFeed from '../components/LiveFeed';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
 
@@ -88,7 +91,7 @@ const games = [
 ];
 
 const getHighScore = (id) => {
-    const key = `${id}HighScore`;
+    const key = `${id} HighScore`;
     let storageKey = '';
     if (id === 'snake') storageKey = 'snakeHighScore';
     if (id === 'whack') storageKey = 'whackHighScore';
@@ -122,8 +125,8 @@ const ArcadeHub = () => {
             </h1>
             <p style={{ fontSize: 'clamp(1rem, 4vw, 1.2rem)', marginBottom: '40px' }}>Select a game to start playing!</p>
 
-            {/* DAILY ZONE MOVED TO HEADER */}
-            {/* <DailyZone /> */}
+            {/* Live Global Feed */}
+            <LiveFeed />
 
             <div style={{ marginBottom: '30px' }}>
                 <Link to="/shop" style={{
@@ -166,7 +169,7 @@ const ArcadeHub = () => {
                 width: '100%'
             }}>
                 {games.map(game => (
-                    <Link to={`/arcade/${game.id}`} key={game.id} className="bento-card game-card-hover" style={{
+                    <Link to={`/ arcade / ${game.id} `} key={game.id} className="bento-card game-card-hover" style={{
                         background: game.gradient,
                         padding: '25px',
                         textDecoration: 'none',
