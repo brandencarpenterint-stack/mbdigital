@@ -553,11 +553,21 @@ const CrazyFishing = () => {
 
             // Move Fish
             state.fish.forEach(f => {
-                f.y -= 3; // Parallax speed (slower to match drop)
+                if (mode === 'REELING_UP') {
+                    f.y += 15; // Zoom down during ascent
+                } else {
+                    f.y -= 3; // Parallax up during descent
+                }
+
                 f.x += f.dir * 2;
                 if (f.x < 0 || f.x > GAME_WIDTH - 40) f.dir *= -1;
             });
-            state.fish = state.fish.filter(f => f.y > -50);
+            // Filter logic: In reel up, we want to keep them until they hit bottom
+            if (mode === 'REELING_UP') {
+                state.fish = state.fish.filter(f => f.y < GAME_HEIGHT + 100);
+            } else {
+                state.fish = state.fish.filter(f => f.y > -50);
+            }
 
             // Bounds Collision (Hook)
             const hookRect = { x: state.hookX - 10, y: state.hookY - 10, w: 20, h: 20 };
@@ -580,19 +590,19 @@ const CrazyFishing = () => {
 
         // BATTLE
         if (mode === 'BATTLE' && state.battleFish) {
-            // Bar Logic (Inertia based - Stardew style)
-            if (isMouseDown.current) state.barVel += 0.2; else state.barVel -= 0.2; // Slightly heavies
+            // Bar Logic (Inertia based - Snappier/Harder)
+            if (isMouseDown.current) state.barVel += 0.4; else state.barVel -= 0.3; // Increased gravity/lift
             state.barPos += state.barVel;
 
             // Bounce/Clamping
             const maxBar = BAR_AREA_HEIGHT - BAR_HEIGHT;
-            if (state.barPos < 0) { state.barPos = 0; state.barVel = 0; } // Floor stop (easier than bounce)
+            if (state.barPos < 0) { state.barPos = 0; state.barVel = 0; }
             if (state.barPos > maxBar) { state.barPos = maxBar; state.barVel = 0; }
 
             // Fish AI (Smoother, Stardew-like patterns)
             const { pattern } = state.battleFish;
-            // Base speed reduced for readable pace
-            const speed = (state.battleFish.speed || 1) * 0.8;
+            // Base speed increase for challenge
+            const speed = (state.battleFish.speed || 1) * 1.0;
 
             state.fishTimer++;
             const maxFish = BAR_AREA_HEIGHT - 40;
@@ -650,18 +660,8 @@ const CrazyFishing = () => {
             const difficultyMod = Math.min((state.battleFish.score || 10) * 0.0005, 0.3); // Cap max drain penalty
 
             if (overlap) {
-                state.catchPercent += 0.3; // Steady progress (approx 5-6s to catch if perfect)
-
-                // JUICE: Sparks
-                if (Math.random() > 0.8) {
-                    state.particles.push({
-                        x: 300 + (Math.random() - 0.5) * 50,
-                        y: state.fishPos + 100,
-                        life: 0.5, char: '✨', color: '#ff0', size: 15, dx: 0, dy: -2
-                    });
-                }
-            }
-            else {
+                state.catchPercent += 0.3; // Steady progress
+            } else {
                 // DRAIN (Fish escaping)
                 const drain = 0.1 + difficultyMod; // Base drain 0.1, Max drain 0.4
                 state.catchPercent -= drain;
@@ -683,19 +683,20 @@ const CrazyFishing = () => {
 
         // REELING UP (Reverse Journey)
         if (mode === 'REELING_UP') {
-            state.depth -= 10; // Fast ascent
+            state.depth -= 15; // Faster ascent
 
-            // Speed Lines
-            if (Math.random() > 0.5) {
-                state.particles.push({
-                    x: Math.random() * GAME_WIDTH,
-                    y: -50,
-                    dx: 0, dy: 20 + Math.random() * 10,
-                    life: 0.5, char: '|'
-                });
+            // Spawn Passing Fish (Visual only)
+            if (Math.random() > 0.7) {
+                const choices = FISH_DATA.filter(f => state.depth >= f.minDepth && state.depth <= f.maxDepth);
+                if (choices.length > 0) {
+                    const base = choices[Math.floor(Math.random() * choices.length)];
+                    state.fish.push({
+                        x: Math.random() * (GAME_WIDTH - 40),
+                        y: -50, // Spawn top
+                        type: base, id: Math.random(), dir: Math.random() > 0.5 ? 1 : -1
+                    });
+                }
             }
-            state.particles.forEach(p => { p.y += p.dy; p.life -= 0.1 });
-            state.particles = state.particles.filter(p => p.life > 0);
 
             if (state.depth <= 0) {
                 // Instead of direct success, go into SHOWCASE
@@ -708,17 +709,8 @@ const CrazyFishing = () => {
         if (mode === 'SHOWCASE_CATCH') {
             state.castTimer++; // Reuse timer for animation
 
-            // Spawn God Rays / Sparkles
-            if (state.castTimer < 60 && Math.random() > 0.5) {
-                state.particles.push({
-                    x: 250, y: 250,
-                    dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10,
-                    life: 1, char: '✨'
-                });
-            }
-
-            // After 2 seconds, show UI
-            if (state.castTimer > 120) {
+            // Fast showcase
+            if (state.castTimer > 30) {
                 catchSuccess();
             }
         }
