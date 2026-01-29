@@ -31,7 +31,7 @@ const games = [
         desc: 'Rocket High! 🚀',
         gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
         icon: '🚀',
-        colSpan: 2,
+        colSpan: 1, // Debug: changed to 1
         leaderboardId: 'merch_jump'
     },
     {
