@@ -247,7 +247,7 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
             )}
 
             {/* Canvas Stack */}
-            <div ref={canvasContainerRef} style={{ position: 'relative', width: '500px', height: '500px', border: '4px solid gold', borderRadius: '10px', background: 'white' }}>
+            <div ref={canvasContainerRef} style={{ position: 'relative', width: '100%', maxWidth: '500px', aspectRatio: '1/1', border: '4px solid gold', borderRadius: '10px', background: 'white' }}>
                 <canvas
                     ref={colorCanvasRef}
                     onMouseDown={handleMouseDown}

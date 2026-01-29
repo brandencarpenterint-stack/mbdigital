@@ -6,11 +6,10 @@ import { triggerConfetti } from '../utils/confetti';
 import useRetroSound from '../hooks/useRetroSound';
 
 const TEMPLATES = [
-    { id: 1, src: '/assets/coloring-page-1.png', title: 'Start', cost: 0 },
-    { id: 2, src: '/assets/coloring-page-2.png', title: 'Boy', cost: 100 },
-    { id: 3, src: '/assets/coloring-page-3.png', title: 'Brokid', cost: 100 },
-    { id: 4, src: '/assets/coloring-page-4.png', title: 'Love', cost: 100 },
-    { id: 5, src: '/assets/coloring-page-5.png', title: 'Family', cost: 100 },
+    { id: 1, src: '/assets/skins/face_money.png', title: 'Money Face', cost: 0 },
+    { id: 2, src: '/assets/skins/face_bear.png', title: 'Bear Face', cost: 0 },
+    { id: 3, src: '/assets/skins/face_bunny.png', title: 'Bunny Face', cost: 0 },
+    { id: 4, src: '/assets/skins/face_default.png', title: 'Standard', cost: 0 },
 ];
 
 const Coloring = () => {
