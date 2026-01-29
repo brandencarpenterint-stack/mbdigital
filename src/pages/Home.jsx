@@ -1,129 +1,166 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
-
-import DailyStash from '../components/DailyStash';
-
 import { useSquad } from '../context/SquadContext';
 import { usePocketBro } from '../context/PocketBroContext';
 
-// Main Cards are now handled by CSS classes 'bento-card'
-const BentoGrid = ({ children }) => (
-    <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '20px',
-        paddingBottom: '100px'
-    }}>
-        {children}
-    </div>
-);
-
 const Home = () => {
-    const { squadScores, userSquad } = useSquad();
-    const { stats, feed, getMood } = usePocketBro();
+    const { squadScores } = useSquad();
+    const { getMood } = usePocketBro();
 
-    // Squad Calcs
-    const totalScore = squadScores ? (squadScores.NEON + squadScores.ZEN) : 100;
-    const neonPercent = squadScores ? (squadScores.NEON / totalScore) * 100 : 50;
+    // Mock Player Data (V3 Foundation)
+    const playerLevel = 15;
+    const playerXP = 75; // %
+    const rank = "NEON RUNNER";
+
+    // Mock Live Feed
+    const [logs, setLogs] = useState([
+        { id: 1, text: "System Online...", time: "Now" },
+        { id: 2, text: "Market: +2.4% 📈", time: "2m" },
+        { id: 3, text: "New High Score: SNAKE", time: "15m" },
+        { id: 4, text: "User joined Team NEON", time: "1h" },
+    ]);
 
     return (
-        <div className="home-container" style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', paddingBottom: '100px' }}>
-            {/* HEADER / FEED TITLE */}
-            <header style={{ textAlign: 'center', marginBottom: '40px', paddingTop: '20px' }}>
-                <div className="mascot-float" style={{ marginBottom: '20px' }}>
-                    <img src="/assets/boy_face.png" alt="Merchboy" style={{ width: '120px', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(100, 100, 255, 0.3))' }} />
+        <div className="home-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
+
+            {/* V3 DASHBOARD HEADER */}
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <div>
+                    <h1 style={{ margin: 0, fontSize: '2rem', color: 'var(--neon-blue)', textShadow: '0 0 20px rgba(0, 243, 255, 0.4)' }}>
+                        COMMAND CENTER
+                    </h1>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', letterSpacing: '2px', fontSize: '0.8rem' }}>
+                        SYSTEM V3.0 // ONLINE
+                    </p>
                 </div>
-                <h1 className="text-gradient" style={{ fontSize: '3rem', margin: 0, lineHeight: 1 }}>PLAYGROUND</h1>
-                <p style={{ color: '#718096', fontSize: '1.1rem', marginTop: '10px' }}>Create • Play • Explore</p>
+                <div className="glass-panel" style={{ padding: '5px 15px', fontSize: '0.9rem', color: 'var(--neon-green)' }}>
+                    SIGNAL: STRONG 📶
+                </div>
             </header>
 
-            <BentoGrid>
-                {/* 1. FEATURED GAME (Her0) - COSMIC SLOTS */}
-                <div className="bento-card" style={{
-                    gridColumn: '1 / -1', // Full width
-                    background: 'linear-gradient(135deg, #120c1f 0%, #4c1d95 100%)', // Dark Purple
-                    color: 'white',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    minHeight: '280px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px',
-                    border: '2px solid #ffd700',
-                    boxShadow: '0 0 30px rgba(138, 43, 226, 0.4)'
-                }}>
-                    <div style={{ position: 'relative', zIndex: 10 }}>
-                        <span style={{ color: '#ffd700', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.9rem' }}>NEW FEATURE</span>
-                        <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', margin: '5px 0', lineHeight: 1, color: '#fff', textShadow: '0 0 20px #d946ef' }}>
-                            COSMIC SLOTS
-                        </h2>
-                        <p style={{ color: '#e9d5ff', maxWidth: '70%', margin: '10px 0 20px 0', fontSize: '1.2rem' }}>8-Payline Jackpot Machine. Spin to win!</p>
-                        <Link to="/arcade/slots" style={{ display: 'inline-block', background: '#ffd700', color: 'black', padding: '15px 40px', borderRadius: '50px', fontWeight: '900', textDecoration: 'none', boxShadow: '0 0 20px rgba(255, 215, 0, 0.4)', fontSize: '1.1rem' }}>
-                            SPIN NOW 🎰
-                        </Link>
-                    </div>
-                    <div style={{ position: 'absolute', right: '10px', bottom: '10px', fontSize: '10rem', opacity: 0.9, filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))', transform: 'rotate(-10deg)' }}>
-                        🎰
-                    </div>
-                </div>
+            {/* DASHBOARD GRID */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '20px',
+                gridAutoRows: 'minmax(150px, auto)'
+            }}>
 
-                {/* 2. SUB SLAYER (Restored) */}
-                <Link to="/subslayer" className="bento-card" style={{
-                    textDecoration: 'none',
-                    background: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%, #fdbb2d 100%)', // Deep Sea styling? Maybe just Dark Blue
-                    background: 'linear-gradient(135deg, #000428 0%, #004e92 100%)',
-                    color: 'white',
-                    padding: '30px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    minHeight: '200px'
-                }}>
-                    <div>
-                        <div style={{ background: 'rgba(255,255,255,0.1)', width: 'fit-content', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>ACTION</div>
-                        <h2 style={{ fontSize: '2rem', margin: '10px 0 0 0' }}>SUB SLAYER</h2>
-                        <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: '0.9rem' }}>Defend the depths.</p>
-                    </div>
-                    <div style={{ fontSize: '4rem', alignSelf: 'flex-end', opacity: 0.8 }}>⚓</div>
-                </Link>
-
-                {/* 2. BEAT LAB (Sub-Hero) */}
-                <Link to="/beatlab" className="bento-card" style={{
-                    textDecoration: 'none',
-                    background: 'linear-gradient(135deg, #0BC5EA 0%, #00f2ff 100%)',
-                    color: 'white',
-                    padding: '30px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    minHeight: '200px'
-                }}>
-                    <div>
-                        <div style={{ background: 'rgba(0,0,0,0.2)', width: 'fit-content', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>CREATIVE</div>
-                        <h2 style={{ fontSize: '2rem', margin: '10px 0 0 0' }}>BEAT LAB</h2>
-                    </div>
-                    <div style={{ fontSize: '4rem', alignSelf: 'flex-end', opacity: 0.8 }}>🎹</div>
-                </Link>
-
-                {/* 3. SHOP & RALLY (Split) */}
-                <div className="bento-card" style={{ background: 'white', padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                        <div style={{ background: '#edf2f7', padding: '10px', borderRadius: '50%', fontSize: '1.5rem' }}>👕</div>
+                {/* 1. PROFILE WIDGET (Left Column) */}
+                <div className="glass-panel" style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{
+                            width: '60px', height: '60px',
+                            borderRadius: '50%', background: '#333',
+                            border: '2px solid var(--neon-pink)',
+                            overflow: 'hidden'
+                        }}>
+                            <img src="/assets/merchboy_face.png" style={{ width: '100%', height: '100%' }} />
+                        </div>
                         <div>
-                            <h4 style={{ margin: 0 }}>The Shop</h4>
-                            <a href="https://merchboy.shop" style={{ color: '#4299e1', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>Browse Gear</a>
+                            <div style={{ fontSize: '0.8rem', color: '#888' }}>OPERATOR</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{rank}</div>
+                        </div>
+                    </div>
+
+                    {/* XP Bar */}
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px' }}>
+                            <span>LVL {playerLevel}</span>
+                            <span>{playerXP}/100 XP</span>
+                        </div>
+                        <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ width: `${playerXP}%`, height: '100%', background: 'linear-gradient(90deg, var(--neon-blue), var(--neon-pink))' }}></div>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: 'auto', display: 'flex', gap: '10px' }}>
+                        <div className="glass-panel" style={{ flex: 1, padding: '10px', textAlign: 'center', fontSize: '0.8rem' }}>
+                            <div>MOOD</div>
+                            <div style={{ fontSize: '1.5rem' }}>{getMood()}</div>
+                        </div>
+                        <div className="glass-panel" style={{ flex: 1, padding: '10px', textAlign: 'center', fontSize: '0.8rem' }}>
+                            <div>TEAM</div>
+                            <div style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>NEON</div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bento-card" style={{ background: '#fff5f5', border: '1px solid #fed7d7', padding: '20px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#e53e3e', textAlign: 'center' }}>Team Rally</h4>
-                    <div style={{ display: 'flex', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
-                        <div style={{ width: `${neonPercent}%`, background: '#63b3ed' }}></div>
-                        <div style={{ flex: 1, background: '#fc8181' }}></div>
+                {/* 2. FEATURED GAME (Center/Large) */}
+                <div className="bento-card" style={{
+                    gridColumn: 'span 2', // Spans 2 cols if space permits
+                    minHeight: '300px',
+                    background: 'linear-gradient(135deg, #2a0845 0%, #6441a5 100%)',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                    padding: '40px', position: 'relative',
+                    border: '1px solid var(--neon-gold)'
+                }}>
+                    <div style={{ position: 'relative', zIndex: 10 }}>
+                        <span style={{ background: 'var(--neon-gold)', color: 'black', padding: '2px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                            HOT 🔥
+                        </span>
+                        <h2 style={{ fontSize: '3rem', margin: '10px 0', textShadow: '0 0 20px #ff00ff' }}>
+                            COSMIC SLOTS
+                        </h2>
+                        <p style={{ color: '#e0c3fc', maxWidth: '60%', margin: '0 0 20px 0' }}>8-Lines. Wild Stars. Massive Multipliers.</p>
+                        <Link to="/arcade/slots" className="squishy-btn" style={{
+                            display: 'inline-block', background: 'var(--neon-gold)', color: 'black',
+                            padding: '12px 30px', borderRadius: '50px', fontWeight: '900', textDecoration: 'none',
+                            fontSize: '1.2rem'
+                        }}>
+                            SPIN NOW
+                        </Link>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '5px', fontWeight: 'bold' }}>
-                        <span style={{ color: '#4299e1' }}>NEON</span>
-                        <span style={{ color: '#f56565' }}>ZEN</span>
+                    <div style={{ position: 'absolute', right: '20px', bottom: '20px', fontSize: '12rem', opacity: 0.5 }}>🎰</div>
+                </div>
+
+                {/* 3. LIVE FEED (Right/Small) */}
+                <div className="glass-panel" style={{ padding: '20px', overflow: 'hidden' }}>
+                    <h3 style={{ margin: '0 0 15px 0', fontSize: '1rem', color: 'var(--neon-blue)' }}>SYSTEM LOGS</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {logs.map(log => (
+                            <div key={log.id} style={{ fontSize: '0.8rem', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ color: '#666', marginRight: '10px' }}>[{log.time}]</span>
+                                {log.text}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-            </BentoGrid>
+                {/* ROW 2: APPS */}
+
+                {/* SUB SLAYER */}
+                <Link to="/subslayer" className="bento-card" style={{
+                    textDecoration: 'none', color: 'white', padding: '25px',
+                    background: 'linear-gradient(135deg, #0f2027 0%, #2c5364 100%)',
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                }}>
+                    <h3>SUB SLAYER</h3>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>⚓</div>
+                </Link>
+
+                {/* BEAT LAB */}
+                <Link to="/beatlab" className="bento-card" style={{
+                    textDecoration: 'none', color: 'white', padding: '25px',
+                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                }}>
+                    <h3>BEAT LAB</h3>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>🎹</div>
+                </Link>
+
+                {/* SHOP */}
+                <a href="https://merchboy.shop" target="_blank" className="bento-card" style={{
+                    textDecoration: 'none', color: 'black', padding: '25px',
+                    background: 'white',
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                }}>
+                    <h3>THE SHOP</h3>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>👕</div>
+                </a>
+
+            </div>
         </div>
     );
 };
