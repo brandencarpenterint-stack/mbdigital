@@ -7,11 +7,12 @@ import SquishyButton from '../../components/SquishyButton';
 
 // SYMBOLS CONFIG
 const SYMBOLS = [
+    { id: 'wild', char: '⭐', value: 0, weight: 1 }, // Wildcard (Value determined by match)
     { id: 'cat', img: '/assets/merchboy_cat.png', value: 25, weight: 3 },
     { id: 'bunny', img: '/assets/merchboy_bunny.png', value: 25, weight: 3 },
     { id: 'face', img: '/assets/merchboy_face.png', value: 10, weight: 4 },
-    { id: 'money', img: '/assets/merchboy_money.png', value: 50, weight: 1 }, // Jackpot
-    { id: 'seven', char: '7️⃣', value: 100, weight: 1 }, // Super Jackpot
+    { id: 'money', img: '/assets/merchboy_money.png', value: 50, weight: 1 },
+    { id: 'seven', char: '7️⃣', value: 100, weight: 1 },
     { id: 'cherry', char: '🍒', value: 5, weight: 5 },
     { id: 'grape', char: '🍇', value: 5, weight: 5 }
 ];
@@ -28,13 +29,12 @@ const getRandomSymbol = () => {
 
 const ROWS = 3;
 const COLS = 3;
-const SPIN_COST = 15; // Decreased cost
+const SPIN_COST = 15;
 
 const CosmicSlots = () => {
     const { coins, incrementStat } = useGamification() || { coins: 1000, incrementStat: () => { } };
     const { playJump, playCollect, playWin } = useRetroSound();
 
-    // 3x3 Grid State (Array of Arrays)
     const [grid, setGrid] = useState([
         [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
         [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
@@ -43,7 +43,8 @@ const CosmicSlots = () => {
 
     const [isSpinning, setIsSpinning] = useState(false);
     const [winAmount, setWinAmount] = useState(0);
-    const [winningLines, setWinningLines] = useState([]); // Array of line indices
+    const [winningLines, setWinningLines] = useState([]);
+    const [streak, setStreak] = useState(1); // Win Streak Multiplier
 
     const spinIntervals = useRef([]);
 
@@ -69,18 +70,17 @@ const CosmicSlots = () => {
             Array(3).fill(null).map(() => getRandomSymbol())
         );
 
-        // Animate Cols (Reels)
+        // Animate Cols
         [0, 1, 2].forEach((col) => {
             spinIntervals.current[col] = setInterval(() => {
                 setGrid(prev => {
                     const newGrid = [...prev.map(row => [...row])];
-                    // Randomize just this column
                     for (let row = 0; row < ROWS; row++) {
                         newGrid[row][col] = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
                     }
                     return newGrid;
                 });
-            }, 60 + (col * 20));
+            }, 50 + (col * 20)); // Faster spin
         });
 
         // Stop Logic
@@ -89,7 +89,6 @@ const CosmicSlots = () => {
                 clearInterval(spinIntervals.current[col]);
                 setGrid(prev => {
                     const newGrid = [...prev.map(row => [...row])];
-                    // Set final column
                     for (let row = 0; row < ROWS; row++) {
                         newGrid[row][col] = finalGrid[row][col];
                     }
@@ -100,53 +99,64 @@ const CosmicSlots = () => {
                 if (col === 2) {
                     calculateWin(finalGrid);
                 }
-            }, 1000 + (col * 500));
+            }, 800 + (col * 400)); // Snappier stop
         });
     };
 
     const calculateWin = (finalGrid) => {
         setIsSpinning(false);
-        let totalPrize = 0;
+        let basePrize = 0;
         let lines = [];
 
-        // Check Rows
-        for (let r = 0; r < ROWS; r++) {
-            if (finalGrid[r][0].id === finalGrid[r][1].id && finalGrid[r][1].id === finalGrid[r][2].id) {
-                totalPrize += finalGrid[r][0].value * 3;
-                lines.push(`row-${r}`);
+        // Helper: Check a line of 3 symbols
+        const checkLine = (s1, s2, s3, lineId) => {
+            // Filter out wilds to find the "target" symbol
+            const nonWilds = [s1, s2, s3].filter(s => s.id !== 'wild');
+
+            // If all wilds (3 Stars), JACKPOT!
+            if (nonWilds.length === 0) {
+                basePrize += 500;
+                lines.push(lineId);
+                return;
             }
-        }
 
-        // Check Columns (Vertical)
-        for (let c = 0; c < COLS; c++) {
-            if (finalGrid[0][c].id === finalGrid[1][c].id && finalGrid[1][c].id === finalGrid[2][c].id) {
-                totalPrize += finalGrid[0][c].value * 3;
-                lines.push(`col-${c}`);
+            // Check if all non-wilds match the first non-wild
+            const targetId = nonWilds[0].id;
+            const isMatch = nonWilds.every(s => s.id === targetId);
+
+            if (isMatch) {
+                // Win value is the value of the target symbol
+                // If it's pure wilds, we handled it. If mix, use target value.
+                basePrize += nonWilds[0].value * 3;
+                lines.push(lineId);
             }
-        }
+        };
 
-        // Check Diagonals
-        if (finalGrid[0][0].id === finalGrid[1][1].id && finalGrid[1][1].id === finalGrid[2][2].id) {
-            totalPrize += finalGrid[1][1].value * 3;
-            lines.push('diag-1');
-        }
-        if (finalGrid[2][0].id === finalGrid[1][1].id && finalGrid[1][1].id === finalGrid[0][2].id) {
-            totalPrize += finalGrid[1][1].value * 3;
-            lines.push('diag-2');
-        }
+        // 1. Rows
+        for (let r = 0; r < ROWS; r++) checkLine(finalGrid[r][0], finalGrid[r][1], finalGrid[r][2], `row-${r}`);
+        // 2. Cols
+        for (let c = 0; c < COLS; c++) checkLine(finalGrid[0][c], finalGrid[1][c], finalGrid[2][c], `col-${c}`);
+        // 3. Diagonals
+        checkLine(finalGrid[0][0], finalGrid[1][1], finalGrid[2][2], 'diag-1');
+        checkLine(finalGrid[2][0], finalGrid[1][1], finalGrid[0][2], 'diag-2');
 
-        if (totalPrize > 0) {
-            setWinAmount(totalPrize);
+        if (basePrize > 0) {
+            const totalWin = basePrize * streak;
+            setWinAmount(totalWin);
             setWinningLines(lines);
-            incrementStat('coins', totalPrize);
+            incrementStat('coins', totalWin);
             playWin();
-            // Multi-win effect
-            if (lines.length > 1) {
+
+            // Increase Streak
+            setStreak(s => Math.min(s + 1, 5)); // Cap at 5x
+
+            if (totalWin > 100 || lines.length > 1) {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
                 triggerConfetti();
-            } else if (totalPrize > 100) {
-                triggerConfetti();
             }
+        } else {
+            // Reset Streak on Loss
+            setStreak(1);
         }
     };
 
@@ -257,6 +267,19 @@ const CosmicSlots = () => {
                         {isSpinning ? '...' : 'SPIN'}
                     </SquishyButton>
 
+                    {/* STREAK BADGE */}
+                    {streak > 1 && (
+                        <div style={{
+                            position: 'absolute', top: '10px', right: '-80px',
+                            background: '#ff4500', color: 'white', padding: '10px 15px',
+                            borderRadius: '10px', fontWeight: '900', fontSize: '1.5rem',
+                            transform: 'rotate(10deg)', boxShadow: '0 0 15px #ff4500',
+                            animation: 'pulse 1s infinite'
+                        }}>
+                            x{streak} 🔥
+                        </div>
+                    )}
+
                     {winAmount > 0 && (
                         <div style={{ fontSize: '2rem', color: '#00ffaa', fontWeight: 'bold', textShadow: '0 0 20px #00ffaa' }}>
                             WIN: {winAmount} 🪙
@@ -268,6 +291,7 @@ const CosmicSlots = () => {
             <style>{`
                 .blink { animation: blink 1s infinite; }
                 @keyframes blink { 50% { opacity: 0.5; } }
+                @keyframes pulse { 0% { transform: rotate(10deg) scale(1); } 50% { transform: rotate(10deg) scale(1.1); } 100% { transform: rotate(10deg) scale(1); } }
             `}</style>
 
             <Link to="/arcade" style={{ marginTop: '40px', color: '#666' }}>Back to Arcade</Link>
