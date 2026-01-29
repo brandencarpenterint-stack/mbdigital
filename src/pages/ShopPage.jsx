@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGamification } from '../context/GamificationContext';
 import { SHOP_ITEMS, CATEGORIES } from '../config/ShopItems';
+import useRetroSound from '../hooks/useRetroSound';
+import { triggerConfetti } from '../utils/confetti';
 
 const ShopPage = () => {
     const { shopState, buyItem, equipItem } = useGamification() || {};
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [coins, setCoins] = useState(0);
+    const { playBeep, playCollect, playBoop } = useRetroSound();
 
     console.log('ShopPage Debug:', { shopState, items: SHOP_ITEMS.length });
 
@@ -55,7 +58,11 @@ const ShopPage = () => {
                 {CATEGORIES.map(cat => (
                     <button
                         key={cat.id}
-                        onClick={() => setActiveCategory(cat.id)}
+                        onClick={() => {
+                            setActiveCategory(cat.id);
+                            playBoop();
+                            if (navigator.vibrate) navigator.vibrate(10);
+                        }}
                         style={{
                             padding: '12px 25px', borderRadius: '15px', border: 'none',
                             background: activeCategory === cat.id ? '#FFD700' : '#1a1a2e',
@@ -109,7 +116,11 @@ const ShopPage = () => {
                             {/* ACTION BUTTON */}
                             {isUnlocked ? (
                                 <button
-                                    onClick={() => equipItem(item.category, item.id)}
+                                    onClick={() => {
+                                        equipItem(item.category, item.id);
+                                        playBeep();
+                                        if (navigator.vibrate) navigator.vibrate(20);
+                                    }}
                                     disabled={isEquipped}
                                     style={{
                                         width: '100%', padding: '12px', borderRadius: '10px',
@@ -124,7 +135,12 @@ const ShopPage = () => {
                                 </button>
                             ) : (
                                 <button
-                                    onClick={() => buyItem(item)}
+                                    onClick={() => {
+                                        buyItem(item);
+                                        playCollect();
+                                        triggerConfetti();
+                                        if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+                                    }}
                                     disabled={!canAfford}
                                     style={{
                                         width: '100%', padding: '12px', borderRadius: '10px',
