@@ -394,17 +394,36 @@ const NeonBrickBreaker = () => {
     };
 
     // --- CONTROLS ---
-    // Handle touch/mouse on the Control Bar
-    const handleControlInput = (clientX, rect) => {
-        if (!gameActiveRef.current) return;
+    useEffect(() => {
+        const handleInput = (clientX) => {
+            if (!gameActiveRef.current) return;
+            const rect = canvasRef.current.getBoundingClientRect();
+            const scaleX = GAME_WIDTH / rect.width;
+            const relativeX = (clientX - rect.left) * scaleX;
 
-        // Relative X within the control bar
-        const x = clientX - rect.left;
-        const scaleX = GAME_WIDTH / rect.width;
-        const canvasX = x * scaleX;
+            // Center the paddle on the finger/mouse
+            gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, relativeX - PADDLE_WIDTH / 2));
+        };
 
-        gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, canvasX - PADDLE_WIDTH / 2));
-    };
+        const onTouchMove = (e) => {
+            if (e.target.tagName !== 'BUTTON') { // Allow clicking buttons
+                // e.preventDefault(); // Stop scrolling? Maybe dangerous if they want to scroll away.
+                // Let's rely on touch-action: none in CSS for the game container
+            }
+            handleInput(e.touches[0].clientX);
+        };
+
+        const onMouseMove = (e) => {
+            handleInput(e.clientX);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        // We attach touch listener to the container in JSX for better control
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+        };
+    }, []);
 
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
@@ -425,106 +444,112 @@ const NeonBrickBreaker = () => {
     }
 
     return (
-        <div style={{
-            position: 'fixed', inset: 0, background: '#050505',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            transform: `translate(${shake.x}px, ${shake.y}px)`, // JUICE: Screen Shake
-            transition: 'transform 0.05s'
-        }}>
+        <div
+            style={{
+                position: 'fixed', inset: 0, background: '#050505',
+                touchAction: 'none', // Critical for preventing scroll while playing
+                overflow: 'hidden',
+                cursor: gameActive ? 'none' : 'default' // Hide cursor while playing!
+            }}
+            onTouchMove={(e) => {
+                if (gameActive) {
+                    const rect = canvasRef.current.getBoundingClientRect();
+                    const scaleX = GAME_WIDTH / rect.width;
+                    const relativeX = (e.touches[0].clientX - rect.left) * scaleX;
+                    gameState.current.paddleX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, relativeX - PADDLE_WIDTH / 2));
+                }
+            }}
+        >
+            <div style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                backgroundImage: 'radial-gradient(circle at 50% 50%, #222 0%, #000 100%)',
+                zIndex: -1
+            }} />
 
             {/* HUD */}
             <div style={{
-                position: 'absolute', top: 10, width: '90%', maxWidth: '600px',
-                display: 'flex', justifyContent: 'space-between',
-                color: '#cc00ff', fontFamily: 'monospace', fontSize: '1.2rem', fontWeight: 'bold', zIndex: 10
+                position: 'absolute', top: 10, width: '100%',
+                display: 'flex', justifyContent: 'space-between', padding: '0 20px',
+                color: '#cc00ff', fontFamily: '"Press Start 2P", monospace', fontSize: '1rem', zIndex: 10,
+                textShadow: '0 0 5px #cc00ff'
             }}>
                 <span>SCORE: {score}</span>
                 <span style={{ color: 'white' }}>LVL {level}</span>
-                <span style={{ color: 'red' }}>❤️ {lives}</span>
+                <span style={{ color: 'red' }}>lives: {lives}</span>
             </div>
 
-            {/* CANVAS */}
             <div style={{
-                position: 'relative',
-                boxShadow: '0 0 20px #cc00ff40',
-                border: '2px solid #333',
-                borderRadius: '8px',
-                overflow: 'hidden'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh',
+                transform: `translate(${shake.x}px, ${shake.y}px)`,
+                transition: 'transform 0.05s'
             }}>
-                <canvas
-                    ref={canvasRef}
-                    width={GAME_WIDTH}
-                    height={GAME_HEIGHT}
-                    onTouchStart={(e) => {
-                        handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
-                    }}
-                    onTouchMove={(e) => {
-                        // Prevent default to stop scrolling
-                        if (e.cancelable) e.preventDefault();
-                        handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
-                    }}
-                    style={{
-                        background: '#111',
-                        display: 'block',
-                        maxWidth: '95vw',
-                        maxHeight: '65vh', // Save room for controls
-                        width: 'auto',
-                        height: 'auto',
-                        touchAction: 'none'
-                    }}
-                />
+                {/* CANVAS */}
+                <div style={{
+                    position: 'relative',
+                    boxShadow: '0 0 50px rgba(204, 0, 255, 0.2)',
+                    border: '4px solid #333',
+                    borderRadius: '4px',
+                }}>
+                    <canvas
+                        ref={canvasRef}
+                        width={GAME_WIDTH}
+                        height={GAME_HEIGHT}
+                        style={{
+                            background: '#000',
+                            display: 'block',
+                            maxWidth: '100vw',
+                            maxHeight: '100vh',
+                            aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}`,
+                            width: 'auto',
+                            height: 'auto'
+                        }}
+                    />
 
-                {!gameActive && !gameOver && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <h1 style={{ color: '#00ffaa', textShadow: '0 0 10px #00ffaa' }}>NEON BRICK BREAKER</h1>
-                        <SquishyButton onClick={startGame} style={{ marginTop: '20px', padding: '15px 40px', fontSize: '1.5rem', background: '#cc00ff' }}>
-                            START GAME
-                        </SquishyButton>
-                    </div>
-                )}
+                    {/* OVERLAYS */}
+                    {/* START SCREEN */}
+                    {!gameActive && !gameOver && (
+                        <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'rgba(0,0,0,0.7)',
+                            backdropFilter: 'blur(5px)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <h1 style={{
+                                color: '#cc00ff',
+                                fontFamily: '"Press Start 2P"',
+                                fontSize: '2rem',
+                                textAlign: 'center',
+                                textShadow: '4px 4px 0 #00ffaa',
+                                lineHeight: '1.5',
+                                marginBottom: '2rem'
+                            }}>
+                                NEON<br />BRICKS
+                            </h1>
+                            <SquishyButton onClick={startGame} style={{ padding: '20px 60px', fontSize: '1.2rem', background: '#00ffaa', color: 'black', border: 'none' }}>
+                                INSERT COIN
+                            </SquishyButton>
+                            <p style={{ marginTop: '20px', color: '#888', fontFamily: 'monospace' }}>MOUSE / TOUCH TO MOVE</p>
+                        </div>
+                    )}
 
-                {gameOver && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: 'red' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.5rem', color: 'white' }}>Score: {score}</p>
-                        <SquishyButton onClick={startGame} style={{ marginTop: '10px', background: '#cc00ff' }}>Try Again</SquishyButton>
-                        <Link to="/arcade" style={{ color: '#666', marginTop: '15px' }}>Exit</Link>
-                    </div>
-                )}
-            </div>
-
-            {/* CONTROL ZONE */}
-            <div
-                className="control-zone"
-                onTouchMove={(e) => {
-                    e.preventDefault();
-                    handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
-                }}
-                onTouchStart={(e) => {
-                    handleControlInput(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
-                }}
-                onMouseMove={(e) => {
-                    // Support mouse too for testing
-                    if (e.buttons === 1) handleControlInput(e.clientX, e.currentTarget.getBoundingClientRect());
-                }}
-                style={{
-                    width: '95vw',
-                    maxWidth: '800px', // Wider than game to catch edges
-                    height: '150px', // Taller for easier grabbing
-                    marginTop: '10px',
-                    background: 'linear-gradient(to bottom, #222, #111)',
-                    borderRadius: '15px',
-                    border: '2px dashed #444',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#666',
-                    userSelect: 'none',
-                    touchAction: 'none', // Critical
-                    cursor: 'grab'
-                }}
-            >
-                <span>&lt;&lt;&lt; SLIDE TO MOVE &gt;&gt;&gt;</span>
+                    {/* GAME OVER */}
+                    {gameOver && (
+                        <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'rgba(0,0,0,0.85)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <h2 style={{ fontSize: '3rem', color: 'red', fontFamily: '"Press Start 2P"', marginBottom: '20px' }}>GAME OVER</h2>
+                            <p style={{ fontSize: '1.2rem', color: 'white', fontFamily: 'monospace', marginBottom: '30px' }}>FINAL SCORE: {score}</p>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <SquishyButton onClick={startGame} style={{ background: '#cc00ff' }}>RETRY</SquishyButton>
+                                <Link to="/arcade">
+                                    <SquishyButton style={{ background: '#333' }}>EXIT</SquishyButton>
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
