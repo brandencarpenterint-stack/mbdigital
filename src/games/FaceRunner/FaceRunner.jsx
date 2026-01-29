@@ -36,7 +36,7 @@ const FaceRunner = () => {
         const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default', 'face_cat'];
         faces.forEach(f => {
             const img = new Image();
-            img.src = `/assets/skins/${f}.png`;
+            img.src = `/assets/skins/${f}.png?t=${Date.now()}`;
             img.onerror = () => {
                 console.error(`Failed to load: ${f}`);
                 faceImgs.current[f] = null; // Fallback
@@ -199,6 +199,17 @@ const FaceRunner = () => {
             }
 
             ctx.restore();
+
+            // DEBUG INFO ON SCREEN
+            ctx.fillStyle = 'lime';
+            ctx.font = '12px monospace';
+            ctx.fillText(`State: ${gameState}`, 10, 20);
+            ctx.fillText(`PlayingRef: ${playingRef.current}`, 10, 35);
+            ctx.fillText(`Obs: ${obstaclesRef.current.length}`, 10, 50);
+            const currentImg = faceImgs.current[selectedFace];
+            ctx.fillText(`Face: ${selectedFace} (${currentImg ? (currentImg.complete ? 'OK' : 'Loading') : 'Missing'})`, 10, 65);
+            ctx.fillText(`Pos: ${Math.round(p.x)}, ${Math.round(p.y)}`, 10, 80);
+
 
         } catch (err) {
             console.error("Game Loop Error:", err);
