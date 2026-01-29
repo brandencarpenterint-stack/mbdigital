@@ -287,7 +287,7 @@ const NeonBrickBreaker = () => {
         // Gamification
         LeaderboardService.submitScore('neon_brick', 'Player1', score);
         updateStat('brickHighScore', (prev) => Math.max(prev, score));
-        incrementStat('gamesPlayed', 'brick');
+        updateStat('gamesPlayed', 'neon_brick');
     };
 
     const gameLoop = () => {

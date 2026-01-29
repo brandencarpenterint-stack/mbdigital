@@ -149,6 +149,12 @@ const FlappyMascot = () => {
         const newCoins = currentCoins + Math.floor(score);
         localStorage.setItem('arcadeCoins', newCoins);
         setCoins(newCoins);
+
+        // Gamification Stats
+        if (updateStat) {
+            updateStat('flappyHighScore', (prev) => Math.max(prev || 0, score));
+            updateStat('gamesPlayed', 'flappy_mascot');
+        }
     };
 
 

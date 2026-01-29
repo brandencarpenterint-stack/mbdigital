@@ -4,6 +4,7 @@ import { DAILY_TEMPLATES } from '../config/DailyQuests';
 import { SHOP_ITEMS } from '../config/ShopItems';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
+import { triggerConfetti } from '../utils/confetti';
 
 const GamificationContext = createContext();
 
@@ -90,6 +91,12 @@ export const GamificationProvider = ({ children }) => {
     const unlock = (achievement) => {
         setUnlockedAchievements(prev => [...prev, achievement.id]);
         playWin(); // Sound
+
+        // SCREEN GOES NUTS
+        triggerConfetti();
+        setTimeout(() => triggerConfetti(), 300);
+        setTimeout(() => triggerConfetti(), 600);
+
         showToast(achievement.title, 'achievement');
     };
 
@@ -244,6 +251,12 @@ export const GamificationProvider = ({ children }) => {
 
     const incrementStat = (key, amount = 1) => {
         setStats(prev => {
+            // Defensive: Don't increment arrays
+            if (Array.isArray(prev[key])) {
+                console.warn(`Attempted to increment array stat ${key}. Use updateStat instead.`);
+                return prev;
+            }
+
             const newVal = (prev[key] || 0) + amount;
 
             // DAILY QUEST TRACKING HOOK
