@@ -105,28 +105,28 @@ const Home = () => {
                 <div className="bento-card" style={{
                     gridColumn: 'span 2', // Spans 2 cols if space permits
                     minHeight: '300px',
-                    background: 'linear-gradient(135deg, #2a0845 0%, #6441a5 100%)',
+                    background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center',
                     padding: '40px', position: 'relative',
-                    border: '1px solid var(--neon-gold)'
+                    border: '1px solid white'
                 }}>
                     <div style={{ position: 'relative', zIndex: 10 }}>
-                        <span style={{ background: 'var(--neon-gold)', color: 'black', padding: '2px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                            HOT 🔥
+                        <span style={{ background: 'white', color: 'black', padding: '2px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                            NEW 🔥
                         </span>
-                        <h2 style={{ fontSize: '3rem', margin: '10px 0', textShadow: '0 0 20px #ff00ff' }}>
-                            COSMIC SLOTS
+                        <h2 style={{ fontSize: '3rem', margin: '10px 0', textShadow: '0 0 20px #000' }}>
+                            MERCH JUMP
                         </h2>
-                        <p style={{ color: '#e0c3fc', maxWidth: '60%', margin: '0 0 20px 0' }}>8-Lines. Wild Stars. Massive Multipliers.</p>
-                        <Link to="/arcade/slots" className="squishy-btn" style={{
-                            display: 'inline-block', background: 'var(--neon-gold)', color: 'black',
+                        <p style={{ color: 'white', maxWidth: '60%', margin: '0 0 20px 0', fontWeight: 'bold' }}>Infinite Vertical Action. Blast Off!</p>
+                        <Link to="/arcade/merch-jump" className="squishy-btn" style={{
+                            display: 'inline-block', background: 'white', color: 'black',
                             padding: '12px 30px', borderRadius: '50px', fontWeight: '900', textDecoration: 'none',
                             fontSize: '1.2rem'
                         }}>
-                            SPIN NOW
+                            JUMP NOW
                         </Link>
                     </div>
-                    <div style={{ position: 'absolute', right: '20px', bottom: '20px', fontSize: '12rem', opacity: 0.5 }}>🎰</div>
+                    <div style={{ position: 'absolute', right: '20px', bottom: '20px', fontSize: '10rem', opacity: 0.5 }}>🚀</div>
                 </div>
 
                 {/* 3. LIVE FEED (Right/Small) */}
