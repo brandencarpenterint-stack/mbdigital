@@ -1206,21 +1206,26 @@ const CrazyFishing = () => {
     }, []);
 
     // OVERLAY HELPER COMPONENT
-    const Overlay = ({ title, onClose, children, color = 'cyan' }) => (
+    // OVERLAY HELPER COMPONENT (V3 Styled)
+    const Overlay = ({ title, onClose, children, color = 'var(--neon-blue)' }) => (
         <div style={{
             position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-            background: 'rgba(0, 10, 30, 0.95)',
+            background: 'rgba(0, 5, 20, 0.90)',
             zIndex: 2000,
             display: 'flex', flexDirection: 'column',
             padding: '20px',
             boxSizing: 'border-box',
-            backdropFilter: 'blur(5px)'
+            backdropFilter: 'blur(15px)',
+            fontFamily: '"Orbitron", sans-serif'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: `2px solid ${color}`, paddingBottom: '10px' }}>
-                <h2 style={{ margin: 0, color: color, fontSize: '2rem' }}>{title}</h2>
-                <SquishyButton onClick={onClose} style={{ background: '#333', fontSize: '1.5rem', padding: '10px 20px' }}>X</SquishyButton>
+            <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginBottom: '20px', borderBottom: `1px solid ${color}`, paddingBottom: '15px'
+            }}>
+                <h2 style={{ margin: 0, color: color, fontSize: '2rem', textShadow: `0 0 10px ${color}` }}>{title}</h2>
+                <SquishyButton onClick={onClose} style={{ background: '#111', color: '#888', border: '1px solid #333', fontSize: '1.2rem', padding: '10px 20px' }}>❌</SquishyButton>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div className="glass-panel" style={{ flex: 1, overflowY: 'auto', background: 'rgba(255,255,255,0.02)', padding: '20px' }}>
                 {children}
             </div>
         </div>
@@ -1267,13 +1272,14 @@ const CrazyFishing = () => {
             }}>
             {/* COMPACT HEADER */}
             <div style={{ position: 'absolute', top: '10px', width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 10 }}>
-                <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '1.5rem', margin: 0, textShadow: '2px 2px black', color: hasGoldenRod ? 'gold' : 'white' }}>
+                <h1 style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '1.8rem', margin: 0, textShadow: '0 0 10px rgba(0,0,0,0.8)', color: hasGoldenRod ? 'var(--neon-gold)' : 'white' }}>
                     {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
                 </h1>
             </div>
 
-            <div style={{ position: 'absolute', top: '10px', right: '20px', fontSize: '1rem', color: 'white', fontWeight: 'bold', zIndex: 10 }}>
-                <span>💰 {coins}</span> <span style={{ marginLeft: '10px' }}>🔥 {combo}</span>
+            <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '1.2rem', color: 'white', fontWeight: 'bold', zIndex: 10, fontFamily: '"Orbitron", monospace', display: 'flex', gap: '20px' }}>
+                <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px orange' }}>💰 {coins}</span>
+                <span style={{ color: 'var(--neon-pink)', textShadow: '0 0 5px red' }}>🔥 {combo}</span>
             </div>
 
             {/* MAIN GAME CONTAINER - Centered */}
@@ -1404,18 +1410,22 @@ const CrazyFishing = () => {
                     )}
 
                     {gameState === 'CATCH_SCREEN' && caughtFish && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
-                            <h2 style={{ color: 'gold', fontSize: '2rem', margin: 0 }}>CAUGHT!</h2>
-                            <div style={{ fontSize: '4rem', margin: '10px' }}>{caughtFish.type === 'image' ? <img src={caughtFish.src} style={{ width: '80px' }} /> : caughtFish.emoji}</div>
-                            <h3 style={{ color: 'white', fontSize: '1.5rem', margin: '5px' }}>{caughtFish.name}</h3>
-                            <div style={{ color: isNewRecord ? '#00ff00' : '#ccc', fontSize: '1rem' }}>{measuredWeight}kg {isNewRecord && "🏆 NEW PB!"}</div>
-                            <div style={{ margin: '15px', textAlign: 'center' }}>
-                                <div style={{ color: 'gold', fontSize: '2rem', fontWeight: 'bold' }}>
+                        <div style={{
+                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 120
+                        }}>
+                            <h2 style={{ color: 'var(--neon-gold)', fontSize: '3rem', margin: 0, fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 20px gold' }}>CAUGHT!</h2>
+                            <div style={{ fontSize: '6rem', margin: '20px', filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))' }}>{caughtFish.type === 'image' ? <img src={caughtFish.src} style={{ width: '120px' }} /> : caughtFish.emoji}</div>
+                            <h3 style={{ color: 'white', fontSize: '2rem', margin: '5px', fontFamily: '"Orbitron", sans-serif' }}>{caughtFish.name}</h3>
+                            <div style={{ color: isNewRecord ? 'var(--neon-green)' : '#ccc', fontSize: '1.2rem', fontFamily: 'monospace' }}>{measuredWeight}kg {isNewRecord && "🏆 NEW PB!"}</div>
+                            <div style={{ margin: '20px', textAlign: 'center' }}>
+                                <div style={{ color: 'var(--neon-gold)', fontSize: '2.5rem', fontWeight: 'bold', fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 10px orange' }}>
                                     +{Math.floor(caughtFish.score * (1 + (combo * 0.1)))} COINS
                                 </div>
                             </div>
-                            <SquishyButton onClick={startCast} style={{ marginTop: '10px', background: '#00ccff', color: 'white', padding: '10px 30px', fontSize: '1.2rem', borderRadius: '50px' }}>🎣 Cast Again</SquishyButton>
-                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '10px', background: 'transparent', border: '1px solid white', color: '#999', padding: '5px 20px', borderRadius: '20px' }}>Dock</SquishyButton>
+                            <SquishyButton onClick={startCast} style={{ marginTop: '20px', background: 'var(--neon-blue)', color: 'black', padding: '15px 40px', fontSize: '1.5rem', borderRadius: '50px', fontWeight: 'bold', boxShadow: '0 0 20px var(--neon-blue)' }}>🎣 CAST AGAIN</SquishyButton>
+                            <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '15px', background: 'transparent', border: '1px solid #555', color: '#888', padding: '10px 30px', borderRadius: '20px' }}>DOCK</SquishyButton>
                         </div>
                     )}
                 </div>
