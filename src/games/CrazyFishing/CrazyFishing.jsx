@@ -134,7 +134,19 @@ const FISH_DATA = [
 ];
 
 const SHOP_ITEMS = [
-    // BOATS
+    // --- LURES (High Contrast) ---
+    { id: 'lure_neon', name: 'Neon Cylinder', type: 'bobber', price: 500, desc: 'High Visibility Cyan.', icon: '🧪', color: '#00ffff', char: '🟦' },
+    { id: 'lure_sun', name: 'Solar Flare', type: 'bobber', price: 800, desc: 'Blindingly bright.', icon: '☀️', color: '#ffcc00', char: '✨' },
+    { id: 'lure_love', name: 'Love Potion', type: 'bobber', price: 1000, desc: 'Attracts fish with love.', icon: '💖', color: '#ff00aa', char: '❤️' },
+    { id: 'lure_toxic', name: 'Rad Waste', type: 'bobber', price: 1200, desc: 'Glows in the dark.', icon: '☢️', color: '#00ff00', char: '🔋' },
+    { id: 'lure_void', name: 'Abyss Beacon', type: 'bobber', price: 2000, desc: 'High contrast B&W.', icon: '⚫', color: '#ffffff', char: '⚪' },
+    { id: 'lure_fire', name: 'Fireball', type: 'bobber', price: 1500, desc: 'Hot stuff!', icon: '🔥', color: '#ff4400', char: '🔥' },
+    { id: 'lure_star', name: 'Super Star', type: 'bobber', price: 3000, desc: 'Invincible vibe.', icon: '⭐', color: '#ffffaa', char: '⭐' },
+    { id: 'lure_ice', name: 'Frost Bite', type: 'bobber', price: 1000, desc: 'Stay cool.', icon: '🧊', color: '#aaooff', char: '❄️' },
+    { id: 'lure_money', name: 'Bling Bling', type: 'bobber', price: 5000, desc: 'Trails of cash.', icon: '💎', color: '#00ff00', char: '💲' },
+    { id: 'lure_matrix', name: 'The Code', type: 'bobber', price: 4000, desc: 'See the matrix.', icon: '👾', color: '#00ff00', char: '01' },
+
+    // --- BOATS ---
     { id: 'duck', name: 'Rubber Duck', type: 'skin', price: 500, desc: 'Squeak squeak!', icon: '🦆' },
     { id: 'ufo', name: 'U.F.O.', type: 'skin', price: 2000, desc: 'Beam them up!', icon: '🛸' },
     { id: 'pirate', name: 'Galleon', type: 'skin', price: 1000, desc: 'Yarrr!', icon: '🏴‍☠️' },
@@ -152,7 +164,7 @@ const SHOP_ITEMS = [
     { id: 'cloud', name: 'Nimbus', type: 'skin', price: 777, desc: 'Pure heart required.', icon: '☁️' },
     { id: 'invisible', name: 'Invisible Boat', type: 'skin', price: 5000, desc: 'To the invisible boatmobile!', icon: '🚫' },
 
-    // UPGRADES
+    // --- UPGRADES ---
     { id: 'bigbar', name: 'Titanium Bar', type: 'upgrade', price: 1500, desc: '+10% Catch Area', icon: '📏' },
     { id: 'turbo', name: 'Turbo Reel', type: 'upgrade', price: 1500, desc: '+10% Reel Speed', icon: '⏩' },
     { id: 'diamond', name: 'Diamond Rod', type: 'upgrade', price: 10000, desc: 'The Ultimate Flex', icon: '💎' },
@@ -315,6 +327,8 @@ const CrazyFishing = () => {
             setInventory(savedInv);
             const savedSkin = localStorage.getItem('fishingSkin') || 'default';
             setEquippedSkin(savedSkin);
+            const savedBobber = localStorage.getItem('fishingBobber') || 'lure_neon';
+            setEquippedBobber(savedBobber);
             if (localStorage.getItem('goldenRod')) setHasGoldenRod(true);
         } catch (e) {
             console.error("Save file corrupted, resetting", e);
@@ -334,10 +348,14 @@ const CrazyFishing = () => {
 
     const buyItem = (item) => {
         if (inventory.includes(item.id)) {
-            // Equip if skin
+            // Equip if owned
             if (item.type === 'skin') {
                 setEquippedSkin(item.id);
                 localStorage.setItem('fishingSkin', item.id);
+                playCollect();
+            } else if (item.type === 'bobber') {
+                setEquippedBobber(item.id);
+                localStorage.setItem('fishingBobber', item.id);
                 playCollect();
             }
             return;
@@ -356,6 +374,9 @@ const CrazyFishing = () => {
             if (item.type === 'skin') {
                 setEquippedSkin(item.id);
                 localStorage.setItem('fishingSkin', item.id);
+            } else if (item.type === 'bobber') {
+                setEquippedBobber(item.id);
+                localStorage.setItem('fishingBobber', item.id);
             }
         } else {
             playCrash(); // Too poor
@@ -393,31 +414,31 @@ const CrazyFishing = () => {
         state.particles = state.particles.filter(p => p.life > 0 && p.y > -100);
 
         // --- BOBBER TRAILS ---
-        if (equippedBobber && state.depth >= 0) { // Only if hook is active (rough check)
-            // We can check if mode is DROPPING or REELING for stronger effect
+        if (equippedBobber && state.depth >= 0) {
             const isMoving = mode === 'DROPPING' || mode === 'REELING_UP';
-            const intensity = isMoving ? 0.8 : 0.2; // Higher chance when moving
+            const intensity = isMoving ? 0.9 : 0.3;
+
+            // Find Bobber Config
+            const config = SHOP_ITEMS.find(i => i.id === equippedBobber);
 
             if (Math.random() < intensity) {
-                if (equippedBobber === 'bobber_comet') {
+                if (config && config.color) {
+                    // Dynamic Color Lures
                     state.particles.push({
                         x: state.hookX + (Math.random() - 0.5) * 10,
                         y: state.hookY,
-                        dx: (Math.random() - 0.5) * 2, dy: -2 - Math.random(),
-                        life: 1, char: '🔥', color: 'orange', size: isMoving ? 20 : 10
+                        dx: (Math.random() - 0.5) * 2,
+                        dy: -2 - Math.random(),
+                        life: 1,
+                        char: config.char || '●',
+                        color: config.color,
+                        size: isMoving ? 20 : 10
                     });
-                } else if (equippedBobber === 'bobber_neon') {
+                } else {
+                    // Fallback / Legacy
                     state.particles.push({
                         x: state.hookX, y: state.hookY,
-                        dx: 0, dy: 0,
-                        life: 0.5, char: '🟦', color: 'cyan', size: 10
-                    });
-                } else if (equippedBobber === 'bobber_sparkle') {
-                    state.particles.push({
-                        x: state.hookX + (Math.random() - 0.5) * 20,
-                        y: state.hookY + (Math.random() - 0.5) * 20,
-                        dx: (Math.random() - 0.5), dy: (Math.random() - 0.5),
-                        life: 0.8, char: '✨', color: 'yellow', size: 15
+                        dx: 0, dy: 0, life: 0.5, char: '🔴', color: 'red'
                     });
                 }
             }
@@ -1418,7 +1439,7 @@ const CrazyFishing = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                 {SHOP_ITEMS.map(item => {
                                     const owned = inventory.includes(item.id);
-                                    const equipped = equippedSkin === item.id;
+                                    const equipped = (equippedSkin === item.id) || (equippedBobber === item.id);
                                     return (
                                         <div key={item.id} onClick={() => buyItem(item)} style={{
                                             border: owned ? (equipped ? '2px solid lime' : '2px solid gray') : '2px solid white',
@@ -1436,7 +1457,7 @@ const CrazyFishing = () => {
                                             <div>
                                                 {owned ? (
                                                     <div style={{ color: equipped ? 'lime' : 'white', fontWeight: 'bold' }}>
-                                                        {item.type === 'skin' ? (equipped ? 'EQUIPPED' : 'OWNED') : 'UNLOCKED'}
+                                                        {((item.type === 'skin' && equippedSkin === item.id) || (item.type === 'bobber' && equippedBobber === item.id)) ? 'EQUIPPED' : 'OWNED'}
                                                     </div>
                                                 ) : (
                                                     <div style={{ color: 'gold', fontWeight: 'bold', fontSize: '1.2rem' }}>{item.price} 💰</div>
