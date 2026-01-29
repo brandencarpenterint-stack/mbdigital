@@ -8,18 +8,28 @@ import { useGamification } from '../context/GamificationContext';
 const Home = () => {
     const { squadScores } = useSquad();
     const { getMood } = usePocketBro();
-    const { getLevelInfo } = useGamification();
+    const { getLevelInfo, dailyState } = useGamification();
 
     const { level, progress, totalXP } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0, totalXP: 0 };
     const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
 
-    // Mock Live Feed
+    // Live Feed
     const [logs, setLogs] = useState([
         { id: 1, text: "System Online...", time: "Now" },
         { id: 2, text: "Market: +2.4% 📈", time: "2m" },
         { id: 3, text: "New High Score: SNAKE", time: "15m" },
-        { id: 4, text: "User joined Team NEON", time: "1h" },
     ]);
+
+    useEffect(() => {
+        if (dailyState) {
+            const completed = dailyState.quests.filter(q => q.claimed).length;
+            const status = completed === 3 ? "ALL COMPLETED ✅" : `${completed}/3 DONE`;
+            setLogs(prev => [
+                { id: 99, text: `Daily Protocols: ${status}`, time: "Live" },
+                ...prev.filter(l => l.id !== 99)
+            ]);
+        }
+    }, [dailyState]);
 
     return (
         <div className="home-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
