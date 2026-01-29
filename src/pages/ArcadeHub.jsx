@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import DailyZone from '../components/DailyZone';
 import LiveFeed from '../components/LiveFeed';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
