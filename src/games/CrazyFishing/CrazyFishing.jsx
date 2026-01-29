@@ -1564,8 +1564,8 @@ const CrazyFishing = () => {
                     )}
                     {/* ZONE NOTIFICATION */}
                     <div style={{
-                        position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)',
-                        color: 'white', fontSize: '4rem', fontWeight: 'bold', textShadow: '0 0 20px cyan',
+                        position: 'absolute', top: '10%', left: '50%', transform: 'translate(-50%, 0)',
+                        color: 'rgba(255,255,255,0.8)', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 5px cyan',
                         opacity: zoneNotification ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: 'none',
                         zIndex: 10, textAlign: 'center', fontFamily: '"Impact", sans-serif'
                     }}>
