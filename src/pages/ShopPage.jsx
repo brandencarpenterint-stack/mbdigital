@@ -147,7 +147,7 @@ const ShopPage = () => {
                         VISIT MERCH STORE ↗
                     </a>
                 </div>
-                <div style={{ fontSize: '5rem' }}>👕</div>
+                <img src="/assets/merchboy_money.png" alt="Merch Boy Money" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
             </div>
 
             {/* ITEMS GRID */}
