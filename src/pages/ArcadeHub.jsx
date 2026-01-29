@@ -158,76 +158,101 @@ const ArcadeHub = () => {
             {/* BENTO GRID GAMES */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', // Wider cards
-                gap: '25px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '20px',
                 padding: '10px',
                 maxWidth: '1200px',
                 margin: '0 auto',
                 width: '100%'
             }}>
                 {games.map(game => (
-                    <Link to={`/arcade/${game.id}`} key={game.id} className="bento-card" style={{
+                    <Link to={`/arcade/${game.id}`} key={game.id} className="bento-card game-card-hover" style={{
                         background: game.gradient,
-                        padding: '30px',
+                        padding: '25px',
                         textDecoration: 'none',
                         color: 'white',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        minHeight: '260px', // Taller
+                        minHeight: '220px',
                         gridColumn: game.colSpan === 2 ? 'span 2' : 'span 1',
-                        border: '4px solid rgba(255,255,255,0.3)', // Tactile border
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.2)', // Lifted look
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                         position: 'relative',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        transition: 'transform 0.3s, box-shadow 0.3s'
                     }}>
+                        {/* BADGES */}
+                        {(game.id === 'slots') && (
+                            <div style={{
+                                position: 'absolute', top: 15, right: 15,
+                                background: 'white', color: 'black',
+                                padding: '4px 10px', borderRadius: '20px',
+                                fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
+                                boxShadow: '0 0 10px rgba(255,255,255,0.5)'
+                            }}>
+                                HOT 🔥
+                            </div>
+                        )}
+                        {(game.id === 'fishing') && (
+                            <div style={{
+                                position: 'absolute', top: 15, right: 15,
+                                background: 'rgba(0,0,0,0.6)', color: '#00C6FF',
+                                padding: '4px 10px', borderRadius: '20px',
+                                fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
+                                border: '1px solid #00C6FF'
+                            }}>
+                                DAILY 🎣
+                            </div>
+                        )}
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2 }}>
                             <div style={{ flex: 1 }}>
                                 <h2 style={{
                                     margin: 0,
-                                    fontSize: '2.2rem',
+                                    fontSize: '1.8rem',
                                     fontWeight: '900',
-                                    textShadow: '2px 2px 0px rgba(0,0,0,0.3)',
-                                    lineHeight: 1.1
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                    lineHeight: 1,
+                                    fontFamily: '"Orbitron", sans-serif', // V3 Font
+                                    letterSpacing: '1px'
                                 }}>
                                     {game.title}
                                 </h2>
-                                <p style={{ margin: '10px 0 0 0', opacity: 1, fontSize: '1.2rem', fontWeight: '500' }}>{game.desc}</p>
+                                <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '1rem', fontWeight: '500' }}>{game.desc}</p>
                             </div>
-                            <span style={{ fontSize: '4rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.3))' }}>{game.icon}</span>
+                            {/* <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.3))' }}>{game.icon}</span> */}
                         </div>
 
-                        {/* Overlay Decor */}
+                        {/* Overlay Decor (Giant Icon) */}
                         <div style={{
-                            position: 'absolute', bottom: -20, right: -20,
-                            fontSize: '8rem', opacity: 0.1, transform: 'rotate(-20deg)', pointerEvents: 'none'
+                            position: 'absolute', bottom: -10, right: -10,
+                            fontSize: '9rem', opacity: 0.2, transform: 'rotate(-15deg)', pointerEvents: 'none'
                         }}>
                             {game.icon}
                         </div>
 
-                        <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+                        <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 2 }}>
                             <div style={{
-                                background: 'rgba(0,0,0,0.3)',
-                                padding: '8px 15px',
-                                borderRadius: '15px',
-                                fontSize: '1rem',
+                                background: 'rgba(0, 0, 0, 0.4)',
+                                padding: '5px 12px',
+                                borderRadius: '12px',
+                                fontSize: '0.9rem',
                                 fontWeight: 'bold',
-                                display: 'flex', alignItems: 'center', gap: '5px'
+                                display: 'flex', alignItems: 'center', gap: '5px',
+                                backdropFilter: 'blur(5px)'
                             }}>
-                                🏆 <span style={{ color: '#fff' }}>{getHighScore(game.id)}</span>
+                                🏆 <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px var(--neon-gold)' }}>{getHighScore(game.id)}</span>
                             </div>
-                            <button className="squishy-btn" style={{
-                                background: 'white',
-                                color: 'black',
-                                padding: '12px 30px',
-                                borderRadius: '50px',
-                                border: 'none',
+
+                            <div style={{
+                                background: 'white', color: 'black',
+                                width: '40px', height: '40px',
+                                borderRadius: '50%',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontWeight: '900',
                                 fontSize: '1.2rem',
-                                boxShadow: '0 5px 0 rgba(0,0,0,0.2)',
-                                cursor: 'pointer'
+                                boxShadow: '0 0 15px rgba(255,255,255,0.4)'
                             }}>
-                                PLAY
-                            </button>
+                                ▶
+                            </div>
                         </div>
                     </Link>
                 ))}
