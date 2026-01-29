@@ -1245,17 +1245,24 @@ const CrazyFishing = () => {
             if (!canvas) return;
 
             // Handle Touch or Mouse
-            let clientX;
+            let clientX, clientY;
             if (e.touches && e.touches.length > 0) {
                 clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
             } else {
                 clientX = e.clientX;
+                clientY = e.clientY;
             }
 
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
             const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+
             stateRef.current.hookX = Math.max(20, Math.min(GAME_WIDTH - 20, x));
+            stateRef.current.hookY = Math.max(50, Math.min(GAME_HEIGHT - 50, y)); // Unlocked Vertical
         }
     };
 
