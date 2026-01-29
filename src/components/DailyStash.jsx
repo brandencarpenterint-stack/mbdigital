@@ -16,6 +16,8 @@ const DailyStash = ({ onClose }) => {
     const [status, setStatus] = useState('LOCKED'); // LOCKED, OPENING, OPENED, CLAIMED
     const [reward, setReward] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
+    const [streak, setStreak] = useState(parseInt(localStorage.getItem('dailyStreak')) || 0);
+
 
     useEffect(() => {
         checkAvailability();
@@ -47,6 +49,21 @@ const DailyStash = ({ onClose }) => {
     const openChest = () => {
         setStatus('OPENING');
 
+        // Streak Logic
+        let currentStreak = parseInt(localStorage.getItem('dailyStreak')) || 0;
+        const lastClaim = parseInt(localStorage.getItem('dailyStashClaim')) || 0;
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        // If last claim was more than 48 hours ago, reset streak (allow 48h for leniency)
+        if (now - lastClaim > oneDay * 2) {
+            currentStreak = 0;
+        }
+
+        const newStreak = currentStreak + 1;
+        localStorage.setItem('dailyStreak', newStreak);
+        setStreak(newStreak);
+
         // Random Reward Logic
         const roll = Math.random();
         let selected;
@@ -57,13 +74,22 @@ const DailyStash = ({ onClose }) => {
         else selected = REWARDS[0]; // 50 coins (30%)
 
         setTimeout(() => {
-            setReward(selected);
+            const finalReward = { ...selected };
+
+            // Apply Streak Bonus to Coins
+            if (finalReward.type === 'coins') {
+                const bonus = Math.floor(finalReward.amount * (1 + (newStreak - 1) * 0.1));
+                finalReward.amount = bonus;
+                finalReward.label = `${bonus} COINS`;
+            }
+
+            setReward(finalReward);
             setStatus('OPENED');
             triggerConfetti();
 
             // Apply Reward
-            if (selected.type === 'coins') {
-                addCoins(selected.amount);
+            if (finalReward.type === 'coins') {
+                addCoins(finalReward.amount);
             }
             // Save Claim Time
             localStorage.setItem('dailyStashClaim', Date.now().toString());
@@ -94,7 +120,10 @@ const DailyStash = ({ onClose }) => {
                     ✕
                 </button>
 
-                <h1 style={{ color: '#d4af37', fontFamily: 'Kanit', textShadow: '0 2px 0 black' }}>THE DAILY STASH</h1>
+                <h1 style={{ color: '#d4af37', fontFamily: 'Kanit', textShadow: '0 2px 0 black', margin: '0 0 10px 0' }}>THE DAILY STASH</h1>
+                <div style={{ background: '#d4af37', color: 'black', display: 'inline-block', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold' }}>
+                    🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''}
+                </div>
 
                 <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
                     {status === 'LOCKED' && (

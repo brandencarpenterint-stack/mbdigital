@@ -82,6 +82,57 @@ const ShopPage = () => {
                 ))}
             </div>
 
+            {/* MYSTERY CRATE */}
+            <div className="bento-card" style={{
+                maxWidth: '600px', margin: '0 auto 40px auto',
+                background: 'linear-gradient(45deg, #FF0080, #7928CA)',
+                color: 'white', padding: '20px', textAlign: 'center',
+                position: 'relative', overflow: 'hidden',
+                border: '4px solid gold', boxShadow: '0 0 30px rgba(255, 215, 0, 0.3)'
+            }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                    <h2 style={{ margin: '0 0 10px 0', fontSize: '2rem', textShadow: '0 2px 0 black' }}>❓ MYSTERY CRATE ❓</h2>
+                    <p style={{ margin: '0 0 20px 0', fontWeight: 'bold' }}>Get a RANDOM item for cheap!</p>
+
+                    <button
+                        onClick={() => {
+                            // Mystery Logic
+                            if (coins < 250) return;
+
+                            const lockedItems = SHOP_ITEMS.filter(i => !shopState.unlocked.includes(i.id));
+                            if (lockedItems.length === 0) {
+                                alert("You own everything! Wow!");
+                                return;
+                            }
+
+                            // Spin Effect?
+                            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                            const winner = lockedItems[Math.floor(Math.random() * lockedItems.length)];
+                            const discountedItem = { ...winner, price: 250 }; // Override price
+
+                            buyItem(discountedItem);
+                            playCollect();
+                            triggerConfetti();
+
+                            alert(`You won: ${winner.name}!`);
+                        }}
+                        style={{
+                            padding: '15px 40px', fontSize: '1.5rem', borderRadius: '30px',
+                            border: 'none', background: 'gold', color: 'black', fontWeight: 'bold',
+                            cursor: coins >= 250 ? 'pointer' : 'not-allowed',
+                            opacity: coins >= 250 ? 1 : 0.5,
+                            boxShadow: '0 5px 0 #b8860b'
+                        }}
+                    >
+                        SPIN FOR 250 🪙
+                    </button>
+                </div>
+                {/* Decoration */}
+                <div style={{ position: 'absolute', top: -20, left: -20, fontSize: '8rem', opacity: 0.2 }}>🎁</div>
+                <div style={{ position: 'absolute', bottom: -20, right: -20, fontSize: '8rem', opacity: 0.2 }}>✨</div>
+            </div>
+
             {/* HERO MERCH CARD */}
             <div className="bento-card" style={{
                 maxWidth: '1200px', margin: '0 auto 40px auto',
