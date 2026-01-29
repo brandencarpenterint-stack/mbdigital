@@ -41,7 +41,7 @@ const CHARACTERS = [
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
     // Global Shop State
-    const { shopState, updateStat, incrementStat } = useGamification() || {};
+    const { shopState, updateStat, incrementStat, equipItem } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
@@ -344,12 +344,48 @@ const FlappyMascot = () => {
             </div>
 
             {/* PILOT SELECTOR */}
-            <div style={{ marginTop: '20px', width: '400px', textAlign: 'center' }}>
-                <p style={{ color: '#fff' }}>Playing as: <span style={{ color: 'gold', fontWeight: 'bold' }}>
-                    {CHARACTERS.find(c => c.id === selectedId)?.name || 'Pilot'}
-                </span></p>
-                <Link to="/shop" style={{ display: 'inline-block', padding: '10px 20px', background: '#333', color: 'gold', borderRadius: '10px', textDecoration: 'none', border: '1px solid gold' }}>
-                    🛍️ Unlock Pilots in Global Shop
+            {/* PILOT SELECTOR */}
+            <div style={{ marginTop: '20px', width: '100%', maxWidth: '400px', overflowX: 'auto', paddingBottom: '10px' }}>
+                <p style={{ color: '#fff', textAlign: 'center', marginBottom: '5px' }}>SELECT PILOT</p>
+                <div style={{ display: 'flex', gap: '10px', padding: '0 10px' }}>
+                    {CHARACTERS.map(char => {
+                        const isUnlocked = shopState?.unlocked?.includes(char.id) || char.id === 'flappy_boy';
+                        const isSelected = selectedId === char.id;
+
+                        if (!isUnlocked) return null; // Hide locked
+
+                        return (
+                            <button
+                                key={char.id}
+                                onClick={() => {
+                                    if (equipItem) {
+                                        equipItem('flappy', char.id);
+                                        if (navigator.vibrate) navigator.vibrate(20);
+                                    }
+                                }}
+                                style={{
+                                    background: isSelected ? '#ff9900' : 'rgba(255,255,255,0.2)',
+                                    border: isSelected ? '2px solid white' : '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '10px',
+                                    padding: '10px',
+                                    minWidth: '60px',
+                                    cursor: 'pointer',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center'
+                                }}
+                            >
+                                <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>
+                                    {char.type === 'emoji' ? char.content : (char.id === 'flappy_boy' ? '👦' : '🅱️')}
+                                </div>
+                                <span style={{ fontSize: '0.7rem', color: 'white', whiteSpace: 'nowrap' }}>{char.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <Link to="/shop" style={{ color: 'gold', textDecoration: 'none', fontSize: '0.9rem' }}>
+                    🛍️ Get More Pilots
                 </Link>
             </div>
 
