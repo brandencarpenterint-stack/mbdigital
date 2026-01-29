@@ -145,13 +145,17 @@ export const GamificationProvider = ({ children }) => {
     // --- SHOP LOGIC ---
     const [shopState, setShopState] = useState(() => {
         const defaults = {
-            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy'],
+            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy', 'food_apple', 'bobber_red', 'ball_std', 'bullet_laser'],
             equipped: {
                 snake: 'snake_default',
+                snake_food: 'food_apple',
                 fishing_rod: 'rod_default',
                 fishing_boat: 'boat_default',
+                fishing_bobber: 'bobber_red',
                 brick: 'paddle_default',
+                brick_ball: 'ball_std',
                 galaxy: 'ship_default',
+                galaxy_bullet: 'bullet_laser',
                 flappy: 'flappy_boy'
             }
         };

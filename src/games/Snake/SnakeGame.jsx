@@ -51,6 +51,10 @@ const SnakeGame = () => {
         } else if (skin === 'snake_ghost') {
             style.backgroundColor = index === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)';
             style.border = '1px solid white';
+        } else if (skin === 'snake_tron') {
+            style.backgroundColor = '#00f3ff';
+            style.boxShadow = '0 0 10px #00f3ff, 0 0 20px #00f3ff';
+            style.borderRadius = '0px'; // Square for Tron feeling
         } else {
             // Default
             style.backgroundColor = index === 0 ? '#ccffdd' : '#00ffaa';
@@ -275,17 +279,25 @@ const SnakeGame = () => {
                     width: '5%',
                     height: '5%',
                     zIndex: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1em' // Scale emoji
                 }}>
-                    <div style={{
-                        width: '140%', height: '140%',
-                        background: 'radial-gradient(circle, #ff0055 30%, transparent 70%)',
-                        borderRadius: '50%',
-                        animation: 'pulse 1s infinite alternate',
-                        boxShadow: '0 0 10px #ff0055'
-                    }} />
-                    {/* Inner Core */}
-                    <div style={{ width: '40%', height: '40%', background: '#fff', borderRadius: '50%', position: 'absolute' }} />
+                    {(!shopState?.equipped?.snake_food || shopState.equipped.snake_food === 'food_apple') ? (
+                        <div style={{
+                            width: '140%', height: '140%',
+                            background: 'radial-gradient(circle, #ff0055 30%, transparent 70%)',
+                            borderRadius: '50%',
+                            animation: 'pulse 1s infinite alternate',
+                            boxShadow: '0 0 10px #ff0055',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div style={{ width: '40%', height: '40%', background: '#fff', borderRadius: '50%' }} />
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: '1.2rem', animation: 'pulse 1s infinite alternate', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>
+                            {shopState.equipped.snake_food === 'food_burger' ? '🍔' : '🍣'}
+                        </div>
+                    )}
                 </div>
 
                 {/* Game Over */}

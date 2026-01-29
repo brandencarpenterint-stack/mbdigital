@@ -44,11 +44,12 @@ const NeonBrickBreaker = () => {
         shakeTime: 0
     });
 
-    useEffect(() => {
-        const img = new Image();
-        img.src = '/assets/boy_face.png';
-        ballImgRef.current = img;
-    }, []);
+    // Removed hardcoded image load
+    // useEffect(() => {
+    //     const img = new Image();
+    //     img.src = '/assets/boy_face.png';
+    //     ballImgRef.current = img;
+    // }, []);
 
     // --- LEVEL GENERATION ---
     const generateLevel = (lvl) => {
@@ -359,6 +360,9 @@ const NeonBrickBreaker = () => {
         } else if (currentSkin === 'paddle_ice') {
             paddleColor = '#00bfff'; // DeepSkyBlue
             paddleGlow = '#e0ffff';  // LightCyan
+        } else if (currentSkin === 'paddle_laser') {
+            paddleColor = '#00ff00'; // Lime
+            paddleGlow = '#00ffff';  // Cyan
         }
 
         ctx.fillStyle = paddleColor;
@@ -374,14 +378,34 @@ const NeonBrickBreaker = () => {
         ctx.shadowBlur = 0;
 
         // Balls
+        const currentBall = shopState?.equipped?.brick_ball || 'ball_std';
+
         state.balls.forEach(ball => {
             ctx.save();
             ctx.translate(ball.x + BALL_SIZE / 2, ball.y + BALL_SIZE / 2);
             ctx.rotate(ball.rot);
-            if (ballImgRef.current) {
-                ctx.drawImage(ballImgRef.current, -BALL_SIZE, -BALL_SIZE, BALL_SIZE * 2, BALL_SIZE * 2);
-            } else {
+
+            if (currentBall === 'ball_eye') {
+                // Eyeball
                 ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                // Iris
+                ctx.fillStyle = '#00aaff';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 4, 0, Math.PI * 2); ctx.fill();
+                // Pupil
+                ctx.fillStyle = 'black';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 8, 0, Math.PI * 2); ctx.fill();
+            } else if (currentBall === 'ball_fire') {
+                // Fireball
+                ctx.fillStyle = '#ff4500';
+                ctx.shadowBlur = 10; ctx.shadowColor = 'orange';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                // Trail
+                if (Math.random() > 0.5) spawnParticles(ball.x, ball.y + 10, 'orange');
+            } else {
+                // Default Steel
+                ctx.fillStyle = 'white';
+                ctx.shadowBlur = 5; ctx.shadowColor = 'white';
                 ctx.beginPath();
                 ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2);
                 ctx.fill();

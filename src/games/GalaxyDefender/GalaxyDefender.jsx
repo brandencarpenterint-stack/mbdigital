@@ -428,8 +428,33 @@ const GalaxyDefender = () => {
                 ctx.fillStyle = 'yellow';
                 ctx.beginPath();
                 ctx.arc(-15, 0, 3, 0, Math.PI * 2);
-                ctx.arc(0, 5, 3, 0, Math.PI * 2);
                 ctx.arc(15, 0, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (currentSkin === 'ship_dragon') {
+                // DRAGON
+                ctx.fillStyle = '#00aa00';
+                // Head
+                ctx.beginPath();
+                ctx.moveTo(0, -30);
+                ctx.lineTo(10, -10);
+                ctx.lineTo(-10, -10);
+                ctx.fill();
+                // Wings
+                ctx.fillStyle = '#008800';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(30, 20);
+                ctx.lineTo(10, 20);
+                ctx.lineTo(0, 40); // Tail
+                ctx.lineTo(-10, 20);
+                ctx.lineTo(-30, 20);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(-5, -20, 2, 0, Math.PI * 2);
+                ctx.arc(5, -20, 2, 0, Math.PI * 2);
                 ctx.fill();
 
             } else {
@@ -455,9 +480,19 @@ const GalaxyDefender = () => {
         }
 
         // Bullets
+        const currentBullet = shopState?.equipped?.galaxy_bullet || 'bullet_laser';
+
         ctx.fillStyle = '#ffcc00';
         state.bullets.forEach(b => {
-            ctx.fillRect(b.x, b.y, BULLET_SIZE, 20);
+            if (currentBullet === 'bullet_donut') {
+                ctx.font = '20px serif';
+                ctx.fillText('🍩', b.x - 5, b.y + 10);
+            } else if (currentBullet === 'bullet_cat') {
+                ctx.font = '20px serif';
+                ctx.fillText('🐱', b.x - 5, b.y + 10);
+            } else {
+                ctx.fillRect(b.x, b.y, BULLET_SIZE, 20);
+            }
         });
 
         // Enemies

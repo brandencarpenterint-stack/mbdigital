@@ -221,6 +221,7 @@ const CrazyFishing = () => {
     const [coins, setCoins] = useState(0);
     const [inventory, setInventory] = useState([]); // Restore local inventory for compatibility
     const [equippedSkin, setEquippedSkin] = useState('boat_default');
+    const [equippedBobber, setEquippedBobber] = useState('bobber_red');
     const [hasGoldenRod, setHasGoldenRod] = useState(false);
 
     // Refs
@@ -256,6 +257,7 @@ const CrazyFishing = () => {
         // Apply Skin
         skinRef.current = skin;
         setEquippedSkin(skin);
+        if (shopState?.equipped?.fishing_bobber) setEquippedBobber(shopState.equipped.fishing_bobber);
 
         // Apply Rod
         if (shopState?.unlocked?.includes('rod_gold')) useGoldRod = true;
@@ -765,9 +767,21 @@ const CrazyFishing = () => {
         ctx.lineWidth = hasGoldenRod ? 3 : 1;
         ctx.beginPath(); ctx.moveTo(state.hookX, 0); ctx.lineTo(state.hookX, state.hookY); ctx.stroke();
 
-        // Hook
+        // Hook / Bobber
         ctx.fillStyle = hasGoldenRod ? 'gold' : 'silver';
-        ctx.fillRect(state.hookX - 5, state.hookY, 10, 10);
+
+        // Render Bobber Skin
+        const bobberIcon = equippedBobber === 'bobber_duck' ? '🦆' :
+            equippedBobber === 'bobber_skull' ? '💀' : null;
+
+        if (bobberIcon) {
+            ctx.font = '20px serif';
+            ctx.fillText(bobberIcon, state.hookX - 10, state.hookY + 5);
+        } else {
+            // Default Rect Hook
+            ctx.fillRect(state.hookX - 5, state.hookY, 10, 10);
+        }
+
         // Special skin laser check?
         if (skinRef.current === 'ufo') {
             ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 2;

@@ -4,11 +4,23 @@ export const SHOP_ITEMS = [
     { id: 'snake_gold', type: 'snake_skin', name: 'Midas Touch', price: 500, category: 'snake', slot: 'snake', description: 'Solid gold snake. Fancy!', icon: '🏆' },
     { id: 'snake_rainbow', type: 'snake_skin', name: 'Rainbow', price: 1000, category: 'snake', slot: 'snake', description: 'Changes colors as you move!', icon: '🌈', unlockCondition: 'snake_master' },
     { id: 'snake_ghost', type: 'snake_skin', name: 'Ghost', price: 750, category: 'snake', slot: 'snake', description: 'Spooky transparent vibes.', icon: '👻', unlockCondition: 'snake_pro' },
+    { id: 'snake_tron', type: 'snake_skin', name: 'Cyber Cycle', price: 2000, category: 'snake', slot: 'snake', description: 'Leave a light trail.', icon: '🏍️', unlockCondition: 'snake_master' },
+
+    // --- SNAKE FOOD ---
+    { id: 'food_apple', type: 'snake_food', name: 'Red Apple', price: 0, category: 'snake', slot: 'snake_food', description: 'Healthy default.', icon: '🍎' },
+    { id: 'food_burger', type: 'snake_food', name: 'Cheezburger', price: 500, category: 'snake', slot: 'snake_food', description: 'Can i haz?', icon: '🍔', unlockCondition: 'snake_novice' },
+    { id: 'food_sushi', type: 'snake_food', name: 'Sashimi', price: 1000, category: 'snake', slot: 'snake_food', description: 'Fancy dining.', icon: '🍣', unlockCondition: 'snake_pro' },
 
     // --- FISHING: RODS & UPGRADES ---
     { id: 'rod_default', type: 'fishing_rod', name: 'Bamboo Pole', price: 0, category: 'fishing', slot: 'fishing_rod', description: 'Ol\' reliable.', icon: '🎋' },
     { id: 'rod_fiberglass', type: 'fishing_rod', name: 'Fiberglass', price: 300, category: 'fishing', slot: 'fishing_rod', description: 'Sleek and sturdy.', icon: '🎣', unlockCondition: 'fish_novice' },
+    { id: 'rod_candy', type: 'fishing_rod', name: 'Candy Cane', price: 1500, category: 'fishing', slot: 'fishing_rod', description: 'Sweet success.', icon: '🍭', unlockCondition: 'fish_amateur' },
     { id: 'rod_gold', type: 'fishing_rod', name: 'Golden Rod', price: 10000, category: 'fishing', slot: 'fishing_rod', description: 'The Ultimate Flex.', icon: '💎', unlockCondition: 'fish_master' },
+
+    // --- FISHING: BOBBERS ---
+    { id: 'bobber_red', type: 'fishing_bobber', name: 'Classic Red', price: 0, category: 'fishing', slot: 'fishing_bobber', description: 'Floating ball.', icon: '🔴' },
+    { id: 'bobber_duck', type: 'fishing_bobber', name: 'Rubber Duck', price: 500, category: 'fishing', slot: 'fishing_bobber', description: 'Quack.', icon: '🦆', unlockCondition: 'fish_novice' },
+    { id: 'bobber_skull', type: 'fishing_bobber', name: 'Skull', price: 2000, category: 'fishing', slot: 'fishing_bobber', description: 'Deadly effective.', icon: '💀', unlockCondition: 'fish_pro' },
 
     // --- FISHING: BOATS (SKINS) ---
     { id: 'boat_default', type: 'fishing_boat', name: 'Dinghy', price: 0, category: 'fishing', slot: 'fishing_boat', description: 'It floats.', icon: '🚣' },
@@ -37,10 +49,22 @@ export const SHOP_ITEMS = [
     { id: 'paddle_default', type: 'brick_paddle', name: 'Standard', price: 0, category: 'brick', slot: 'brick', description: 'Basic paddle.', icon: '➖' },
     { id: 'paddle_flame', type: 'brick_paddle', name: 'Flame', price: 600, category: 'brick', slot: 'brick', description: 'Hot stuff!', icon: '🔥', unlockCondition: 'brick_pro' },
     { id: 'paddle_ice', type: 'brick_paddle', name: 'Glacier', price: 600, category: 'brick', slot: 'brick', description: 'Cool as ice.', icon: '❄️', unlockCondition: 'brick_pro' },
+    { id: 'paddle_laser', type: 'brick_paddle', name: 'Laser Bar', price: 2000, category: 'brick', slot: 'brick', description: 'Pew pew aesthetics.', icon: '⚡', unlockCondition: 'brick_master' },
+
+    // --- BRICK BALLS ---
+    { id: 'ball_std', type: 'brick_ball', name: 'Steel Ball', price: 0, category: 'brick', slot: 'brick_ball', description: 'Heavy metal.', icon: '⚪' },
+    { id: 'ball_fire', type: 'brick_ball', name: 'Fireball', price: 1000, category: 'brick', slot: 'brick_ball', description: 'Visual heat.', icon: '☄️', unlockCondition: 'brick_level_5' },
+    { id: 'ball_eye', type: 'brick_ball', name: 'Eyeball', price: 1500, category: 'brick', slot: 'brick_ball', description: 'It watches you.', icon: '👁️', unlockCondition: 'brick_level_10' },
 
     // --- GALAXY SHIPS ---
     { id: 'ship_default', type: 'galaxy_ship', name: 'Interceptor', price: 0, category: 'galaxy', slot: 'galaxy', description: 'Standard issue.', icon: '🚀' },
     { id: 'ship_ufo', type: 'galaxy_ship', name: 'Invader', price: 1200, category: 'galaxy', slot: 'galaxy', description: 'Fly the enemy ship!', icon: '🛸', unlockCondition: 'galaxy_boss_1' },
+    { id: 'ship_dragon', type: 'galaxy_ship', name: 'Space Dragon', price: 5000, category: 'galaxy', slot: 'galaxy', description: 'Mythical beast.', icon: '🐉', unlockCondition: 'galaxy_boss_5' },
+
+    // --- GALAXY BULLETS ---
+    { id: 'bullet_laser', type: 'galaxy_bullet', name: 'Red Laser', price: 0, category: 'galaxy', slot: 'galaxy_bullet', description: 'Standard issue.', icon: '¦' },
+    { id: 'bullet_donut', type: 'galaxy_bullet', name: 'Donut', price: 1000, category: 'galaxy', slot: 'galaxy_bullet', description: 'Sweet destruction.', icon: '🍩', unlockCondition: 'galaxy_novice' },
+    { id: 'bullet_cat', type: 'galaxy_bullet', name: 'Nyan Cat', price: 2500, category: 'galaxy', slot: 'galaxy_bullet', description: 'Meow.', icon: '🐱', unlockCondition: 'galaxy_pro' },
 
     // --- FLAPPY PILOTS ---
     { id: 'flappy_boy', type: 'flappy_skin', name: 'MerchBoy', price: 0, category: 'flappy', slot: 'flappy', description: 'The original.', icon: '👦', skinType: 'image', skinContent: '/assets/boy_face.png' },
