@@ -235,8 +235,10 @@ const SnakeGame = () => {
                 aspectRatio: '1/1',
                 backgroundColor: '#000',
                 border: '4px solid #00ffaa',
-                boxShadow: '0 0 20px #00ffaa40',
-                touchAction: 'none' // Prevent scroll while swiping
+                boxShadow: '0 0 20px #00ffaa40, inset 0 0 30px rgba(0,255,170, 0.1)',
+                touchAction: 'none', // Prevent scroll while swiping
+                backgroundImage: 'linear-gradient(rgba(0, 255, 170, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 170, 0.1) 1px, transparent 1px)',
+                backgroundSize: '20px 20px' // Grid size matching visual
             }}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
@@ -251,13 +253,14 @@ const SnakeGame = () => {
                     position: 'absolute',
                     left: `${food.x * 5}%`,
                     top: `${food.y * 5}%`,
-                    width: '5%',
-                    height: '5%',
-                    backgroundImage: 'url(/assets/boy-logo.png)',
+                    width: '6%', // Slightly larger than grid for pop
+                    height: '6%',
+                    backgroundImage: 'url(/assets/merchboy_face.png)',
                     backgroundSize: 'cover',
                     borderRadius: '50%',
                     zIndex: 1,
-                    animation: 'pulse 1s infinite'
+                    animation: 'pulse 0.8s infinite ease-in-out',
+                    filter: 'drop-shadow(0 0 5px #ff00ff)'
                 }} />
 
                 {/* Game Over */}

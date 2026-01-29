@@ -58,7 +58,7 @@ const Layout = () => {
     return (
         <div className="layout-container" style={{ paddingBottom: '90px' }}> {/* Add padding for bottom shelf */}
             {!isFishingGame && (
-                <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #eee' }}>
+                <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'linear-gradient(to bottom, #F3E5F5 0%, #FFFFFF 100%)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #E1BEE7' }}>
                     <div className="logo-section">
                         <Link to="/" className="home-link" onClick={handleLogoClick}>
                             <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" style={{ width: '40px', filter: 'invert(0)' }} />
