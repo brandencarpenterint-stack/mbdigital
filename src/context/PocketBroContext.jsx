@@ -11,9 +11,20 @@ export const PocketBroProvider = ({ children }) => {
         happy: 80,
         energy: 80,
         age: 0,
+        xp: 0,
+        stage: 'EGG', // EGG, BABY, CHILD, TEEN, ADULT
         isSleeping: false,
         lastInteraction: Date.now()
     });
+
+    const STAGES = {
+        EGG: { threshold: 0, icon: '🥚', name: 'Egg' },
+        BABY: { threshold: 50, icon: '👶', name: 'Baby' },
+        CHILD: { threshold: 200, icon: '👦', name: 'Kid' },
+        TEEN: { threshold: 1000, icon: '🛹', name: 'Teen' },
+        ADULT: { threshold: 3000, icon: '🕴️', name: 'Bro' },
+        ELDER: { threshold: 10000, icon: '🧙‍♂️', name: 'Elder' }
+    };
 
     // Load State
     useEffect(() => {
@@ -46,6 +57,14 @@ export const PocketBroProvider = ({ children }) => {
                     energy: prev.isSleeping ? Math.min(100, prev.energy + 0.5) : Math.max(0, prev.energy - 0.1),
                     age: prev.age + 0.0001
                 };
+
+                // Check Evolution
+                const nextStage = Object.keys(STAGES).reverse().find(key => newStats.xp >= STAGES[key].threshold);
+                if (nextStage && STAGES[nextStage].threshold > STAGES[newStats.stage].threshold) {
+                    newStats.stage = nextStage;
+                    // Could trigger an event here, but visual update handles it
+                }
+
                 return newStats;
             });
         }, 1000);
@@ -60,7 +79,11 @@ export const PocketBroProvider = ({ children }) => {
 
     // Actions
     const feed = (amount = 30) => {
-        setStats(prev => ({ ...prev, hunger: Math.min(100, prev.hunger + amount) }));
+        setStats(prev => ({
+            ...prev,
+            hunger: Math.min(100, prev.hunger + amount),
+            xp: prev.xp + 5
+        }));
     };
 
     const play = (amount = 20) => {
@@ -68,7 +91,8 @@ export const PocketBroProvider = ({ children }) => {
             ...prev,
             happy: Math.min(100, prev.happy + amount),
             energy: Math.max(0, prev.energy - 10),
-            hunger: Math.max(0, prev.hunger - 5)
+            hunger: Math.max(0, prev.hunger - 5),
+            xp: prev.xp + 15
         }));
     };
 
@@ -77,10 +101,12 @@ export const PocketBroProvider = ({ children }) => {
     };
 
     const getMood = () => {
+        if (stats.stage === 'EGG') return '🥚';
         if (stats.hunger < 20) return '😫';
         if (stats.happy < 20) return '😢';
         if (stats.energy < 20) return '😴';
-        return '😃';
+
+        return STAGES[stats.stage]?.icon || '😃';
     };
 
     const isCritical = stats.hunger < 20 || stats.happy < 20;

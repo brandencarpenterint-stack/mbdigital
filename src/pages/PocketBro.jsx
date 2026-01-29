@@ -78,6 +78,10 @@ const PocketBro = () => {
                     padding: '20px'
                 }}>
                     {/* Status Bar */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#333', width: '100%', marginBottom: '10px' }}>
+                        <span>Lvl: {stats.stage}</span>
+                        <span>XP: {stats.xp}</span>
+                    </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', color: '#333' }}>
                         <span>❤️ {Math.round(stats.happy)}</span>
                         <span>🍔 {Math.round(stats.hunger)}</span>
