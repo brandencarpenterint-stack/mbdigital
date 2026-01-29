@@ -270,9 +270,20 @@ const FlappyMascot = () => {
         }
 
         // 4. Draw Wing (FRONT - Flapping)
-        // Only if user desires? "put wings on back" implies removing front? 
-        // User said "put the wings on the back". I will remove Front Wing for cleaner face visual.
-        // Or make it very subtle. Let's remove front wing to ensure face visibility as requested.
+        ctx.save();
+        ctx.translate(-5, 8); // Front/Low position (slightly different than back)
+        ctx.rotate(wingAngle);
+
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 12, 7, 0, 0, Math.PI * 2); // Slightly larger front wing
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.restore();
 
         ctx.restore();
 
