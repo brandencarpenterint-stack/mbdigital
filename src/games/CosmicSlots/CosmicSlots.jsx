@@ -32,7 +32,7 @@ const COLS = 3;
 const SPIN_COST = 15;
 
 const CosmicSlots = () => {
-    const { coins, incrementStat } = useGamification() || { coins: 1000, incrementStat: () => { } };
+    const { coins, spendCoins, addCoins } = useGamification() || { coins: 0, spendCoins: () => false, addCoins: () => { } };
     const { playJump, playCollect, playWin } = useRetroSound();
 
     const [grid, setGrid] = useState([
@@ -54,12 +54,10 @@ const CosmicSlots = () => {
 
     const handleSpinClick = () => {
         if (isSpinning) return;
-        if (coins < SPIN_COST) {
-            alert(`Need ${SPIN_COST} Coins!`);
-            return;
-        }
 
-        incrementStat('coins', -SPIN_COST);
+        // Attempt to spend coins
+        if (!spendCoins(SPIN_COST)) return;
+
         setIsSpinning(true);
         setWinAmount(0);
         setWinningLines([]);
@@ -144,7 +142,7 @@ const CosmicSlots = () => {
             const totalWin = basePrize * streak;
             setWinAmount(totalWin);
             setWinningLines(lines);
-            incrementStat('coins', totalWin);
+            addCoins(totalWin);
             playWin();
 
             // Increase Streak

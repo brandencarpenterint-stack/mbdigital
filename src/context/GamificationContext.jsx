@@ -20,9 +20,17 @@ export const GamificationProvider = ({ children }) => {
         };
     });
 
+
+
+    // --- ECONOMY STATE ---
+    const [coins, setCoins] = useState(() => parseInt(localStorage.getItem('arcadeCoins')) || 0);
+
+    useEffect(() => {
+        localStorage.setItem('arcadeCoins', coins);
+        // Trigger storage event for cross-tab? Not needed for single tab app.
+    }, [coins]);
+
     // --- DAILY REWARDS STATE ---
-    // v2 Fix: Moved to top to prevent ReferenceError
-    console.log('GamificationProvider: Initializing Daily State...');
 
     const [dailyState, setDailyState] = useState(() => {
         try {
@@ -180,15 +188,14 @@ export const GamificationProvider = ({ children }) => {
     }, [shopState]);
 
     const buyItem = (item) => {
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        if (currentCoins >= item.price && !shopState.unlocked.includes(item.id)) {
-            localStorage.setItem('arcadeCoins', currentCoins - item.price);
+        if (coins >= item.price && !shopState.unlocked.includes(item.id)) {
+            spendCoins(item.price);
             setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
             playWin();
             showToast(`Purchased ${item.name}!`, "success");
             return true;
         }
-        if (currentCoins < item.price) showToast("Not enough coins!", "error");
+        if (coins < item.price) showToast("Not enough coins!", "error");
         return false;
     };
 
@@ -205,9 +212,17 @@ export const GamificationProvider = ({ children }) => {
     };
 
     const addCoins = (amount) => {
-        const current = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', current + amount);
-        showToast(`+${amount} Coins`, 'coin');
+        setCoins(prev => prev + amount);
+        if (amount > 0) showToast(`+${amount} Coins`, 'coin');
+    };
+
+    const spendCoins = (amount) => {
+        if (coins >= amount) {
+            setCoins(prev => prev - amount);
+            return true;
+        }
+        showToast("Not enough coins!", "error");
+        return false;
     };
 
     const incrementStat = (key, amount = 1) => {
@@ -281,6 +296,8 @@ export const GamificationProvider = ({ children }) => {
             claimDailyLogin,
             claimQuest,
             addCoins,
+            spendCoins,
+            coins,
             shopState,
             buyItem,
             equipItem,
