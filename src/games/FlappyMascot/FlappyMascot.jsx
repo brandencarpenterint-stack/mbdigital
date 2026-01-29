@@ -357,7 +357,10 @@ const FlappyMascot = () => {
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.code === 'Space') handleInput();
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleInput();
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);

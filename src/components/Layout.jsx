@@ -42,6 +42,8 @@ const Layout = () => {
         return () => clearInterval(interval);
     }, []);
 
+
+
     const isFullScreenGame = location.pathname.startsWith('/arcade/') && location.pathname !== '/arcade';
 
     useEffect(() => {
@@ -319,6 +321,16 @@ const Layout = () => {
             {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
             {showQuests && <DailyQuestModal onClose={() => setShowQuests(false)} />}
             <SquadSelector />
+
+            {/* GLOBAL BRANDING FOOTER */}
+            <div style={{
+                position: 'fixed', bottom: '2px', left: 0, right: 0,
+                textAlign: 'center', fontSize: '0.6rem', color: 'var(--text-secondary)',
+                zIndex: 2000, pointerEvents: 'none',
+                textShadow: '0 1px 2px rgba(0,0,0,0.8)'
+            }}>
+                POWERED BY MERCHBOY
+            </div>
         </div>
     );
 };
