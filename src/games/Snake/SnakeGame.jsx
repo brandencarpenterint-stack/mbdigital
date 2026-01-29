@@ -7,6 +7,12 @@ import SquishyButton from '../../components/SquishyButton';
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 150;
+const FACE_ASSETS = [
+    '/assets/snake/face1.png',
+    '/assets/snake/face2.png',
+    '/assets/snake/face3.png',
+    '/assets/snake/face4.png'
+];
 
 const SnakeGame = () => {
     const [snake, setSnake] = useState([{ x: 10, y: 10 }]);
@@ -16,6 +22,7 @@ const SnakeGame = () => {
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('snakeHighScore')) || 0);
     const [isPaused, setIsPaused] = useState(false);
+    const [shake, setShake] = useState(0);
 
     // Hooks
     const { playJump, playCrash, playCollect } = useRetroSound();
@@ -133,7 +140,8 @@ const SnakeGame = () => {
         // Check Food Collision
         if (head.x === food.x && head.y === food.y) {
             setScore(prev => prev + 10);
-            playCollect(); // Now defined
+            setShake(5); // Shake on eat
+            playCollect();
             spawnFood();
             // Snake grows, so we don't pop tail
         } else {
@@ -146,12 +154,25 @@ const SnakeGame = () => {
     // Handle Input
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (isPaused) return;
+            // Prevent scrolling
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            if (isPaused) {
+                if (e.key === ' ' || e.key === 'Enter') setIsPaused(prev => !prev);
+                return;
+            }
+
             switch (e.key) {
-                case 'ArrowUp': if (direction !== 'DOWN') { setDirection('UP'); playJump(); } break;
-                case 'ArrowDown': if (direction !== 'UP') { setDirection('DOWN'); playJump(); } break;
-                case 'ArrowLeft': if (direction !== 'RIGHT') { setDirection('LEFT'); playJump(); } break;
-                case 'ArrowRight': if (direction !== 'LEFT') { setDirection('RIGHT'); playJump(); } break;
+                case 'ArrowUp': case 'w': case 'W':
+                    if (direction !== 'DOWN') { setDirection('UP'); playJump(); } break;
+                case 'ArrowDown': case 's': case 'S':
+                    if (direction !== 'UP') { setDirection('DOWN'); playJump(); } break;
+                case 'ArrowLeft': case 'a': case 'A':
+                    if (direction !== 'RIGHT') { setDirection('LEFT'); playJump(); } break;
+                case 'ArrowRight': case 'd': case 'D':
+                    if (direction !== 'LEFT') { setDirection('RIGHT'); playJump(); } break;
                 case ' ': setIsPaused(prev => !prev); break;
                 default: break;
             }
@@ -166,10 +187,11 @@ const SnakeGame = () => {
 
         gameLoopRef.current = setInterval(() => {
             moveSnake();
+            if (shake > 0) setShake(s => Math.max(0, s - 1));
         }, INITIAL_SPEED - Math.min(score * 2, 100));
 
         return () => clearInterval(gameLoopRef.current);
-    }, [snake, direction, gameOver, isPaused, score]); // moveSnake is excluded from dep array here to avoid infinite re-creation loop but it relies on state.
+    }, [snake, direction, gameOver, isPaused, score, shake]); // moveSnake is excluded from dep array here to avoid infinite re-creation loop but it relies on state.
     // Better pattern: use functional updates or refs, but sticking to this style:
     // We need moveSnake in the closure. 
     // Actually, because moveSnake uses the *current* state (snake), it changes every render.
@@ -261,7 +283,8 @@ const SnakeGame = () => {
                 touchAction: 'none', // Prevent scroll while swiping
                 backgroundImage: 'linear-gradient(rgba(0, 255, 170, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 170, 0.1) 1px, transparent 1px)',
                 backgroundSize: '20px 20px',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                transform: `translate(${(Math.random() - 0.5) * shake}px, ${(Math.random() - 0.5) * shake}px)`
             }}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
@@ -282,20 +305,23 @@ const SnakeGame = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '1em' // Scale emoji
                 }}>
-                    {(!shopState?.equipped?.snake_food || shopState.equipped.snake_food === 'food_apple') ? (
-                        <div style={{
-                            width: '140%', height: '140%',
-                            background: 'radial-gradient(circle, #ff0055 30%, transparent 70%)',
-                            borderRadius: '50%',
-                            animation: 'pulse 1s infinite alternate',
-                            boxShadow: '0 0 10px #ff0055',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                            <div style={{ width: '40%', height: '40%', background: '#fff', borderRadius: '50%' }} />
+                    {(!shopState?.equipped?.snake_food) ? (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img
+                                src={FACE_ASSETS[(score / 10) % FACE_ASSETS.length]}
+                                alt="food"
+                                style={{
+                                    width: '120%', height: '120%',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 0 5px white)',
+                                    animation: 'pulse 0.5s infinite alternate'
+                                }}
+                            />
                         </div>
                     ) : (
                         <div style={{ fontSize: '1.2rem', animation: 'pulse 1s infinite alternate', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>
-                            {shopState.equipped.snake_food === 'food_burger' ? '🍔' : '🍣'}
+                            {shopState.equipped.snake_food === 'food_apple' ? '🍎' :
+                                shopState.equipped.snake_food === 'food_burger' ? '🍔' : '🍣'}
                         </div>
                     )}
                 </div>
