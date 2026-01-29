@@ -35,8 +35,12 @@ export const PocketBroProvider = ({ children }) => {
             const hoursPassed = (now - parsed.lastInteraction) / (1000 * 60 * 60);
             const decay = Math.floor(hoursPassed * 4); // ~4 pts/hr decay
 
+            // Validate Stage to prevent crashes
+            const safeStage = STAGES[parsed.stage] ? parsed.stage : 'EGG';
+
             setStats({
                 ...parsed,
+                stage: safeStage,
                 hunger: Math.max(0, parsed.hunger - decay),
                 happy: Math.max(0, parsed.happy - decay),
                 energy: Math.max(0, parsed.energy - decay),
@@ -60,9 +64,15 @@ export const PocketBroProvider = ({ children }) => {
 
                 // Check Evolution
                 const nextStage = Object.keys(STAGES).reverse().find(key => newStats.xp >= STAGES[key].threshold);
-                if (nextStage && STAGES[nextStage].threshold > STAGES[newStats.stage].threshold) {
-                    newStats.stage = nextStage;
-                    // Could trigger an event here, but visual update handles it
+
+                // Safety check: ensure current and next stages exist in config
+                if (nextStage && STAGES[newStats.stage]) {
+                    if (STAGES[nextStage].threshold > STAGES[newStats.stage].threshold) {
+                        newStats.stage = nextStage;
+                    }
+                } else if (!STAGES[newStats.stage]) {
+                    // Auto-fix corrupted state
+                    newStats.stage = 'EGG';
                 }
 
                 return newStats;
