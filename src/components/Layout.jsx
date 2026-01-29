@@ -42,9 +42,7 @@ const Layout = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const isFishingGame = location.pathname.includes('/crazy-fishing') ||
-        location.pathname.includes('/neon-brick-breaker') ||
-        location.pathname.includes('/galaxy-defender');
+    const isFullScreenGame = location.pathname.startsWith('/arcade/') && location.pathname !== '/arcade';
 
     useEffect(() => {
         const updateCoins = () => {
@@ -71,8 +69,8 @@ const Layout = () => {
     const showQuestDot = hasUnclaimedQuests || hasUncheckedDaily;
 
     return (
-        <div className="layout-container" style={{ paddingBottom: '120px' }}>
-            {!isFishingGame && (
+        <div className="layout-container" style={{ paddingBottom: isFullScreenGame ? 0 : '120px' }}>
+            {!isFullScreenGame && (
                 <header className="glass-panel main-header" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
                     borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
@@ -174,7 +172,7 @@ const Layout = () => {
                 </motion.main>
             </AnimatePresence>
 
-            {!isFishingGame && (
+            {!isFullScreenGame && (
                 <>
                     {/* THE UTILITY BELT (Bottom Dock) */}
                     <div className="glass-panel" style={{

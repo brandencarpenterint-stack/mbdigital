@@ -17,7 +17,7 @@ const Coloring = () => {
     const [coins, setCoins] = useState(0);
     const [purchased, setPurchased] = useState(JSON.parse(localStorage.getItem('unlockedColoringPages')) || [1]);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
-    const [previewTemplate, setPreviewTemplate] = useState(null); // For purchase modal
+    const [previewTemplate, setPreviewTemplate] = useState(null);
 
     const { playCollect, playWin, playBeep } = useRetroSound();
 
@@ -49,48 +49,47 @@ const Coloring = () => {
         if (!previewTemplate) return;
 
         if (coins >= previewTemplate.cost) {
-            // Deduct Coins
             const newCoins = coins - previewTemplate.cost;
             localStorage.setItem('arcadeCoins', newCoins);
             setCoins(newCoins);
 
-            // Unlock Page
             const newPurchased = [...purchased, previewTemplate.id];
             setPurchased(newPurchased);
             localStorage.setItem('unlockedColoringPages', JSON.stringify(newPurchased));
 
-            // Success
-            alert(`Unlocked ${previewTemplate.title}!`);
             playWin();
             triggerConfetti();
-
             setPreviewTemplate(null);
-            // Optionally auto-open?
         } else {
-            alert("Not enough coins! Go play some games!");
+            alert("Insufficient Funds!");
         }
     };
 
-    const handleBack = () => {
-        setSelectedTemplate(null);
-    };
-
     return (
-        <div className="page-enter" style={{ textAlign: 'center', marginTop: '50px', paddingBottom: '50px' }}>
-            <h2 style={{ color: 'var(--primary-color)' }}>Coloring Studio</h2>
-            <p style={{ color: 'var(--text-color)' }}>
-                Current Arcade Coins: <span style={{ color: 'gold', fontWeight: 'bold' }}>{coins}</span>
-            </p>
+        <div className="page-enter" style={{
+            textAlign: 'center',
+            minHeight: '100vh',
+            fontFamily: '"Orbitron", sans-serif',
+            background: 'linear-gradient(to bottom, #1a0b2e, #000)',
+            paddingBottom: '150px'
+        }}>
+
+            {/* Header */}
+            <div style={{ padding: '20px', marginBottom: '20px' }}>
+                <h2 style={{ fontSize: '2rem', color: 'var(--neon-pink)', textShadow: '0 0 10px var(--neon-pink)', margin: 0 }}>COLORING STUDIO</h2>
+                <p style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '5px' }}>
+                    WALLET: <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold' }}>{coins.toLocaleString()} 🪙</span>
+                </p>
+            </div>
 
             {!selectedTemplate ? (
-                <div style={{ marginTop: '40px' }}>
-                    <h3 style={{ marginBottom: '30px' }}>Select a Page</h3>
+                <div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                         gap: '20px',
-                        padding: '0 40px',
-                        maxWidth: '1200px',
+                        padding: '0 20px',
+                        maxWidth: '1000px',
                         margin: '0 auto'
                     }}>
                         {TEMPLATES.map(template => {
@@ -99,20 +98,19 @@ const Coloring = () => {
                                 <div
                                     key={template.id}
                                     onClick={() => handleSelect(template)}
+                                    className="glass-panel"
                                     style={{
-                                        border: `4px solid ${isOwned ? 'var(--secondary-color)' : '#333'}`,
-                                        borderRadius: '15px',
-                                        padding: '10px',
-                                        backgroundColor: isOwned ? '#222' : '#111',
+                                        border: isOwned ? '1px solid var(--neon-green)' : '1px solid #333',
+                                        padding: '15px',
                                         cursor: 'pointer',
-                                        opacity: isOwned ? 1 : 0.8,
+                                        opacity: isOwned ? 1 : 0.7,
                                         transition: 'transform 0.2s',
                                         position: 'relative',
-                                        minHeight: '250px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
-                                        justifyContent: 'center'
+                                        justifyContent: 'center',
+                                        background: isOwned ? 'rgba(0, 255, 170, 0.05)' : 'rgba(0,0,0,0.3)'
                                     }}
                                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
                                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
@@ -121,29 +119,30 @@ const Coloring = () => {
                                         <div style={{
                                             position: 'absolute',
                                             top: '10px', right: '10px',
-                                            fontSize: '1.5rem'
+                                            fontSize: '1.5rem',
+                                            zIndex: 10
                                         }}>
                                             🔒
                                         </div>
                                     )}
-                                    <img
-                                        src={template.src}
-                                        alt={template.title}
-                                        style={{
-                                            width: '100%',
-                                            height: '200px',
-                                            objectFit: 'contain',
-                                            filter: isOwned ? 'none' : 'grayscale(100%)',
-                                            backgroundColor: 'white',
-                                            borderRadius: '10px'
-                                        }}
-                                    />
-                                    <div style={{ marginTop: '10px', fontWeight: 'bold' }}>
-                                        {template.title}
+                                    <div style={{ background: 'white', borderRadius: '8px', padding: '5px', width: '100%' }}>
+                                        <img
+                                            src={template.src}
+                                            alt={template.title}
+                                            style={{
+                                                width: '100%',
+                                                height: '180px',
+                                                objectFit: 'contain',
+                                                filter: isOwned ? 'none' : 'grayscale(100%) opacity(0.5)'
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ marginTop: '15px', fontWeight: 'bold', color: 'white', letterSpacing: '1px' }}>
+                                        {template.title.toUpperCase()}
                                     </div>
                                     <div style={{
-                                        color: isOwned ? '#00ffaa' : 'gold',
-                                        marginTop: '5px'
+                                        color: isOwned ? 'var(--neon-green)' : 'var(--neon-gold)',
+                                        marginTop: '5px', fontSize: '0.8rem', fontWeight: 'bold'
                                     }}>
                                         {isOwned ? 'OWNED' : `🪙 ${template.cost}`}
                                     </div>
@@ -151,30 +150,27 @@ const Coloring = () => {
                             );
                         })}
                     </div>
-                    <Link to="/arcade" style={{
-                        display: 'inline-block',
-                        marginTop: '40px',
-                        color: 'var(--accent-color)',
-                        textDecoration: 'underline',
-                        fontSize: '1.2rem'
-                    }}>Go to Arcade to earn coins</Link>
                 </div>
             ) : (
-                <div style={{ marginTop: '20px' }}>
-                    <SquishyButton onClick={handleBack} style={{
-                        marginBottom: '20px',
-                        padding: '10px 20px',
-                        background: '#333',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px'
-                    }}>
-                        ← Back to Gallery
-                    </SquishyButton>
-                    <div style={{ marginBottom: '10px', color: '#666' }}>
-                        Editing: {selectedTemplate.title}
+                <div style={{ padding: '0 20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '800px', margin: '0 auto 20px auto' }}>
+                        <SquishyButton onClick={() => setSelectedTemplate(null)} style={{
+                            padding: '10px 20px',
+                            background: '#333',
+                            color: 'white',
+                            border: '1px solid #555',
+                            fontSize: '0.9rem'
+                        }}>
+                            ⬅ BACK TO GALLERY
+                        </SquishyButton>
+                        <div style={{ color: '#888' }}>
+                            EDITING: <span style={{ color: 'white' }}>{selectedTemplate.title.toUpperCase()}</span>
+                        </div>
                     </div>
-                    <ColoringCanvas templateImage={selectedTemplate.src} />
+
+                    <div className="glass-panel" style={{ padding: '20px', display: 'inline-block', maxWidth: '100%' }}>
+                        <ColoringCanvas templateImage={selectedTemplate.src} />
+                    </div>
                 </div>
             )}
 
@@ -182,27 +178,33 @@ const Coloring = () => {
             {previewTemplate && !selectedTemplate && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    background: 'rgba(0,0,0,0.8)', zIndex: 100,
+                    background: 'rgba(0,0,0,0.9)', zIndex: 2000,
+                    backdropFilter: 'blur(5px)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                    <div style={{
-                        background: '#222', padding: '30px', borderRadius: '20px',
-                        border: '4px solid gold', textAlign: 'center', maxWidth: '400px'
+                    <div className="glass-panel" style={{
+                        padding: '40px',
+                        border: '1px solid var(--neon-gold)',
+                        textAlign: 'center',
+                        maxWidth: '400px',
+                        boxShadow: '0 0 30px rgba(255, 215, 0, 0.2)'
                     }}>
-                        <h2 style={{ color: 'gold' }}>Unlock "{previewTemplate.title}"?</h2>
-                        <img src={previewTemplate.src} style={{ width: '200px', background: 'white', borderRadius: '10px', margin: '20px 0' }} />
-                        <p style={{ fontSize: '1.2rem', color: 'white' }}>Cost: <strong>{previewTemplate.cost} Coins</strong></p>
-                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '20px' }}>
+                        <h2 style={{ color: 'var(--neon-gold)', margin: 0, fontSize: '1.5rem' }}>UNLOCK TEMPLATE?</h2>
+                        <div style={{ background: 'white', borderRadius: '10px', padding: '10px', margin: '20px 0' }}>
+                            <img src={previewTemplate.src} style={{ width: '100%', height: '200px', objectFit: 'contain' }} />
+                        </div>
+                        <p style={{ fontSize: '1.2rem', color: 'white', margin: '20px 0' }}>COST: <strong style={{ color: 'var(--neon-gold)' }}>{previewTemplate.cost} COINS</strong></p>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                             <SquishyButton onClick={handlePurchase} style={{
-                                background: 'gold', color: 'black', border: 'none', padding: '10px 30px', borderRadius: '10px', fontWeight: 'bold'
+                                background: 'var(--neon-gold)', color: 'black', border: 'none', padding: '15px 40px', fontWeight: 'bold', fontSize: '1.1rem'
                             }}>
-                                BUY IT!
+                                UNLOCK
                             </SquishyButton>
-                            <SquishyButton onClick={() => setPreviewTemplate(null)} style={{
-                                background: '#555', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '10px'
+                            <button onClick={() => setPreviewTemplate(null)} style={{
+                                background: 'transparent', color: '#888', border: '1px solid #555', padding: '10px 30px', borderRadius: '20px', cursor: 'pointer'
                             }}>
-                                Cancel
-                            </SquishyButton>
+                                CANCEL
+                            </button>
                         </div>
                     </div>
                 </div>
