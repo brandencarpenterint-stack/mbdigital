@@ -117,6 +117,14 @@ const CosmicSlots = () => {
             }
         }
 
+        // Check Columns (Vertical)
+        for (let c = 0; c < COLS; c++) {
+            if (finalGrid[0][c].id === finalGrid[1][c].id && finalGrid[1][c].id === finalGrid[2][c].id) {
+                totalPrize += finalGrid[0][c].value * 3;
+                lines.push(`col-${c}`);
+            }
+        }
+
         // Check Diagonals
         if (finalGrid[0][0].id === finalGrid[1][1].id && finalGrid[1][1].id === finalGrid[2][2].id) {
             totalPrize += finalGrid[1][1].value * 3;
@@ -132,7 +140,13 @@ const CosmicSlots = () => {
             setWinningLines(lines);
             incrementStat('coins', totalPrize);
             playWin();
-            if (totalPrize > 200) triggerConfetti();
+            // Multi-win effect
+            if (lines.length > 1) {
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+                triggerConfetti();
+            } else if (totalPrize > 100) {
+                triggerConfetti();
+            }
         }
     };
 
@@ -149,7 +163,7 @@ const CosmicSlots = () => {
                 <h1 style={{ fontFamily: '"Press Start 2P", display', color: '#ffd700', fontSize: '2.5rem', textShadow: '0 0 20px #ff00ff', margin: 0 }}>
                     COSMIC SLOTS
                 </h1>
-                <p style={{ color: '#aaa', marginTop: '10px' }}>SPIN 25 🪙 FOR 5-LINE ACTION!</p>
+                <p style={{ color: '#aaa', marginTop: '10px' }}>SPIN 25 🪙 FOR 8-LINE ACTION!</p>
             </div>
 
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -199,11 +213,13 @@ const CosmicSlots = () => {
                         }}>
                             {grid.flat().map((symbol, i) => {
                                 const row = Math.floor(i / 3);
+                                const col = i % 3;
                                 // Check if this cell is part of a winning line
                                 let isWinner = false;
                                 if (winningLines.includes(`row-${row}`)) isWinner = true;
-                                if (winningLines.includes('diag-1') && ((row === 0 && i % 3 === 0) || (row === 1 && i % 3 === 1) || (row === 2 && i % 3 === 2))) isWinner = true;
-                                if (winningLines.includes('diag-2') && ((row === 2 && i % 3 === 0) || (row === 1 && i % 3 === 1) || (row === 0 && i % 3 === 2))) isWinner = true;
+                                if (winningLines.includes(`col-${col}`)) isWinner = true;
+                                if (winningLines.includes('diag-1') && ((row === 0 && col === 0) || (row === 1 && col === 1) || (row === 2 && col === 2))) isWinner = true;
+                                if (winningLines.includes('diag-2') && ((row === 2 && col === 0) || (row === 1 && col === 1) || (row === 0 && col === 2))) isWinner = true;
 
                                 return (
                                     <div key={i} style={{
