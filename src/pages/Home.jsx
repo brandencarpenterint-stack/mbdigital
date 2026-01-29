@@ -39,28 +39,50 @@ const Home = () => {
             </header>
 
             <BentoGrid>
-                {/* 1. FEATURED GAME (Her0) */}
+                {/* 1. FEATURED GAME (Her0) - COSMIC SLOTS */}
                 <div className="bento-card" style={{
                     gridColumn: '1 / -1', // Full width
-                    background: '#1a202c',
+                    background: 'linear-gradient(135deg, #120c1f 0%, #4c1d95 100%)', // Dark Purple
                     color: 'white',
                     overflow: 'hidden',
                     position: 'relative',
                     minHeight: '280px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px'
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px',
+                    border: '2px solid #ffd700',
+                    boxShadow: '0 0 30px rgba(138, 43, 226, 0.4)'
                 }}>
                     <div style={{ position: 'relative', zIndex: 10 }}>
-                        <span style={{ color: '#f687b3', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.9rem' }}>FEATURED GAME</span>
-                        <h2 style={{ fontSize: '3rem', margin: '5px 0', lineHeight: 1, background: 'linear-gradient(to right, #f687b3, #b794f4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                            FACE RUNNER
+                        <span style={{ color: '#ffd700', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.9rem' }}>NEW FEATURE</span>
+                        <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', margin: '5px 0', lineHeight: 1, color: '#fff', textShadow: '0 0 20px #d946ef' }}>
+                            COSMIC SLOTS
                         </h2>
-                        <p style={{ color: '#a0aec0', maxWidth: '60%', margin: '10px 0 20px 0' }}>Infinite runner. Infinite glory.</p>
-                        <Link to="/arcade/face-runner" style={{ display: 'inline-block', background: 'white', color: 'black', padding: '12px 30px', borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', boxShadow: '0 0 20px rgba(255,255,255,0.3)' }}>
-                            PLAY NOW →
+                        <p style={{ color: '#e9d5ff', maxWidth: '70%', margin: '10px 0 20px 0', fontSize: '1.2rem' }}>8-Payline Jackpot Machine. Spin to win!</p>
+                        <Link to="/arcade/slots" style={{ display: 'inline-block', background: '#ffd700', color: 'black', padding: '15px 40px', borderRadius: '50px', fontWeight: '900', textDecoration: 'none', boxShadow: '0 0 20px rgba(255, 215, 0, 0.4)', fontSize: '1.1rem' }}>
+                            SPIN NOW 🎰
                         </Link>
                     </div>
-                    <img src="/assets/arcade_cabinet.png" style={{ position: 'absolute', right: '-40px', bottom: '-40px', height: '350px', opacity: 0.9, transform: 'rotate(-10deg) scale(1.1)' }} />
+                    <div style={{ position: 'absolute', right: '10px', bottom: '10px', fontSize: '10rem', opacity: 0.9, filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))', transform: 'rotate(-10deg)' }}>
+                        🎰
+                    </div>
                 </div>
+
+                {/* 2. SUB SLAYER (Restored) */}
+                <Link to="/subslayer" className="bento-card" style={{
+                    textDecoration: 'none',
+                    background: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%, #fdbb2d 100%)', // Deep Sea styling? Maybe just Dark Blue
+                    background: 'linear-gradient(135deg, #000428 0%, #004e92 100%)',
+                    color: 'white',
+                    padding: '30px',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    minHeight: '200px'
+                }}>
+                    <div>
+                        <div style={{ background: 'rgba(255,255,255,0.1)', width: 'fit-content', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>ACTION</div>
+                        <h2 style={{ fontSize: '2rem', margin: '10px 0 0 0' }}>SUB SLAYER</h2>
+                        <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: '0.9rem' }}>Defend the depths.</p>
+                    </div>
+                    <div style={{ fontSize: '4rem', alignSelf: 'flex-end', opacity: 0.8 }}>⚓</div>
+                </Link>
 
                 {/* 2. BEAT LAB (Sub-Hero) */}
                 <Link to="/beatlab" className="bento-card" style={{
