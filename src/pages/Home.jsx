@@ -71,6 +71,7 @@ const Home = () => {
                         <div>
                             <div style={{ fontSize: '0.8rem', color: '#888' }}>OPERATOR</div>
                             <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{rank}</div>
+                            <div style={{ fontSize: '0.6rem', color: 'var(--neon-green)', marginTop: '2px' }}>AUTO-SAVE: ACTIVE 💾</div>
                         </div>
                     </div>
 
