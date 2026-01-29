@@ -54,11 +54,12 @@ const PocketBro = () => {
             <div style={{
                 width: '100%',
                 maxWidth: '400px',
-                background: '#f8f8f8',
+                background: 'linear-gradient(135deg, rgba(200, 100, 255, 0.6) 0%, rgba(150, 50, 255, 0.4) 100%)',
+                backdropFilter: 'blur(10px)',
                 borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%', // Egg shapeish
                 padding: '40px 20px 80px 20px',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.2), inset 0 -10px 20px rgba(0,0,0,0.1)',
-                border: '10px solid #eee',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.2), inset 0 0 40px rgba(255,255,255,0.4), inset 0 0 10px rgba(255,255,255,0.8)',
+                border: '4px solid rgba(255,255,255,0.3)',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
@@ -69,7 +70,9 @@ const PocketBro = () => {
                     width: '240px',
                     height: '240px',
                     background: '#9ea7a0', // LCD Greenish Grey
-                    border: '8px solid #555',
+                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
+                    backgroundSize: '4px 4px',
+                    border: '8px solid #444',
                     borderRadius: '20px',
                     boxShadow: 'inset 5px 5px 10px rgba(0,0,0,0.3)',
                     position: 'relative',
@@ -77,16 +80,28 @@ const PocketBro = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    padding: '20px'
+                    padding: '20px',
+                    fontFamily: '"Press Start 2P", monospace',
+                    imageRendering: 'pixelated'
                 }}>
                     {/* Status Bar */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#333', width: '100%', marginBottom: '10px' }}>
                         <span>Lvl: {stats.stage}</span>
                         <span>XP: {stats.xp}</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', color: '#333' }}>
-                        <span>❤️ {Math.round(stats.happy)}</span>
-                        <span>🍔 {Math.round(stats.hunger)}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', color: '#333', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span>❤️</span>
+                            <div style={{ width: '50px', height: '10px', background: '#888', borderRadius: '5px', overflow: 'hidden' }}>
+                                <div style={{ width: `${stats.happy}%`, height: '100%', background: '#ff0055' }} />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ width: '50px', height: '10px', background: '#888', borderRadius: '5px', overflow: 'hidden' }}>
+                                <div style={{ width: `${stats.hunger}%`, height: '100%', background: 'orange' }} />
+                            </div>
+                            <span>🍔</span>
+                        </div>
                     </div>
 
                     {/* Main Character Area */}
@@ -100,9 +115,10 @@ const PocketBro = () => {
                         {/* The Pet */}
                         <div style={{
                             fontSize: '5rem',
-                            transform: bounce ? 'translateY(-20px)' : 'translateY(0)',
+                            transform: bounce ? 'translateY(-20px) scale(1.1)' : 'translateY(0) scale(1)',
                             transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))'
+                            filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))',
+                            animation: bounce ? 'none' : 'idle 3s infinite ease-in-out'
                         }}>
                             {stats.isSleeping ? '💤' : getMood()}
                         </div>
@@ -123,26 +139,28 @@ const PocketBro = () => {
                     justifyContent: 'center'
                 }}>
                     {TASKS.map(task => (
-                        <button
-                            key={task.id}
-                            onClick={() => handleAction(task)}
-                            style={{
-                                width: '60px',
-                                height: '60px',
-                                borderRadius: '50%',
-                                border: 'none',
-                                background: stats.isSleeping && task.id !== 'sleep' ? '#ccc' : '#ff0055',
-                                color: 'white',
-                                fontSize: '1.5rem',
-                                boxShadow: '0 5px 0 #900030', // Deep red shadow for clicky feel
-                                cursor: 'pointer',
-                                transition: 'transform 0.1s'
-                            }}
-                            onMouseDown={(e) => e.target.style.transform = 'translateY(5px)'}
-                            onMouseUp={(e) => e.target.style.transform = 'translateY(0)'}
-                        >
-                            {task.icon}
-                        </button>
+                        <div key={task.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <button
+                                onClick={() => handleAction(task)}
+                                style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: stats.isSleeping && task.id !== 'sleep' ? '#888' : '#FFEB3B',
+                                    color: '#333',
+                                    fontSize: '1.5rem',
+                                    boxShadow: '0 4px 0 #FBC02D',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.1s'
+                                }}
+                                onMouseDown={(e) => e.target.style.transform = 'translateY(4px)'}
+                                onMouseUp={(e) => e.target.style.transform = 'translateY(0)'}
+                            >
+                                {task.icon}
+                            </button>
+                            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold' }}>{task.label}</span>
+                        </div>
                     ))}
                 </div>
 
@@ -150,6 +168,13 @@ const PocketBro = () => {
                 <div style={{ position: 'absolute', bottom: '20px', color: '#ccc', fontWeight: 'bold' }}>
                     POCKET BRO™
                 </div>
+
+                <style>{`
+                    @keyframes idle {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                `}</style>
             </div>
         </div>
     );
