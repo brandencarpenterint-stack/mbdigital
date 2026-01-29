@@ -84,6 +84,9 @@ export const SHOP_ITEMS = [
     { id: 'flappy_monster', type: 'flappy_skin', name: '8-Bit', price: 2500, category: 'flappy', slot: 'flappy', description: 'Pixel Perfect.', icon: '👾', skinType: 'emoji', skinContent: '👾' },
     { id: 'flappy_diamond', type: 'flappy_skin', name: 'Richie', price: 5000, category: 'flappy', slot: 'flappy', description: 'So shiny.', icon: '💎', skinType: 'emoji', skinContent: '💎' },
     { id: 'flappy_poop', type: 'flappy_skin', name: 'Stinky', price: 100, category: 'flappy', slot: 'flappy', description: 'Uh oh.', icon: '💩', skinType: 'emoji', skinContent: '💩' },
+    { id: 'flappy_face_money', type: 'flappy_skin', name: 'Money Maker', price: 5000, category: 'flappy', slot: 'flappy', description: 'Cash rules everything.', icon: '🤑', skinType: 'image', skinContent: '/assets/skins/face_money.png' },
+    { id: 'flappy_face_bear', type: 'flappy_skin', name: 'Beary Cute', price: 1000, category: 'flappy', slot: 'flappy', description: 'Unbearably adorable.', icon: '🐻', skinType: 'image', skinContent: '/assets/skins/face_bear.png' },
+    { id: 'flappy_face_bunny', type: 'flappy_skin', name: 'Bunny Hop', price: 1000, category: 'flappy', slot: 'flappy', description: 'Hop to it.', icon: '🐰', skinType: 'image', skinContent: '/assets/skins/face_bunny.png' },
 
     // --- POCKET BRO SKINS ---
     { id: 'pb_gold', type: 'pb_skin', name: 'Golden Egg', price: 5000, category: 'pocketbro', slot: 'pocketbro', description: 'Shiny and expensive.', icon: '🥚' },

@@ -35,7 +35,10 @@ const CHARACTERS = [
     { id: 'flappy_monster', type: 'emoji', content: '👾', name: '8-Bit' },
     { id: 'flappy_diamond', type: 'emoji', content: '💎', name: 'Richie' },
     { id: 'flappy_crown', type: 'emoji', content: '👑', name: 'King' }, // Missing
-    { id: 'flappy_catdog', type: 'emoji', content: '😺', name: 'CatDog' }, // Missing
+    { id: 'flappy_catdog', type: 'emoji', content: '😺', name: 'CatDog' },
+    { id: 'flappy_face_money', type: 'image', content: '/assets/skins/face_money.png', name: 'Money' },
+    { id: 'flappy_face_bear', type: 'image', content: '/assets/skins/face_bear.png', name: 'Bear' },
+    { id: 'flappy_face_bunny', type: 'image', content: '/assets/skins/face_bunny.png', name: 'Bunny' },
 ];
 
 const FlappyMascot = () => {
@@ -66,6 +69,9 @@ const FlappyMascot = () => {
 
     const birdImgRef = useRef(null);
     const brokidImgRef = useRef(null);
+    const moneyImgRef = useRef(null);
+    const bearImgRef = useRef(null);
+    const bunnyImgRef = useRef(null);
 
     // Game State
     const gameState = useRef({
@@ -85,6 +91,10 @@ const FlappyMascot = () => {
         const img2 = new Image();
         img2.src = '/assets/brokid-logo.png';
         brokidImgRef.current = img2;
+
+        const img3 = new Image(); img3.src = '/assets/skins/face_money.png'; moneyImgRef.current = img3;
+        const img4 = new Image(); img4.src = '/assets/skins/face_bear.png'; bearImgRef.current = img4;
+        const img5 = new Image(); img5.src = '/assets/skins/face_bunny.png'; bunnyImgRef.current = img5;
 
         // Listen for coin updates
         const handleStorage = () => {
@@ -223,7 +233,7 @@ const FlappyMascot = () => {
         const wingAngle = (state.velocity * 0.1) + flutter;
 
         ctx.save();
-        ctx.translate(-12, 5); // Back/Low position
+        ctx.translate(-22, 5); // Back/Low position (Shifted further back)
         ctx.rotate(wingAngle);
 
         // Cute Small Wing (Simple Oval)
@@ -250,7 +260,13 @@ const FlappyMascot = () => {
 
         // 3. Draw Body
         if (charData.type === 'image') {
-            const img = charData.id === 'flappy_boy' ? birdImgRef.current : brokidImgRef.current;
+            let img = null;
+            if (charData.id === 'flappy_boy') img = birdImgRef.current;
+            else if (charData.id === 'flappy_brokid') img = brokidImgRef.current;
+            else if (charData.id === 'flappy_face_money') img = moneyImgRef.current;
+            else if (charData.id === 'flappy_face_bear') img = bearImgRef.current;
+            else if (charData.id === 'flappy_face_bunny') img = bunnyImgRef.current;
+
             if (img && img.complete) {
                 // Determine source rect if sprite sheet, but here we assume single image
                 // Use source dimensions to prevent squashing if not square?
@@ -271,7 +287,7 @@ const FlappyMascot = () => {
 
         // 4. Draw Wing (FRONT - Flapping)
         ctx.save();
-        ctx.translate(-5, 8); // Front/Low position (slightly different than back)
+        ctx.translate(-10, 8); // Front/Low position
         ctx.rotate(wingAngle);
 
         ctx.fillStyle = '#fff';
