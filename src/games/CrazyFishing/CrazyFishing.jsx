@@ -159,8 +159,8 @@ const SHOP_ITEMS = [
     { id: 'hats', name: 'Fish Fashion', type: 'upgrade', price: 3000, desc: 'Fish wear hats!', icon: '🎩' },
 ];
 
-const GAME_WIDTH = 800; // Bigger Screen
-const GAME_HEIGHT = 600;
+const GAME_WIDTH = 1280; // Widescreen
+const GAME_HEIGHT = 720;
 const MAX_DEPTH = 4000;
 const BAR_HEIGHT = 80;
 const BAR_AREA_HEIGHT = 300;
@@ -1343,11 +1343,11 @@ const CrazyFishing = () => {
 
                 {/* GAME CANVAS CONTAINER */}
                 <div style={{
-                    width: 'auto', // Allow width to shrink
-                    height: 'auto', // Allow height to shrink
-                    maxWidth: '95vw',
-                    maxHeight: '80vh', // Leave room for controls
-                    aspectRatio: '4/3', // Enforce aspect ratio
+                    width: 'auto',
+                    height: 'auto',
+                    maxWidth: '100vw', // Fill width
+                    maxHeight: '90vh', // Fill height (leave small gap for header)
+                    aspectRatio: '16/9', // Widescreen
                     border: hasGoldenRod ? '4px solid gold' : '4px solid white',
                     borderRadius: '20px',
                     backgroundColor: '#000',
@@ -1476,16 +1476,15 @@ const CrazyFishing = () => {
                             <SquishyButton onClick={() => setGameState('IDLE')} style={{ marginTop: '15px', background: 'transparent', border: '1px solid #555', color: '#888', padding: '10px 30px', borderRadius: '20px' }}>DOCK</SquishyButton>
                         </div>
                     )}
-                </div>
-
-                {/* CONTROLS / SHOP BUTTONS (Bottom on mobile) */}
-                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                    <SquishyButton onClick={() => setGameState('FISHDEX')} style={{ background: '#006994', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid cyan', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px cyan' }}>
-                        🤖
-                    </SquishyButton>
-                    <SquishyButton onClick={() => setGameState('SHOP')} style={{ background: 'orange', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid gold', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px gold' }}>
-                        🛍️
-                    </SquishyButton>
+                    {/* CONTROLS OVERLAY (Moved Inside) */}
+                    <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', gap: '20px', justifyContent: 'center', pointerEvents: 'auto' }}>
+                        <SquishyButton onClick={() => setGameState('FISHDEX')} style={{ background: '#006994', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid cyan', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px cyan' }}>
+                            🤖
+                        </SquishyButton>
+                        <SquishyButton onClick={() => setGameState('SHOP')} style={{ background: 'orange', width: '60px', height: '60px', borderRadius: '50%', border: '4px solid gold', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 0 10px gold' }}>
+                            🛍️
+                        </SquishyButton>
+                    </div>
                 </div>
             </div>
 
