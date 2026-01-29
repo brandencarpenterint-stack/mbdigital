@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useGamification } from '../context/GamificationContext';
 import { usePocketBro, POCKET_BRO_STAGES } from '../context/PocketBroContext';
-import { useInventory } from '../context/InventoryContext';
+
 
 const TASKS = [
     { id: 'feed', icon: '🍗', label: 'FEED' },
@@ -10,7 +10,17 @@ const TASKS = [
 
 const PocketBro = () => {
     const { stats, feed, play, sleep, getMood } = usePocketBro();
-    const { activeSkin } = useInventory(); // Future use
+    const { shopState } = useGamification() || {};
+    const equippedSkin = shopState?.equipped?.pocketbro || null;
+
+    // Skin Styles
+    const getSkinStyles = () => {
+        if (equippedSkin === 'pb_gold') return { filter: 'drop-shadow(0 0 15px gold) sepia(100%) saturate(300%) hue-rotate(5deg)' };
+        if (equippedSkin === 'pb_cyber') return { filter: 'drop-shadow(0 0 10px cyan) hue-rotate(180deg) contrast(150%)', fontFamily: 'monospace' };
+        if (equippedSkin === 'pb_party') return { transform: 'scale(1.1) rotate(5deg)' }; // Bouncy
+        return { filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))' };
+    };
+
     const [message, setMessage] = useState("I'm here! 🥚");
     const [bounce, setBounce] = useState(false);
 
@@ -129,12 +139,15 @@ const PocketBro = () => {
                             flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center',
                             position: 'relative'
                         }}>
+                            {/* Skin Overlay - Party Hat */}
+                            {equippedSkin === 'pb_party' && <div style={{ position: 'absolute', top: -40, fontSize: '3rem', zIndex: 10, animation: 'float 1s infinite' }}>🥳</div>}
+
                             <div style={{
                                 fontSize: '6rem',
                                 transform: bounce ? 'scale(1.2)' : 'scale(1)',
                                 transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                                 animation: stats.isSleeping ? 'breathe 3s infinite' : (bounce ? 'none' : 'idle 1.5s infinite'),
-                                filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))'
+                                ...getSkinStyles()
                             }}>
                                 {stats.isSleeping ? '💤' : getMood()}
                             </div>

@@ -57,6 +57,18 @@ export const SHOP_ITEMS = [
     { id: 'flappy_monster', type: 'flappy_skin', name: '8-Bit', price: 2500, category: 'flappy', slot: 'flappy', description: 'Pixel Perfect.', icon: '👾', skinType: 'emoji', skinContent: '👾' },
     { id: 'flappy_diamond', type: 'flappy_skin', name: 'Richie', price: 5000, category: 'flappy', slot: 'flappy', description: 'So shiny.', icon: '💎', skinType: 'emoji', skinContent: '💎' },
     { id: 'flappy_poop', type: 'flappy_skin', name: 'Stinky', price: 100, category: 'flappy', slot: 'flappy', description: 'Uh oh.', icon: '💩', skinType: 'emoji', skinContent: '💩' },
+
+    // --- POCKET BRO SKINS ---
+    { id: 'pb_gold', type: 'pb_skin', name: 'Golden Egg', price: 5000, category: 'pocketbro', slot: 'pocketbro', description: 'Shiny and expensive.', icon: '🥚' },
+    { id: 'pb_cyber', type: 'pb_skin', name: 'Cyber Shell', price: 2500, category: 'pocketbro', slot: 'pocketbro', description: 'High tech housing.', icon: '🤖' },
+    { id: 'pb_party', type: 'pb_skin', name: 'Party Mode', price: 1000, category: 'pocketbro', slot: 'pocketbro', description: 'Always celebrating.', icon: '🎉' },
+
+    // --- DASHBOARD THEMES ---
+    { id: 'theme_default', type: 'theme', name: 'Neon Dark', price: 0, category: 'themes', slot: 'theme', description: 'Standard OS.', icon: '🌑' },
+    { id: 'theme_matrix', type: 'theme', name: 'The Matrix', price: 2000, category: 'themes', slot: 'theme', description: 'Wake up, Neo.', icon: '🟢' },
+    { id: 'theme_sunset', type: 'theme', name: 'Sunset 80s', price: 2000, category: 'themes', slot: 'theme', description: 'Retrowave vibes.', icon: '🌅' },
+    { id: 'theme_space', type: 'theme', name: 'Deep Space', price: 2000, category: 'themes', slot: 'theme', description: 'Among the stars.', icon: '🌌' },
+    { id: 'theme_gold', type: 'theme', name: 'Midas OS', price: 10000, category: 'themes', slot: 'theme', description: 'Pure luxury.', icon: '🥇' },
 ];
 
 export const CATEGORIES = [
@@ -65,4 +77,6 @@ export const CATEGORIES = [
     { id: 'brick', name: 'Neon Bricks', icon: '🧱' },
     { id: 'galaxy', name: 'Galaxy Defender', icon: '🚀' },
     { id: 'flappy', name: 'Flappy Mascot', icon: '🐥' },
+    { id: 'pocketbro', name: 'Pocket Bro', icon: '🥚' },
+    { id: 'themes', name: 'OS Themes', icon: '🎨' },
 ];
