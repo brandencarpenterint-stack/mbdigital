@@ -409,7 +409,7 @@ const CrazyFishing = () => {
         state.particles.forEach(p => {
             p.x += p.dx;
             p.y += p.dy;
-            p.life -= 0.02; // Slower fade for bubbles
+            p.life -= 0.015; // Slower fade for longer trails
         });
         state.particles = state.particles.filter(p => p.life > 0 && p.y > -100);
 
@@ -457,8 +457,8 @@ const CrazyFishing = () => {
 
         // DROPPING
         if (mode === 'DROPPING') {
-            // Start Drop
-            state.depth += 0.8;
+            // Start Drop (Slower)
+            state.depth += 0.45;
             if (state.depth > MAX_DEPTH) state.depth = MAX_DEPTH;
 
             const currentBiome = BIOMES.find(b => state.depth <= b.maxDepth) || BIOMES[0];
@@ -575,7 +575,7 @@ const CrazyFishing = () => {
             // Move Fish
             state.fish.forEach(f => {
                 if (mode === 'REELING_UP') {
-                    f.y += 15; // Zoom down during ascent
+                    f.y += 25; // Faster Zoom down during ascent
                 } else {
                     f.y -= 3; // Parallax up during descent
                 }
@@ -714,10 +714,10 @@ const CrazyFishing = () => {
 
         // REELING UP (Reverse Journey)
         if (mode === 'REELING_UP') {
-            state.depth -= 15; // Faster ascent
+            state.depth -= 8; // Extended ascent time
 
             // Spawn Passing Fish (Visual only)
-            if (Math.random() > 0.7) {
+            if (Math.random() > 0.4) { // 60% spawn chance (Frequent)
                 const choices = FISH_DATA.filter(f => state.depth >= f.minDepth && state.depth <= f.maxDepth);
                 if (choices.length > 0) {
                     const base = choices[Math.floor(Math.random() * choices.length)];
@@ -785,9 +785,15 @@ const CrazyFishing = () => {
 
         // Particles
         state.particles.forEach(p => {
+            ctx.save();
             ctx.fillStyle = p.color || `rgba(255,255,255,${p.life})`;
+            if (p.color) {
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+            }
             ctx.font = p.size ? `${p.size}px serif` : '20px serif';
             ctx.fillText(p.char, p.x, p.y);
+            ctx.restore();
         });
 
         // FISH DROPPING (WITH HATS)
