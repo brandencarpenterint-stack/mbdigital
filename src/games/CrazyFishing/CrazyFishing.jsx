@@ -392,6 +392,37 @@ const CrazyFishing = () => {
         });
         state.particles = state.particles.filter(p => p.life > 0 && p.y > -100);
 
+        // --- BOBBER TRAILS ---
+        if (equippedBobber && state.depth >= 0) { // Only if hook is active (rough check)
+            // We can check if mode is DROPPING or REELING for stronger effect
+            const isMoving = mode === 'DROPPING' || mode === 'REELING_UP';
+            const intensity = isMoving ? 0.8 : 0.2; // Higher chance when moving
+
+            if (Math.random() < intensity) {
+                if (equippedBobber === 'bobber_comet') {
+                    state.particles.push({
+                        x: state.hookX + (Math.random() - 0.5) * 10,
+                        y: state.hookY,
+                        dx: (Math.random() - 0.5) * 2, dy: -2 - Math.random(),
+                        life: 1, char: '🔥', color: 'orange', size: isMoving ? 20 : 10
+                    });
+                } else if (equippedBobber === 'bobber_neon') {
+                    state.particles.push({
+                        x: state.hookX, y: state.hookY,
+                        dx: 0, dy: 0,
+                        life: 0.5, char: '🟦', color: 'cyan', size: 10
+                    });
+                } else if (equippedBobber === 'bobber_sparkle') {
+                    state.particles.push({
+                        x: state.hookX + (Math.random() - 0.5) * 20,
+                        y: state.hookY + (Math.random() - 0.5) * 20,
+                        dx: (Math.random() - 0.5), dy: (Math.random() - 0.5),
+                        life: 0.8, char: '✨', color: 'yellow', size: 15
+                    });
+                }
+            }
+        }
+
         // IDLE Animation
         if (mode === 'IDLE') {
             state.castTimer++; // Use castTimer for idle rocking
@@ -772,7 +803,10 @@ const CrazyFishing = () => {
 
         // Render Bobber Skin
         const bobberIcon = equippedBobber === 'bobber_duck' ? '🦆' :
-            equippedBobber === 'bobber_skull' ? '💀' : null;
+            equippedBobber === 'bobber_skull' ? '💀' :
+                equippedBobber === 'bobber_sparkle' ? '✨' :
+                    equippedBobber === 'bobber_neon' ? '🧿' :
+                        equippedBobber === 'bobber_comet' ? '☄️' : null;
 
         if (bobberIcon) {
             ctx.font = '20px serif';

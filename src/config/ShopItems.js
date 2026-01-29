@@ -21,6 +21,9 @@ export const SHOP_ITEMS = [
     { id: 'bobber_red', type: 'fishing_bobber', name: 'Classic Red', price: 0, category: 'fishing', slot: 'fishing_bobber', description: 'Floating ball.', icon: '🔴' },
     { id: 'bobber_duck', type: 'fishing_bobber', name: 'Rubber Duck', price: 500, category: 'fishing', slot: 'fishing_bobber', description: 'Quack.', icon: '🦆', unlockCondition: 'fish_novice' },
     { id: 'bobber_skull', type: 'fishing_bobber', name: 'Skull', price: 2000, category: 'fishing', slot: 'fishing_bobber', description: 'Deadly effective.', icon: '💀', unlockCondition: 'fish_pro' },
+    { id: 'bobber_sparkle', type: 'fishing_bobber', name: 'Sparkle', price: 2500, category: 'fishing', slot: 'fishing_bobber', description: 'Glitter trail!', icon: '✨' },
+    { id: 'bobber_neon', type: 'fishing_bobber', name: 'Neon Pulse', price: 3000, category: 'fishing', slot: 'fishing_bobber', description: 'Cyber trail.', icon: '🧿' },
+    { id: 'bobber_comet', type: 'fishing_bobber', name: 'Comet', price: 5000, category: 'fishing', slot: 'fishing_bobber', description: 'Burning tail effect.', icon: '☄️' },
 
     // --- FISHING: BOATS (SKINS) ---
     { id: 'boat_default', type: 'fishing_boat', name: 'Dinghy', price: 0, category: 'fishing', slot: 'fishing_boat', description: 'It floats.', icon: '🚣' },
