@@ -2,13 +2,13 @@ export const SHOP_ITEMS = [
     // --- SNAKE SKINS ---
     { id: 'snake_default', type: 'snake_skin', name: 'Neon Green', price: 0, category: 'snake', slot: 'snake', description: 'The classic look.', icon: '🟩' },
     { id: 'snake_gold', type: 'snake_skin', name: 'Midas Touch', price: 500, category: 'snake', slot: 'snake', description: 'Solid gold snake. Fancy!', icon: '🏆' },
-    { id: 'snake_rainbow', type: 'snake_skin', name: 'Rainbow', price: 1000, category: 'snake', slot: 'snake', description: 'Changes colors as you move!', icon: '🌈' },
-    { id: 'snake_ghost', type: 'snake_skin', name: 'Ghost', price: 750, category: 'snake', slot: 'snake', description: 'Spooky transparent vibes.', icon: '👻' },
+    { id: 'snake_rainbow', type: 'snake_skin', name: 'Rainbow', price: 1000, category: 'snake', slot: 'snake', description: 'Changes colors as you move!', icon: '🌈', unlockCondition: 'snake_master' },
+    { id: 'snake_ghost', type: 'snake_skin', name: 'Ghost', price: 750, category: 'snake', slot: 'snake', description: 'Spooky transparent vibes.', icon: '👻', unlockCondition: 'snake_pro' },
 
     // --- FISHING: RODS & UPGRADES ---
     { id: 'rod_default', type: 'fishing_rod', name: 'Bamboo Pole', price: 0, category: 'fishing', slot: 'fishing_rod', description: 'Ol\' reliable.', icon: '🎋' },
-    { id: 'rod_fiberglass', type: 'fishing_rod', name: 'Fiberglass', price: 300, category: 'fishing', slot: 'fishing_rod', description: 'Sleek and sturdy.', icon: '🎣' },
-    { id: 'rod_gold', type: 'fishing_rod', name: 'Golden Rod', price: 10000, category: 'fishing', slot: 'fishing_rod', description: 'The Ultimate Flex.', icon: '💎' },
+    { id: 'rod_fiberglass', type: 'fishing_rod', name: 'Fiberglass', price: 300, category: 'fishing', slot: 'fishing_rod', description: 'Sleek and sturdy.', icon: '🎣', unlockCondition: 'fish_novice' },
+    { id: 'rod_gold', type: 'fishing_rod', name: 'Golden Rod', price: 10000, category: 'fishing', slot: 'fishing_rod', description: 'The Ultimate Flex.', icon: '💎', unlockCondition: 'fish_master' },
 
     // --- FISHING: BOATS (SKINS) ---
     { id: 'boat_default', type: 'fishing_boat', name: 'Dinghy', price: 0, category: 'fishing', slot: 'fishing_boat', description: 'It floats.', icon: '🚣' },
@@ -35,12 +35,12 @@ export const SHOP_ITEMS = [
 
     // --- BRICK PADDLES ---
     { id: 'paddle_default', type: 'brick_paddle', name: 'Standard', price: 0, category: 'brick', slot: 'brick', description: 'Basic paddle.', icon: '➖' },
-    { id: 'paddle_flame', type: 'brick_paddle', name: 'Flame', price: 600, category: 'brick', slot: 'brick', description: 'Hot stuff!', icon: '🔥' },
-    { id: 'paddle_ice', type: 'brick_paddle', name: 'Glacier', price: 600, category: 'brick', slot: 'brick', description: 'Cool as ice.', icon: '❄️' },
+    { id: 'paddle_flame', type: 'brick_paddle', name: 'Flame', price: 600, category: 'brick', slot: 'brick', description: 'Hot stuff!', icon: '🔥', unlockCondition: 'brick_pro' },
+    { id: 'paddle_ice', type: 'brick_paddle', name: 'Glacier', price: 600, category: 'brick', slot: 'brick', description: 'Cool as ice.', icon: '❄️', unlockCondition: 'brick_pro' },
 
     // --- GALAXY SHIPS ---
     { id: 'ship_default', type: 'galaxy_ship', name: 'Interceptor', price: 0, category: 'galaxy', slot: 'galaxy', description: 'Standard issue.', icon: '🚀' },
-    { id: 'ship_ufo', type: 'galaxy_ship', name: 'Invader', price: 1200, category: 'galaxy', slot: 'galaxy', description: 'Fly the enemy ship!', icon: '🛸' },
+    { id: 'ship_ufo', type: 'galaxy_ship', name: 'Invader', price: 1200, category: 'galaxy', slot: 'galaxy', description: 'Fly the enemy ship!', icon: '🛸', unlockCondition: 'galaxy_boss_1' },
 
     // --- FLAPPY PILOTS ---
     { id: 'flappy_boy', type: 'flappy_skin', name: 'MerchBoy', price: 0, category: 'flappy', slot: 'flappy', description: 'The original.', icon: '👦', skinType: 'image', skinContent: '/assets/boy_face.png' },

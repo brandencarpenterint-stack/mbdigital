@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGamification } from '../context/GamificationContext';
 import { SHOP_ITEMS, CATEGORIES } from '../config/ShopItems';
+import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
 
 const ShopPage = () => {
-    const { shopState, buyItem, equipItem } = useGamification() || {};
+    const { shopState, buyItem, equipItem, unlockedAchievements } = useGamification() || {};
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [coins, setCoins] = useState(0);
     const { playBeep, playCollect, playBoop } = useRetroSound();
@@ -174,6 +175,11 @@ const ShopPage = () => {
                     const isEquipped = shopState.equipped[item.category] === item.id;
                     const canAfford = coins >= item.price;
 
+                    // Achievement Lock Logic
+                    const requirementId = item.unlockCondition;
+                    const requirement = requirementId ? ACHIEVEMENTS.find(a => a.id === requirementId) : null;
+                    const isAchievementUnlocked = !requirementId || unlockedAchievements?.includes(requirementId);
+
                     return (
                         <div key={item.id} className="glass-panel" style={{
                             padding: '25px',
@@ -230,6 +236,17 @@ const ShopPage = () => {
                                 >
                                     {isEquipped ? 'EQUIPPED' : 'EQUIP'}
                                 </button>
+                            ) : !isAchievementUnlocked ? (
+                                <div style={{
+                                    width: '100%', padding: '10px', borderRadius: '12px',
+                                    background: 'rgba(255, 0, 0, 0.2)',
+                                    color: '#ff5555',
+                                    border: '1px solid #ff5555',
+                                    fontSize: '0.8rem', fontWeight: 'bold'
+                                }}>
+                                    🔒 REQUIRES:<br />
+                                    <span style={{ color: 'white' }}>{requirement?.title || 'UNKNOWN'}</span>
+                                </div>
                             ) : (
                                 <button
                                     onClick={() => {
