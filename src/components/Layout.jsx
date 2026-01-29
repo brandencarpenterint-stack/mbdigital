@@ -54,53 +54,131 @@ const Layout = () => {
     };
 
     return (
-        <div className="layout-container">
+        <div className="layout-container" style={{ paddingBottom: '90px' }}> {/* Add padding for bottom shelf */}
             {!isFishingGame && (
-                <header className="main-header">
+                <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
                     <div className="logo-section">
                         <Link to="/" className="home-link" onClick={handleLogoClick}>
-                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" />
+                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" style={{ width: '40px' }} />
                         </Link>
                     </div>
-                    <nav className="main-nav">
-                        <Link to="/coloring" className="nav-link">COLORING</Link>
-                        <Link to="/arcade" className="nav-link arcade-link">
-                            ARCADE <span style={{ fontSize: '0.6em', color: 'gold', marginLeft: '5px', verticalAlign: 'middle' }}>🪙 {coins}</span>
-                        </Link>
-                        <Link to="/pocketbro" className="nav-link" style={{ background: isCritical ? '#ff0055' : 'transparent', borderRadius: '15px', animation: isCritical ? 'shake 0.5s infinite' : 'none' }}>
-                            {getMood()}
-                        </Link>
-                        <Link to="/profile" className="nav-link" style={{ background: '#333', border: '1px solid #555', borderRadius: '15px' }}>
-                            👤 ID
-                        </Link>
+
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div style={{ background: '#333', padding: '5px 12px', borderRadius: '20px', fontSize: '0.9rem', color: 'gold', fontWeight: 'bold' }}>
+                            🪙 {coins.toLocaleString()}
+                        </div>
                         <button
                             onClick={toggleSound}
-                            className="nav-link"
-                            style={{ background: 'transparent', cursor: 'pointer', fontSize: '1.2rem', padding: '0 10px' }}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0' }}
                         >
                             {soundEnabled ? '🔊' : '🔇'}
                         </button>
-                        <button
-                            onClick={() => setShowProfile(true)}
-                            className="nav-link"
-                            style={{ background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                        >
-                            🏆 <span style={{ fontSize: '0.6em', background: 'red', borderRadius: '50%', padding: '2px 6px', marginLeft: '5px' }}>{unlockedAchievements.length}</span>
-                        </button>
-                    </nav>
-                    <div className="mascot-section">
-                        <img src="/assets/boy_face.png" alt="Mascot" className="mascot-logo" />
                     </div>
                 </header>
             )}
-            <main className="main-content" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+
+            <main className="main-content" style={{ paddingTop: '70px', minHeight: '100vh' }}>
                 <Outlet />
             </main>
+
             {!isFishingGame && (
-                <footer className="main-footer" style={{ borderTop: 'none', padding: '40px', opacity: 0.5 }}>
-                    <img src="/assets/brokid-logo.png" alt="BroKid" style={{ width: '80px', filter: 'grayscale(100%) invert(1)' }} />
-                    <p style={{ marginTop: '10px' }}>© 2026 DIGITAL PLAYGROUND</p>
-                </footer>
+                <>
+                    {/* THE UTILITY BELT (Bottom Dock) */}
+                    <div style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '90%',
+                        maxWidth: '500px',
+                        height: '70px',
+                        background: 'rgba(20, 20, 20, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '35px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        justifyContent: 'space-around',
+                        alignItems: 'center',
+                        padding: '0 10px',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                        zIndex: 999
+                    }}>
+                        {/* 1. HOME */}
+                        <Link to="/" className="dock-icon" style={{ opacity: location.pathname === '/' ? 1 : 0.5 }}>
+                            🏠
+                        </Link>
+
+                        {/* 2. ARCADE */}
+                        <Link to="/arcade" className="dock-icon" style={{ opacity: location.pathname.includes('/arcade') ? 1 : 0.5 }}>
+                            🕹️
+                        </Link>
+
+                        {/* 3. CREATE (FAB) */}
+                        <div style={{ position: 'relative', top: '-25px' }}>
+                            <Link to="/beatlab" style={{
+                                width: '70px', height: '70px',
+                                background: 'linear-gradient(135deg, #00f2ff, #00ccff)',
+                                borderRadius: '50%',
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                fontSize: '2rem',
+                                color: 'black',
+                                boxShadow: '0 0 20px rgba(0, 242, 255, 0.5)',
+                                border: '4px solid #141414',
+                                transform: location.pathname === '/beatlab' ? 'scale(1.1) rotate(10deg)' : 'scale(1)',
+                                transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                            }}>
+                                🎹
+                            </Link>
+                        </div>
+
+                        {/* 4. SHOP */}
+                        <Link to="/shop" className="dock-icon" style={{ opacity: location.pathname === '/shop' ? 1 : 0.5 }}>
+                            🛍️
+                        </Link>
+
+                        {/* 5. PROFILE (With PocketBro Status) */}
+                        <button
+                            onClick={() => setShowProfile(true)}
+                            className="dock-icon"
+                            style={{
+                                opacity: showProfile ? 1 : 0.5,
+                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                position: 'relative'
+                            }}
+                        >
+                            👤
+                            {/* Mood Indicator Badge */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-5px', right: '-5px',
+                                background: isCritical ? '#ff0055' : '#333',
+                                borderRadius: '50%',
+                                width: '24px', height: '24px',
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                fontSize: '0.8rem',
+                                border: '2px solid #141414',
+                                animation: isCritical ? 'shake 0.5s infinite' : 'none'
+                            }}>
+                                {getMood()}
+                            </div>
+                        </button>
+                    </div>
+
+                    <style>{`
+                        .dock-icon {
+                            font-size: 1.8rem;
+                            color: white;
+                            text-decoration: none;
+                            transition: transform 0.2s, opacity 0.2s;
+                            width: 50px;
+                            display: flex;
+                            justify-content: center; /* fix alignment */
+                        }
+                        .dock-icon:active {
+                            transform: scale(0.8);
+                        }
+                    `}</style>
+                </>
             )}
 
             {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
