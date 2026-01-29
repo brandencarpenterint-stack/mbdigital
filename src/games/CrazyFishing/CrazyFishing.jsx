@@ -82,7 +82,7 @@ const FISH_DATA = [
     { id: 'iso', name: 'Giant Isopod', score: 90, emoji: '🦗', minDepth: 1700, maxDepth: 1800, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
 
     // --- NEON CITY (1800-2100m) ---
-    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '🤖🐟', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '👾', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
     { id: 'robot', name: 'Bot-01', score: 120, emoji: '🤖', minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
     // NEW Phase 27
     { id: 'floppy', name: 'Diskette', score: 50, emoji: '💾', minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
@@ -97,7 +97,7 @@ const FISH_DATA = [
     { id: 'pirate_skull', name: 'Jolly Roger', score: 150, emoji: '🏴‍☠️', minDepth: 2200, maxDepth: 2400, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
 
     // --- MAGMA CORE (2400-2700m) ---
-    { id: 'ember', name: 'Fire Fish', score: 130, emoji: '🐠🔥', minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
+    { id: 'ember', name: 'Fire Fish', score: 130, emoji: '🐠', minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
     { id: 'dragon', name: 'Sea Dragon', score: 150, emoji: '🐉', minDepth: 2450, maxDepth: 2700, pattern: 'SINE', speed: 2.0, weight: [50.0, 200.0] },
     // NEW Phase 27
     { id: 'rock', name: 'Obsidian', score: 40, emoji: '🪨', minDepth: 2400, maxDepth: 2700, pattern: 'FLOAT', speed: 0, weight: [50.0, 100.0] },
