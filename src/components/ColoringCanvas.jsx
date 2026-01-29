@@ -12,6 +12,10 @@ const STICKERS = [
     { type: 'emoji', content: '🌈' },
     { type: 'emoji', content: '🐱' },
     { type: 'emoji', content: '🍕' },
+    { type: 'emoji', content: '👕' },
+    { type: 'emoji', content: '🧢' },
+    { type: 'emoji', content: '👟' },
+    { type: 'emoji', content: '🕶️' },
     { type: 'image', content: '/assets/boy-logo.png' },
     { type: 'image', content: '/assets/brokid-logo.png' }
 ];
