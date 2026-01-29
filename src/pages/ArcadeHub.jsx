@@ -158,7 +158,7 @@ const ArcadeHub = () => {
             {/* BENTO GRID GAMES */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
                 gap: '20px',
                 padding: '10px',
                 maxWidth: '1200px',
