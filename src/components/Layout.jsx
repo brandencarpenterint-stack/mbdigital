@@ -60,9 +60,40 @@ const Layout = () => {
             {!isFishingGame && (
                 <header className="main-header" style={{ justifyContent: 'space-between', padding: '10px 20px', background: 'rgba(20, 20, 35, 0.9)', backdropFilter: 'blur(15px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <div className="logo-section">
-                        <Link to="/" className="home-link" onClick={handleLogoClick}>
-                            <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" style={{ width: '40px', filter: 'invert(0)' }} />
-                        </Link>
+                        <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {/* Animated Faces */}
+                            <div style={{
+                                width: '35px', height: '35px',
+                                animation: 'float 3s ease-in-out infinite',
+                                position: 'relative'
+                            }}>
+                                <img
+                                    src="/assets/merchboy_face.png"
+                                    alt="Face"
+                                    style={{
+                                        width: '100%', height: '100%', objectFit: 'contain',
+                                        animation: 'spinFace 10s linear infinite'
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.6rem', color: '#888', letterSpacing: '1px' }}>POWERED BY</span>
+                                <span style={{ fontSize: '1rem', color: '#fff', fontWeight: '900', letterSpacing: '0.5px' }}>MBDIGITAL</span>
+                            </div>
+                        </a>
+                        <style>{`
+                            @keyframes float {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-5px); }
+                            }
+                            @keyframes spinFace {
+                                0% { transform: rotate(0deg); }
+                                25% { transform: rotate(10deg); }
+                                75% { transform: rotate(-10deg); }
+                                100% { transform: rotate(0deg); }
+                            }
+                        `}</style>
                     </div>
 
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
