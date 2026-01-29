@@ -1,85 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Kanit:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap');
 
 :root {
-  --primary-color: #ff0055;
-  --secondary-color: #00ffaa;
-  --accent-color: #ffff00;
-  --bg-dark: #050510;
-  --text-color: #2d3748;
-  --header-height: 80px;
-  --font-main: 'Inter', sans-serif;
-  --font-display: 'Kanit', sans-serif;
+  /* V3 NEON HORIZON PALETTE */
+  --bg-deep: #050510;
+  --bg-dark-mesh: #0a0a1f;
 
-  /* NEON BENTO PALETTE */
-  --color-bg-mesh: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
-  --color-card-bg: rgba(255, 255, 255, 0.9);
-  --shadow-pop: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-deep: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --neon-blue: #00f3ff;
+  --neon-pink: #bc13fe;
+  --neon-gold: #ffd700;
+
+  --glass-surface: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.2);
+
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0c0;
+
+  --font-main: 'Inter', sans-serif;
+  --font-display: 'Orbitron', sans-serif;
+  /* Futuristic Header Font */
+
+  --shadow-neon-blue: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+  --shadow-neon-pink: 0 0 10px rgba(188, 19, 254, 0.5), 0 0 20px rgba(188, 19, 254, 0.3);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-main);
-  background-color: #f0f9ff;
+  background-color: var(--bg-deep);
   background-image:
-    radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(340, 100%, 76%, 1) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsla(328, 100%, 54%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(22, 100%, 77%, 1) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, hsla(242, 100%, 70%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 0%, hsla(343, 100%, 76%, 1) 0px, transparent 50%);
+    radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.2), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(29, 78, 216, 0.2), transparent 25%);
   background-attachment: fixed;
-  background-size: cover;
-  color: var(--text-color);
+  color: var(--text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ANIMATED BACKGROUND MESH */
+@keyframes meshShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 h1,
 h2,
 h3,
-h4,
-.font-display {
+h4 {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-/* CARDS */
+/* --- GLASS SYSTEM --- */
+
+/* Base Glass Card */
+.glass-panel {
+  background: var(--glass-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 20px;
+  color: white;
+}
+
+/* Interactive Glass Card (formerly bento-card) */
 .bento-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(20, 20, 35, 0.6);
+  /* Darker base for legibility */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow-pop);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
 }
 
 .bento-card:hover {
   transform: translateY(-5px) scale(1.02);
-  box-shadow: var(--shadow-deep);
-  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.05);
   z-index: 10;
 }
 
-/* UTILS */
-.text-gradient {
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* --- UTILS --- */
+
+.text-neon-blue {
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+}
+
+.text-neon-pink {
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px rgba(188, 19, 254, 0.7);
 }
 
 .squishy-btn {
-  transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.1s;
   cursor: pointer;
-  font-family: inherit;
 }
 
 .squishy-btn:active {
-  transform: scale(0.9) !important;
+  transform: scale(0.95);
 }
 
 /* Scrollbar */
@@ -88,14 +123,14 @@ h4,
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #050510;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background: #333;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: #555;
 }
