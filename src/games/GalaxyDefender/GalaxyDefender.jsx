@@ -320,7 +320,6 @@ const GalaxyDefender = () => {
                         state.scoreInternal += 500; // Bonus
                         playWin();
                         triggerConfetti();
-                        return;
                     }
                 }
             }
