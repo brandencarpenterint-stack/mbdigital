@@ -83,8 +83,11 @@ const WhackAMoleGame = () => {
 
         setScore(prev => prev + 10);
         playJump(); // Bonk
+        if (navigator.vibrate) navigator.vibrate(100); // Strongbonk
+
         const newMoles = [...moles];
-        newMoles[index] = false;
+        newMoles[index] = false; // Hide immediately? Or we could leave a "dizzy" mole for a split second.
+        // For responsiveness, hiding immediately is best, but let's see.
         setMoles(newMoles);
     };
 

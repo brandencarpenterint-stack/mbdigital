@@ -54,6 +54,7 @@ const MemoryMatchGame = () => {
             setDisabled(false);
             setScore(prev => prev + 100);
             playCollect();
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // Success Triple-Tap
 
             // Allow animation to finish
             if (solved.length + 1 === CARDS.length) {
@@ -86,6 +87,7 @@ const MemoryMatchGame = () => {
         const newFlipped = [...flipped, id];
         setFlipped(newFlipped);
         playBeep();
+        if (navigator.vibrate) navigator.vibrate(5); // Tiny tick
 
         if (newFlipped.length === 2) {
             setDisabled(true);
