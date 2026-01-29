@@ -241,8 +241,8 @@ const ArcadeHub = () => {
             {/* BENTO GRID GAMES */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '20px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', // Wider cards
+                gap: '25px',
                 padding: '10px',
                 maxWidth: '1200px',
                 margin: '0 auto',
@@ -255,24 +255,62 @@ const ArcadeHub = () => {
                         textDecoration: 'none',
                         color: 'white',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        minHeight: '220px',
-                        gridColumn: game.colSpan === 2 ? 'span 2' : 'span 1' // Responsive spanning
+                        minHeight: '260px', // Taller
+                        gridColumn: game.colSpan === 2 ? 'span 2' : 'span 1',
+                        border: '4px solid rgba(255,255,255,0.3)', // Tactile border
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.2)', // Lifted look
+                        position: 'relative',
+                        overflow: 'hidden'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                                <h2 style={{ margin: 0, fontSize: '1.8rem', textShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>{game.title}</h2>
-                                <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{game.desc}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2 }}>
+                            <div style={{ flex: 1 }}>
+                                <h2 style={{
+                                    margin: 0,
+                                    fontSize: '2.2rem',
+                                    fontWeight: '900',
+                                    textShadow: '2px 2px 0px rgba(0,0,0,0.3)',
+                                    lineHeight: 1.1
+                                }}>
+                                    {game.title}
+                                </h2>
+                                <p style={{ margin: '10px 0 0 0', opacity: 1, fontSize: '1.2rem', fontWeight: '500' }}>{game.desc}</p>
                             </div>
-                            <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.2))' }}>{game.icon}</span>
+                            <span style={{ fontSize: '4rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.3))' }}>{game.icon}</span>
                         </div>
 
-                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem' }}>
-                                🏆 {getHighScore(game.id)}
+                        {/* Overlay Decor */}
+                        <div style={{
+                            position: 'absolute', bottom: -20, right: -20,
+                            fontSize: '8rem', opacity: 0.1, transform: 'rotate(-20deg)', pointerEvents: 'none'
+                        }}>
+                            {game.icon}
+                        </div>
+
+                        <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+                            <div style={{
+                                background: 'rgba(0,0,0,0.3)',
+                                padding: '8px 15px',
+                                borderRadius: '15px',
+                                fontSize: '1rem',
+                                fontWeight: 'bold',
+                                display: 'flex', alignItems: 'center', gap: '5px'
+                            }}>
+                                🏆 <span style={{ color: '#fff' }}>{getHighScore(game.id)}</span>
                             </div>
-                            <div className="squishy-btn" style={{ background: 'white', color: 'black', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                                ▶
-                            </div>
+                            <button className="squishy-btn" style={{
+                                background: 'white',
+                                color: 'black',
+                                padding: '12px 30px',
+                                borderRadius: '50px',
+                                border: 'none',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontWeight: '900',
+                                fontSize: '1.2rem',
+                                boxShadow: '0 5px 0 rgba(0,0,0,0.2)',
+                                cursor: 'pointer'
+                            }}>
+                                PLAY
+                            </button>
                         </div>
                     </Link>
                 ))}
