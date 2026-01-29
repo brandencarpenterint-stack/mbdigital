@@ -10,10 +10,16 @@ const GAME_WIDTH = 480;
 const GAME_HEIGHT = 800; // Portrait Mode
 const PADDLE_WIDTH = 80;
 const PADDLE_HEIGHT = 12;
-const BALL_SIZE = 16;
+const BALL_SIZE = 24; // Slightly larger for faces
 const BRICK_ROWS = 6;
 const BRICK_COLS = 8;
 const CONTROL_HEIGHT = 120; // Height of the touch zone
+const BALL_ASSETS = [
+    '/assets/neon_brick/ball1.png',
+    '/assets/neon_brick/ball2.png',
+    '/assets/neon_brick/ball3.png',
+    '/assets/neon_brick/ball4.png'
+];
 
 const NeonBrickBreaker = () => {
     const { updateStat, incrementStat, shopState } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
@@ -29,7 +35,7 @@ const NeonBrickBreaker = () => {
     const [shake, setShake] = useState({ x: 0, y: 0 }); // Screen shake offset
 
     const gameActiveRef = useRef(false);
-    const ballImgRef = useRef(null);
+    const ballImages = useRef([]); // Array of Image objects
     const shakeTimeoutRef = useRef(null);
 
     const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
@@ -44,12 +50,14 @@ const NeonBrickBreaker = () => {
         shakeTime: 0
     });
 
-    // Removed hardcoded image load
-    // useEffect(() => {
-    //     const img = new Image();
-    //     img.src = '/assets/boy_face.png';
-    //     ballImgRef.current = img;
-    // }, []);
+    // Preload Ball Images
+    useEffect(() => {
+        BALL_ASSETS.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            ballImages.current.push(img);
+        });
+    }, []);
 
     // --- LEVEL GENERATION ---
     const generateLevel = (lvl) => {
@@ -144,7 +152,8 @@ const NeonBrickBreaker = () => {
             y: GAME_HEIGHT - 40,
             dx: speedBase * (Math.random() > 0.5 ? 1 : -1),
             dy: -speedBase,
-            rot: 0
+            rot: 0,
+            imgIndex: Math.floor(Math.random() * 4)
         }];
         gameState.current.bricks = generateLevel(lvl);
         gameState.current.paddleX = GAME_WIDTH / 2 - PADDLE_WIDTH / 2;
@@ -270,7 +279,8 @@ const NeonBrickBreaker = () => {
                     y: GAME_HEIGHT - 40,
                     dx: 4 * (Math.random() > 0.5 ? 1 : -1),
                     dy: -4,
-                    rot: 0
+                    rot: 0,
+                    imgIndex: Math.floor(Math.random() * 4)
                 });
             } else {
                 endGame(false);
@@ -427,12 +437,17 @@ const NeonBrickBreaker = () => {
                 // Trail
                 if (Math.random() > 0.5) spawnParticles(ball.x, ball.y + 10, 'orange');
             } else {
-                // Default Steel
-                ctx.fillStyle = 'white';
-                ctx.shadowBlur = 5; ctx.shadowColor = 'white';
-                ctx.beginPath();
-                ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2);
-                ctx.fill();
+                // Default: Face Balls
+                const img = ballImages.current[ball.imgIndex % ballImages.current.length];
+                if (img && img.complete) {
+                    ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(255,255,255,0.5)';
+                    ctx.drawImage(img, -BALL_SIZE / 2, -BALL_SIZE / 2, BALL_SIZE, BALL_SIZE);
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Fallback
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                }
             }
             ctx.restore();
         });
