@@ -10,9 +10,9 @@ const GAME_WIDTH = 480;
 const GAME_HEIGHT = 800; // Portrait Mode
 const PADDLE_WIDTH = 80;
 const PADDLE_HEIGHT = 12;
-const BALL_SIZE = 24; // Slightly larger for faces
-const BRICK_ROWS = 6;
-const BRICK_COLS = 8;
+const BALL_SIZE = 24;
+const BRICK_ROWS = 20; // Increased for verticality
+const BRICK_COLS = 10; // Increased resolution
 const CONTROL_HEIGHT = 120; // Height of the touch zone
 const BALL_ASSETS = [
     '/assets/neon_brick/ball1.png',
@@ -65,68 +65,129 @@ const NeonBrickBreaker = () => {
         const brickWidth = GAME_WIDTH / BRICK_COLS;
         const brickHeight = 25;
 
-        const addBrick = (c, r, color) => {
+        const addBrick = (c, r, color, hp = 1, type = 'normal') => {
             bricks.push({
                 x: c * brickWidth,
-                y: r * brickHeight + 50, // Top padding
-                width: brickWidth - 6,
-                height: brickHeight - 6,
+                y: r * brickHeight + 80, // More Top padding
+                width: brickWidth - 4,
+                height: brickHeight - 4,
                 active: true,
                 color: color || `hsl(${c * 40 + r * 20}, 100%, 50%)`,
-                value: 10 + (lvl * 5)
+                value: 10 * hp,
+                hp,
+                maxHp: hp,
+                type // 'normal', 'steel'
             });
         };
 
-        // Pattern Logic
-        // Face / Logo Patterns
-        // Level 2: Brick Logo (Money Face)
-        const moneyFace = [
-            "  XXXX  ",
-            " X    X ",
-            " X$  $X ",
-            " X    X ",
-            "  XXXX  ",
-            "        "
-        ];
-        // Level 3: Brick Logo (Bunny/Cat)
-        const bunnyFace = [
-            "X      X",
-            "X      X",
-            " XXXXXX ",
-            " XO  OX ",
-            "  XXXX  ",
-            "        "
-        ];
+        // Helper for ASCII Maps
+        const drawMap = (map, colorFn) => {
+            map.forEach((rowStr, r) => {
+                const row = rowStr.split('');
+                row.forEach((char, c) => {
+                    if (char === ' ') return;
+                    if (char === 'S') addBrick(c, r, '#aaa', 999, 'steel');
+                    else {
+                        const style = colorFn(char, c, r);
+                        addBrick(c, r, style.color, style.hp || 1);
+                    }
+                });
+            });
+        };
 
-        for (let r = 0; r < BRICK_ROWS; r++) {
-            for (let c = 0; c < BRICK_COLS; c++) {
-                // Level 1: Standard Rows
-                if (lvl === 1) {
-                    if (r < 4) addBrick(c, r);
-                }
-                // Level 2: Money Face
-                else if (lvl === 2) {
-                    const char = moneyFace[r]?.[c] || ' ';
-                    if (char === 'X') addBrick(c, r, '#ff0055');
-                    if (char === '$') addBrick(c, r, '#00ff00'); // Green Eyes
-                }
-                // Level 3: Bunny Face
-                else if (lvl === 3) {
-                    const char = bunnyFace[r]?.[c] || ' ';
-                    if (char === 'X') addBrick(c, r, '#00ccff');
-                    if (char === 'O') addBrick(c, r, '#ff00ff'); // Eyes
-                }
-                // Level 4: Walls
-                else if (lvl === 4) {
-                    if (c === 0 || c === BRICK_COLS - 1 || r === 0 || r === BRICK_ROWS - 1) addBrick(c, r, '#ffff00');
-                    else if (r === 3 && c > 2 && c < 5) addBrick(c, r, 'red'); // Core
-                }
-                // Level 5+: Chaos / Random
-                else {
-                    if (Math.random() > 0.3) addBrick(c, r, `hsl(${Math.random() * 360}, 100%, 50%)`);
+        // PATTERNS
+        if (lvl === 1) { // Standard
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) addBrick(c, r);
+            }
+        }
+        else if (lvl === 2) { // Money Face High Res
+            const map = [
+                "  XXXXXX  ",
+                " X      X ",
+                " X $  $ X ",
+                " X      X ",
+                "  XXXXXX  "
+            ];
+            drawMap(map, (char) => char === '$' ? { color: '#00ff00', hp: 2 } : { color: '#ff0055', hp: 1 });
+        }
+        else if (lvl === 3) { // Bunny
+            const map = [
+                "X        X",
+                "X        X",
+                " XXXXXXXX ",
+                " X O  O X ",
+                "  XXXXXX  "
+            ];
+            drawMap(map, (char) => char === 'O' ? { color: '#ff00ff', hp: 2 } : { color: '#00ccff', hp: 1 });
+        }
+        else if (lvl === 4) { // DNA Helix
+            for (let r = 0; r < 18; r++) {
+                const shift = Math.floor(Math.sin(r * 0.5) * 3) + 4;
+                addBrick(shift, r, '#00ffaa', 1);
+                addBrick(9 - shift, r, '#ff00aa', 1);
+            }
+        }
+        else if (lvl === 5) { // The Skull
+            const map = [
+                "  XXXXXX  ",
+                " XXXXXXXX ",
+                "XX O  O XX",
+                "XXXXXXXXXX",
+                " X  XX  X ",
+                " X X  X X ",
+                "  XXXXXX  "
+            ];
+            drawMap(map, (char) => char === 'O' ? { color: '#000', hp: 1 } : { color: '#ddd', hp: 2 });
+        }
+        else if (lvl === 6) { // The Castle (Steel Walls)
+            const map = [
+                "S S    S S",
+                "SSSSSSSSSS",
+                "SXXRRRRXXS",
+                "SXXRRRRXXS",
+                "SSSS  SSSS",
+                "SXXS  SXXS",
+                "SXXS  SXXS"
+            ];
+            drawMap(map, (char) => char === 'R' ? { color: 'red', hp: 3 } : { color: 'blue', hp: 1 });
+        }
+        else if (lvl === 7) { // Invader Fleet
+            for (let r = 0; r < 12; r += 2) {
+                for (let c = 1; c < 9; c += 2) {
+                    addBrick(c, r, '#76ff03', r < 4 ? 3 : 1);
                 }
             }
         }
+        else if (lvl === 8) { // Matrix Rain
+            for (let c = 0; c < BRICK_COLS; c++) {
+                const len = Math.floor(Math.random() * 15);
+                for (let r = 0; r < len; r++) {
+                    if (Math.random() > 0.5) addBrick(c, r, '#00ff00', 1);
+                }
+            }
+        }
+        else if (lvl === 9) { // Checkered Death
+            for (let r = 0; r < 15; r++) {
+                for (let c = (r % 2); c < BRICK_COLS; c += 2) {
+                    addBrick(c, r, r > 10 ? '#ff0000' : '#ffff00', r > 10 ? 3 : 1);
+                }
+            }
+        }
+        else { // LVL 10+: BOSS FACE
+            const map = [
+                "SSSSSSSSSS",
+                "SXXXXXXXXS",
+                "SX R  R XS",
+                "SX R  R XS",
+                "SXXXXXXXXS",
+                "SX RRRR XS",
+                "SXXXXXXXXS",
+                "SSSSSSSSSS"
+            ];
+            drawMap(map, (char) => char === 'R' ? { color: '#ff0000', hp: 5 } : { color: '#444', hp: 3 });
+        }
+
         return bricks;
     };
 
@@ -236,7 +297,7 @@ const NeonBrickBreaker = () => {
             const ball = balls[i];
             ball.x += ball.dx;
             ball.y += ball.dy;
-            ball.rot += 0.2; // Spin faster
+            ball.rot += 0.05; // Slow rotation
 
             // Walls
             if (ball.x + BALL_SIZE > GAME_WIDTH || ball.x < 0) {
@@ -302,14 +363,32 @@ const NeonBrickBreaker = () => {
                     ball.y + BALL_SIZE > brick.y) {
 
                     ball.dy = -ball.dy;
-                    brick.active = false;
-                    setScore(prev => prev + brick.value);
-                    playCollect();
-                    spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                    triggerShake(3);
 
-                    if (Math.random() < 0.15) {
-                        state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
+                    if (brick.type === 'steel') {
+                        playBeep();
+                        triggerShake(2);
+                        return; // Indestructible
+                    }
+
+                    brick.hp -= 1;
+                    if (brick.hp <= 0) {
+                        brick.active = false;
+                        setScore(prev => prev + brick.value);
+                        playCollect();
+                        spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                        triggerShake(3);
+
+                        if (Math.random() < 0.15) {
+                            state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
+                        }
+                    } else {
+                        // Hit Sound
+                        playBeep();
+                        // Visual Damage (Darken)
+                        brick.color = 'white'; // Flash white
+                        setTimeout(() => brick.color = brick.color, 50); // Reset? Need to store original color.
+                        // Simplified: Just use opacity or predefined colors for HP.
+                        // For now, let's just flash?
                     }
                 }
             });
@@ -370,11 +449,25 @@ const NeonBrickBreaker = () => {
         // Draw Bricks
         state.bricks.forEach(brick => {
             if (brick.active) {
-                ctx.fillStyle = brick.color;
+                // Dim color based on HP
+                if (brick.type === 'steel') ctx.fillStyle = '#888';
+                else {
+                    ctx.fillStyle = brick.color;
+                    if (brick.hp < brick.maxHp) ctx.globalAlpha = 0.5 + (0.5 * (brick.hp / brick.maxHp));
+                }
+
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = brick.color;
                 ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
                 ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // HP Indicator
+                if (brick.hp > 1 && brick.type !== 'steel') {
+                    ctx.fillStyle = 'white';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(brick.hp, brick.x + brick.width / 2, brick.y + brick.height / 2 + 3);
+                }
             }
         });
 
