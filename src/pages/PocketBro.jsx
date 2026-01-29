@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useGamification } from '../context/GamificationContext';
 import { usePocketBro, POCKET_BRO_STAGES } from '../context/PocketBroContext';
 
