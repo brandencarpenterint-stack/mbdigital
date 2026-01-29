@@ -8,23 +8,26 @@ import { SettingsProvider } from './context/SettingsContext'
 import { PocketBroProvider } from './context/PocketBroContext'
 import { SquadProvider } from './context/SquadContext'
 import { InventoryProvider } from './context/InventoryContext'
+import { ToastProvider } from './context/ToastContext'
 import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <SettingsProvider>
-        <GamificationProvider>
-          <PocketBroProvider>
-            <SquadProvider>
-              <InventoryProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
-              </InventoryProvider>
-            </SquadProvider>
-          </PocketBroProvider>
-        </GamificationProvider>
+        <ToastProvider>
+          <GamificationProvider>
+            <PocketBroProvider>
+              <SquadProvider>
+                <InventoryProvider>
+                  <BrowserRouter>
+                    <App />
+                  </BrowserRouter>
+                </InventoryProvider>
+              </SquadProvider>
+            </PocketBroProvider>
+          </GamificationProvider>
+        </ToastProvider>
       </SettingsProvider>
     </ErrorBoundary>
   </StrictMode>,

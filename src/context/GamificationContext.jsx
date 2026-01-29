@@ -3,10 +3,12 @@ import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import { DAILY_TEMPLATES } from '../config/DailyQuests';
 import { SHOP_ITEMS } from '../config/ShopItems';
 import useRetroSound from '../hooks/useRetroSound';
+import { useToast } from './ToastContext';
 
 const GamificationContext = createContext();
 
 export const GamificationProvider = ({ children }) => {
+    const { showToast } = useToast();
     const [stats, setStats] = useState(() => {
         return JSON.parse(localStorage.getItem('merchboy_stats')) || {
             fishCaught: 0,
@@ -39,7 +41,6 @@ export const GamificationProvider = ({ children }) => {
         } catch (e) { return []; }
     });
 
-    const [recentUnlock, setRecentUnlock] = useState(null); // For Toast
     const { playWin } = useRetroSound();
 
     useEffect(() => {
@@ -63,11 +64,8 @@ export const GamificationProvider = ({ children }) => {
 
     const unlock = (achievement) => {
         setUnlockedAchievements(prev => [...prev, achievement.id]);
-        setRecentUnlock(achievement);
         playWin(); // Sound
-
-        // Clear toast after 3s
-        setTimeout(() => setRecentUnlock(null), 3000);
+        showToast(achievement.title, 'achievement');
     };
 
 
@@ -105,6 +103,7 @@ export const GamificationProvider = ({ children }) => {
 
         const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
         localStorage.setItem('arcadeCoins', currentCoins + 100);
+        showToast("Daily Login: +100 Coins", "coin");
 
         return true;
     };
@@ -126,6 +125,7 @@ export const GamificationProvider = ({ children }) => {
             const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
             localStorage.setItem('arcadeCoins', currentCoins + reward);
             playWin();
+            showToast(`Quest Complete: +${reward} Coins`, "coin");
         }
     };
 
@@ -181,8 +181,10 @@ export const GamificationProvider = ({ children }) => {
             localStorage.setItem('arcadeCoins', currentCoins - item.price);
             setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
             playWin();
+            showToast(`Purchased ${item.name}!`, "success");
             return true;
         }
+        if (currentCoins < item.price) showToast("Not enough coins!", "error");
         return false;
     };
 
@@ -265,7 +267,6 @@ export const GamificationProvider = ({ children }) => {
             unlockedAchievements,
             updateStat,
             incrementStat,
-            recentUnlock,
             dailyState,
             claimDailyLogin,
             claimQuest,
@@ -275,26 +276,6 @@ export const GamificationProvider = ({ children }) => {
             getLevelInfo
         }}>
             {children}
-
-            {/* GLOBAL TOAST */}
-            {recentUnlock && (
-                <div style={{
-                    position: 'fixed', top: '20px', left: '50%', transform: 'translate(-50%, 0)',
-                    background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                    border: '2px solid white', borderRadius: '10px',
-                    padding: '10px 20px',
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
-                    zIndex: 10000,
-                    animation: 'slideDown 0.5s ease-out'
-                }}>
-                    <div style={{ fontSize: '2rem' }}>🏆</div>
-                    <div>
-                        <h4 style={{ margin: 0, color: 'black', fontWeight: 'bold' }}>ACHIEVEMENT UNLOCKED!</h4>
-                        <p style={{ margin: 0, color: '#333' }}>{recentUnlock.title}</p>
-                    </div>
-                </div>
-            )}
         </GamificationContext.Provider>
     );
 };
