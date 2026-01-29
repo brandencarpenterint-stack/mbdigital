@@ -42,7 +42,7 @@ const Home = () => {
             {/* DASHBOARD GRID */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                 gap: '20px',
                 gridAutoRows: 'minmax(150px, auto)'
             }}>

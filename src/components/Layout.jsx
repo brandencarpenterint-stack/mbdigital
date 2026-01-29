@@ -72,7 +72,7 @@ const Layout = () => {
     };
 
     return (
-        <div className="layout-container" style={{ paddingBottom: '90px' }}> {/* Add padding for bottom shelf */}
+        <div className="layout-container" style={{ paddingBottom: '120px' }}> {/* Add padding for bottom shelf */}
             {!isFishingGame && (
                 <header className="glass-panel main-header" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
