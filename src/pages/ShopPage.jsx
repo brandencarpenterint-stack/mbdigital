@@ -12,7 +12,7 @@ const ShopPage = () => {
     const [coins, setCoins] = useState(0);
     const { playBeep, playCollect, playBoop } = useRetroSound();
 
-    console.log('ShopPage Debug:', { shopState, items: SHOP_ITEMS.length });
+
 
     // Coin Sync
     useEffect(() => {

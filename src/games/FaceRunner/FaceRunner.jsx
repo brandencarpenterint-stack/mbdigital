@@ -36,6 +36,10 @@ const FaceRunner = () => {
         faces.forEach(f => {
             const img = new Image();
             img.src = `/assets/skins/${f}.png`;
+            img.onerror = () => {
+                console.error(`Failed to load: ${f}`);
+                faceImgs.current[f] = null; // Fallback
+            };
             faceImgs.current[f] = img;
         });
     }, []);
@@ -73,115 +77,132 @@ const FaceRunner = () => {
         const cx = width / 2;
         const cy = height / 2;
 
-        // --- UPDATE ---
+        try {
+            // --- UPDATE ---
 
-        // Spawn
-        if (Math.random() < 0.05 + (scoreRef.current * 0.0001)) {
-            spawnObstacle();
-        }
-
-        // Move Obstacles
-        for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
-            const obs = obstaclesRef.current[i];
-            obs.z -= speedRef.current;
-
-            if (obs.z <= 0) {
-                obstaclesRef.current.splice(i, 1);
-                scoreRef.current += 10;
-                setScore(scoreRef.current);
-                // Increase Speed cap at 80
-                speedRef.current = Math.min(speedRef.current + 0.1, 80);
+            // Spawn
+            if (Math.random() < 0.05 + (scoreRef.current * 0.0001)) {
+                spawnObstacle();
             }
-        }
 
-        // --- DRAW ---
-        // 1. Clear & Background
-        ctx.fillStyle = '#110022';
-        ctx.fillRect(0, 0, width, height);
+            // Move Obstacles
+            for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
+                const obs = obstaclesRef.current[i];
+                obs.z -= speedRef.current;
 
-        // Tunnel Grid Effect
-        ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let i = 0; i < 20; i++) {
-            // Concentric Lines
-            const z = (performance.now() * speedRef.current * 0.1 + i * 200) % 2000;
-            const s = 400 / (z + 1);
-            if (s > 0) {
-                ctx.rect(cx - width * s, cy - height * s, width * s * 2, height * s * 2);
-            }
-        }
-        // Radial Lines
-        ctx.moveTo(cx, cy); ctx.lineTo(0, 0);
-        ctx.moveTo(cx, cy); ctx.lineTo(width, 0);
-        ctx.moveTo(cx, cy); ctx.lineTo(0, height);
-        ctx.moveTo(cx, cy); ctx.lineTo(width, height);
-        ctx.stroke();
-
-
-        // 2. Draw Obstacles (Back to Front)
-        obstaclesRef.current.sort((a, b) => b.z - a.z); // Draw farthest first
-
-        obstaclesRef.current.forEach(obs => {
-            if (obs.z < 10) return; // Too close / behind
-
-            const fov = 600;
-            const scale = fov / obs.z;
-            const sx = cx + obs.x * scale;
-            const sy = cy + obs.y * scale;
-            const size = 150 * scale; // Base size of obstacle
-
-            ctx.save();
-            ctx.translate(sx, sy);
-            ctx.rotate(obs.rot + (performance.now() * 0.005));
-
-            // Check Collision here where we know Screen X/Y
-            // Player is at PlayerRef.x + cx, PlayerRef.y + cy
-            if (obs.z < 100) {
-                const dx = sx - (cx + playerRef.current.x);
-                const dy = sy - (cy + playerRef.current.y);
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < (size / 2 + 40)) { // 40 is player radius
-                    // CRASH
-                    handleCrash(ctx);
-                    return;
+                if (obs.z <= 0) {
+                    obstaclesRef.current.splice(i, 1);
+                    scoreRef.current += 10;
+                    setScore(scoreRef.current);
+                    // Increase Speed cap at 80
+                    speedRef.current = Math.min(speedRef.current + 0.1, 80);
                 }
             }
 
-            ctx.fillStyle = obs.color;
-            ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
-            ctx.fillRect(-size / 2, -size / 2, size, size);
+            // --- DRAW ---
+            // 1. Clear & Background
+            ctx.fillStyle = '#110022';
+            ctx.fillRect(0, 0, width, height);
 
-            // Inner
-            ctx.fillStyle = 'black';
-            ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
+            // Tunnel Grid Effect
+            ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i < 20; i++) {
+                // Concentric Lines
+                const z = (performance.now() * speedRef.current * 0.1 + i * 200) % 2000;
+                const s = 400 / (z + 1);
+                if (s > 0) {
+                    ctx.rect(cx - width * s, cy - height * s, width * s * 2, height * s * 2);
+                }
+            }
+            // Radial Lines
+            ctx.moveTo(cx, cy); ctx.lineTo(0, 0);
+            ctx.moveTo(cx, cy); ctx.lineTo(width, 0);
+            ctx.moveTo(cx, cy); ctx.lineTo(0, height);
+            ctx.moveTo(cx, cy); ctx.lineTo(width, height);
+            ctx.stroke();
+
+
+            // 2. Draw Obstacles (Back to Front)
+            obstaclesRef.current.sort((a, b) => b.z - a.z); // Draw farthest first
+
+            obstaclesRef.current.forEach(obs => {
+                if (obs.z < 10) return; // Too close / behind
+
+                const fov = 600;
+                const scale = fov / obs.z;
+                const sx = cx + obs.x * scale;
+                const sy = cy + obs.y * scale;
+                const size = 150 * scale; // Base size of obstacle
+
+                ctx.save();
+                ctx.translate(sx, sy);
+                ctx.rotate(obs.rot + (performance.now() * 0.005));
+
+                // Check Collision here where we know Screen X/Y
+                // Player is at PlayerRef.x + cx, PlayerRef.y + cy
+                if (obs.z < 100) {
+                    const dx = sx - (cx + playerRef.current.x);
+                    const dy = sy - (cy + playerRef.current.y);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < (size / 2 + 40)) { // 40 is player radius
+                        // CRASH
+                        handleCrash(ctx);
+                        return;
+                    }
+                }
+
+                ctx.fillStyle = obs.color;
+                ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
+                ctx.fillRect(-size / 2, -size / 2, size, size);
+
+                // Inner
+                ctx.fillStyle = 'black';
+                ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
+
+                ctx.restore();
+            });
+
+            if (gameState !== 'PLAYING') return;
+
+            // 3. Draw Player Face
+            // Mouse controls offset
+            const p = playerRef.current;
+            p.tilt *= 0.9;
+            p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05; // Breathing
+
+            ctx.save();
+            ctx.translate(cx + p.x, cy + p.y);
+            ctx.rotate(p.x * 0.001); // Tilt based on movement
+            ctx.scale(p.squash, 1 / p.squash);
+
+            const img = faceImgs.current[selectedFace];
+            const faceSize = 120; // Big face!
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, -faceSize / 2, -faceSize / 2, faceSize, faceSize);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = '#00ffaa';
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(0, 0, faceSize / 2, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+
+                // Eyes for fallback
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(-20, -10, 10, 0, Math.PI * 2);
+                ctx.arc(20, -10, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.restore();
-        });
 
-        if (gameState !== 'PLAYING') return;
-
-        // 3. Draw Player Face
-        // Mouse controls offset
-        const p = playerRef.current;
-        p.tilt *= 0.9;
-        p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05; // Breathing
-
-        ctx.save();
-        ctx.translate(cx + p.x, cy + p.y);
-        ctx.rotate(p.x * 0.001); // Tilt based on movement
-        ctx.scale(p.squash, 1 / p.squash);
-
-        const img = faceImgs.current[selectedFace];
-        const faceSize = 120; // Big face!
-        if (img && img.complete) {
-            ctx.drawImage(img, -faceSize / 2, -faceSize / 2, faceSize, faceSize);
-        } else {
-            ctx.fillStyle = 'white';
-            ctx.beginPath(); ctx.arc(0, 0, faceSize / 2, 0, Math.PI * 2); ctx.fill();
+        } catch (err) {
+            console.error("Game Loop Error:", err);
+            cancelAnimationFrame(requestRef.current);
+            return;
         }
-
-        ctx.restore();
 
         requestRef.current = requestAnimationFrame(gameLoop);
     };
