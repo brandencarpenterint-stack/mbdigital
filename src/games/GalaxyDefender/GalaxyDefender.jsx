@@ -607,6 +607,49 @@ const GalaxyDefender = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    // TOUCH CONTROLS
+    const touchRef = useRef({ startX: 0, hasMoved: false });
+
+    const handleTouchStart = (e) => {
+        if (!gameActiveRef.current) return;
+        const touch = e.touches[0];
+        touchRef.current = {
+            startX: touch.clientX,
+            hasMoved: false
+        };
+    };
+
+    const handleTouchMove = (e) => {
+        if (!gameActiveRef.current) return;
+        if (e.cancelable) e.preventDefault(); // Prevent scrolling
+
+        const touch = e.touches[0];
+        const diffX = touch.clientX - touchRef.current.startX;
+        const SWIPE_THRESHOLD = 40; // Sensitivity
+
+        if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+            if (diffX > 0) moveRight();
+            else moveLeft();
+
+            // Reset startX to allow continuous swiping across multiple lanes
+            touchRef.current.startX = touch.clientX;
+            touchRef.current.hasMoved = true;
+        }
+    };
+
+    const handleTouchEnd = (e) => {
+        if (!gameActiveRef.current) return;
+        // If we didn't swipe (didn't move lane), treat as Tap to Shoot
+        const wasSwipe = touchRef.current.hasMoved;
+
+        // Reset Ref
+        touchRef.current = { startX: 0, hasMoved: false };
+
+        if (!wasSwipe) {
+            fire();
+        }
+    };
+
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -631,11 +674,15 @@ const GalaxyDefender = () => {
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                     style={{
                         width: '100%', height: 'auto',
                         border: '4px solid #00ccff',
                         background: 'radial-gradient(circle, #001133 0%, #000000 100%)',
-                        borderRadius: '10px', boxShadow: '0 0 20px #00ccff40'
+                        borderRadius: '10px', boxShadow: '0 0 20px #00ccff40',
+                        touchAction: 'none' // Critical for preventing scrolling
                     }}
                 />
 
