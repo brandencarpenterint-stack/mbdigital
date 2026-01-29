@@ -1,19 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+export const POCKET_BRO_STAGES = {
+    EGG: { threshold: 0, icon: '🥚', name: 'Egg' },
+    BABY: { threshold: 50, icon: '👶', name: 'Baby' },
+    CHILD: { threshold: 200, icon: '👦', name: 'Kid' },
+    TEEN: { threshold: 1000, icon: '🛹', name: 'Teen' },
+    ADULT: { threshold: 3000, icon: '🕴️', name: 'Bro' },
+    ELDER: { threshold: 10000, icon: '🧙‍♂️', name: 'Elder' }
+};
+
 const PocketBroContext = createContext();
 
 export const usePocketBro = () => useContext(PocketBroContext);
 
 export const PocketBroProvider = ({ children }) => {
-    const STAGES = {
-        EGG: { threshold: 0, icon: '🥚', name: 'Egg' },
-        BABY: { threshold: 50, icon: '👶', name: 'Baby' },
-        CHILD: { threshold: 200, icon: '👦', name: 'Kid' },
-        TEEN: { threshold: 1000, icon: '🛹', name: 'Teen' },
-        ADULT: { threshold: 3000, icon: '🕴️', name: 'Bro' },
-        ELDER: { threshold: 10000, icon: '🧙‍♂️', name: 'Elder' }
-    };
-
     // Initialize State (Lazy Load for Safety)
     const [stats, setStats] = useState(() => {
         try {
@@ -25,7 +25,7 @@ export const PocketBroProvider = ({ children }) => {
                 const decay = Math.floor(hoursPassed * 4);
 
                 // Validate Stage immediately
-                const safeStage = STAGES[parsed.stage] ? parsed.stage : 'EGG';
+                const safeStage = POCKET_BRO_STAGES[parsed.stage] ? parsed.stage : 'EGG';
 
                 return {
                     ...parsed,
@@ -67,14 +67,14 @@ export const PocketBroProvider = ({ children }) => {
                 };
 
                 // Check Evolution
-                const nextStage = Object.keys(STAGES).reverse().find(key => newStats.xp >= STAGES[key].threshold);
+                const nextStage = Object.keys(POCKET_BRO_STAGES).reverse().find(key => newStats.xp >= POCKET_BRO_STAGES[key].threshold);
 
                 // Safety check: ensure current and next stages exist in config
-                if (nextStage && STAGES[newStats.stage]) {
-                    if (STAGES[nextStage].threshold > STAGES[newStats.stage].threshold) {
+                if (nextStage && POCKET_BRO_STAGES[newStats.stage]) {
+                    if (POCKET_BRO_STAGES[nextStage].threshold > POCKET_BRO_STAGES[newStats.stage].threshold) {
                         newStats.stage = nextStage;
                     }
-                } else if (!STAGES[newStats.stage]) {
+                } else if (!POCKET_BRO_STAGES[newStats.stage]) {
                     // Auto-fix corrupted state
                     newStats.stage = 'EGG';
                 }
@@ -120,7 +120,7 @@ export const PocketBroProvider = ({ children }) => {
         if (stats.happy < 20) return '😢';
         if (stats.energy < 20) return '😴';
 
-        return STAGES[stats.stage]?.icon || '😃';
+        return POCKET_BRO_STAGES[stats.stage]?.icon || '😃';
     };
 
     const isCritical = stats.hunger < 20 || stats.happy < 20;

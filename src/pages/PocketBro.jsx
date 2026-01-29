@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePocketBro } from '../context/PocketBroContext';
+import { usePocketBro, POCKET_BRO_STAGES } from '../context/PocketBroContext';
 import { useInventory } from '../context/InventoryContext';
 
 const TASKS = [
@@ -10,9 +10,26 @@ const TASKS = [
 
 const PocketBro = () => {
     const { stats, feed, play, sleep, getMood } = usePocketBro();
-    const { activeSkin } = useInventory();
+    const { activeSkin } = useInventory(); // Future use
     const [message, setMessage] = useState("I'm here! 🥚");
     const [bounce, setBounce] = useState(false);
+
+    // Evolution Progress Logic
+    const currentStage = POCKET_BRO_STAGES[stats.stage];
+    const stageKeys = Object.keys(POCKET_BRO_STAGES);
+    const currentIndex = stageKeys.indexOf(stats.stage);
+    const nextStageKey = stageKeys[currentIndex + 1];
+    const nextStage = nextStageKey ? POCKET_BRO_STAGES[nextStageKey] : null;
+
+    let progress = 100;
+    let nextThreshold = currentStage.threshold; // Default if maxed
+
+    if (nextStage) {
+        const range = nextStage.threshold - currentStage.threshold;
+        const currentInStage = stats.xp - currentStage.threshold;
+        progress = Math.min((currentInStage / range) * 100, 100);
+        nextThreshold = nextStage.threshold;
+    }
 
     const handleAction = (task) => {
         triggerBounce();
@@ -43,142 +60,163 @@ const PocketBro = () => {
     };
 
     return (
-        <div style={{
-            background: 'linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%)',
+        <div className="page-enter" style={{
+            background: 'radial-gradient(circle at center, #2e003e 0%, #000000 100%)',
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            paddingBottom: '100px',
             fontFamily: '"Press Start 2P", monospace'
         }}>
             <div style={{
-                width: '100%',
-                maxWidth: '400px',
-                background: 'linear-gradient(135deg, rgba(200, 100, 255, 0.6) 0%, rgba(150, 50, 255, 0.4) 100%)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%', // Egg shapeish
-                padding: '40px 20px 80px 20px',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.2), inset 0 0 40px rgba(255,255,255,0.4), inset 0 0 10px rgba(255,255,255,0.8)',
-                border: '4px solid rgba(255,255,255,0.3)',
                 position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
+                display: 'flex', flexDirection: 'column', alignItems: 'center'
             }}>
-                {/* Screen */}
+                {/* Title Badge */}
                 <div style={{
-                    width: '240px',
-                    height: '240px',
-                    background: '#9ea7a0', // LCD Greenish Grey
-                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
-                    backgroundSize: '4px 4px',
-                    border: '8px solid #444',
-                    borderRadius: '20px',
-                    boxShadow: 'inset 5px 5px 10px rgba(0,0,0,0.3)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    padding: '20px',
-                    fontFamily: '"Press Start 2P", monospace',
-                    imageRendering: 'pixelated'
+                    background: 'var(--neon-blue)', color: 'black',
+                    padding: '5px 20px', borderRadius: '20px',
+                    marginBottom: '20px', fontSize: '0.8rem', fontWeight: 'bold',
+                    boxShadow: '0 0 20px var(--neon-blue)'
                 }}>
-                    {/* Status Bar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#333', width: '100%', marginBottom: '10px' }}>
-                        <span>Lvl: {stats.stage}</span>
-                        <span>XP: {stats.xp}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', color: '#333', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <span>❤️</span>
-                            <div style={{ width: '50px', height: '10px', background: '#888', borderRadius: '5px', overflow: 'hidden' }}>
-                                <div style={{ width: `${stats.happy}%`, height: '100%', background: '#ff0055' }} />
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <div style={{ width: '50px', height: '10px', background: '#888', borderRadius: '5px', overflow: 'hidden' }}>
-                                <div style={{ width: `${stats.hunger}%`, height: '100%', background: 'orange' }} />
-                            </div>
-                            <span>🍔</span>
-                        </div>
-                    </div>
-
-                    {/* Main Character Area */}
-                    <div style={{
-                        flex: 1,
-                        position: 'relative',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        {/* The Pet */}
-                        <div style={{
-                            fontSize: '5rem',
-                            transform: bounce ? 'translateY(-20px) scale(1.1)' : 'translateY(0) scale(1)',
-                            transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))',
-                            animation: bounce ? 'none' : 'idle 3s infinite ease-in-out'
-                        }}>
-                            {stats.isSleeping ? '💤' : getMood()}
-                        </div>
-                    </div>
-
-                    {/* Message */}
-                    <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#333', marginTop: '10px', height: '1.2em' }}>
-                        {message}
-                    </div>
+                    POCKET BRO v2.0
                 </div>
 
-                {/* Controls */}
+                {/* THE DEVICE */}
                 <div style={{
-                    display: 'flex',
-                    gap: '15px',
-                    marginTop: '40px',
-                    flexWrap: 'wrap',
-                    justifyContent: 'center'
+                    width: '320px',
+                    background: 'linear-gradient(145deg, #222, #111)',
+                    borderRadius: '50px 50px 50px 50px',
+                    padding: '30px',
+                    boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.1)',
+                    border: '4px solid #333',
+                    position: 'relative'
                 }}>
-                    {TASKS.map(task => (
-                        <div key={task.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+
+                    {/* Screen */}
+                    <div style={{
+                        height: '320px',
+                        background: '#9ea7a0',
+                        backgroundImage: 'radial-gradient(#8b968d 15%, transparent 16%), radial-gradient(#8b968d 15%, transparent 16%)',
+                        backgroundSize: '10px 10px',
+                        borderRadius: '20px',
+                        border: '8px solid #000',
+                        boxShadow: 'inset 5px 5px 15px rgba(0,0,0,0.4)',
+                        padding: '20px',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        position: 'relative', overflow: 'hidden'
+                    }}>
+
+                        {/* Status Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#333' }}>
+                            <span>STAGE: {stats.stage}</span>
+                            <span>XP: {Math.floor(stats.xp)}</span>
+                        </div>
+
+                        {/* Bars */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            <div style={{ flex: 1, height: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+                                <div style={{ width: `${stats.happy}%`, height: '100%', background: '#ff0055', borderRadius: '4px' }} />
+                            </div>
+                            <div style={{ flex: 1, height: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+                                <div style={{ width: `${stats.hunger}%`, height: '100%', background: '#ffaa00', borderRadius: '4px' }} />
+                            </div>
+                        </div>
+
+                        {/* Character Display */}
+                        <div style={{
+                            flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center',
+                            position: 'relative'
+                        }}>
+                            <div style={{
+                                fontSize: '6rem',
+                                transform: bounce ? 'scale(1.2)' : 'scale(1)',
+                                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                animation: stats.isSleeping ? 'breathe 3s infinite' : (bounce ? 'none' : 'idle 1.5s infinite'),
+                                filter: 'drop-shadow(0 5px 0 rgba(0,0,0,0.2))'
+                            }}>
+                                {stats.isSleeping ? '💤' : getMood()}
+                            </div>
+                        </div>
+
+                        {/* Evolution Bar */}
+                        <div style={{ marginTop: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#555', marginBottom: '2px' }}>
+                                <span>EVOLUTION</span>
+                                <span>{nextStage ? `${Math.floor(progress)}%` : 'MAX'}</span>
+                            </div>
+                            <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '3px' }}>
+                                <div style={{
+                                    width: `${progress}%`,
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, #00C6FF, #0072FF)',
+                                    borderRadius: '3px',
+                                    transition: 'width 0.5s'
+                                }}></div>
+                            </div>
+                        </div>
+
+                        {/* Message Text */}
+                        <div style={{ textAlign: 'center', marginTop: '10px', minHeight: '1.2em', color: '#333', fontSize: '0.7rem' }}>
+                            {message}
+                        </div>
+
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{
+                        display: 'flex', justifyContent: 'center', gap: '20px',
+                        marginTop: '30px'
+                    }}>
+                        {TASKS.map(task => (
                             <button
+                                key={task.id}
                                 onClick={() => handleAction(task)}
+                                disabled={stats.isSleeping && task.id !== 'sleep'}
                                 style={{
-                                    width: '50px',
-                                    height: '50px',
+                                    width: '60px', height: '60px',
                                     borderRadius: '50%',
                                     border: 'none',
-                                    background: stats.isSleeping && task.id !== 'sleep' ? '#888' : '#FFEB3B',
-                                    color: '#333',
-                                    fontSize: '1.5rem',
-                                    boxShadow: '0 4px 0 #FBC02D',
+                                    background: stats.isSleeping && task.id !== 'sleep' ? '#333' : '#e0e0e0',
+                                    boxShadow: stats.isSleeping && task.id !== 'sleep' ? 'none' : '0 6px 0 #999',
+                                    fontSize: '1.8rem',
                                     cursor: 'pointer',
-                                    transition: 'transform 0.1s'
+                                    opacity: stats.isSleeping && task.id !== 'sleep' ? 0.5 : 1,
+                                    transform: 'translateY(0)',
+                                    transition: 'transform 0.1s, box-shadow 0.1s'
                                 }}
-                                onMouseDown={(e) => e.target.style.transform = 'translateY(4px)'}
-                                onMouseUp={(e) => e.target.style.transform = 'translateY(0)'}
+                                onMouseDown={(e) => {
+                                    if (stats.isSleeping && task.id !== 'sleep') return;
+                                    e.currentTarget.style.transform = 'translateY(6px)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                                onMouseUp={(e) => {
+                                    if (stats.isSleeping && task.id !== 'sleep') return;
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 6px 0 #999';
+                                }}
                             >
                                 {task.icon}
                             </button>
-                            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold' }}>{task.label}</span>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
 
-                {/* Decoration: Brand Logo */}
-                <div style={{ position: 'absolute', bottom: '20px', color: '#ccc', fontWeight: 'bold' }}>
-                    POCKET BRO™
                 </div>
-
-                <style>{`
-                    @keyframes idle {
-                        0%, 100% { transform: translateY(0); }
-                        50% { transform: translateY(-10px); }
-                    }
-                `}</style>
             </div>
+
+            <style>{`
+                @keyframes idle {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+                @keyframes breathe {
+                    0%, 100% { transform: scale(1); opacity: 0.8; }
+                    50% { transform: scale(1.05); opacity: 1; }
+                }
+            `}</style>
         </div>
     );
 };
-
 
 export default PocketBro;
