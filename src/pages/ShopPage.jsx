@@ -40,21 +40,25 @@ const ShopPage = () => {
     return (
         <div className="page-enter" style={{ padding: '20px', minHeight: '100vh', paddingBottom: '100px' }}>
             {/* HEADER */}
+            {/* HEADER */}
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h1 style={{
+                <h1 className="text-gradient" style={{
                     fontSize: '3rem', margin: '0 0 10px 0',
-                    color: '#FFD700', textShadow: '0 0 20px rgba(255, 215, 0, 0.5)'
+                    lineHeight: 1
                 }}>GLOBAL SHOP</h1>
                 <div style={{
-                    fontSize: '1.5rem', background: '#333', display: 'inline-block',
-                    padding: '10px 30px', borderRadius: '50px', border: '2px solid #FFD700'
+                    fontSize: '1.2rem', background: 'white', display: 'inline-block',
+                    padding: '8px 25px', borderRadius: '50px',
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                    color: '#333', fontWeight: 'bold'
                 }}>
-                    🪙 {coins} COINS
+                    🪙 {coins.toLocaleString()}
                 </div>
             </div>
 
             {/* CATEGORY TABS */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '40px', flexWrap: 'wrap' }}>
+            {/* CATEGORY TABS */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '30px', flexWrap: 'wrap' }}>
                 {CATEGORIES.map(cat => (
                     <button
                         key={cat.id}
@@ -64,18 +68,35 @@ const ShopPage = () => {
                             if (navigator.vibrate) navigator.vibrate(10);
                         }}
                         style={{
-                            padding: '12px 25px', borderRadius: '15px', border: 'none',
-                            background: activeCategory === cat.id ? '#FFD700' : '#1a1a2e',
-                            color: activeCategory === cat.id ? 'black' : 'white',
-                            fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '10px',
+                            padding: '10px 20px', borderRadius: '25px', border: 'none',
+                            background: activeCategory === cat.id ? '#0ea5e9' : 'rgba(255,255,255,0.5)',
+                            color: activeCategory === cat.id ? 'white' : '#555',
+                            fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '8px',
                             transition: 'all 0.2s',
-                            boxShadow: activeCategory === cat.id ? '0 0 15px rgba(255,215,0,0.4)' : 'none'
+                            boxShadow: activeCategory === cat.id ? '0 5px 15px rgba(14, 165, 233, 0.3)' : 'none'
                         }}
                     >
                         <span>{cat.icon}</span> {cat.name}
                     </button>
                 ))}
+            </div>
+
+            {/* HERO MERCH CARD */}
+            <div className="bento-card" style={{
+                maxWidth: '1200px', margin: '0 auto 40px auto',
+                background: 'linear-gradient(135deg, #111 0%, #333 100%)',
+                color: 'white', padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px'
+            }}>
+                <div>
+                    <span style={{ color: '#FFD700', fontWeight: 'bold', letterSpacing: '1px' }}>OFFICIAL MERCH</span>
+                    <h2 style={{ fontSize: '2.5rem', margin: '5px 0' }}>WEAR THE HYPE</h2>
+                    <p style={{ color: '#aaa', margin: '0 0 20px 0' }}>Get the physical gear delivered to your door.</p>
+                    <a href="https://merchboy.shop" target="_blank" rel="noreferrer" style={{ background: 'white', color: 'black', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
+                        VISIT MERCH STORE ↗
+                    </a>
+                </div>
+                <div style={{ fontSize: '5rem' }}>👕</div>
             </div>
 
             {/* ITEMS GRID */}
@@ -89,29 +110,28 @@ const ShopPage = () => {
                     const canAfford = coins >= item.price;
 
                     return (
-                        <div key={item.id} style={{
-                            background: '#161625', borderRadius: '20px', padding: '25px',
-                            border: isEquipped ? '2px solid #00FA9A' : '1px solid #333',
+                        <div key={item.id} className="bento-card" style={{
+                            background: 'rgba(255,255,255,0.8)', padding: '25px',
+                            border: isEquipped ? '2px solid #00FA9A' : '1px solid rgba(255,255,255,0.5)',
                             position: 'relative', overflow: 'hidden',
-                            boxShadow: isEquipped ? '0 0 20px rgba(0, 250, 154, 0.2)' : '0 10px 30px rgba(0,0,0,0.3)',
-                            textAlign: 'center'
+                            textAlign: 'center', color: '#333'
                         }}>
                             {/* STATUS BADGE */}
                             {isEquipped && (
                                 <div style={{
                                     position: 'absolute', top: '15px', right: '15px',
                                     background: '#00FA9A', color: 'black', padding: '5px 10px',
-                                    fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '10px', zIndex: 2
+                                    fontSize: '0.7rem', fontWeight: 'bold', borderRadius: '10px', zIndex: 2
                                 }}>EQUIPPED</div>
                             )}
 
                             {/* ITEM ICON */}
-                            <div style={{ fontSize: '4rem', marginBottom: '15px', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
+                            <div style={{ fontSize: '4rem', marginBottom: '15px', filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.1))' }}>
                                 {item.icon}
                             </div>
 
-                            <h3 style={{ margin: '0 0 5px 0', fontSize: '1.4rem' }}>{item.name}</h3>
-                            <p style={{ color: '#888', margin: '0 0 20px 0', minHeight: '40px' }}>{item.description}</p>
+                            <h3 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: '#1a202c' }}>{item.name}</h3>
+                            <p style={{ color: '#718096', margin: '0 0 20px 0', minHeight: '40px', fontSize: '0.9rem' }}>{item.description}</p>
 
                             {/* ACTION BUTTON */}
                             {isUnlocked ? (
@@ -123,12 +143,13 @@ const ShopPage = () => {
                                     }}
                                     disabled={isEquipped}
                                     style={{
-                                        width: '100%', padding: '12px', borderRadius: '10px',
-                                        background: isEquipped ? '#1a1a2e' : '#6A5ACD',
-                                        color: isEquipped ? '#555' : 'white',
+                                        width: '100%', padding: '12px', borderRadius: '15px',
+                                        background: isEquipped ? '#e2e8f0' : '#4f46e5',
+                                        color: isEquipped ? '#a0aec0' : 'white',
                                         border: 'none', fontWeight: 'bold',
                                         cursor: isEquipped ? 'default' : 'pointer',
-                                        opacity: isEquipped ? 0.7 : 1
+                                        opacity: isEquipped ? 0.7 : 1,
+                                        boxShadow: isEquipped ? 'none' : '0 4px 10px rgba(79, 70, 229, 0.3)'
                                     }}
                                 >
                                     {isEquipped ? 'EQUIPPED' : 'EQUIP'}
@@ -143,11 +164,12 @@ const ShopPage = () => {
                                     }}
                                     disabled={!canAfford}
                                     style={{
-                                        width: '100%', padding: '12px', borderRadius: '10px',
-                                        background: canAfford ? '#FFD700' : '#333',
-                                        color: canAfford ? 'black' : '#888',
+                                        width: '100%', padding: '12px', borderRadius: '15px',
+                                        background: canAfford ? '#FFD700' : '#cbd5e0',
+                                        color: canAfford ? 'black' : '#fff',
                                         border: 'none', fontWeight: 'bold',
-                                        cursor: canAfford ? 'pointer' : 'not-allowed'
+                                        cursor: canAfford ? 'pointer' : 'not-allowed',
+                                        boxShadow: canAfford ? '0 4px 10px rgba(255, 215, 0, 0.4)' : 'none'
                                     }}
                                 >
                                     BUY {item.price > 0 ? `${item.price} 🪙` : 'FREE'}
