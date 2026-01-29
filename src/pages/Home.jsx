@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import './Home.css';
 import { useSquad } from '../context/SquadContext';
 import { usePocketBro } from '../context/PocketBroContext';
+import { useGamification } from '../context/GamificationContext';
 
 const Home = () => {
     const { squadScores } = useSquad();
     const { getMood } = usePocketBro();
+    const { getLevelInfo } = useGamification();
 
-    // Mock Player Data (V3 Foundation)
-    const playerLevel = 15;
-    const playerXP = 75; // %
-    const rank = "NEON RUNNER";
+    const { level, progress, totalXP } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0, totalXP: 0 };
+    const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
 
     // Mock Live Feed
     const [logs, setLogs] = useState([
@@ -67,11 +67,11 @@ const Home = () => {
                     {/* XP Bar */}
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px' }}>
-                            <span>LVL {playerLevel}</span>
-                            <span>{playerXP}/100 XP</span>
+                            <span>LVL {level}</span>
+                            <span>{Math.floor(progress)}% XP</span>
                         </div>
                         <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ width: `${playerXP}%`, height: '100%', background: 'linear-gradient(90deg, var(--neon-blue), var(--neon-pink))' }}></div>
+                            <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, var(--neon-blue), var(--neon-pink))' }}></div>
                         </div>
                     </div>
 

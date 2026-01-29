@@ -239,6 +239,26 @@ export const GamificationProvider = ({ children }) => {
         });
     };
 
+    // LEVEL SYSTEM
+    const getLevelInfo = () => {
+        // Base XP from Achievements (500 XP each)
+        const achievementXP = unlockedAchievements.length * 500;
+        // XP from Actions
+        const fishXP = (stats.fishCaught || 0) * 50;
+        const gamesXP = (stats.gamesPlayedCount || 0) * 100;
+
+        const totalXP = achievementXP + fishXP + gamesXP;
+
+        // Level Formula: Level N requires 1000 * N XP
+        // Level = Math.floor(totalXP / 1000) + 1
+        const level = Math.floor(totalXP / 1000) + 1;
+        const currentLevelXP = totalXP % 1000;
+        const nextLevelXP = 1000;
+        const progress = Math.min((currentLevelXP / nextLevelXP) * 100, 100);
+
+        return { level, xp: currentLevelXP, nextXP: nextLevelXP, progress, totalXP };
+    };
+
     return (
         <GamificationContext.Provider value={{
             stats,
@@ -251,7 +271,8 @@ export const GamificationProvider = ({ children }) => {
             claimQuest,
             shopState,
             buyItem,
-            equipItem
+            equipItem,
+            getLevelInfo
         }}>
             {children}
 
