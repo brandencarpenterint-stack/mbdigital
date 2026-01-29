@@ -62,10 +62,17 @@ const SubSlayer = () => {
     const { addCoins } = useGamification() || { addCoins: () => { } };
     const { playWin, playCollect } = useRetroSound();
 
+    // Reward History (Anti-Cheat)
+    const [rewardHistory, setRewardHistory] = useState(() => {
+        const saved = localStorage.getItem('subSlayerRewards');
+        return saved ? JSON.parse(saved) : {}; // { serviceId: timestamp }
+    });
+
     useEffect(() => {
         localStorage.setItem('subSlayerData', JSON.stringify(mySubs));
         localStorage.setItem('subSlayerKills', JSON.stringify(slainSubs));
-    }, [mySubs, slainSubs]);
+        localStorage.setItem('subSlayerRewards', JSON.stringify(rewardHistory));
+    }, [mySubs, slainSubs, rewardHistory]);
 
     const addSub = (sub) => {
         if (!mySubs.find(s => s.id === sub.id)) {
@@ -102,13 +109,31 @@ const SubSlayer = () => {
             alert(`No direct link for ${sub.name}. Check your bank statement or settings!`);
         }
 
-        // GAMIFICATION REWARD
-        const coinReward = Math.floor(sub.price * 100);
-        addCoins(coinReward);
-        playWin();
-        triggerConfetti();
-        // Delay alert slightly to allow confetti to start
-        setTimeout(() => alert(`⚔️ SUBSCRIPTION SLAIN! ⚔️\n\nTo reward your fiscal responsibility, you have been awarded:\n💰 ${coinReward} ARCADE COINS!`), 500);
+        // GAMIFICATION REWARD CHECK
+        const now = Date.now();
+        const COOLDOWN_DAYS = 150;
+        const COOLDOWN_MS = COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+        const lastReward = rewardHistory[sub.id];
+
+        if (lastReward && (now - lastReward) < COOLDOWN_MS) {
+            const daysLeft = Math.ceil((COOLDOWN_MS - (now - lastReward)) / (24 * 60 * 60 * 1000));
+            alert(`⚠️ REWARD DENIED ⚠️\n\nYou already claimed coins for ${sub.name}.\nCooldown active: ${daysLeft} days remaining.`);
+            // Still slay it, but no coins
+        } else {
+            // GRANT REWARD
+            const coinReward = Math.floor(sub.price * 100);
+            addCoins(coinReward);
+            playWin();
+            triggerConfetti();
+
+            // Record History
+            setRewardHistory(prev => ({
+                ...prev,
+                [sub.id]: now
+            }));
+
+            setTimeout(() => alert(`⚔️ SUBSCRIPTION SLAIN! ⚔️\n\nTo reward your fiscal responsibility, you have been awarded:\n💰 ${coinReward} ARCADE COINS!`), 500);
+        }
     };
 
     const restoreSub = (sub) => {
