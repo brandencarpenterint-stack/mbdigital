@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
-import ArcadeHero from '../components/ArcadeHero';
 
 const DailyZone = () => {
     const { dailyState, claimDailyLogin, claimQuest } = useGamification() || {};
@@ -197,8 +196,6 @@ const ArcadeHub = () => {
             boxSizing: 'border-box',
             paddingBottom: '120px' // Space for Dock
         }}>
-            <ArcadeHero />
-
             <h1 style={{
                 fontSize: 'clamp(2.5rem, 8vw, 4rem)', // Responsive Text
                 textShadow: '3px 3px #ff0055',
