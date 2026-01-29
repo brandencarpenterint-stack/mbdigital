@@ -491,149 +491,149 @@ const GalaxyDefender = () => {
                 ctx.fillStyle = 'white';
                 state.boss.flash--;
             }
-        }
-        if (bossImgRef.current && bossImgRef.current.complete) {
-            // Silly Boss Animations based on state.boss.type
-            ctx.save();
-            ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
 
-            // Bobbing effect
-            const bob = Math.sin(Date.now() / 200) * 10;
-            ctx.translate(0, bob);
+            if (bossImgRef.current && bossImgRef.current.complete) {
+                // Silly Boss Animations based on state.boss.type
+                ctx.save();
+                ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
 
-            // Rotate slightly
-            ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
+                // Bobbing effect
+                const bob = Math.sin(Date.now() / 200) * 10;
+                ctx.translate(0, bob);
 
-            ctx.drawImage(bossImgRef.current, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
-            ctx.restore();
-        } else {
-            // Fallback Emoji Boss
-            ctx.font = '80px Arial';
-            ctx.fillText('👹', state.boss.x + 10, state.boss.y + 80);
-        }
+                // Rotate slightly
+                ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
 
-        // Boss HP
-        const percent = state.boss.hp / BOSS_HP_MAX;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
-        ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
-        ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
-    }
+                ctx.drawImage(bossImgRef.current, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
+                ctx.restore();
+            } else {
+                // Fallback Emoji Boss
+                ctx.font = '80px Arial';
+                ctx.fillText('👹', state.boss.x + 10, state.boss.y + 80);
+            }
 
-    ctx.restore(); // Undo shake
-
-    if (gameActiveRef.current) {
-        state.animationId = requestAnimationFrame(gameLoop);
-    }
-};
-
-// Controls
-// Mobile Actions
-const moveLeft = () => {
-    if (!gameActiveRef.current) return;
-    if (gameState.current.lane > 0) gameState.current.lane--;
-};
-const moveRight = () => {
-    if (!gameActiveRef.current) return;
-    if (gameState.current.lane < LANES - 1) gameState.current.lane++;
-};
-const fire = () => {
-    if (!gameActiveRef.current) return;
-    const state = gameState.current;
-    const now = Date.now();
-    if (now - state.lastShotTime > 200) {
-        const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
-
-        // Double Shot Logic
-        if (state.weaponTimer > 0) {
-            state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
-            state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
-            state.weaponTimer--;
-        } else {
-            state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+            // Boss HP
+            const percent = state.boss.hp / BOSS_HP_MAX;
+            ctx.fillStyle = '#333';
+            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
+            ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
+            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
         }
 
-        state.lastShotTime = now;
-        playBeep();
-    }
-};
+        ctx.restore(); // Undo shake
 
-useEffect(() => {
-    const handleKeyDown = (e) => {
-        if (!gameActiveRef.current) return;
-        if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-            e.preventDefault();
+        if (gameActiveRef.current) {
+            state.animationId = requestAnimationFrame(gameLoop);
         }
-        if (e.key === 'ArrowLeft') moveLeft();
-        if (e.key === 'ArrowRight') moveRight();
-        if (e.key === ' ') fire();
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-}, []);
+    // Controls
+    // Mobile Actions
+    const moveLeft = () => {
+        if (!gameActiveRef.current) return;
+        if (gameState.current.lane > 0) gameState.current.lane--;
+    };
+    const moveRight = () => {
+        if (!gameActiveRef.current) return;
+        if (gameState.current.lane < LANES - 1) gameState.current.lane++;
+    };
+    const fire = () => {
+        if (!gameActiveRef.current) return;
+        const state = gameState.current;
+        const now = Date.now();
+        if (now - state.lastShotTime > 200) {
+            const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
 
-return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
+            // Double Shot Logic
+            if (state.weaponTimer > 0) {
+                state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+                state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+                state.weaponTimer--;
+            } else {
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+            }
 
-        {/* Header Removed for space */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
-            <div style={{ display: 'flex', gap: '5px' }}>
-                {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                    <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
-                ))}
+            state.lastShotTime = now;
+            playBeep();
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!gameActiveRef.current) return;
+            if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowLeft') moveLeft();
+            if (e.key === 'ArrowRight') moveRight();
+            if (e.key === ' ') fire();
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
+
+            {/* Header Removed for space */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    {Array.from({ length: MAX_LIVES }).map((_, i) => (
+                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
+                    ))}
+                </div>
+                <span>SCORE: {score}</span>
             </div>
-            <span>SCORE: {score}</span>
-        </div>
 
-        <div style={{ position: 'relative' }}>
-            <canvas
-                ref={canvasRef}
-                width={GAME_WIDTH}
-                height={GAME_HEIGHT}
-                style={{ border: '4px solid #00ccff', background: 'radial-gradient(circle, #001133 0%, #000000 100%)', borderRadius: '10px', boxShadow: '0 0 20px #00ccff40' }}
-            />
+            <div style={{ position: 'relative' }}>
+                <canvas
+                    ref={canvasRef}
+                    width={GAME_WIDTH}
+                    height={GAME_HEIGHT}
+                    style={{ border: '4px solid #00ccff', background: 'radial-gradient(circle, #001133 0%, #000000 100%)', borderRadius: '10px', boxShadow: '0 0 20px #00ccff40' }}
+                />
 
-            {!gameActive && !gameOver && !gameWon && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                    <p style={{ color: 'white', marginBottom: '10px' }}>Use <span style={{ fontWeight: 'bold' }}>ARROWS</span> to move.</p>
-                    <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#00ccff', border: 'none', borderRadius: '10px' }}>
-                        START MISSION
-                    </SquishyButton>
-                </div>
-            )}
+                {!gameActive && !gameOver && !gameWon && (
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                        <p style={{ color: 'white', marginBottom: '10px' }}>Use <span style={{ fontWeight: 'bold' }}>ARROWS</span> to move.</p>
+                        <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#00ccff', border: 'none', borderRadius: '10px' }}>
+                            START MISSION
+                        </SquishyButton>
+                    </div>
+                )}
 
-            {gameOver && (
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
-                    <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
-                    <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
-                    <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
-                </div>
-            )}
+                {gameOver && (
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
+                        <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
+                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
+                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                    </div>
+                )}
 
-            {gameWon && (
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <h2 style={{ fontSize: '3rem', color: '#00ffaa' }}>VICTORY!</h2>
-                    <p style={{ fontSize: '1.5rem', marginBottom: '10px', color: '#fff' }}>GALAXY SAVED</p>
-                    <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: 'gold', color: 'black', border: 'none', borderRadius: '5px' }}>Play Again</SquishyButton>
-                    <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
-                </div>
-            )}
-        </div>
-
-        {/* MOBILE CONTROLS */}
-        <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '10px' }}>
-                <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
-                <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
+                {gameWon && (
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <h2 style={{ fontSize: '3rem', color: '#00ffaa' }}>VICTORY!</h2>
+                        <p style={{ fontSize: '1.5rem', marginBottom: '10px', color: '#fff' }}>GALAXY SAVED</p>
+                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: 'gold', color: 'black', border: 'none', borderRadius: '5px' }}>Play Again</SquishyButton>
+                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                    </div>
+                )}
             </div>
-            <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
-        </div>
 
-        <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
-    </div>
-);
+            {/* MOBILE CONTROLS */}
+            <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
+                    <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
+                </div>
+                <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
+            </div>
+
+            <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
+        </div>
+    );
 };
 
 export default GalaxyDefender;
