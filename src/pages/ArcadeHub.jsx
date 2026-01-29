@@ -3,89 +3,6 @@ import { Link } from 'react-router-dom';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
 
-const DailyZone = () => {
-    const { dailyState, claimDailyLogin, claimQuest } = useGamification() || {};
-    // Safety check if context not ready
-    if (!dailyState) return null;
-
-    const { lastCheckIn, streak, quests } = dailyState;
-    const today = new Date().toISOString().split('T')[0];
-    const canCheckIn = lastCheckIn !== today;
-
-    return (
-        <div style={{
-            background: 'linear-gradient(135deg, #2a0845 0%, #6441a5 100%)',
-            borderRadius: '20px', padding: '20px',
-            marginBottom: '40px', maxWidth: '800px', margin: '0 auto 40px auto',
-            border: '2px solid #a64bf4', boxShadow: '0 0 20px rgba(166, 75, 244, 0.4)'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '20px' }}>
-                <div>
-                    <h2 style={{ margin: 0, color: '#fff', fontSize: '1.8rem' }}>📅 DAILY ZONE</h2>
-                    <p style={{ margin: 0, color: '#e0c3fc' }}>Streak: {streak} Days 🔥</p>
-                </div>
-                <button
-                    onClick={claimDailyLogin}
-                    disabled={!canCheckIn}
-                    style={{
-                        background: canCheckIn ? '#00FA9A' : '#555',
-                        color: canCheckIn ? '#000' : '#888',
-                        border: 'none', padding: '10px 25px', borderRadius: '50px',
-                        fontWeight: 'bold', fontSize: '1.1rem', cursor: canCheckIn ? 'pointer' : 'default',
-                        transform: canCheckIn ? 'scale(1.05)' : 'scale(1)',
-                        transition: '0.2s'
-                    }}
-                >
-                    {canCheckIn ? 'CLAIM 100 🪙' : 'CHECKED IN ✅'}
-                </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                {quests.map(q => {
-                    const isDone = q.progress >= q.target;
-                    return (
-                        <div key={q.id} style={{
-                            background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '15px',
-                            border: q.claimed ? '1px solid #00FA9A' : '1px solid rgba(255,255,255,0.1)',
-                            opacity: q.claimed ? 0.6 : 1
-                        }}>
-                            <div style={{ fontSize: '0.9rem', color: '#ccc', marginBottom: '5px' }}>{q.desc}</div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <span style={{ fontWeight: 'bold', color: 'gold' }}>+{q.reward} 🪙</span>
-                                <span style={{ fontSize: '0.8rem', color: '#fff' }}>{Math.min(q.progress, q.target)}/{q.target}</span>
-                            </div>
-
-                            {/* Progress Bar */}
-                            <div style={{ width: '100%', height: '6px', background: '#333', borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
-                                <div style={{
-                                    width: `${Math.min((q.progress / q.target) * 100, 100)}%`,
-                                    height: '100%',
-                                    background: isDone ? '#00FA9A' : '#a64bf4',
-                                    transition: 'width 0.5s'
-                                }}></div>
-                            </div>
-
-                            <button
-                                onClick={() => claimQuest(q.id)}
-                                disabled={!isDone || q.claimed}
-                                style={{
-                                    width: '100%', padding: '5px',
-                                    background: q.claimed ? 'transparent' : (isDone ? '#00FA9A' : '#333'),
-                                    color: q.claimed ? '#00FA9A' : (isDone ? 'black' : '#888'),
-                                    border: q.claimed ? '1px solid #00FA9A' : 'none',
-                                    borderRadius: '5px', fontWeight: 'bold', cursor: (isDone && !q.claimed) ? 'pointer' : 'default'
-                                }}
-                            >
-                                {q.claimed ? 'COMPLETED' : (isDone ? 'CLAIM' : 'IN PROGRESS')}
-                            </button>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
 const games = [
     {
         id: 'slots',
@@ -205,8 +122,8 @@ const ArcadeHub = () => {
             </h1>
             <p style={{ fontSize: 'clamp(1rem, 4vw, 1.2rem)', marginBottom: '40px' }}>Select a game to start playing!</p>
 
-            {/* DAILY ZONE */}
-            <DailyZone />
+            {/* DAILY ZONE MOVED TO HEADER */}
+            {/* <DailyZone /> */}
 
             <div style={{ marginBottom: '30px' }}>
                 <Link to="/shop" style={{
