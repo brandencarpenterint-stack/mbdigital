@@ -6,8 +6,8 @@ import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
 import { LeaderboardService } from '../../services/LeaderboardService';
 
-const GAME_WIDTH = 480; // Reduced by 20%
-const GAME_HEIGHT = 320;
+const GAME_WIDTH = 480;
+const GAME_HEIGHT = 640; // Expanded to Portrait (100% taller)
 const LANES = 5;
 const LANE_WIDTH = GAME_WIDTH / LANES; // 96px
 const PLAYER_SIZE = 50; // Scaled down
@@ -609,10 +609,16 @@ const GalaxyDefender = () => {
     }, []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#00ccff' }}>
+        <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '10px', color: '#00ccff', minHeight: '100vh', touchAction: 'none'
+        }}>
 
-            {/* Header Removed for space */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '480px', marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold' }}>
+            <div style={{
+                display: 'flex', justifyContent: 'space-between',
+                width: '100%', maxWidth: '480px',
+                marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold'
+            }}>
                 <div style={{ display: 'flex', gap: '5px' }}>
                     {Array.from({ length: MAX_LIVES }).map((_, i) => (
                         <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
@@ -621,12 +627,17 @@ const GalaxyDefender = () => {
                 <span>SCORE: {score}</span>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '480px' }}>
                 <canvas
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
-                    style={{ border: '4px solid #00ccff', background: 'radial-gradient(circle, #001133 0%, #000000 100%)', borderRadius: '10px', boxShadow: '0 0 20px #00ccff40' }}
+                    style={{
+                        width: '100%', height: 'auto',
+                        border: '4px solid #00ccff',
+                        background: 'radial-gradient(circle, #001133 0%, #000000 100%)',
+                        borderRadius: '10px', boxShadow: '0 0 20px #00ccff40'
+                    }}
                 />
 
                 {!gameActive && !gameOver && !gameWon && (
@@ -658,7 +669,7 @@ const GalaxyDefender = () => {
             </div>
 
             {/* MOBILE CONTROLS */}
-            <div style={{ marginTop: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+            <div style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%', paddingBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
                     <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
