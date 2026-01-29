@@ -7,13 +7,13 @@ import SquishyButton from '../../components/SquishyButton';
 
 // SYMBOLS CONFIG
 const SYMBOLS = [
-    { id: 'cat', img: '/assets/merchboy_cat.png', value: 50, weight: 3 },
-    { id: 'bunny', img: '/assets/merchboy_bunny.png', value: 50, weight: 3 },
-    { id: 'face', img: '/assets/merchboy_face.png', value: 20, weight: 4 },
-    { id: 'money', img: '/assets/merchboy_money.png', value: 100, weight: 1 }, // Jackpot
-    { id: 'seven', char: '7️⃣', value: 200, weight: 1 }, // Super Jackpot
-    { id: 'cherry', char: '🍒', value: 10, weight: 5 },
-    { id: 'grape', char: '🍇', value: 10, weight: 5 }
+    { id: 'cat', img: '/assets/merchboy_cat.png', value: 25, weight: 3 },
+    { id: 'bunny', img: '/assets/merchboy_bunny.png', value: 25, weight: 3 },
+    { id: 'face', img: '/assets/merchboy_face.png', value: 10, weight: 4 },
+    { id: 'money', img: '/assets/merchboy_money.png', value: 50, weight: 1 }, // Jackpot
+    { id: 'seven', char: '7️⃣', value: 100, weight: 1 }, // Super Jackpot
+    { id: 'cherry', char: '🍒', value: 5, weight: 5 },
+    { id: 'grape', char: '🍇', value: 5, weight: 5 }
 ];
 
 const getRandomSymbol = () => {
@@ -28,7 +28,7 @@ const getRandomSymbol = () => {
 
 const ROWS = 3;
 const COLS = 3;
-const SPIN_COST = 25; // Increased cost for 3 rows
+const SPIN_COST = 15; // Decreased cost
 
 const CosmicSlots = () => {
     const { coins, incrementStat } = useGamification() || { coins: 1000, incrementStat: () => { } };
@@ -163,7 +163,7 @@ const CosmicSlots = () => {
                 <h1 style={{ fontFamily: '"Press Start 2P", display', color: '#ffd700', fontSize: '2.5rem', textShadow: '0 0 20px #ff00ff', margin: 0 }}>
                     COSMIC SLOTS
                 </h1>
-                <p style={{ color: '#aaa', marginTop: '10px' }}>SPIN 25 🪙 FOR 8-LINE ACTION!</p>
+                <p style={{ color: '#aaa', marginTop: '10px' }}>SPIN 15 🪙 FOR 8-LINE ACTION!</p>
             </div>
 
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
