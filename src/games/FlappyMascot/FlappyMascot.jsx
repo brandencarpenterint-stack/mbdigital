@@ -14,7 +14,7 @@ const PIPE_SPACING = 200;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [
-    { id: 'flappy_boy', type: 'image', content: '/assets/boy-logo.png', name: 'MerchBoy' },
+    { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'MerchBoy' },
     { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
     { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
     { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
@@ -79,7 +79,7 @@ const FlappyMascot = () => {
     useEffect(() => {
         // Preload images
         const img1 = new Image();
-        img1.src = '/assets/boy-logo.png'; // Updated to standarized logo
+        img1.src = '/assets/merchboy_face.png';
         birdImgRef.current = img1;
 
         const img2 = new Image();
@@ -217,26 +217,25 @@ const FlappyMascot = () => {
         const rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (state.velocity * 0.1)));
         ctx.rotate(rotation);
 
-        // 1. Draw Wings (BACK) - Animated
-        // Flap state: map velocity (-10 to +10) to wing angle
-        const wingFlap = Math.max(-0.5, Math.min(0.5, state.velocity * 0.05));
-
-        ctx.fillStyle = '#fff';
-        ctx.strokeStyle = '#ccc';
-        ctx.lineWidth = 2;
+        // 1. Draw Wings (BACK) - Animated Cute Wing
+        // Flutter effect: Fast sine wave
+        const flutter = Math.sin(Date.now() / 50) * 0.5; // Fast flutter
+        const wingAngle = (state.velocity * 0.1) + flutter;
 
         ctx.save();
-        ctx.translate(-15, 5); // Back placement
-        ctx.rotate(wingFlap);
+        ctx.translate(-12, 5); // Back/Low position
+        ctx.rotate(wingAngle);
 
-        // Wing Shape (Feathered)
+        // Cute Small Wing (Simple Oval)
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#000'; // Black outline for cartoon look
+        ctx.lineWidth = 2;
+
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(-20, -10, -30, 5); // Upper swoop
-        ctx.quadraticCurveTo(-20, 10, -10, 5); // Lower feather
-        ctx.quadraticCurveTo(-5, 10, 0, 0); // Connect back
+        ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
+
         ctx.restore();
 
         // 2. Draw Legs (BACK)
