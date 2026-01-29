@@ -15,6 +15,10 @@ const BIRD_SIZE = 40;
 
 const CHARACTERS = [
     { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'MerchBoy' },
+    { id: 'flappy_face1', type: 'image', content: '/assets/neon_brick/ball1.png', name: 'Face 1' },
+    { id: 'flappy_face2', type: 'image', content: '/assets/neon_brick/ball2.png', name: 'Face 2' },
+    { id: 'flappy_face3', type: 'image', content: '/assets/neon_brick/ball3.png', name: 'Face 3' },
+    { id: 'flappy_face4', type: 'image', content: '/assets/neon_brick/ball4.png', name: 'Face 4' },
     { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
     { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
     { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
@@ -95,6 +99,13 @@ const FlappyMascot = () => {
         const img3 = new Image(); img3.src = '/assets/skins/face_money.png'; moneyImgRef.current = img3;
         const img4 = new Image(); img4.src = '/assets/skins/face_bear.png'; bearImgRef.current = img4;
         const img5 = new Image(); img5.src = '/assets/skins/face_bunny.png'; bunnyImgRef.current = img5;
+
+        // Preload User Faces
+        for (let i = 1; i <= 4; i++) {
+            const img = new Image();
+            img.src = `/assets/neon_brick/ball${i}.png`;
+            // Store in window cache or dedicated ref if needed, but browser cache handles repeats well
+        }
 
         // Listen for coin updates
         const handleStorage = () => {
@@ -227,22 +238,23 @@ const FlappyMascot = () => {
         const rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (state.velocity * 0.1)));
         ctx.rotate(rotation);
 
-        // 1. Draw Wings (BACK) - Animated Cute Wing
+        // 1. Draw Wing (BACK) - Pixel Style
         // Flutter effect: Fast sine wave
         const flutter = Math.sin(Date.now() / 50) * 0.5; // Fast flutter
         const wingAngle = (state.velocity * 0.1) + flutter;
 
         ctx.save();
-        ctx.translate(-22, 5); // Back/Low position (Shifted further back)
+        ctx.translate(-25, 10); // Shifted Back and Down to uncover face
         ctx.rotate(wingAngle);
 
-        // Cute Small Wing (Simple Oval)
         ctx.fillStyle = '#fff';
-        ctx.strokeStyle = '#000'; // Black outline for cartoon look
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
 
+        // Pixel Wing Shape (Simple Rectangle with rounded cap?)
+        // Let's draw an oval but simplified
         ctx.beginPath();
-        ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
@@ -272,6 +284,15 @@ const FlappyMascot = () => {
                 // Use source dimensions to prevent squashing if not square?
                 // For now, simple draw.
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
+            } else if (charData.id.startsWith('flappy_face')) {
+                // Dynamic Face Load for ball1-4
+                const num = charData.id.replace('flappy_face', '');
+                // Quick hack: Create image on fly if not ref'd? 
+                // Performance warning. Ideally use Ref map.
+                // But since we preloaded, cache should be hot.
+                const img = new Image();
+                img.src = charData.content;
+                ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
             } else {
                 ctx.fillStyle = 'white';
                 ctx.fillRect(-BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
@@ -285,9 +306,9 @@ const FlappyMascot = () => {
             ctx.fillText(charData.content, 0, 2);
         }
 
-        // 4. Draw Wing (FRONT - Flapping)
+        // 4. Draw Wing (FRONT)
         ctx.save();
-        ctx.translate(-10, 8); // Front/Low position
+        ctx.translate(-25, 10); // Matched Back Wing Position
         ctx.rotate(wingAngle);
 
         ctx.fillStyle = '#fff';
@@ -295,7 +316,7 @@ const FlappyMascot = () => {
         ctx.lineWidth = 2;
 
         ctx.beginPath();
-        ctx.ellipse(0, 0, 12, 7, 0, 0, Math.PI * 2); // Slightly larger front wing
+        ctx.ellipse(0, 0, 16, 11, 0, 0, Math.PI * 2); // Slightly larger
         ctx.fill();
         ctx.stroke();
 
@@ -315,8 +336,15 @@ const FlappyMascot = () => {
         state.animationId = requestAnimationFrame(gameLoop);
     };
 
+    const lastJumpRef = useRef(0);
     const handleInput = () => {
         if (!gameActiveRef.current) return;
+
+        // Debounce (Mobile double-tap fix)
+        const now = Date.now();
+        if (now - lastJumpRef.current < 150) return;
+        lastJumpRef.current = now;
+
         gameState.current.velocity = JUMP_STRENGTH;
         playJump();
     };
@@ -376,7 +404,9 @@ const FlappyMascot = () => {
                 <p style={{ color: '#fff', textAlign: 'center', marginBottom: '5px' }}>SELECT PILOT</p>
                 <div style={{ display: 'flex', gap: '10px', padding: '0 10px' }}>
                     {CHARACTERS.map(char => {
-                        const isUnlocked = shopState?.unlocked?.includes(char.id) || char.id === 'flappy_boy';
+                        // Unlocked if in Shop OR one of the default faces
+                        const isDefault = ['flappy_boy', 'flappy_face1', 'flappy_face2', 'flappy_face3', 'flappy_face4'].includes(char.id);
+                        const isUnlocked = isDefault || shopState?.unlocked?.includes(char.id);
                         const isSelected = selectedId === char.id;
 
                         if (!isUnlocked) return null; // Hide locked
