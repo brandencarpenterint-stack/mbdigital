@@ -1110,7 +1110,8 @@ const CrazyFishing = () => {
 
         // --- GAMIFICATION INTEGRATION ---
         incrementStat('fishCaught', 1);
-        incrementStat('gamesPlayed', 'fishing'); // Ensure 'fishing' is added to played list
+        incrementStat('gamesPlayedCount', 1); // Track total count
+        updateStat('gamesPlayed', 'fishing'); // Add to unique list
 
         if (fish.legendary) {
             incrementStat('legendariesCaught', 1);

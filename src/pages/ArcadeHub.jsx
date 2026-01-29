@@ -94,7 +94,8 @@ const games = [
         desc: 'Infinite Glitch Runner',
         gradient: 'linear-gradient(135deg, #FF0080 0%, #FF8C00 100%)',
         icon: '🏃',
-        colSpan: 2
+        colSpan: 2,
+        leaderboardId: 'face_runner'
     },
     {
         id: 'fishing',
@@ -102,7 +103,8 @@ const games = [
         desc: 'Catch the Mer-Logo!',
         gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
         icon: '🎣',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'crazy_fishing'
     },
     {
         id: 'whack',
@@ -110,7 +112,8 @@ const games = [
         desc: 'Bonk the moles!',
         gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)',
         icon: '🔨',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'whack_a_mole'
     },
     {
         id: 'snake',
@@ -118,7 +121,8 @@ const games = [
         desc: 'Classic vibes.',
         gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
         icon: '🐍',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'neon_snake'
     },
     {
         id: 'galaxy',
@@ -126,7 +130,8 @@ const games = [
         desc: 'Pew pew pew!',
         gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
         icon: '🚀',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'galaxy_defender'
     },
     {
         id: 'brick',
@@ -134,7 +139,8 @@ const games = [
         desc: 'Smash pixel bricks.',
         gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
         icon: '🧱',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'neon_bricks'
     },
     {
         id: 'memory',
@@ -142,7 +148,8 @@ const games = [
         desc: 'Train your brain.',
         gradient: 'linear-gradient(135deg, #f79d00 0%, #64f38c 100%)',
         icon: '🧠',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'memory_match'
     },
     {
         id: 'flappy',
@@ -150,7 +157,8 @@ const games = [
         desc: 'Don\'t crash.',
         gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
         icon: '🦅',
-        colSpan: 1
+        colSpan: 1,
+        leaderboardId: 'flappy_mascot'
     }
 ];
 
@@ -170,7 +178,7 @@ const getHighScore = (id) => {
 };
 
 const ArcadeHub = () => {
-    const [selectedLeaderboard, setSelectedLeaderboard] = useState('fishing');
+    const [selectedLeaderboard, setSelectedLeaderboard] = useState('crazy_fishing');
 
     return (
         <div className="page-enter" style={{
@@ -282,11 +290,11 @@ const ArcadeHub = () => {
                     {games.map(g => (
                         <button
                             key={g.id}
-                            onClick={() => setSelectedLeaderboard(g.id)}
+                            onClick={() => setSelectedLeaderboard(g.leaderboardId)}
                             style={{
-                                background: selectedLeaderboard === g.id ? g.color : '#333',
-                                color: selectedLeaderboard === g.id ? 'black' : 'white',
-                                border: 'none',
+                                background: selectedLeaderboard === g.leaderboardId ? 'white' : 'rgba(255,255,255,0.1)',
+                                color: selectedLeaderboard === g.leaderboardId ? 'black' : 'white',
+                                border: selectedLeaderboard === g.leaderboardId ? `2px solid #FFD700` : '1px solid #333',
                                 padding: '8px 15px',
                                 borderRadius: '20px',
                                 cursor: 'pointer',

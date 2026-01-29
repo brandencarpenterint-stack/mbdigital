@@ -10,6 +10,26 @@ const MOCK_DATA = {
     'galaxy_defender': [
         { player: 'StarLord', score: 2500, date: Date.now() },
         { player: 'AlienHunter', score: 1800, date: Date.now() - 50000 },
+    ],
+    'face_runner': [
+        { player: 'GlitchKing', score: 9999, date: Date.now() },
+        { player: 'FacePalm', score: 500, date: Date.now() - 20000 },
+    ],
+    'whack_a_mole': [
+        { player: 'BonkMaster', score: 42, date: Date.now() },
+    ],
+    'neon_snake': [
+        { player: 'Snek', score: 150, date: Date.now() },
+        { player: 'LongBoi', score: 80, date: Date.now() - 60000 },
+    ],
+    'neon_bricks': [
+        { player: 'Breaker', score: 3000, date: Date.now() },
+    ],
+    'memory_match': [
+        { player: 'BigBrain', score: 1000, date: Date.now() },
+    ],
+    'flappy_mascot': [
+        { player: 'BirdUp', score: 50, date: Date.now() },
     ]
 };
 
