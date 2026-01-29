@@ -20,7 +20,6 @@ const BentoGrid = ({ children }) => (
 );
 
 const Home = () => {
-    const [showDaily, setShowDaily] = React.useState(false);
     const { squadScores, userSquad } = useSquad();
     const { stats, feed, getMood } = usePocketBro();
 
@@ -30,9 +29,7 @@ const Home = () => {
 
     return (
         <div className="home-container" style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', paddingBottom: '100px' }}>
-            {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
-
-            {/* HEADER */}
+            {/* HEADER / FEED TITLE */}
             <header style={{ textAlign: 'center', marginBottom: '40px', paddingTop: '20px' }}>
                 <div className="mascot-float" style={{ marginBottom: '20px' }}>
                     <img src="/assets/boy_face.png" alt="Merchboy" style={{ width: '120px', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(100, 100, 255, 0.3))' }} />
@@ -42,68 +39,46 @@ const Home = () => {
             </header>
 
             <BentoGrid>
-                {/* 1. POCKET BRO (Tall Card) */}
-                <div className="bento-card" style={{ gridRow: 'span 2', background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px' }}>
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ background: 'rgba(255,255,255,0.5)', padding: '5px 12px', borderRadius: '15px', fontSize: '0.8rem', color: '#006064', fontWeight: 'bold' }}>
-                                LIVE STATUS
-                            </span>
-                        </div>
-                        <div style={{ fontSize: '5rem', textAlign: 'center', margin: '40px 0', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))', animation: 'float 3s ease-in-out infinite' }}>
-                            {getMood()}
-                        </div>
-                        <h2 style={{ color: '#0284c7', margin: 0, textAlign: 'center' }}>{stats.stage || 'EGG'}</h2>
-                        <div style={{ textAlign: 'center', color: '#0ea5e9', fontWeight: 'bold', opacity: 0.8 }}>
-                            Lvl {Math.floor(stats.xp / 100)}
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gap: '10px', marginTop: '20px' }}>
-                        <button onClick={feed} className="squishy-btn" style={{ background: '#0ea5e9', color: 'white', border: 'none', padding: '15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '1rem', boxShadow: '0 4px 0 #0284c7' }}>
-                            🍗 FEED
-                        </button>
-                        <Link to="/pocketbro" className="squishy-btn" style={{ background: 'white', color: '#0284c7', textDecoration: 'none', padding: '15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '1rem', textAlign: 'center', boxShadow: '0 4px 0 #e0f2fe' }}>
-                            VISIT
-                        </Link>
-                    </div>
-                </div>
-
-                {/* 2. DAILY DROP (Wide) */}
-                <div className="bento-card" onClick={() => setShowDaily(true)} style={{
-                    background: 'linear-gradient(135deg, #fefce8 0%, #fef08a 100%)',
-                    cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px'
-                }}>
-                    <div>
-                        <h3 style={{ margin: 0, color: '#854d0e', fontSize: '1.5rem' }}>Daily Stash</h3>
-                        <p style={{ margin: 0, color: '#a16207' }}>Tap to claim reward</p>
-                    </div>
-                    <div style={{ fontSize: '3rem', animation: 'wiggle 1s ease-in-out infinite' }}>🎁</div>
-                </div>
-
-                {/* 3. FEATURED GAME (Wide) */}
+                {/* 1. FEATURED GAME (Her0) */}
                 <div className="bento-card" style={{
+                    gridColumn: '1 / -1', // Full width
                     background: '#1a202c',
                     color: 'white',
                     overflow: 'hidden',
                     position: 'relative',
-                    minHeight: '200px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '30px'
+                    minHeight: '280px',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px'
                 }}>
                     <div style={{ position: 'relative', zIndex: 10 }}>
-                        <span style={{ color: '#f687b3', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.8rem' }}>FEATURED</span>
-                        <h2 style={{ fontSize: '2.5rem', margin: '5px 0', lineHeight: 1, background: 'linear-gradient(to right, #f687b3, #b794f4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        <span style={{ color: '#f687b3', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.9rem' }}>FEATURED GAME</span>
+                        <h2 style={{ fontSize: '3rem', margin: '5px 0', lineHeight: 1, background: 'linear-gradient(to right, #f687b3, #b794f4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                             FACE RUNNER
                         </h2>
-                        <Link to="/arcade/face-runner" style={{ display: 'inline-block', marginTop: '15px', background: 'white', color: 'black', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
+                        <p style={{ color: '#a0aec0', maxWidth: '60%', margin: '10px 0 20px 0' }}>Infinite runner. Infinite glory.</p>
+                        <Link to="/arcade/face-runner" style={{ display: 'inline-block', background: 'white', color: 'black', padding: '12px 30px', borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', boxShadow: '0 0 20px rgba(255,255,255,0.3)' }}>
                             PLAY NOW →
                         </Link>
                     </div>
-                    <img src="/assets/arcade_cabinet.png" style={{ position: 'absolute', right: '-20px', bottom: '-40px', height: '240px', opacity: 0.8, transform: 'rotate(-10deg)' }} />
+                    <img src="/assets/arcade_cabinet.png" style={{ position: 'absolute', right: '-40px', bottom: '-40px', height: '350px', opacity: 0.9, transform: 'rotate(-10deg) scale(1.1)' }} />
                 </div>
 
-                {/* 4. SHOP & RALLY (Split) */}
+                {/* 2. BEAT LAB (Sub-Hero) */}
+                <Link to="/beatlab" className="bento-card" style={{
+                    textDecoration: 'none',
+                    background: 'linear-gradient(135deg, #0BC5EA 0%, #00f2ff 100%)',
+                    color: 'white',
+                    padding: '30px',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    minHeight: '200px'
+                }}>
+                    <div>
+                        <div style={{ background: 'rgba(0,0,0,0.2)', width: 'fit-content', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>CREATIVE</div>
+                        <h2 style={{ fontSize: '2rem', margin: '10px 0 0 0' }}>BEAT LAB</h2>
+                    </div>
+                    <div style={{ fontSize: '4rem', alignSelf: 'flex-end', opacity: 0.8 }}>🎹</div>
+                </Link>
+
+                {/* 3. SHOP & RALLY (Split) */}
                 <div className="bento-card" style={{ background: 'white', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                         <div style={{ background: '#edf2f7', padding: '10px', borderRadius: '50%', fontSize: '1.5rem' }}>👕</div>

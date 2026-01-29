@@ -5,11 +5,13 @@ import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
+import DailyStash from './DailyStash';
 import './Layout.css';
 
 const Layout = () => {
     const location = useLocation();
     const [showProfile, setShowProfile] = useState(false);
+    const [showDaily, setShowDaily] = useState(false);
     const [coins, setCoins] = useState(0);
     const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
     const { soundEnabled, toggleSound } = useSettings();
@@ -67,6 +69,16 @@ const Layout = () => {
                         <div style={{ background: '#333', padding: '5px 12px', borderRadius: '20px', fontSize: '0.9rem', color: 'gold', fontWeight: 'bold' }}>
                             🪙 {coins.toLocaleString()}
                         </div>
+                        <button
+                            onClick={() => setShowDaily(true)}
+                            style={{
+                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                fontSize: '1.5rem', padding: '0',
+                                animation: 'wiggle 2s infinite ease-in-out'
+                            }}
+                        >
+                            🎁
+                        </button>
                         <button
                             onClick={toggleSound}
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0' }}
@@ -182,6 +194,7 @@ const Layout = () => {
             )}
 
             {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+            {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
             <SquadSelector />
         </div>
     );
