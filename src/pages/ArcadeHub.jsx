@@ -169,7 +169,7 @@ const ArcadeHub = () => {
                 width: '100%'
             }}>
                 {games.map(game => (
-                    <Link to={`/ arcade / ${game.id} `} key={game.id} className="bento-card game-card-hover" style={{
+                    <Link to={`/arcade/${game.id}`} key={game.id} className="bento-card game-card-hover" style={{
                         background: game.gradient,
                         padding: '25px',
                         textDecoration: 'none',

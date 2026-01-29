@@ -17,7 +17,8 @@ const FaceRunner = () => {
     const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
     const [score, setScore] = useState(0);
     const [selectedFace, setSelectedFace] = useState('face_money'); // default
-    const [speed, setSpeed] = useState(20);
+    // Using Ref for speed to avoid closure staleness in gameLoop
+    const speedRef = useRef(20);
 
     // Refs
     const playerRef = useRef({ x: 0, y: 0, tilt: 0, squash: 1 });
@@ -42,7 +43,7 @@ const FaceRunner = () => {
     const startGame = () => {
         setGameState('PLAYING');
         setScore(0);
-        setSpeed(20);
+        speedRef.current = 20;
         scoreRef.current = 0;
         playerRef.current = { x: 0, y: 0, tilt: 0, squash: 1 };
         obstaclesRef.current = [];
@@ -82,13 +83,14 @@ const FaceRunner = () => {
         // Move Obstacles
         for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
             const obs = obstaclesRef.current[i];
-            obs.z -= speed;
+            obs.z -= speedRef.current;
 
             if (obs.z <= 0) {
                 obstaclesRef.current.splice(i, 1);
                 scoreRef.current += 10;
                 setScore(scoreRef.current);
-                setSpeed(prev => Math.min(prev + 0.1, 80)); // Max Speed
+                // Increase Speed cap at 80
+                speedRef.current = Math.min(speedRef.current + 0.1, 80);
             }
         }
 
@@ -103,7 +105,7 @@ const FaceRunner = () => {
         ctx.beginPath();
         for (let i = 0; i < 20; i++) {
             // Concentric Lines
-            const z = (performance.now() * speed * 0.1 + i * 200) % 2000;
+            const z = (performance.now() * speedRef.current * 0.1 + i * 200) % 2000;
             const s = 400 / (z + 1);
             if (s > 0) {
                 ctx.rect(cx - width * s, cy - height * s, width * s * 2, height * s * 2);
