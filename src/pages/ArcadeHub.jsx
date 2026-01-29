@@ -89,6 +89,15 @@ const DailyZone = () => {
 
 const games = [
     {
+        id: 'slots',
+        title: 'COSMIC SLOTS',
+        desc: 'Spin to WIN BIG!',
+        gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', // Gold
+        icon: '🎰',
+        colSpan: 2, // Highlight it!
+        leaderboardId: 'cosmic_slots'
+    },
+    {
         id: 'face-runner',
         title: 'FACE RUNNER',
         desc: 'Infinite Glitch Runner',
