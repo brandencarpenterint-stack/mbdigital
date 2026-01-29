@@ -23,6 +23,22 @@ const Layout = () => {
     const [clickCount, setClickCount] = useState(0);
     const [glitchMode, setGlitchMode] = useState(false);
 
+    // Header Face Cycle
+    const [faceIndex, setFaceIndex] = useState(0);
+    const FACES = [
+        '/assets/merchboy_money.png', // Money Eyes
+        '/assets/merchboy_cat.png',   // Bear/Cat
+        '/assets/merchboy_bunny.png', // Bunny
+        '/assets/merchboy_face.png'   // Standard
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFaceIndex(prev => (prev + 1) % FACES.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
     const isFishingGame = location.pathname.includes('/crazy-fishing') ||
         location.pathname.includes('/neon-brick-breaker') ||
         location.pathname.includes('/galaxy-defender');
@@ -68,11 +84,12 @@ const Layout = () => {
                                 position: 'relative'
                             }}>
                                 <img
-                                    src="/assets/merchboy_face.png"
+                                    src={FACES[faceIndex]}
                                     alt="Face"
                                     style={{
                                         width: '100%', height: '100%', objectFit: 'contain',
-                                        animation: 'spinFace 10s linear infinite'
+                                        transition: 'transform 0.5s',
+                                        filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.5))'
                                     }}
                                 />
                             </div>
