@@ -89,52 +89,68 @@ const DailyZone = () => {
 
 const games = [
     {
-        id: 'snake',
-        title: 'NEON SNAKE',
-        description: 'Eat the bits, grow longer, don\'t crash!',
-        color: '#00ffaa'
-    },
-    {
-        id: 'whack',
-        title: 'WHACK-A-MOLE',
-        description: 'Bonk the moles before they hide!',
-        color: '#ff0055'
-    },
-    {
-        id: 'memory',
-        title: 'MEMORY MATCH',
-        description: 'Find the matching pairs!',
-        color: '#ffff00'
-    },
-    {
-        id: 'galaxy',
-        title: 'GALAXY DEFENDER',
-        description: 'Blaken aliens with your ship!',
-        color: '#00ccff'
-    },
-    {
-        id: 'brick',
-        title: 'NEON BRICKS',
-        description: 'Smash pixel bricks!',
-        color: '#cc00ff'
-    },
-    {
-        id: 'flappy',
-        title: 'FLAPPY MASCOT',
-        description: 'Tap to fly!',
-        color: '#ff9900'
+        id: 'face-runner',
+        title: 'FACE RUNNER',
+        desc: 'Infinite Glitch Runner',
+        gradient: 'linear-gradient(135deg, #FF0080 0%, #FF8C00 100%)',
+        icon: '🏃',
+        colSpan: 2
     },
     {
         id: 'fishing',
         title: 'CRAZY FISHING',
-        description: 'Catch the Mer-Logo!',
-        color: '#00ccff'
+        desc: 'Catch the Mer-Logo!',
+        gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
+        icon: '🎣',
+        colSpan: 1
     },
     {
-        id: 'face-runner',
-        title: 'FACE RUNNER',
-        description: 'Infinite Glitch Runner!',
-        color: '#ff0055'
+        id: 'whack',
+        title: 'WHACK-A-MOLE',
+        desc: 'Bonk the moles!',
+        gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)',
+        icon: '🔨',
+        colSpan: 1
+    },
+    {
+        id: 'snake',
+        title: 'NEON SNAKE',
+        desc: 'Classic vibes.',
+        gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+        icon: '🐍',
+        colSpan: 1
+    },
+    {
+        id: 'galaxy',
+        title: 'GALAXY DEFENDER',
+        desc: 'Pew pew pew!',
+        gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
+        icon: '🚀',
+        colSpan: 1
+    },
+    {
+        id: 'brick',
+        title: 'NEON BRICKS',
+        desc: 'Smash pixel bricks.',
+        gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
+        icon: '🧱',
+        colSpan: 1
+    },
+    {
+        id: 'memory',
+        title: 'MEMORY MATCH',
+        desc: 'Train your brain.',
+        gradient: 'linear-gradient(135deg, #f79d00 0%, #64f38c 100%)',
+        icon: '🧠',
+        colSpan: 1
+    },
+    {
+        id: 'flappy',
+        title: 'FLAPPY MASCOT',
+        desc: 'Don\'t crash.',
+        gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
+        icon: '🦅',
+        colSpan: 1
     }
 ];
 
@@ -162,9 +178,7 @@ const ArcadeHub = () => {
             padding: '20px',
             width: '100%',
             boxSizing: 'border-box',
-            background: 'linear-gradient(to bottom, #050510, #1a0b2e)',
-            minHeight: '100vh',
-            color: 'white'
+            paddingBottom: '120px' // Space for Dock
         }}>
             <ArcadeHero />
 
@@ -191,9 +205,29 @@ const ArcadeHub = () => {
                 </Link>
             </div>
 
+            {/* Pocket Bro Apartment (Top Feature) */}
+            <div className="bento-card" style={{
+                background: 'linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%)',
+                padding: '30px',
+                marginBottom: '40px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                border: '4px solid #fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+            }}>
+                <h2 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: '#006064' }}>POCKET BRO'S ROOM</h2>
+                <p style={{ color: '#555', marginBottom: '20px' }}>Your digital companion lives here.</p>
+                <Link to="/pocketbro" className="squishy-btn" style={{
+                    background: '#0ea5e9', color: 'white', padding: '15px 40px',
+                    borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.2rem',
+                    boxShadow: '0 5px 15px rgba(14, 165, 233, 0.4)'
+                }}>
+                    ENTER ROOM 🚪
+                </Link>
+            </div>
+
+            {/* BENTO GRID GAMES */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // Lower min width for smaller phones
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                 gap: '20px',
                 padding: '10px',
                 maxWidth: '1200px',
@@ -201,61 +235,32 @@ const ArcadeHub = () => {
                 width: '100%'
             }}>
                 {games.map(game => (
-                    <div key={game.id} style={{
-                        background: '#0f0f1b',
-                        border: `4px solid ${game.color}`,
-                        borderRadius: '15px',
-                        padding: '20px',
-                        boxShadow: `0 0 20px ${game.color}40`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        minHeight: '300px'
+                    <Link to={`/arcade/${game.id}`} key={game.id} className="bento-card" style={{
+                        background: game.gradient,
+                        padding: '30px',
+                        textDecoration: 'none',
+                        color: 'white',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        minHeight: '220px',
+                        gridColumn: game.colSpan === 2 ? 'span 2' : 'span 1' // Responsive spanning
                     }}>
-                        <h2 style={{ color: game.color, fontSize: '2rem', margin: '10px 0' }}>{game.title}</h2>
-                        <div style={{
-                            fontSize: '1.2rem',
-                            color: '#fff',
-                            marginBottom: '10px',
-                            border: `1px solid ${game.color}`,
-                            padding: '5px 10px',
-                            borderRadius: '5px'
-                        }}>
-                            High Score: {getHighScore(game.id)}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <h2 style={{ margin: 0, fontSize: '1.8rem', textShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>{game.title}</h2>
+                                <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{game.desc}</p>
+                            </div>
+                            <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.2))' }}>{game.icon}</span>
                         </div>
-                        <div style={{
-                            width: '100%',
-                            height: '120px',
-                            background: '#000',
-                            marginBottom: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid #333'
-                        }}>
-                            <span style={{ fontSize: '3rem' }}>
-                                {game.id === 'snake' ? '🐍' :
-                                    game.id === 'whack' ? '🔨' :
-                                        game.id === 'fishing' ? '🎣' :
-                                            game.id === 'face-runner' ? '🏃' : '🎮'}
-                            </span>
+
+                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '5px 10px', borderRadius: '10px', fontSize: '0.8rem' }}>
+                                🏆 {getHighScore(game.id)}
+                            </div>
+                            <div className="squishy-btn" style={{ background: 'white', color: 'black', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                                ▶
+                            </div>
                         </div>
-                        <p>{game.description}</p>
-                        <Link to={`/arcade/${game.id}`} style={{
-                            marginTop: '20px',
-                            padding: '15px 40px',
-                            background: game.color,
-                            color: game.id === 'memory' ? 'black' : 'black',
-                            textDecoration: 'none',
-                            fontWeight: 'bold',
-                            borderRadius: '8px',
-                            fontSize: '1.2rem',
-                            textTransform: 'uppercase'
-                        }}>
-                            PLAY NOW
-                        </Link>
-                    </div>
+                    </Link>
                 ))}
             </div>
 
