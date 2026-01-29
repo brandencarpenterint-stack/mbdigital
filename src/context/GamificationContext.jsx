@@ -204,6 +204,12 @@ export const GamificationProvider = ({ children }) => {
         }
     };
 
+    const addCoins = (amount) => {
+        const current = parseInt(localStorage.getItem('arcadeCoins')) || 0;
+        localStorage.setItem('arcadeCoins', current + amount);
+        showToast(`+${amount} Coins`, 'coin');
+    };
+
     const incrementStat = (key, amount = 1) => {
         setStats(prev => {
             const newVal = (prev[key] || 0) + amount;
@@ -274,6 +280,7 @@ export const GamificationProvider = ({ children }) => {
             dailyState,
             claimDailyLogin,
             claimQuest,
+            addCoins,
             shopState,
             buyItem,
             equipItem,
