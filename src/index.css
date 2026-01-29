@@ -110,3 +110,25 @@ button {
     transform: translateY(0);
   }
 }
+
+/* --- THE GLITCH MODE --- */
+body.glitch-active {
+  filter: invert(1) hue-rotate(180deg);
+  font-family: 'Courier New', monospace !important;
+  background: black !important;
+}
+
+body.glitch-active img {
+  filter: invert(1) hue-rotate(-180deg);
+  /* Keep images normal-ish but weird */
+}
+
+body.glitch-active .header-logo {
+  animation: shake 0.5s infinite;
+}
+
+body.glitch-active button {
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}

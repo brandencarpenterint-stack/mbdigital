@@ -12,6 +12,10 @@ const Layout = () => {
     const { unlockedAchievements } = useGamification() || { unlockedAchievements: [] }; // Safety check
     const { soundEnabled, toggleSound } = useSettings();
 
+    // Glitch State
+    const [clickCount, setClickCount] = useState(0);
+    const [glitchMode, setGlitchMode] = useState(false);
+
     const isFishingGame = location.pathname.includes('/crazy-fishing') ||
         location.pathname.includes('/neon-brick-breaker') ||
         location.pathname.includes('/galaxy-defender');
@@ -25,12 +29,31 @@ const Layout = () => {
         return () => clearInterval(interval);
     }, []);
 
+    // Handle Glitch Class
+    useEffect(() => {
+        if (glitchMode) {
+            document.body.classList.add('glitch-active');
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50, 50, 200]);
+        } else {
+            document.body.classList.remove('glitch-active');
+        }
+    }, [glitchMode]);
+
+    const handleLogoClick = (e) => {
+        setClickCount(prev => prev + 1);
+        if (clickCount + 1 >= 5) {
+            e.preventDefault(); // Don't nav home if activating
+            setGlitchMode(prev => !prev);
+            setClickCount(0);
+        }
+    };
+
     return (
         <div className="layout-container">
             {!isFishingGame && (
                 <header className="main-header">
                     <div className="logo-section">
-                        <Link to="/" className="home-link">
+                        <Link to="/" className="home-link" onClick={handleLogoClick}>
                             <img src="/assets/brokid-logo.png" alt="Brokid Logo" className="header-logo main-logo" />
                         </Link>
                     </div>
