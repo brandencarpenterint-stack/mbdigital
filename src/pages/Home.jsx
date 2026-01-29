@@ -141,6 +141,16 @@ const Home = () => {
 
                 {/* ROW 2: APPS */}
 
+                {/* SUB SLAYER */}
+                <Link to="/subslayer" className="bento-card" style={{
+                    textDecoration: 'none', color: 'white', padding: '25px',
+                    background: 'linear-gradient(135deg, #0f2027 0%, #2c5364 100%)',
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                }}>
+                    <h3>SUB SLAYER</h3>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>⚓</div>
+                </Link>
+
                 {/* COLORING BOOK */}
                 <Link to="/coloring" className="bento-card" style={{
                     textDecoration: 'none', color: 'white', padding: '25px',
