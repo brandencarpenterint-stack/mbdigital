@@ -8,7 +8,7 @@ const BeatLab = () => {
         kick: Array(16).fill(false),
         snare: Array(16).fill(false),
         hihat: Array(16).fill(false),
-        synth: Array(16).fill(false),
+        fart: Array(16).fill(false), // Replaced synth with funny fx
     });
 
     const audioCtx = useRef(null);
@@ -20,7 +20,7 @@ const BeatLab = () => {
         kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
         snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
         hihat: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
-        synth: [true, false, false, true, false, false, true, false, false, false, false, false, false, false, false, true]
+        fart: [false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false]
     };
 
     // Initialize AudioContext
@@ -90,16 +90,26 @@ const BeatLab = () => {
                 osc.start(now);
                 osc.stop(now + 0.05);
                 break;
-            case 'synth':
-                osc.type = 'sine';
-                // Simple melody logic based on step? Random for now or fixed
-                // Let's make it a simple arpeggio based on step index
-                const note = [261.63, 329.63, 392.00, 523.25][currentStep % 4];
-                osc.frequency.setValueAtTime(note, now);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            case 'fart':
+                // The "Silly" Sound - Sawtooth with pitch drop
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+
+                // Lowpass to make it "muddy"
+                const fartFilter = ctx.createBiquadFilter();
+                fartFilter.type = 'lowpass';
+                fartFilter.frequency.value = 400;
+
+                osc.disconnect();
+                osc.connect(fartFilter);
+                fartFilter.connect(gain);
+
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
                 osc.start(now);
-                osc.stop(now + 0.1);
+                osc.stop(now + 0.3);
                 break;
             default:
                 break;
@@ -138,7 +148,7 @@ const BeatLab = () => {
         if (tracks.kick[step]) playSound('kick');
         if (tracks.snare[step]) playSound('snare');
         if (tracks.hihat[step]) playSound('hihat');
-        if (tracks.synth[step]) playSound('synth');
+        if (tracks.fart[step]) playSound('fart');
     };
 
     const toggleStep = (track, index) => {
@@ -158,7 +168,7 @@ const BeatLab = () => {
             kick: Array(16).fill(false),
             snare: Array(16).fill(false),
             hihat: Array(16).fill(false),
-            synth: Array(16).fill(false),
+            fart: Array(16).fill(false),
         });
         if (navigator.vibrate) navigator.vibrate(20);
     };
