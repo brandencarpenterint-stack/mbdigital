@@ -651,8 +651,8 @@ const NeonBrickBreaker = () => {
                         height={GAME_HEIGHT}
                         style={{
                             display: 'block',
-                            maxWidth: '100vw',
-                            maxHeight: '100vh',
+                            maxWidth: '95vw',
+                            maxHeight: '85vh',
                             aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}`,
                             width: 'auto',
                             height: 'auto'
