@@ -6,8 +6,8 @@ import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
 import { LeaderboardService } from '../../services/LeaderboardService';
 
-const GAME_WIDTH = 600;
-const GAME_HEIGHT = 400; // Canvas size
+const GAME_WIDTH = 480;
+const GAME_HEIGHT = 800; // Portrait Mode
 const PADDLE_WIDTH = 80;
 const PADDLE_HEIGHT = 12;
 const BALL_SIZE = 16;
@@ -485,24 +485,8 @@ const NeonBrickBreaker = () => {
         };
     }, []);
 
-    // Orientation Check
-    const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
-    useEffect(() => {
-        const check = () => setIsPortrait(window.innerHeight > window.innerWidth);
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
+    // Orientation Check REMOVED - Portrait is now native!
 
-    if (isPortrait && window.innerWidth < 768) {
-        return (
-            <div style={{ position: 'fixed', inset: 0, background: '#000', color: 'var(--neon-blue)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, textAlign: 'center', fontFamily: '"Orbitron", sans-serif' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px', animation: 'spin 2s infinite linear' }}>🔄</div>
-                <h1 style={{ margin: 0 }}>ROTATE DEVICE</h1>
-                <p style={{ color: '#888' }}>LANDSCAPE MODE REQUIRED</p>
-                <style>{`@keyframes spin { 100% { transform: rotate(90deg); } }`}</style>
-            </div>
-        );
-    }
 
     return (
         <div
