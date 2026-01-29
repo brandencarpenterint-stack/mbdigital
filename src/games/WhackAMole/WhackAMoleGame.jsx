@@ -21,6 +21,8 @@ const WhackAMoleGame = () => {
     const popTimerRef = useRef(null);
     const gameTimerRef = useRef(null);
 
+    const [moleTypes, setMoleTypes] = useState(new Array(MOLE_COUNT).fill('default'));
+
     const endGame = () => {
         clearInterval(gameTimerRef.current);
         clearTimeout(popTimerRef.current);
@@ -45,14 +47,21 @@ const WhackAMoleGame = () => {
         popTimerRef.current = setTimeout(() => {
             if (!gameActive && timeLeft <= 0) return;
 
-            const newMoles = new Array(MOLE_COUNT).fill(false);
-            const randomIdx = Math.floor(Math.random() * MOLE_COUNT);
-            newMoles[randomIdx] = true;
-            setMoles(newMoles);
+            const newMoles = [...moles]; // Copy current state to avoid overwriting others if we want multi-mole (though currently it clears others? No, line 48 was creating new Array)
+            // Wait, previous logic was `new Array(MOLE_COUNT).fill(false)`. This meant only ONE mole at a time.
+            // Do we want only one? The user didn't specify multi-mole. Sticking to one for now but randomizing types.
+            const resetMoles = new Array(MOLE_COUNT).fill(false);
 
-            // Check if game is still active before continuing recursion (implicitly handled by useEffect cleanup somewhat, but robust here)
-            // But popMoles is only called if we want more moles. We should check if game is over inside the timeout.
-            // (Added check above)
+            const randomIdx = Math.floor(Math.random() * MOLE_COUNT);
+            resetMoles[randomIdx] = true;
+            setMoles(resetMoles);
+
+            // Random Face
+            const types = ['default', 'cat', 'bunny', 'money'];
+            const newTypes = [...moleTypes];
+            newTypes[randomIdx] = types[Math.floor(Math.random() * types.length)];
+            setMoleTypes(newTypes);
+
             popMoles();
         }, popTime);
     };
@@ -86,8 +95,7 @@ const WhackAMoleGame = () => {
         if (navigator.vibrate) navigator.vibrate(100); // Strongbonk
 
         const newMoles = [...moles];
-        newMoles[index] = false; // Hide immediately? Or we could leave a "dizzy" mole for a split second.
-        // For responsiveness, hiding immediately is best, but let's see.
+        newMoles[index] = false;
         setMoles(newMoles);
     };
 
@@ -98,8 +106,28 @@ const WhackAMoleGame = () => {
         };
     }, []);
 
+    const IMAGES = {
+        default: '/assets/merchboy_face.png',
+        cat: '/assets/merchboy_cat.png',
+        bunny: '/assets/merchboy_bunny.png',
+        money: '/assets/merchboy_money.png'
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#ff0055', width: '100%', minHeight: '100vh', touchAction: 'manipulation' }}>
+            <style>{`
+                @keyframes spinMole {
+                    0% { transform: rotate(0deg); }
+                    25% { transform: rotate(-10deg); }
+                    75% { transform: rotate(10deg); }
+                    100% { transform: rotate(0deg); }
+                }
+                @keyframes fullSpin {
+                    0% { transform: rotate(0deg) scale(1); }
+                    50% { transform: rotate(180deg) scale(1.2); }
+                    100% { transform: rotate(360deg) scale(1); }
+                }
+            `}</style>
             <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>WHACK-A-MOLE</h1>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '500px', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
@@ -167,15 +195,17 @@ const WhackAMoleGame = () => {
                         {/* Mole (Mascot) */}
                         <div style={{
                             position: 'absolute',
-                            bottom: isUp ? '10%' : '-100%', // Use % for responsiveness
-                            left: '10%',
-                            width: '80%',
-                            height: '80%',
-                            backgroundImage: 'url(/assets/boy_face.png)',
+                            bottom: isUp ? '10%' : '-150%', // Move further down
+                            left: '-20%', // Center the 140% width (20% overflow on each side)
+                            width: '140%', // Double-ish size
+                            height: '140%',
+                            backgroundImage: `url(${IMAGES[moleTypes[index]] || IMAGES.default})`,
                             backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
-                            transition: 'bottom 0.1s ease-out'
+                            transition: 'bottom 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Bouncy
+                            animation: isUp ? 'fullSpin 2s linear infinite' : 'none', // ROTATION
+                            zIndex: 10
                         }} />
                     </div>
                 ))}
