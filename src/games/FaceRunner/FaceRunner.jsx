@@ -76,7 +76,7 @@ const FaceRunner = () => {
 
         // Assets
         const faceImg = new Image();
-        faceImg.src = '/assets/brokid-logo.png'; // Using Logo as the Runner
+        faceImg.src = '/assets/merchboy_face.png'; // Using Face as the Runner
 
         const obstacleImg = new Image();
         obstacleImg.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjZmYwMDU1Ii8+PC9zdmc+'; // Red Block
@@ -108,11 +108,71 @@ const FaceRunner = () => {
                 p.rotation += 5; // Spin in air!
             }
 
-            // Draw Player (The Face)
+            // Draw Player (Stick Figure + Face)
+            const x = 70; // Fixed x position
+            const y = p.y + 20; // Center y
+            const isGrounded = p.grounded;
+            const frame = frameRef.current;
+
             ctx.save();
-            ctx.translate(50 + 20, p.y + 20); // Center pivot
-            ctx.rotate(p.rotation * Math.PI / 180);
-            ctx.drawImage(faceImg, -20, -20, 40, 40);
+            ctx.translate(x, y);
+
+            // Stick Styling
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#333';
+            ctx.lineCap = 'round';
+
+            // Animation Cycle
+            const runCycle = Math.sin(frame * 0.2) * 0.8;
+            const legL = isGrounded ? runCycle : -0.5; // Split if jumping
+            const legR = isGrounded ? -runCycle : 0.8;
+
+            // LEGS
+            // Left Leg
+            ctx.beginPath();
+            ctx.moveTo(0, 10); // Hip
+            ctx.lineTo(Math.sin(legL) * 20, 30 + Math.cos(legL) * 10);
+            ctx.stroke();
+
+            // Right Leg
+            ctx.beginPath();
+            ctx.moveTo(0, 10); // Hip
+            ctx.lineTo(Math.sin(legR) * 20, 30 + Math.cos(legR) * 10);
+            ctx.stroke();
+
+            // BODY (Tiny neck/body)
+            // ctx.beginPath();
+            // ctx.moveTo(0, 0);
+            // ctx.lineTo(0, 10);
+            // ctx.stroke();
+
+            // ARMS (Swinging)
+            const armL = isGrounded ? -runCycle : -2; // Hands up if jumping
+            const armR = isGrounded ? runCycle : -2;
+
+            // Left Arm
+            ctx.beginPath();
+            ctx.moveTo(-5, 5);
+            ctx.lineTo(-15 + Math.sin(armL) * 15, 15 + Math.cos(armL) * 10);
+            ctx.stroke();
+
+            // Right Arm
+            ctx.beginPath();
+            ctx.moveTo(5, 5);
+            ctx.lineTo(15 + Math.sin(armR) * 15, 15 + Math.cos(armR) * 10);
+            ctx.stroke();
+
+            // DRAW FACE
+            if (p.rotation !== 0) ctx.rotate(p.rotation * Math.PI / 180);
+
+            if (faceImg.complete) {
+                ctx.drawImage(faceImg, -20, -20, 40, 40);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill();
+                ctx.stroke();
+            }
+
             ctx.restore();
 
             // Spawn Obstacles
