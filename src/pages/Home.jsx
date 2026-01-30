@@ -129,20 +129,12 @@ const Home = () => {
                     <div style={{ position: 'absolute', right: '20px', bottom: '20px', fontSize: '10rem', opacity: 0.5 }}>👟</div>
                 </div>
 
-                {/* 3. LIVE FEED (Right/Small) */}
-                <div className="glass-panel" style={{ padding: '20px', overflow: 'hidden' }}>
-                    <h3 style={{ margin: '0 0 15px 0', fontSize: '1rem', color: 'var(--neon-blue)' }}>SYSTEM LOGS</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {logs.map(log => (
-                            <div key={log.id} style={{ fontSize: '0.8rem', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                <span style={{ color: '#666', marginRight: '10px' }}>[{log.time}]</span>
-                                {log.text}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                {/* 3. SUB SLAYER (Took System Logs Spot? No, let's just shift) */}
 
-                {/* ROW 2: APPS */}
+                {/* 3. LIVE FEED REMOVED - Replacing with Sub Slayer or shift layout? */}
+                {/* Actually, grid auto-flow handles it. Just remove the div. */}
+
+                {/* ROW 2: APPS moved up? */}
 
                 {/* SUB SLAYER */}
                 <Link to="/subslayer" className="bento-card" style={{
@@ -154,14 +146,20 @@ const Home = () => {
                     <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>⚓</div>
                 </Link>
 
-                {/* COLORING BOOK */}
+                {/* COLORING BOOK (Updated Icon) */}
                 <Link to="/coloring" className="bento-card" style={{
                     textDecoration: 'none', color: 'white', padding: '25px',
                     background: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
-                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
+                    overflow: 'hidden'
                 }}>
-                    <h3>COLORING BOOK</h3>
-                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>🎨</div>
+                    <h3 style={{ zIndex: 1 }}>COLORING BOOK</h3>
+                    <div style={{ alignSelf: 'flex-end', position: 'relative' }}>
+                        {/* Paint Splat */}
+                        <div style={{ fontSize: '4rem', position: 'absolute', top: -20, right: 30, opacity: 0.3, transform: 'rotate(-20deg)' }}>🎨</div>
+                        {/* Cute Face */}
+                        <img src="/assets/merchboy_bunny.png" alt="Bunny" style={{ width: '80px', height: '80px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', transform: 'rotate(10deg)' }} />
+                    </div>
                 </Link>
 
                 {/* BEAT LAB */}
