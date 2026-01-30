@@ -243,14 +243,14 @@ const Layout = () => {
                             🏠
                         </Link>
 
-                        {/* 2. ARCADE */}
-                        <Link to="/arcade" className="dock-icon" style={{ opacity: location.pathname.includes('/arcade') ? 1 : 0.5 }}>
-                            🕹️
+                        {/* 2. BEAT LAB (Demoted from Center) */}
+                        <Link to="/beatlab" className="dock-icon" style={{ opacity: location.pathname === '/beatlab' ? 1 : 0.5 }}>
+                            🎹
                         </Link>
 
-                        {/* 3. CREATE (FAB) */}
+                        {/* 3. ARCADE (Promoted to CENTER FAB) */}
                         <div style={{ position: 'relative', top: '-25px' }}>
-                            <Link to="/beatlab" style={{
+                            <Link to="/arcade" style={{
                                 width: '70px', height: '70px',
                                 background: 'linear-gradient(135deg, var(--neon-blue), #00ccff)',
                                 borderRadius: '50%',
@@ -259,10 +259,10 @@ const Layout = () => {
                                 color: 'black',
                                 boxShadow: '0 0 20px var(--neon-blue)',
                                 border: '4px solid #fff',
-                                transform: location.pathname === '/beatlab' ? 'scale(1.1) rotate(10deg)' : 'scale(1)',
+                                transform: location.pathname.includes('/arcade') ? 'scale(1.1) rotate(10deg)' : 'scale(1)',
                                 transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                             }}>
-                                🎹
+                                🕹️
                             </Link>
                         </div>
 
