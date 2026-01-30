@@ -1,80 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { feedService } from '../utils/feed';
-
-const FAKE_USERS = [
-    'NeonViper', 'CyberWolf', 'PixelQueen', 'RetroRider',
-    'GlitchBoy', 'ArcadeHero', 'BitMaster', 'HighScorer99',
-    'LaserFace', 'TurboCat', 'ShadowMonk', 'CosmicSurfer'
-];
-
-const EVENTS = [
-    { text: 'just won 500 🪙 in Cosmic Slots!', type: 'win' },
-    { text: 'hit the JACKPOT! 🎰🚨', type: 'jackpot' },
-    { text: 'reached Level 10 in Neon Bricks 🧱', type: 'level' },
-    { text: 'caught a Legendary Shark! 🦈', type: 'fish' },
-    { text: 'bought the Flame Paddle 🔥', type: 'shop' },
-    { text: 'is on a 10x Win Streak!', type: 'streak' },
-    { text: 'just lost all their lives... 💀', type: 'fail' },
-    { text: 'found a Secret Chest! 🎁', type: 'loot' },
-    { text: 'set a new High Score in Snake! 🐍', type: 'score' }
-];
+import { supabase } from '../lib/supabaseClient';
 
 const LiveFeed = () => {
     const [messages, setMessages] = useState([
-        { id: 1, user: 'System', text: 'Welcome to the Global Arcade Network.', time: 'Now', color: '#fff' }
+        { id: 1, user: 'System', text: 'Connecting to Global Feed...', time: 'Now', color: '#ffaaaa' }
     ]);
 
     useEffect(() => {
-        // 1. Listen for REAL events
-        const handleRealEvent = (e) => {
-            const { message, type } = e.detail;
-            const newMessage = {
-                id: Date.now(),
-                user: 'YOU', // Or fetch from Context if possible, but keep it simple
-                text: message,
-                time: 'Just now',
-                color: '#00ffaa' // Highlight User Actions
-            };
-            setMessages(prev => [newMessage, ...prev].slice(0, 5));
+        // Initial Fetch
+        const loadHistory = async () => {
+            const { data } = await supabase.from('feed_events').select('*').order('created_at', { ascending: false }).limit(5);
+            if (data) {
+                const mapped = data.map(evt => ({
+                    id: evt.id,
+                    user: evt.player_name,
+                    text: evt.message,
+                    time: 'Recent',
+                    color: evt.type === 'win' ? 'gold' : (evt.type === 'fail' ? '#ff4444' : '#00ccff')
+                }));
+                setMessages(mapped);
+            }
         };
+        loadHistory();
 
-        feedService.addEventListener('feed-message', handleRealEvent);
-
-        // 2. Simulated "Global" Traffic
-        const addMessage = () => {
-            const user = FAKE_USERS[Math.floor(Math.random() * FAKE_USERS.length)];
-            const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-
-            let color = '#aaa';
-            if (event.type === 'win') color = 'gold';
-            if (event.type === 'jackpot') color = '#ff00ff';
-            if (event.type === 'fail') color = '#ff4444';
-            if (event.type === 'fish') color = '#00ccff';
-
-            const newMessage = {
-                id: Date.now(),
-                user,
-                text: event.text,
-                time: 'Just now',
-                color
-            };
-
-            setMessages(prev => [newMessage, ...prev].slice(0, 5)); // Keep last 5
-        };
-
-        // Random interval between 2s and 6s
-        const loop = () => {
-            const delay = Math.random() * 4000 + 4000; // Slower traffic
-            setTimeout(() => {
-                addMessage();
-                loop();
-            }, delay);
-        };
-
-        loop();
+        // Subscribe to New Events
+        const channel = supabase.channel('global-feed')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'feed_events' },
+                (payload) => {
+                    const evt = payload.new;
+                    const newMessage = {
+                        id: evt.id,
+                        user: evt.player_name,
+                        text: evt.message,
+                        time: 'Just now',
+                        color: evt.type === 'win' ? 'gold' : (evt.type === 'fail' ? '#ff4444' : '#00ccff')
+                    };
+                    setMessages(prev => [newMessage, ...prev].slice(0, 5));
+                }
+            )
+            .subscribe();
 
         return () => {
-            feedService.removeEventListener('feed-message', handleRealEvent);
+            supabase.removeChannel(channel);
         };
     }, []);
 
@@ -97,16 +66,17 @@ const LiveFeed = () => {
             </div>
 
             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {messages.map((msg, i) => (
-                    <div key={msg.id} style={{
-                        fontSize: '0.85rem',
-                        opacity: 1 - (i * 0.2), // Fade out older messages
-                        transform: `translateX(${i * 5}px)`,
-                        transition: 'all 0.3s'
-                    }}>
-                        <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>@{msg.user}</span>: <span style={{ color: msg.color }}>{msg.text}</span>
-                    </div>
-                ))}
+                {messages.length === 0 ? <div style={{ color: '#666', fontSize: '0.8rem' }}>Waiting for signal...</div> :
+                    messages.map((msg, i) => (
+                        <div key={msg.id} style={{
+                            fontSize: '0.85rem',
+                            opacity: 1 - (i * 0.2), // Fade out older messages
+                            transform: `translateX(${i * 5}px)`,
+                            transition: 'all 0.3s'
+                        }}>
+                            <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>@{msg.user}</span>: <span style={{ color: msg.color }}>{msg.text}</span>
+                        </div>
+                    ))}
             </div>
 
             <style>{`
