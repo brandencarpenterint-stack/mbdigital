@@ -189,7 +189,7 @@ const CrazyFishing = () => {
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     // FIX: Provide default shopState to prevent crash if context is missing
-    const { shopState = { unlocked: [], equipped: {} }, playSound } = useGamification() || {};
+    const { shopState = { unlocked: [], equipped: {} }, playSound, incrementStat, updateStat, addCoins } = useGamification() || {};
 
     useEffect(() => {
         const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -1223,7 +1223,7 @@ const CrazyFishing = () => {
             setHasGoldenRod(true);
         }
 
-        // Coins
+        // Coins (Use Context for Multiplier!)
         const streakMult = 1 + (comboRef.current * 0.1);
         let baseScore = fish.score;
         if (baseScore > 75) {
@@ -1232,21 +1232,27 @@ const CrazyFishing = () => {
         }
         const value = Math.floor(baseScore * streakMult);
         setCombo(c => c + 1);
-        setScore(s => s + value);
-        const coins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', coins + value);
+        const newTotalScore = score + value;
+        setScore(newTotalScore);
+
+        // Use Context addCoins (Social + Multiplier)
+        if (addCoins) addCoins(value);
 
         // --- GAMIFICATION INTEGRATION ---
-        incrementStat('fishCaught', 1);
-        incrementStat('gamesPlayedCount', 1); // Track total count
-        updateStat('gamesPlayed', 'fishing'); // Add to unique list
+        if (incrementStat) {
+            incrementStat('fishCaught', 1);
+            incrementStat('gamesPlayedCount', 1);
+        }
+        if (updateStat) {
+            updateStat('gamesPlayed', 'fishing');
+            updateStat('crazyFishingHighScore', newTotalScore); // Track High Score
+        }
 
-        if (fish.legendary) {
+        if (fish.legendary && incrementStat) {
             incrementStat('legendariesCaught', 1);
         }
 
-        // Submit Score to Global Leaderboard (Total Score Accumulation)
-        LeaderboardService.submitScore('crazy_fishing', 'Player1', score + value);
+        // Leaderboard sync handled by updateStat -> GamificationContext -> Cloud
     };
 
     // ... (loseBattle same as before)

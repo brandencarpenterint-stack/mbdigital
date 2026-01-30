@@ -17,7 +17,9 @@ export const GamificationProvider = ({ children }) => {
             legendariesCaught: 0,
             bossKills: 0,
             galaxyHighScore: 0,
+            galaxyHighScore: 0,
             brickHighScore: 0,
+            crazyFishingHighScore: 0,
             gamesPlayed: []
         };
     });
@@ -171,7 +173,10 @@ export const GamificationProvider = ({ children }) => {
                         high_scores: {
                             merch_jump: stats.merchJumpHighScore || 0,
                             snake: stats.snakeHighScore || 0,
-                            flappy: stats.flappyHighScore || 0
+                            flappy: stats.flappyHighScore || 0,
+                            crazy_fishing: stats.crazyFishingHighScore || 0,
+                            galaxy: stats.galaxyHighScore || 0,
+                            brick_breaker: stats.brickHighScore || 0
                         },
                         stats: stats,
                         achievements: unlockedAchievements,
