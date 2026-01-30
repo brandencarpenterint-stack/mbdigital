@@ -9,6 +9,7 @@ const DailyQuestModal = ({ onClose }) => {
 
     const { dailyState, claimDailyLogin, claimQuest, skipQuest } = context || {};
 
+    // VERCEL TRIGGER: Force Rebuild
     // Safety check for the function
     const safeClaimLogin = claimDailyLogin || (() => console.error("claimDailyLogin missing!"));
 
