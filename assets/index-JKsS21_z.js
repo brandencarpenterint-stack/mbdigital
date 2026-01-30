@@ -262,9 +262,12 @@ ${k}`}class kt extends Error{constructor({message:e,code:A,cause:r,name:a}){var 
     z-index: 1; opacity: 0.8;
 }
 .bg-space::after {
-    content: '💫'; position: absolute; top: -50px; left: -50px;
-    font-size: 20px;
-    animation: shootingStar 10s linear infinite;
+    content: ''; position: absolute; top: -50px; left: -50px;
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, white);
+    box-shadow: 0 0 10px white;
+    transform-origin: right;
+    animation: shootingStar 8s linear infinite;
     z-index: 2;
 }
 
