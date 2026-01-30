@@ -8,6 +8,7 @@ import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import DailyStash from './DailyStash';
 import DailyQuestModal from './DailyQuestModal';
+import OnboardingModal from './OnboardingModal';
 import './Layout.css';
 
 const Layout = () => {
@@ -321,6 +322,7 @@ const Layout = () => {
             {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
             {showQuests && <DailyQuestModal onClose={() => setShowQuests(false)} />}
             <SquadSelector />
+            <OnboardingModal />
 
             {/* GLOBAL BRANDING FOOTER */}
             <div style={{
