@@ -3,7 +3,14 @@ import SquishyButton from './SquishyButton'; // Assuming we have this, or I'll j
 import { useGamification } from '../context/GamificationContext';
 
 const DailyQuestModal = ({ onClose }) => {
-    const { dailyState, claimDailyLogin, claimQuest, skipQuest } = useGamification() || {};
+    const context = useGamification();
+    // Defensive Destructuring with Logging
+    if (!context) console.warn("GamificationContext is missing in DailyQuestModal!");
+
+    const { dailyState, claimDailyLogin, claimQuest, skipQuest } = context || {};
+
+    // Safety check for the function
+    const safeClaimLogin = claimDailyLogin || (() => console.error("claimDailyLogin missing!"));
 
     if (!dailyState) return null;
 
@@ -63,7 +70,7 @@ const DailyQuestModal = ({ onClose }) => {
                     </div>
 
                     <button
-                        onClick={claimDailyLogin}
+                        onClick={safeClaimLogin}
                         disabled={!canCheckIn}
                         className="squishy-btn"
                         style={{
