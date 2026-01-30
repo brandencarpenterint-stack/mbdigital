@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 
 const CARDS = [
     { id: 1, type: 'image', content: '/assets/boy-logo.png', alt: 'Boy' },
@@ -16,6 +18,7 @@ const CARDS = [
 ];
 
 const MemoryMatchGame = () => {
+    const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
     const [cards, setCards] = useState([]);
     const [flipped, setFlipped] = useState([]);
     const [solved, setSolved] = useState([]);
@@ -23,6 +26,13 @@ const MemoryMatchGame = () => {
     const [score, setScore] = useState(0);
     const [moves, setMoves] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('memoryHighScore')) || 0);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.memoryHighScore > highScore) {
+            setHighScore(stats.memoryHighScore);
+        }
+    }, [stats]);
 
     const { playBeep, playCollect, playWin } = useRetroSound();
 
@@ -63,12 +73,14 @@ const MemoryMatchGame = () => {
                 const finalScore = score + 100 + (Math.max(0, 50 - moves) * 10);
                 if (finalScore > highScore) {
                     setHighScore(finalScore);
-                    localStorage.setItem('memoryHighScore', finalScore);
+                    if (updateStat) updateStat('memoryHighScore', finalScore);
+
+                    const playerName = userProfile?.name || 'Mind Master';
+                    feedService.publish(`solved the Memory Matrix with ${finalScore} points! 🧠`, 'win', playerName);
                 }
 
-                // Award Coins flat amount for win
-                const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-                localStorage.setItem('arcadeCoins', currentCoins + 50);
+                if (updateStat) updateStat('gamesPlayed', 'memory_match');
+                if (addCoins) addCoins(50);
             }
         } else {
             setTimeout(() => {

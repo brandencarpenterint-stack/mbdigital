@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
+import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 
 const BIOMES = [
@@ -14,6 +15,7 @@ const BIOMES = [
 ];
 
 const FaceRunner = () => {
+    const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
     const canvasRef = useRef(null);
     const { soundEnabled } = useSettings();
     const { playCrash, playCollect, playWin } = useRetroSound();
@@ -27,6 +29,13 @@ const FaceRunner = () => {
     const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('faceRunnerHighScore')) || 0);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.faceRunnerHighScore > highScore) {
+            setHighScore(stats.faceRunnerHighScore);
+        }
+    }, [stats]);
     const [selectedFace, setSelectedFace] = useState('face_money');
 
     // Refs for Loop
@@ -213,10 +222,16 @@ const FaceRunner = () => {
 
     const handleCrash = () => {
         const finalScore = Math.floor(scoreRef.current);
+
+        if (updateStat) updateStat('gamesPlayed', 'face_runner');
+        if (addCoins) addCoins(Math.floor(finalScore / 10)); // 1 coin per 10m
+
         if (finalScore > highScore) {
-            localStorage.setItem('faceRunnerHighScore', finalScore);
             setHighScore(finalScore);
-            feedService.publish(`reached ${finalScore}m in Face Runner!`, 'win');
+            if (updateStat) updateStat('faceRunnerHighScore', finalScore);
+
+            const playerName = userProfile?.name || 'Runner';
+            feedService.publish(`reached ${finalScore}m in Face Runner!`, 'win', playerName);
         }
         setGameState('GAME_OVER');
         playingRef.current = false;

@@ -4,7 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
-import { LeaderboardService } from '../../services/LeaderboardService';
+import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 480;
 const GAME_HEIGHT = 800; // Portrait Mode
@@ -22,12 +22,19 @@ const BALL_ASSETS = [
 ];
 
 const NeonBrickBreaker = () => {
-    const { updateStat, incrementStat, shopState } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
+    const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
     const canvasRef = useRef(null);
 
     // Game State
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('brickHighScore')) || 0);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.brickHighScore > highScore) {
+            setHighScore(stats.brickHighScore);
+        }
+    }, [stats]);
     const [level, setLevel] = useState(1);
     const [lives, setLives] = useState(3);
     const [gameOver, setGameOver] = useState(false);
@@ -278,16 +285,18 @@ const NeonBrickBreaker = () => {
 
         if (score > highScore) {
             setHighScore(score);
-            localStorage.setItem('brickHighScore', score);
+            if (updateStat) updateStat('brickHighScore', score);
+
+            if (score > 100) {
+                const playerName = userProfile?.name || 'Breaker';
+                feedService.publish(`smashed a new High Score: ${score} in Neon Bricks 🧱`, 'win', playerName);
+            }
         }
 
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', currentCoins + Math.floor(score / 5));
+        if (addCoins) addCoins(Math.floor(score / 5));
 
         // Gamification
-        LeaderboardService.submitScore('neon_brick', 'Player1', score);
-        updateStat('brickHighScore', (prev) => Math.max(prev, score));
-        updateStat('gamesPlayed', 'neon_brick');
+        if (updateStat) updateStat('gamesPlayed', 'neon_brick');
     };
 
     const gameLoop = () => {

@@ -4,7 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
-import { LeaderboardService } from '../../services/LeaderboardService';
+import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 480;
 const GAME_HEIGHT = 640; // Expanded to Portrait (100% taller)
@@ -18,11 +18,18 @@ const BOSS_HP_MAX = 30;
 const MAX_LIVES = 3;
 
 const GalaxyDefender = () => {
-    const { updateStat, incrementStat, shopState } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
+    const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
     const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(MAX_LIVES);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('galaxyHighScore')) || 0);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.galaxyHighScore > highScore) {
+            setHighScore(stats.galaxyHighScore);
+        }
+    }, [stats]);
     const [gameOver, setGameOver] = useState(false);
     const [gameWon, setGameWon] = useState(false);
     const [gameActive, setGameActive] = useState(false);
@@ -130,16 +137,15 @@ const GalaxyDefender = () => {
 
         if (finalScore > highScore) {
             setHighScore(finalScore);
-            localStorage.setItem('galaxyHighScore', finalScore);
+            if (updateStat) updateStat('galaxyHighScore', finalScore);
+
+            const playerName = userProfile?.name || 'Pilot';
+            feedService.publish(`saved the Galaxy with score: ${finalScore} 🚀`, 'win', playerName);
         }
 
         // Gamification
-        LeaderboardService.submitScore('galaxy_defender', 'Player1', finalScore);
-        updateStat('galaxyHighScore', (prev) => Math.max(prev, finalScore));
-        incrementStat('gamesPlayed', 'galaxy');
-
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', currentCoins + Math.floor(finalScore / 10));
+        if (incrementStat) incrementStat('gamesPlayed', 'galaxy');
+        if (addCoins) addCoins(Math.floor(finalScore / 10)); // 1 coin per 10 points
     };
 
     const spawnEnemy = (timestamp) => {
