@@ -17,5 +17,13 @@ export const DAILY_TEMPLATES = [
 
     // GENERAL
     { id: 'play_3', desc: 'Play 3 Games', target: 3, reward: 40, type: 'gamesPlayedCount', game: 'general' },
-    { id: 'coins_50', desc: 'Earn 50 Coins', target: 50, reward: 50, type: 'coinsEarnedToday', game: 'general' }
+    { id: 'coins_50', desc: 'Earn 50 Coins', target: 50, reward: 50, type: 'coinsEarnedToday', game: 'general' },
+    { id: 'coins_100', desc: 'Earn 100 Coins', target: 100, reward: 100, type: 'coinsEarnedToday', game: 'general' }
+];
+
+export const WEEKLY_TEMPLATES = [
+    { id: 'week_fish_50', desc: 'WEEKLY: Catch 50 Fish', target: 50, reward: 500, type: 'fishCaught', game: 'fishing', isWeekly: true },
+    { id: 'week_games_40', desc: 'WEEKLY: Play 40 Games', target: 40, reward: 400, type: 'gamesPlayedCount', game: 'general', isWeekly: true },
+    { id: 'week_rares_5', desc: 'WEEKLY: Catch 5 Rare Fish', target: 5, reward: 800, type: 'legendariesCaught', game: 'fishing', isWeekly: true },
+    { id: 'week_boss_5', desc: 'WEEKLY: Defeat 5 Bosses', target: 5, reward: 1000, type: 'bossKills', game: 'galaxy', isWeekly: true }
 ];

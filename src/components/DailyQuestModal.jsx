@@ -3,7 +3,7 @@ import SquishyButton from './SquishyButton'; // Assuming we have this, or I'll j
 import { useGamification } from '../context/GamificationContext';
 
 const DailyQuestModal = ({ onClose }) => {
-    const { dailyState, claimDailyLogin, claimQuest } = useGamification() || {};
+    const { dailyState, claimDailyLogin, claimQuest, skipQuest } = useGamification() || {};
 
     if (!dailyState) return null;
 
@@ -92,24 +92,32 @@ const DailyQuestModal = ({ onClose }) => {
                 <h3 style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '15px' }}>ACTIVE MISSIONS</h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px', maxHeight: '400px', overflowY: 'auto' }}>
+                    <div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>
+                        SKIPS AVAILABLE: <span style={{ color: 'white', fontWeight: 'bold' }}>{dailyState.skipsAvailable || 0}</span>
+                    </div>
+
                     {quests.map(q => {
                         const isDone = q.progress >= q.target;
                         return (
                             <div key={q.id} style={{
-                                background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '15px',
-                                border: q.claimed ? '1px solid var(--neon-green)' : '1px solid rgba(255,255,255,0.1)',
+                                background: q.isWeekly ? 'rgba(50, 0, 100, 0.4)' : 'rgba(0,0,0,0.3)',
+                                borderRadius: '10px', padding: '15px',
+                                border: q.claimed ? '1px solid var(--neon-green)' : (q.isWeekly ? '1px solid #d53f8c' : '1px solid rgba(255,255,255,0.1)'),
                                 opacity: q.claimed ? 0.6 : 1,
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'
                             }}>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '0.9rem', color: '#eee', marginBottom: '5px' }}>{q.desc}</div>
+                                    <div style={{ fontSize: '0.9rem', color: '#eee', marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        {q.isWeekly && <span style={{ background: '#d53f8c', color: 'white', fontSize: '0.6rem', padding: '2px 5px', borderRadius: '4px' }}>WEEKLY</span>}
+                                        {q.desc}
+                                    </div>
 
                                     {/* Progress Bar */}
                                     <div style={{ width: '100%', height: '6px', background: '#333', borderRadius: '3px', marginBottom: '5px', overflow: 'hidden' }}>
                                         <div style={{
                                             width: `${Math.min((q.progress / q.target) * 100, 100)}%`,
                                             height: '100%',
-                                            background: isDone ? 'var(--neon-green)' : 'var(--neon-blue)',
+                                            background: isDone ? 'var(--neon-green)' : (q.isWeekly ? '#d53f8c' : 'var(--neon-blue)'),
                                             transition: 'width 0.5s'
                                         }}></div>
                                     </div>
@@ -119,22 +127,43 @@ const DailyQuestModal = ({ onClose }) => {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => claimQuest(q.id)}
-                                    disabled={!isDone || q.claimed}
-                                    style={{
-                                        padding: '8px 15px',
-                                        minWidth: '80px',
-                                        background: q.claimed ? 'transparent' : (isDone ? 'var(--neon-green)' : '#333'),
-                                        color: q.claimed ? 'var(--neon-green)' : (isDone ? 'black' : '#888'),
-                                        border: q.claimed ? '1px solid var(--neon-green)' : 'none',
-                                        borderRadius: '8px', fontWeight: 'bold',
-                                        cursor: (isDone && !q.claimed) ? 'pointer' : 'default',
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    {q.claimed ? 'DONE' : (isDone ? 'CLAIM' : '...')}
-                                </button>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <button
+                                        onClick={() => claimQuest(q.id)}
+                                        disabled={!isDone || q.claimed}
+                                        style={{
+                                            padding: '8px 15px',
+                                            minWidth: '80px',
+                                            background: q.claimed ? 'transparent' : (isDone ? 'var(--neon-green)' : '#333'),
+                                            color: q.claimed ? 'var(--neon-green)' : (isDone ? 'black' : '#888'),
+                                            border: q.claimed ? '1px solid var(--neon-green)' : 'none',
+                                            borderRadius: '8px', fontWeight: 'bold',
+                                            cursor: (isDone && !q.claimed) ? 'pointer' : 'default',
+                                            fontSize: '0.8rem'
+                                        }}
+                                    >
+                                        {q.claimed ? 'DONE' : (isDone ? 'CLAIM' : '...')}
+                                    </button>
+
+                                    {!q.isWeekly && !q.claimed && !isDone && (
+                                        <button
+                                            onClick={() => skipQuest(q.id)}
+                                            disabled={(dailyState.skipsAvailable || 0) <= 0}
+                                            style={{
+                                                padding: '5px',
+                                                background: 'transparent',
+                                                color: (dailyState.skipsAvailable || 0) > 0 ? '#ff4444' : '#555',
+                                                border: '1px solid',
+                                                borderColor: (dailyState.skipsAvailable || 0) > 0 ? '#ff4444' : '#333',
+                                                borderRadius: '8px',
+                                                cursor: (dailyState.skipsAvailable || 0) > 0 ? 'pointer' : 'default',
+                                                fontSize: '0.7rem'
+                                            }}
+                                        >
+                                            SKIP 🔄
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}

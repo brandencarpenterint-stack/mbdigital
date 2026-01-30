@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
-import { DAILY_TEMPLATES } from '../config/DailyQuests';
+import { DAILY_TEMPLATES, WEEKLY_TEMPLATES } from '../config/DailyQuests';
 import { SHOP_ITEMS } from '../config/ShopItems';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
@@ -220,42 +220,112 @@ export const GamificationProvider = ({ children }) => {
 
 
 
+
+
+    // ... (GamificationContext Header) ...
+
+    // Helper for Weeks
+    const getWeekId = () => {
+        const d = new Date();
+        const start = new Date(d.getFullYear(), 0, 1);
+        const days = Math.floor((d - start) / (24 * 60 * 60 * 1000));
+        return `${d.getFullYear()}-W${Math.ceil(days / 7)}`;
+    };
+
     useEffect(() => {
         const today = new Date().toISOString().split('T')[0];
+        const currentWeek = getWeekId();
+
         setDailyState(prev => {
             let newState = { ...prev };
+            let updated = false;
 
-            // 1. QUEST GENERATION (Midnight Reset)
+            // 1. DAILY GENERATION (Midnight Reset)
             if (prev.questDate !== today) {
                 const shuffled = [...DAILY_TEMPLATES].sort(() => 0.5 - Math.random());
-                const newQuests = shuffled.slice(0, 3).map(q => ({ ...q, progress: 0, claimed: false }));
+                // Keep existing Weekly if valid, else filter out old dailies
+                const existingWeekly = prev.quests.find(q => q.isWeekly && q.weekId === currentWeek);
+
+                const newDailies = shuffled.slice(0, 3).map(q => ({
+                    ...q,
+                    id: `${q.id}_${today}`, // Unique ID per day
+                    progress: 0,
+                    claimed: false,
+                    isWeekly: false
+                }));
 
                 newState.questDate = today;
-                newState.quests = newQuests;
+                newState.quests = existingWeekly ? [existingWeekly, ...newDailies] : newDailies;
+                newState.skipsAvailable = 1; // RESET SKIPS
+                updated = true;
             }
-            return newState;
+
+            // 2. WEEKLY GENERATION
+            // If no weekly quest for this week, add one.
+            const hasWeekly = newState.quests.some(q => q.isWeekly && q.weekId === currentWeek);
+            if (!hasWeekly) {
+                const weeklyTemplate = WEEKLY_TEMPLATES[Math.floor(Math.random() * WEEKLY_TEMPLATES.length)];
+                const newWeekly = {
+                    ...weeklyTemplate,
+                    id: `${weeklyTemplate.id}_${currentWeek}`,
+                    weekId: currentWeek,
+                    progress: 0,
+                    claimed: false
+                };
+                newState.quests = [newWeekly, ...newState.quests.filter(q => !q.isWeekly)]; // Replace old weekly
+                updated = true;
+            }
+
+            return updated ? newState : prev;
         });
-    }, []);
+    }, []); // Run once on mount
 
-    useEffect(() => {
-        localStorage.setItem('merchboy_daily', JSON.stringify(dailyState));
-    }, [dailyState]);
+    // ... (rest of context) ...
 
-    const claimDailyLogin = () => {
-        const today = new Date().toISOString().split('T')[0];
-        if (dailyState.lastCheckIn === today) return false;
+    const skipQuest = (questId) => {
+        if (dailyState.skipsAvailable <= 0) {
+            showToast("No skips left today!", "error");
+            return;
+        }
 
-        setDailyState(prev => ({
-            ...prev,
-            lastCheckIn: today,
-            streak: prev.streak + 1
-        }));
+        setDailyState(prev => {
+            const questIndex = prev.quests.findIndex(q => q.id === questId);
+            if (questIndex === -1) return prev;
 
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', currentCoins + 100);
-        showToast("Daily Login: +100 Coins", "coin");
+            const quest = prev.quests[questIndex];
+            if (quest.isWeekly) {
+                showToast("Cannot skip Weekly Quests!", "error");
+                return prev; // Can't skip weekly
+            }
 
-        return true;
+            // Pick a new daily
+            const currentIds = prev.quests.map(q => q.id.split('_')[0]); // Base IDs
+            const candidates = DAILY_TEMPLATES.filter(t => !currentIds.includes(t.id));
+
+            if (candidates.length === 0) {
+                showToast("No other quests available!", "error");
+                return prev;
+            }
+
+            const newTemplate = candidates[Math.floor(Math.random() * candidates.length)];
+            const newQuest = {
+                ...newTemplate,
+                id: `${newTemplate.id}_${prev.questDate}_skip`,
+                progress: 0,
+                claimed: false,
+                isWeekly: false
+            };
+
+            const newQuests = [...prev.quests];
+            newQuests[questIndex] = newQuest;
+
+            showToast("Quest Skipped!", "success");
+            return {
+                ...prev,
+                quests: newQuests,
+                skipsAvailable: prev.skipsAvailable - 1
+            };
+        });
     };
 
     const claimQuest = (questId) => {
@@ -272,10 +342,15 @@ export const GamificationProvider = ({ children }) => {
         });
 
         if (reward > 0) {
-            const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-            localStorage.setItem('arcadeCoins', currentCoins + reward);
+            addCoins(reward); // Use existing addCoins helper
             playWin();
             showToast(`Quest Complete: +${reward} Coins`, "coin");
+
+            // Weekly Bonus XP?
+            const q = dailyState.quests.find(q => q.id === questId);
+            if (q && q.isWeekly) {
+                // Maybe add XP? For now just coins.
+            }
         }
     };
 
@@ -467,7 +542,8 @@ export const GamificationProvider = ({ children }) => {
             shopState,
             buyItem,
             equipItem,
-            getLevelInfo
+            getLevelInfo,
+            skipQuest
         }}>
             {children}
         </GamificationContext.Provider>
