@@ -288,11 +288,21 @@ const FaceRunner = () => {
                 </div>
             )}
 
-            {/* HOME BUTTON */}
-            <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
-                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(5px)', textDecoration: 'none' }}>
+            {/* HOME BUTTON - Top Left (High Z-Index) */}
+            <Link to="/arcade" style={{
+                position: 'absolute', top: '20px', left: '20px', zIndex: 9999,
+                textDecoration: 'none'
+            }}>
+                <div style={{
+                    background: '#ff0055', color: 'white',
+                    padding: '10px 20px', borderRadius: '30px',
+                    fontWeight: 'bold', boxShadow: '0 5px 15px rgba(255, 0, 85, 0.4)',
+                    boxSizing: 'border-box',
+                    fontSize: '1rem',
+                    display: 'flex', alignItems: 'center', gap: '5px'
+                }}>
                     🏠 EXIT
-                </SquishyButton>
+                </div>
             </Link>
         </div>
     );
