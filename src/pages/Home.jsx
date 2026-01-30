@@ -176,15 +176,26 @@ const Home = () => {
 
                 {/* SHOP */}
                 <a href="https://merchboy.shop" target="_blank" className="bento-card" style={{
-                    textDecoration: 'none', color: 'black', padding: '25px',
-                    background: 'white',
-                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
-                    border: '2px solid #ccc'
+                    textDecoration: 'none', color: 'black', padding: '20px',
+                    background: '#fffdf5', // Cream/Off-white for Vintage feel
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column',
+                    border: '4px solid #000',
+                    position: 'relative',
+                    overflow: 'hidden'
                 }}>
-                    <h3>THE SHOP</h3>
-                    <div style={{ alignSelf: 'flex-end', height: '60px', width: '60px' }}>
-                        <img src="/assets/merchboy_money.png" alt="Shop Face" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 5px 5px rgba(0,0,0,0.2))' }} />
+                    {/* Floating Background Faces */}
+                    <img src="/assets/merchboy_money.png" style={{ position: 'absolute', top: -10, left: -10, width: '50px', transform: 'rotate(-20deg)', opacity: 0.8 }} />
+                    <img src="/assets/merchboy_cat.png" style={{ position: 'absolute', bottom: -10, right: -10, width: '50px', transform: 'rotate(20deg)', opacity: 0.8 }} />
+                    <img src="/assets/merchboy_bunny.png" style={{ position: 'absolute', top: '40%', right: -20, width: '40px', transform: 'rotate(10deg)', opacity: 0.6 }} />
+
+                    {/* MAIN BADGE */}
+                    <div style={{ width: '140px', height: '140px', zIndex: 10, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.2))' }}>
+                        {/* Assuming the uploaded badge is standardized as 'merchboy_badge.png' - Placeholder or use existing logic */}
+                        <img src="/assets/merchboy_logo_badge.png" alt="Merchboy Badge" style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            onError={(e) => { e.target.src = '/assets/merchboy_face.png' }} />
+                        {/* Fallback to face if badge missing */}
                     </div>
+                    <div style={{ marginTop: '10px', fontWeight: '900', letterSpacing: '1px', fontSize: '1.2rem' }}>OFFICIAL SHOP</div>
                 </a>
 
             </div>
