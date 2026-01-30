@@ -429,8 +429,22 @@ export const GamificationProvider = ({ children }) => {
     };
 
     const addCoins = (amount) => {
-        setCoins(prev => prev + amount);
-        if (amount > 0) showToast(`+${amount} Coins`, 'coin');
+        // Apply Pet Multiplier (Check Local Storage to avoid direct dependency)
+        let multiplier = 1.0;
+        try {
+            const stored = localStorage.getItem('merchboy_multiplier');
+            if (stored) multiplier = parseFloat(stored);
+        } catch (e) { }
+
+        const finalAmount = Math.floor(amount * multiplier);
+
+        setCoins(prev => prev + finalAmount);
+
+        if (finalAmount > 0) {
+            if (multiplier > 1.0) showToast(`+${finalAmount} Coins (Pet Bonus!)`, 'coin');
+            else if (multiplier < 1.0) showToast(`+${finalAmount} Coins (Pet Sad!)`, 'error');
+            else showToast(`+${finalAmount} Coins`, 'coin');
+        }
     };
 
     const spendCoins = (amount) => {

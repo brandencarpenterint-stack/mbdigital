@@ -86,9 +86,15 @@ export const PocketBroProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-Save
+    // Auto-Save & Economy Link
     useEffect(() => {
+        // Calculate Coin Multiplier based on Happiness
+        let multiplier = 1.0;
+        if (stats.happy >= 80) multiplier = 1.2;
+        else if (stats.happy <= 20) multiplier = 0.8;
+
         localStorage.setItem('pocketBroState', JSON.stringify({ ...stats, lastInteraction: Date.now() }));
+        localStorage.setItem('merchboy_multiplier', multiplier.toString());
     }, [stats]);
 
     // Actions
