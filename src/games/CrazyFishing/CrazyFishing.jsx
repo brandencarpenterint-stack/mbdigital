@@ -188,7 +188,8 @@ const shareToIG = (fish, weight) => {
 const CrazyFishing = () => {
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
-    const { shopState } = useGamification() || {};
+    // FIX: Provide default shopState to prevent crash if context is missing
+    const { shopState = { unlocked: [], equipped: {} }, playSound } = useGamification() || {};
 
     useEffect(() => {
         const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -196,8 +197,8 @@ const CrazyFishing = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // --- STATE ---
-    // --- STATE ---
+    // ... (State code) ...
+
     const [gameState, setGameState] = useState('IDLE');
     const [score, setScore] = useState(0);
     const [combo, setCombo] = useState(0);
@@ -1366,20 +1367,8 @@ const CrazyFishing = () => {
     );
 
     // ROTATE OVERLAY
-    if (isPortrait && window.innerWidth < 768) { // Only force on mobile
-        return (
-            <div style={{
-                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                background: '#001133', color: 'white',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                zIndex: 9999, textAlign: 'center', padding: '20px'
-            }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔄</div>
-                <h1>Please Rotate Your Phone</h1>
-                <p>Designed for Landscape Mode</p>
-            </div>
-        );
-    }
+    // ROTATION WARNING REMOVED (User Feedback)
+    // if (isPortrait && window.innerWidth < 768) { ... }
 
     // RENDER UI
     return (
