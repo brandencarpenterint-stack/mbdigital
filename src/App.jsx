@@ -45,7 +45,7 @@ function App() {
         <Route path="arcade/galaxy" element={<GalaxyDefender />} />
         <Route path="arcade/brick" element={<NeonBrickBreaker />} />
         <Route path="arcade/flappy" element={<FlappyMascot />} />
-        <Route path="arcade/crazy-fishing" element={<CrazyFishing />} />
+        <Route path="arcade/fishing" element={<CrazyFishing />} />
         <Route path="arcade/face-runner" element={<FaceRunner />} />
         <Route path="arcade/merch-jump" element={<MerchJump />} />
         <Route path="arcade/slots" element={<CosmicSlots />} />

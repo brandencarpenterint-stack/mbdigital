@@ -99,22 +99,22 @@ const games = [
     }
 ];
 
-const getHighScore = (id) => {
-    const key = `${id} HighScore`;
-    let storageKey = '';
-    if (id === 'snake') storageKey = 'snakeHighScore';
-    if (id === 'whack') storageKey = 'whackHighScore';
-    if (id === 'memory') storageKey = 'memoryHighScore';
-    if (id === 'galaxy') storageKey = 'galaxyHighScore';
-    if (id === 'brick') storageKey = 'brickHighScore';
-    if (id === 'flappy') storageKey = 'flappyHighScore';
-    if (id === 'fishing') storageKey = 'fishingHighScore';
-    if (id === 'face-runner') storageKey = 'faceRunnerHighScore';
-
-    return localStorage.getItem(storageKey) || 0;
+// Helper moved inside component to use Context stats
+const getHighScore = (id, stats) => {
+    if (!stats) return 0;
+    if (id === 'snake') return stats.snakeHighScore || 0;
+    if (id === 'whack') return stats.whackHighScore || 0; // Assuming whackHighScore exists
+    if (id === 'memory') return stats.memoryHighScore || 0; // Assuming exists
+    if (id === 'galaxy') return stats.galaxyHighScore || 0;
+    if (id === 'brick') return stats.brickHighScore || 0;
+    if (id === 'flappy') return stats.flappyHighScore || 0;
+    if (id === 'fishing') return stats.crazyFishingHighScore || 0;
+    if (id === 'face-runner') return stats.faceRunnerHighScore || 0; // Assuming exists
+    return 0;
 };
 
 const ArcadeHub = () => {
+    const { stats } = useGamification() || {};
     const [selectedLeaderboard, setSelectedLeaderboard] = useState('crazy_fishing');
 
     return (
@@ -250,7 +250,7 @@ const ArcadeHub = () => {
                                 display: 'flex', alignItems: 'center', gap: '5px',
                                 backdropFilter: 'blur(5px)'
                             }}>
-                                🏆 <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px var(--neon-gold)' }}>{getHighScore(game.id)}</span>
+                                🏆 <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px var(--neon-gold)' }}>{getHighScore(game.id, stats)}</span>
                             </div>
 
                             <div style={{
