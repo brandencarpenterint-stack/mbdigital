@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
+import { feedService } from '../../utils/feed';
 
 const MerchJump = () => {
     const canvasRef = useRef(null);
@@ -276,6 +277,7 @@ const MerchJump = () => {
         if (scoreRef.current > highScore) {
             localStorage.setItem('merchJumpHighScore', scoreRef.current);
             setHighScore(scoreRef.current);
+            feedService.publish(`set a new Merch Jump High Score: ${Math.floor(scoreRef.current)}m! 🚀`, 'win');
         }
     };
 

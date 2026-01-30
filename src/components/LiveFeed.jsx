@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { feedService } from '../utils/feed';
 
 const FAKE_USERS = [
     'NeonViper', 'CyberWolf', 'PixelQueen', 'RetroRider',
@@ -24,6 +25,22 @@ const LiveFeed = () => {
     ]);
 
     useEffect(() => {
+        // 1. Listen for REAL events
+        const handleRealEvent = (e) => {
+            const { message, type } = e.detail;
+            const newMessage = {
+                id: Date.now(),
+                user: 'YOU', // Or fetch from Context if possible, but keep it simple
+                text: message,
+                time: 'Just now',
+                color: '#00ffaa' // Highlight User Actions
+            };
+            setMessages(prev => [newMessage, ...prev].slice(0, 5));
+        };
+
+        feedService.addEventListener('feed-message', handleRealEvent);
+
+        // 2. Simulated "Global" Traffic
         const addMessage = () => {
             const user = FAKE_USERS[Math.floor(Math.random() * FAKE_USERS.length)];
             const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
@@ -47,7 +64,7 @@ const LiveFeed = () => {
 
         // Random interval between 2s and 6s
         const loop = () => {
-            const delay = Math.random() * 4000 + 2000;
+            const delay = Math.random() * 4000 + 4000; // Slower traffic
             setTimeout(() => {
                 addMessage();
                 loop();
@@ -55,7 +72,10 @@ const LiveFeed = () => {
         };
 
         loop();
-        return () => { }; // Cleanup difficult with recursive timeout, but effect cleanup handles unmount mostly
+
+        return () => {
+            feedService.removeEventListener('feed-message', handleRealEvent);
+        };
     }, []);
 
     return (
