@@ -11,7 +11,7 @@ const LiveFeed = () => {
         // Initial Fetch
         const loadHistory = async () => {
             const { data } = await supabase.from('feed_events').select('*').order('created_at', { ascending: false }).limit(5);
-            if (data) {
+            if (data && data.length > 0) {
                 const mapped = data.map(evt => ({
                     id: evt.id,
                     user: evt.player_name,
@@ -20,6 +20,11 @@ const LiveFeed = () => {
                     color: evt.type === 'win' ? 'gold' : (evt.type === 'fail' ? '#ff4444' : '#00ccff')
                 }));
                 setMessages(mapped);
+            } else {
+                setMessages([
+                    { id: 'sys-1', user: 'SYSTEM', text: 'Global Uplink Established.', time: 'Now', color: '#00ff00' },
+                    { id: 'sys-2', user: 'SYSTEM', text: 'Welcome to the Arcade Zone.', time: 'Now', color: '#00ccff' }
+                ]);
             }
         };
         loadHistory();

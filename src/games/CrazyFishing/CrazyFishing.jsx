@@ -4,6 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed'; // Global Feed
 import { LeaderboardService } from '../../services/LeaderboardService';
 
 // --- DATA & CONFIG ---
@@ -189,7 +190,7 @@ const CrazyFishing = () => {
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     // FIX: Provide default shopState to prevent crash if context is missing
-    const { shopState = { unlocked: [], equipped: {} }, playSound, incrementStat, updateStat, addCoins } = useGamification() || {};
+    const { shopState = { unlocked: [], equipped: {} }, playSound, incrementStat, updateStat, addCoins, userProfile } = useGamification() || {};
 
     useEffect(() => {
         const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -1248,8 +1249,14 @@ const CrazyFishing = () => {
             updateStat('crazyFishingHighScore', newTotalScore); // Track High Score
         }
 
+        const playerName = userProfile?.name || 'Player';
         if (fish.legendary && incrementStat) {
             incrementStat('legendariesCaught', 1);
+            // Global Feed Event
+            feedService.publish(`caught a LEGENDARY ${fish.name}!`, 'win', playerName);
+        } else if (newTotalScore > 500 && Math.random() > 0.7) {
+            // Random brag for high scores
+            feedService.publish(`is on a fishing streak! Score: ${newTotalScore}`, 'win', playerName);
         }
 
         // Leaderboard sync handled by updateStat -> GamificationContext -> Cloud
