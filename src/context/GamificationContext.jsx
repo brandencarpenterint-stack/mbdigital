@@ -172,11 +172,15 @@ export const GamificationProvider = ({ children }) => {
                         games_played: stats.gamesPlayedCount || 0,
                         high_scores: {
                             merch_jump: stats.merchJumpHighScore || 0,
-                            snake: stats.snakeHighScore || 0,
-                            flappy: stats.flappyHighScore || 0,
+                            neon_snake: stats.snakeHighScore || 0,
+                            flappy_mascot: stats.flappyHighScore || 0,
                             crazy_fishing: stats.crazyFishingHighScore || 0,
-                            galaxy: stats.galaxyHighScore || 0,
-                            brick_breaker: stats.brickHighScore || 0
+                            galaxy_defender: stats.galaxyHighScore || 0,
+                            neon_bricks: stats.brickHighScore || 0,
+                            whack_a_mole: stats.whackHighScore || 0,
+                            memory_match: stats.memoryHighScore || 0,
+                            face_runner: stats.faceRunnerHighScore || 0,
+                            cosmic_slots: stats.slotsBiggestWin || 0
                         },
                         stats: stats,
                         achievements: unlockedAchievements,

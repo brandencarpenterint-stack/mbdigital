@@ -4,6 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
@@ -48,12 +49,18 @@ const CHARACTERS = [
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
     // Global Shop State
-    const { shopState, updateStat, incrementStat, equipItem } = useGamification() || {};
+    const { shopState, updateStat, incrementStat, equipItem, addCoins, userProfile, stats, coins } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
     const [gameActive, setGameActive] = useState(false);
-    const [coins, setCoins] = useState(parseInt(localStorage.getItem('arcadeCoins')) || 0);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.flappyHighScore > highScore) {
+            setHighScore(stats.flappyHighScore);
+        }
+    }, [stats]);
 
     // Character Logic
     // Default to 'flappy_boy' if nothing equipped, but strip prefix for internal lookup if needed
@@ -141,18 +148,19 @@ const FlappyMascot = () => {
 
         if (score > highScore) {
             setHighScore(score);
-            localStorage.setItem('flappyHighScore', score);
+            if (updateStat) updateStat('flappyHighScore', score);
             triggerConfetti();
+
+            if (score > 10) {
+                const playerName = userProfile?.name || 'Player';
+                feedService.publish(`is flying high! Score: ${score} in Flappy Mascot 🦅`, 'win', playerName);
+            }
         }
 
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        const newCoins = currentCoins + Math.floor(score);
-        localStorage.setItem('arcadeCoins', newCoins);
-        setCoins(newCoins);
+        if (addCoins) addCoins(Math.floor(score));
 
         // Gamification Stats
         if (updateStat) {
-            updateStat('flappyHighScore', (prev) => Math.max(prev || 0, score));
             updateStat('gamesPlayed', 'flappy_mascot');
         }
     };

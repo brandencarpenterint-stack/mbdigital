@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 
@@ -32,7 +33,7 @@ const COLS = 3;
 const SPIN_COST = 15;
 
 const CosmicSlots = () => {
-    const { coins, spendCoins, addCoins } = useGamification() || { coins: 0, spendCoins: () => false, addCoins: () => { } };
+    const { coins, spendCoins, addCoins, updateStat, userProfile } = useGamification() || { coins: 0, spendCoins: () => false, addCoins: () => { } };
     const { playJump, playCollect, playWin } = useRetroSound();
 
     const [grid, setGrid] = useState([
@@ -144,6 +145,14 @@ const CosmicSlots = () => {
             setWinningLines(lines);
             addCoins(totalWin);
             playWin();
+
+            // High Score & Feed
+            if (updateStat) updateStat('slotsBiggestWin', totalWin);
+
+            if (totalWin >= 500) {
+                const playerName = userProfile?.name || 'Player';
+                feedService.publish(`hit a JACKPOT of ${totalWin} Coins! 🎰`, 'win', playerName);
+            }
 
             // Increase Streak
             setStreak(s => Math.min(s + 1, 5)); // Cap at 5x

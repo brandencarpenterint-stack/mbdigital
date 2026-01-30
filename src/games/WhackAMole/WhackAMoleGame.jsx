@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
@@ -8,10 +10,18 @@ const MOLE_COUNT = 16;
 const GAME_DURATION = 30;
 
 const WhackAMoleGame = () => {
+    const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
     const [moles, setMoles] = useState(new Array(MOLE_COUNT).fill(false));
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('whackHighScore')) || 0);
     const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.whackHighScore > highScore) {
+            setHighScore(stats.whackHighScore);
+        }
+    }, [stats]);
     const [gameActive, setGameActive] = useState(false);
     const [gameOver, setGameOver] = useState(false);
 
@@ -31,15 +41,21 @@ const WhackAMoleGame = () => {
         setMoles(new Array(MOLE_COUNT).fill(false));
         playWin(); // Fanfare
 
+        if (updateStat) updateStat('gamesPlayed', 'whack');
+
         if (score > highScore) {
             setHighScore(score);
-            localStorage.setItem('whackHighScore', score);
+            if (updateStat) updateStat('whackHighScore', score);
             triggerConfetti();
+
+            if (score > 100) {
+                const playerName = userProfile?.name || 'Player';
+                feedService.publish(`is a Whack-a-Mole Champion! Score: ${score} 🔨`, 'win', playerName);
+            }
         }
 
         // Award Coins (1 coin per 10 points)
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', currentCoins + Math.floor(score / 10));
+        if (addCoins) addCoins(Math.floor(score / 10));
     };
 
     const popMoles = () => {

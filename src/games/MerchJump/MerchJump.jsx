@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useGamification } from '../../context/GamificationContext';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
@@ -16,6 +18,14 @@ const BIOMES = [
 const MerchJump = () => {
     const canvasRef = useRef(null);
     const { playJump, playCollect, playCrash, playBoop } = useRetroSound();
+    const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.merchJumpHighScore > highScore) {
+            setHighScore(stats.merchJumpHighScore);
+        }
+    }, [stats]);
 
     // Game Constants
     const GRAVITY = 0.4;
@@ -329,10 +339,17 @@ const MerchJump = () => {
     const handleGameOver = () => {
         setGameState('GAMEOVER');
         playCrash();
-        if (scoreRef.current > highScore) {
-            localStorage.setItem('merchJumpHighScore', scoreRef.current);
-            setHighScore(scoreRef.current);
-            feedService.publish(`set a new Merch Jump High Score: ${Math.floor(scoreRef.current)}m! 🚀`, 'win');
+        const finalScore = Math.floor(scoreRef.current);
+
+        if (addCoins) addCoins(Math.floor(finalScore / 100)); // 1 coin per 100m
+        if (updateStat) updateStat('gamesPlayed', 'merch_jump');
+
+        if (finalScore > highScore) {
+            setHighScore(finalScore);
+            if (updateStat) updateStat('merchJumpHighScore', finalScore);
+
+            const playerName = userProfile?.name || 'Player';
+            feedService.publish(`set a new Merch Jump High Score: ${finalScore}m! 🚀`, 'win', playerName);
         }
     };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 import { triggerConfetti, triggerWinConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 
@@ -26,7 +27,14 @@ const SnakeGame = () => {
 
     // Hooks
     const { playJump, playCrash, playCollect } = useRetroSound();
-    const { shopState } = useGamification() || {};
+    const { shopState, addCoins, updateStat, userProfile, stats } = useGamification() || {};
+
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.snakeHighScore > highScore) {
+            setHighScore(stats.snakeHighScore);
+        }
+    }, [stats]);
     const gameLoopRef = useRef();
 
     // Swipe Refs
@@ -77,18 +85,25 @@ const SnakeGame = () => {
 
     const endGame = () => {
         setGameOver(true);
-        playCrash(); // Now defined
+        playCrash();
+        if (updateStat) updateStat('gamesPlayed', 'snake'); // Track game played
+
         if (score > highScore) {
             setHighScore(score);
-            localStorage.setItem('snakeHighScore', score);
+            if (updateStat) updateStat('snakeHighScore', score);
             triggerConfetti();
+
+            // Feed
+            if (score > 50) {
+                const playerName = userProfile?.name || 'Player';
+                feedService.publish(`slithered to a new High Score: ${score} in Neon Snake 🐍`, 'win', playerName);
+            }
         } else {
             triggerWinConfetti();
         }
 
         // Award Coins (1 coin per 10 points)
-        const currentCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-        localStorage.setItem('arcadeCoins', currentCoins + Math.floor(score / 10));
+        if (addCoins) addCoins(Math.floor(score / 10));
     };
 
     const spawnFood = () => {
