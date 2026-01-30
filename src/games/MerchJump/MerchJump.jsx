@@ -4,13 +4,21 @@ import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
 
+const BIOMES = [
+    { name: 'STREETS', limit: 2500, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
+    { name: 'SUNSET WAVE', limit: 5000, bgTop: '#ff7e5f', bgBot: '#feb47b', plat: '#554433', text: 'white', border: '#332211' },
+    { name: 'CYBER CITY', limit: 7500, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
+    { name: 'GLITCH REALM', limit: 10000, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
+    { name: 'ASCENSION', limit: 999999, bgTop: '#FFD700', bgBot: '#FFFFFF', plat: '#FFFFFF', text: '#B8860B', border: '#FFD700' }
+];
+
 const MerchJump = () => {
     const canvasRef = useRef(null);
     const { playJump, playCollect, playCrash, playBoop } = useRetroSound();
 
     // Game Constants
     const GRAVITY = 0.4;
-    const JUMP_FORCE = -12; // Higher jump for jetpack feel
+    const JUMP_FORCE = -12;
     const WIDTH = 400;
     const HEIGHT = 600;
 
@@ -36,6 +44,7 @@ const MerchJump = () => {
     const requestRef = useRef(null);
     const inputRef = useRef(WIDTH / 2);
     const skinImgRef = useRef(null);
+    const biomeRef = useRef(BIOMES[0]);
 
     // Initial Setup
     useEffect(() => {
@@ -46,18 +55,26 @@ const MerchJump = () => {
         return () => cancelAnimationFrame(requestRef.current);
     }, [selectedSkin]);
 
+    const getCurrentBiome = (s) => {
+        for (let b of BIOMES) {
+            if (s < b.limit) return b;
+        }
+        return BIOMES[BIOMES.length - 1];
+    };
+
     const initGame = () => {
         setScore(0);
         scoreRef.current = 0;
         cameraYRef.current = 0;
+        biomeRef.current = BIOMES[0];
         playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: 0, width: 40, height: 60 };
 
         platformsRef.current = [];
-        platformsRef.current.push({ x: WIDTH / 2 - 50, y: HEIGHT - 50, w: 100, h: 20, type: 'normal' });
+        platformsRef.current.push({ x: WIDTH / 2 - 50, y: HEIGHT - 50, w: 100, h: 20, type: 'normal', color: BIOMES[0].plat, border: BIOMES[0].border });
 
         let y = HEIGHT - 200;
         for (let i = 0; i < 15; i++) {
-            generatePlatform(y);
+            generatePlatform(y, BIOMES[0]);
             y -= 80 + Math.random() * 40;
         }
 
@@ -65,13 +82,15 @@ const MerchJump = () => {
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const generatePlatform = (y) => {
+    const generatePlatform = (y, biome) => {
         const x = Math.random() * (WIDTH - 80);
+        // Sometimes spawn a 'break'
         platformsRef.current.push({
             x, y, w: 70 + Math.random() * 30, h: 15,
             type: Math.random() > 0.8 ? 'moving' : 'normal',
             vx: Math.random() > 0.5 ? 2 : -2,
-            color: '#888' // Concrete
+            color: biome.plat,
+            border: biome.border
         });
     };
 
@@ -172,8 +191,13 @@ const MerchJump = () => {
     };
 
     const gameLoop = () => {
+        if (!canvasRef.current) return;
         const ctx = canvasRef.current.getContext('2d');
         const player = playerRef.current;
+
+        // Check Biome
+        const currentBiome = getCurrentBiome(scoreRef.current);
+        biomeRef.current = currentBiome;
 
         // --- UPDATE ---
         const targetX = inputRef.current;
@@ -197,7 +221,8 @@ const MerchJump = () => {
             platformsRef.current = platformsRef.current.filter(p => p.y < HEIGHT);
             const lastP = platformsRef.current[platformsRef.current.length - 1];
             if (lastP && lastP.y > 100) {
-                generatePlatform(lastP.y - (80 + Math.random() * 40));
+                // Pass currentBiome to generate platform with correct color
+                generatePlatform(lastP.y - (80 + Math.random() * 40), currentBiome);
             }
         }
 
@@ -206,8 +231,8 @@ const MerchJump = () => {
             platformsRef.current.forEach(p => {
                 if (
                     player.x > p.x - 20 &&
-                    player.x < p.x + p.w + 20 && // Widen hitbox for body
-                    player.y + 30 > p.y && // Feet level estimate
+                    player.x < p.x + p.w + 20 &&
+                    player.y + 30 > p.y &&
                     player.y + 30 < p.y + p.h + 20
                 ) {
                     player.vy = JUMP_FORCE;
@@ -230,36 +255,54 @@ const MerchJump = () => {
         }
 
         // --- DRAW ---
-        // Sky Background
+        // Sky Background (Dynamic Biome)
         const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-        grad.addColorStop(0, '#87CEEB'); // Sky Blue
-        grad.addColorStop(1, '#E0F7FA'); // Light Clouds
+        grad.addColorStop(0, currentBiome.bgTop);
+        grad.addColorStop(1, currentBiome.bgBot);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-        // Clouds (Simple Aesthetic)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        for (let i = 0; i < 5; i++) {
-            const cx = ((i * 100) + cameraYRef.current * 0.5) % (WIDTH + 200) - 100;
-            const cy = (i * 150) % HEIGHT;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 40, 0, Math.PI * 2);
-            ctx.arc(cx + 40, cy + 10, 50, 0, Math.PI * 2);
-            ctx.arc(cx - 30, cy + 10, 30, 0, Math.PI * 2);
-            ctx.fill();
+        // GLITCH EFFECT (If Biome has glitch)
+        if (currentBiome.glitch && Math.random() > 0.95) {
+            ctx.save();
+            ctx.translate((Math.random() - 0.5) * 10, 0); // Shake X
+            if (Math.random() > 0.5) ctx.filter = 'invert(1)';
         }
 
-        // Platforms (Concrete)
+        // Decor (Clouds or Grid based on Biome)
+        if (currentBiome.name === 'STREETS' || currentBiome.name === 'SUNSET WAVE') {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            for (let i = 0; i < 5; i++) {
+                const cx = ((i * 100) + cameraYRef.current * 0.2) % (WIDTH + 200) - 100;
+                const cy = (i * 150) % HEIGHT;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+                ctx.arc(cx + 40, cy + 10, 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (currentBiome.name === 'CYBER CITY' || currentBiome.name === 'GLITCH REALM') {
+            // Digital Grid
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.lineWidth = 2;
+            const gridY = (cameraYRef.current * 0.5) % 100;
+            for (let y = gridY; y < HEIGHT; y += 100) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WIDTH, y); ctx.stroke();
+            }
+        }
+
+        // Platforms
         platformsRef.current.forEach(p => {
-            ctx.fillStyle = '#999'; // Concrete Grey
+            // If platform doesn't match current biome color (it was generated before transition), that's fine, it fades out.
+            // But we can check p.color
+            ctx.fillStyle = p.color || currentBiome.plat;
             ctx.fillRect(p.x, p.y, p.w, p.h);
 
-            // Top highlight
-            ctx.fillStyle = '#bbb';
-            ctx.fillRect(p.x, p.y, p.w, 5);
+            // Highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillRect(p.x, p.y, p.w, 4);
 
             // Border
-            ctx.strokeStyle = '#666';
+            ctx.strokeStyle = p.border || currentBiome.border;
             ctx.lineWidth = 2;
             ctx.strokeRect(p.x, p.y, p.w, p.h);
         });
@@ -267,6 +310,17 @@ const MerchJump = () => {
         // Player Rig
         const tilt = (inputRef.current - player.x) * 0.05;
         drawRig(ctx, player.x, player.y, player.vy, tilt);
+
+        // Biome Text Overlay
+        ctx.fillStyle = currentBiome.text;
+        ctx.font = 'bold 20px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${currentBiome.name}`, 10, 30);
+        ctx.fillText(`${Math.floor(scoreRef.current)}m`, 10, 50);
+
+        if (currentBiome.glitch && Math.random() > 0.95) {
+            ctx.restore(); // Undo glitch
+        }
 
         requestRef.current = requestAnimationFrame(gameLoop);
     };
@@ -297,7 +351,7 @@ const MerchJump = () => {
             touchAction: 'none'
         }}>
             <h1 style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                MERCH JUMP 🌤️
+                MERCH JUMP
             </h1>
 
             <div style={{ position: 'relative', width: '100%', maxWidth: '400px', aspectRatio: '2/3' }}>
@@ -306,7 +360,7 @@ const MerchJump = () => {
                     width={WIDTH}
                     height={HEIGHT}
                     onMouseMove={handleInput}
-                    onTouchMove={handleInput}
+                    onTouchMove={(e) => { e.preventDefault(); handleInput(e); }}
                     onTouchStart={handleInput}
                     style={{
                         width: '100%', height: '100%',
@@ -366,17 +420,10 @@ const MerchJump = () => {
                         </SquishyButton>
                     </div>
                 )}
-
-                {/* HUD */}
-                {gameState === 'PLAYING' && (
-                    <div style={{ position: 'absolute', top: 10, left: 10, fontSize: '1.2rem', color: '#333', fontWeight: '900' }}>
-                        {Math.floor(score)}m
-                    </div>
-                )}
             </div>
 
             <p style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>
-                Slide to Move • Reach the Stratosphere
+                Slide to Move • Reach 2500m for Next Biome
             </p>
         </div>
     );
