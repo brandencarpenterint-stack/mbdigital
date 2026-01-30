@@ -67,17 +67,26 @@ const DailyQuestModal = ({ onClose }) => {
                         disabled={!canCheckIn}
                         className="squishy-btn"
                         style={{
-                            background: canCheckIn ? 'var(--neon-green)' : '#333',
+                            background: canCheckIn ? 'linear-gradient(45deg, #00ffaa, #00ccff)' : '#333',
                             color: canCheckIn ? '#000' : '#888',
-                            border: 'none', padding: '10px 20px', borderRadius: '10px',
-                            fontWeight: 'bold', fontSize: '1rem',
+                            border: 'none', padding: '15px 30px', borderRadius: '50px',
+                            fontWeight: '900', fontSize: '1.2rem',
                             cursor: canCheckIn ? 'pointer' : 'default',
-                            boxShadow: canCheckIn ? '0 0 15px rgba(0, 255, 170, 0.4)' : 'none'
+                            boxShadow: canCheckIn ? '0 0 30px rgba(0, 255, 170, 0.6)' : 'none',
+                            animation: canCheckIn ? 'pulse 2s infinite' : 'none',
+                            textTransform: 'uppercase'
                         }}
                     >
-                        {canCheckIn ? 'CHECK IN (+100 🪙)' : 'CHECKED IN ✅'}
+                        {canCheckIn ? '💰 CLAIM REWARD (+100)' : '✅ CHECKED IN'}
                     </button>
                 </div>
+                <style>{`
+                    @keyframes pulse {
+                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.7); }
+                        70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 255, 170, 0); }
+                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
+                    }
+                `}</style>
 
                 {/* QUESTS LIST */}
                 <h3 style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '15px' }}>ACTIVE MISSIONS</h3>
