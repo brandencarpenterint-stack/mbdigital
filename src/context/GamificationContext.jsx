@@ -32,10 +32,21 @@ export const GamificationProvider = ({ children }) => {
     }, [coins]);
 
     // --- PROFILE STATE ---
+    // --- PROFILE STATE ---
     const [userProfile, setUserProfile] = useState(() => {
-        return JSON.parse(localStorage.getItem('merchboy_profile')) || {
-            name: 'OPERATOR',
-            avatar: '/assets/merchboy_face.png'
+        const stored = JSON.parse(localStorage.getItem('merchboy_profile')) || {};
+
+        // Generate a persistent code if one doesn't exist
+        if (!stored.code) {
+            stored.code = `OP-${Math.floor(Math.random() * 9000 + 1000)}`;
+            // We'll save this back to storage in the effect or next update, 
+            // but returning it ensures it's in state immediately.
+        }
+
+        return {
+            name: stored.name || 'OPERATOR',
+            avatar: stored.avatar || '/assets/merchboy_face.png',
+            code: stored.code
         };
     });
 

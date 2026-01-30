@@ -199,7 +199,7 @@ const ProfileModal = ({ onClose }) => {
                         <div style={{ background: '#2d3748', padding: '20px', borderRadius: '20px', marginBottom: '30px', textAlign: 'center' }}>
                             <div style={{ color: '#a0aec0', fontSize: '0.9rem', marginBottom: '5px' }}>YOUR SQUAD ID</div>
                             <div style={{ fontSize: '2rem', fontWeight: '900', color: '#63b3ed', letterSpacing: '2px' }}>
-                                {userProfile.name.substring(0, 4).toUpperCase()}-{Math.floor(Math.random() * 9000 + 1000)}
+                                {userProfile.code || 'UNKNOWN'}
                             </div>
                             <div style={{ fontSize: '0.8rem', color: '#718096', marginTop: '5px' }}>SHARE WITH FRIENDS</div>
                         </div>
