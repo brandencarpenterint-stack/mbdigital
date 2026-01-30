@@ -197,3 +197,37 @@
         transform: scale(1);
     }
 }
+
+/* DASHBOARD GRID (New V3 System) */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    grid-auto-rows: minmax(180px, auto);
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    /* Force Cards to be uniform height on mobile too, or auto? */
+    .bento-card {
+        min-height: 180px !important;
+    }
+}
+
+/* UNIFORM CARD STYLING */
+.bento-card {
+    border-radius: 20px;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    /* Ensure uniform height desktop */
+}
+
+.bento-card:active {
+    transform: scale(0.98);
+}

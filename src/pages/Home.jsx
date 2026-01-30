@@ -50,12 +50,8 @@ const Home = () => {
             </header>
 
             {/* DASHBOARD GRID */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
-                gap: '20px',
-                gridAutoRows: 'minmax(150px, auto)'
-            }}>
+            {/* DASHBOARD GRID */}
+            <div className="dashboard-grid">
 
                 {/* 1. PROFILE WIDGET (Left Column) */}
                 <div className="glass-panel" style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -101,13 +97,12 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* 2. FEATURED GAME (Center/Large) */}
+                {/* 2. FEATURED GAME (Standard Size Now) */}
                 <div className="bento-card" style={{
-                    gridColumn: 'span 2', // Spans 2 cols if space permits
-                    minHeight: '300px',
+                    // gridColumn: 'span 2', // REMOVED per user request for uniformity
                     background: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                    padding: '40px', position: 'relative',
+                    padding: '30px', position: 'relative', // Adjusted padding
                     border: '1px solid white'
                 }}>
                     <div style={{ position: 'relative', zIndex: 10 }}>
