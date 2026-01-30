@@ -1405,6 +1405,13 @@ const CrazyFishing = () => {
                 <span style={{ color: 'var(--neon-pink)', textShadow: '0 0 5px red' }}>🔥 {combo}</span>
             </div>
 
+            {/* HOME BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '15px', left: '20px', zIndex: 100 }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)', textDecoration: 'none' }}>
+                    🏠 EXIT
+                </SquishyButton>
+            </Link>
+
             {/* MAIN GAME CONTAINER - Centered */}
             <div style={{
                 display: 'flex',

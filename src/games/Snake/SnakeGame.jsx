@@ -256,6 +256,13 @@ const SnakeGame = () => {
                 textShadow: '0 0 20px var(--neon-green)', letterSpacing: '2px'
             }}>NEON SNAKE</h1>
 
+            {/* HOME BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)' }}>
+                    🏠 EXIT
+                </SquishyButton>
+            </Link>
+
             <div className="glass-panel" style={{
                 display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px',
                 marginBottom: '20px', padding: '15px 25px', fontSize: '1.2rem',

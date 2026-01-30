@@ -450,6 +450,13 @@ const FlappyMascot = () => {
             </div>
 
             <p style={{ marginTop: '10px', color: '#666' }}>Space or Click to Flap</p>
+
+            {/* HOME BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 100 }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)' }}>
+                    🏠 EXIT
+                </SquishyButton>
+            </Link>
         </div>
     );
 };

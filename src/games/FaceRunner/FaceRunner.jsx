@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
@@ -286,6 +287,13 @@ const FaceRunner = () => {
                     <SquishyButton onClick={startGame} style={{ background: 'white', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>AGAIN</SquishyButton>
                 </div>
             )}
+
+            {/* HOME BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(5px)', textDecoration: 'none' }}>
+                    🏠 EXIT
+                </SquishyButton>
+            </Link>
         </div>
     );
 };
