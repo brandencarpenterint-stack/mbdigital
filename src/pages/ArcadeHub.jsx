@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import LiveFeed from '../components/LiveFeed';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
+import './Home.css'; // Shared styles for dashboard grid
 
 const games = [
     {
@@ -167,10 +168,8 @@ const ArcadeHub = () => {
             </div>
 
             {/* BENTO GRID GAMES */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
-                gap: '20px',
+            {/* BENTO GRID GAMES */}
+            <div className="dashboard-grid" style={{
                 padding: '10px',
                 maxWidth: '1200px',
                 margin: '0 auto',

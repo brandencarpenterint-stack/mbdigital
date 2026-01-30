@@ -212,6 +212,11 @@
         gap: 15px;
     }
 
+    /* Force single column span on mobile for all children */
+    .dashboard-grid>* {
+        grid-column: auto !important;
+    }
+
     /* Force Cards to be uniform height on mobile too, or auto? */
     .bento-card {
         min-height: 180px !important;
