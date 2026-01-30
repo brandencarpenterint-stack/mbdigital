@@ -142,8 +142,15 @@ const Home = () => {
                     background: 'linear-gradient(135deg, #0f2027 0%, #2c5364 100%)',
                     display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
                 }}>
-                    <h3>SUB SLAYER</h3>
-                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>⚓</div>
+                    <div>
+                        <h3 style={{ margin: 0 }}>SUB SLAYER</h3>
+                        <div style={{ fontSize: '0.65rem', color: '#ccc', marginTop: '5px', lineHeight: '1.2', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+                            SUBSCRIPTION<br />MANAGER & SAVER
+                        </div>
+                    </div>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '2.5rem', display: 'flex', gap: '5px', filter: 'drop-shadow(0 0 5px rgba(0,255,100,0.5))' }}>
+                        <span>✂️</span><span>💸</span>
+                    </div>
                 </Link>
 
                 {/* COLORING BOOK (Updated Icon) */}
@@ -176,10 +183,13 @@ const Home = () => {
                 <a href="https://merchboy.shop" target="_blank" className="bento-card" style={{
                     textDecoration: 'none', color: 'black', padding: '25px',
                     background: 'white',
-                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column'
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
+                    border: '2px solid #ccc'
                 }}>
                     <h3>THE SHOP</h3>
-                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem' }}>👕</div>
+                    <div style={{ alignSelf: 'flex-end', height: '60px', width: '60px' }}>
+                        <img src="/assets/merchboy_money.png" alt="Shop Face" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 5px 5px rgba(0,0,0,0.2))' }} />
+                    </div>
                 </a>
 
             </div>
