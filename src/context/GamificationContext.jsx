@@ -208,6 +208,14 @@ export const GamificationProvider = ({ children }) => {
         setTimeout(() => triggerConfetti(), 600);
 
         showToast(achievement.title, 'achievement');
+
+        // Push to Global Feed
+        // Using dynamic import or assuming feedService is available via import?
+        // We need to import feedService at top.
+        // For now, assuming it's imported or I add import.
+        import('../utils/feed').then(({ feedService }) => {
+            feedService.publish(`unlocked achievement: ${achievement.title} 🏆`, 'win', userProfile.name);
+        });
     };
 
 

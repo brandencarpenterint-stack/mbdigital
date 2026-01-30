@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { feedService } from '../utils/feed';
 
 const LiveFeed = () => {
     const [messages, setMessages] = useState([
@@ -30,6 +31,11 @@ const LiveFeed = () => {
                 { event: 'INSERT', schema: 'public', table: 'feed_events' },
                 (payload) => {
                     const evt = payload.new;
+                    // Deduplicate if we just added it locally (based on time or ID?)
+                    // For now, allow dupes or rely on React key?
+                    // Supabase sends ID. Local uses Date.now().
+                    // We'll rely on the fact that local events are instant feedback.
+
                     const newMessage = {
                         id: evt.id,
                         user: evt.player_name,
@@ -37,13 +43,32 @@ const LiveFeed = () => {
                         time: 'Just now',
                         color: evt.type === 'win' ? 'gold' : (evt.type === 'fail' ? '#ff4444' : '#00ccff')
                     };
-                    setMessages(prev => [newMessage, ...prev].slice(0, 5));
+                    setMessages(prev => {
+                        // Avoid adding if same ID exists
+                        if (prev.some(m => m.id === evt.id)) return prev;
+                        return [newMessage, ...prev].slice(0, 5)
+                    });
                 }
             )
             .subscribe();
 
+        // Local Listener (Optimistic UI)
+        const handleLocal = (e) => {
+            const { message, type, user } = e.detail;
+            const newMessage = {
+                id: Date.now(), // Temp ID
+                user: user || 'YOU',
+                text: message,
+                time: 'Just now',
+                color: type === 'win' ? 'gold' : '#00ffaa'
+            };
+            setMessages(prev => [newMessage, ...prev].slice(0, 5));
+        };
+        feedService.addEventListener('feed-message', handleLocal);
+
         return () => {
             supabase.removeChannel(channel);
+            feedService.removeEventListener('feed-message', handleLocal);
         };
     }, []);
 
@@ -66,7 +91,16 @@ const LiveFeed = () => {
             </div>
 
             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {messages.length === 0 ? <div style={{ color: '#666', fontSize: '0.8rem' }}>Waiting for signal...</div> :
+                {messages.length === 0 ? (
+                    <div style={{
+                        marginTop: '10px', textAlign: 'center', opacity: 0.7,
+                        color: 'var(--neon-green)', fontFamily: 'monospace', letterSpacing: '1px',
+                        animation: 'blink 2s infinite', fontSize: '0.8rem'
+                    }}>
+                        // GLOBAL UPLINK ONLINE
+                        <br /><span style={{ fontSize: '0.7rem', color: '#666' }}>listening for signals...</span>
+                    </div>
+                ) :
                     messages.map((msg, i) => (
                         <div key={msg.id} style={{
                             fontSize: '0.85rem',
