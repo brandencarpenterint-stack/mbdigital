@@ -424,14 +424,30 @@ export const GamificationProvider = ({ children }) => {
 
         const totalXP = achievementXP + fishXP + gamesXP;
 
-        // Level Formula: Level N requires 1000 * N XP
-        // Level = Math.floor(totalXP / 1000) + 1
-        const level = Math.floor(totalXP / 1000) + 1;
-        const currentLevelXP = totalXP % 1000;
-        const nextLevelXP = 1000;
-        const progress = Math.min((currentLevelXP / nextLevelXP) * 100, 100);
+        // Progressive Level Formula: TotalXP = 250 * (Level^2)
+        // Level 2 requires 1000 XP. Level 10 requires 25,000 XP.
+        // If totalXP < 250, level is 1.
+        // sqrt(999/250) = 1.99 -> floor -> 1.
+        // sqrt(1000/250) = 2.
 
-        return { level, xp: currentLevelXP, nextXP: nextLevelXP, progress, totalXP };
+        let level = Math.floor(Math.sqrt(totalXP / 250));
+        if (level < 1) level = 1;
+
+        const currentLevelBaseXP = 250 * (level * level);
+        const xpForNextLevel = 250 * ((level + 1) * (level + 1));
+        const xpNeededForNext = xpForNextLevel - currentLevelBaseXP;
+        const currentLevelProgress = totalXP - currentLevelBaseXP;
+
+        // Ensure progress doesn't go negative or overflow (though math says it shouldn't)
+        const progressPercent = Math.min((currentLevelProgress / xpNeededForNext) * 100, 100);
+
+        return {
+            level,
+            xp: currentLevelProgress,
+            nextXP: xpNeededForNext,
+            progress: progressPercent,
+            totalXP
+        };
     };
 
     return (
