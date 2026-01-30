@@ -16,7 +16,7 @@ export const LeaderboardService = {
 
             const { data, error } = await supabase
                 .from('profiles')
-                .select('display_name, high_scores, coins, friend_code')
+                .select('display_name, high_scores, coins, friend_code, xp')
                 .order('coins', { ascending: false }) // Initial heuristic: rich players play more
                 .limit(50);
 
