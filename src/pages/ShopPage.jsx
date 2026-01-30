@@ -90,60 +90,7 @@ const ShopPage = () => {
                 ))}
             </div>
 
-            {/* MYSTERY CRATE */}
-            <div className="glass-panel" style={{
-                maxWidth: '600px', margin: '0 auto 50px auto',
-                background: 'linear-gradient(135deg, rgba(255, 0, 128, 0.1) 0%, rgba(121, 40, 202, 0.1) 100%)',
-                color: 'white', padding: '30px', textAlign: 'center',
-                position: 'relative', overflow: 'hidden',
-                border: '1px solid var(--neon-pink)',
-                boxShadow: '0 0 30px rgba(255, 0, 128, 0.2)'
-            }}>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h2 style={{ margin: '0 0 10px 0', fontSize: '2rem', fontFamily: '"Orbitron", sans-serif', color: 'var(--neon-pink)' }}>MYSTERY CRATE</h2>
-                    <p style={{ margin: '0 0 25px 0', color: '#ccc' }}>Get a RANDOM item for cheap!</p>
-
-                    <button
-                        onClick={() => {
-                            // Mystery Logic
-                            if (coins < 250) return;
-
-                            const lockedItems = SHOP_ITEMS.filter(i => !shopState.unlocked.includes(i.id));
-                            if (lockedItems.length === 0) {
-                                alert("You own everything! Wow!");
-                                return;
-                            }
-
-                            // Spin Effect?
-                            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-                            const winner = lockedItems[Math.floor(Math.random() * lockedItems.length)];
-                            const discountedItem = { ...winner, price: 250 }; // Override price
-
-                            buyItem(discountedItem);
-                            playCollect();
-                            triggerConfetti();
-
-                            alert(`You won: ${winner.name}!`);
-                        }}
-                        className={coins >= 250 ? "squishy-btn" : ""}
-                        style={{
-                            padding: '15px 40px', fontSize: '1.2rem', borderRadius: '50px',
-                            border: 'none',
-                            background: coins >= 250 ? 'var(--neon-gold)' : '#333',
-                            color: coins >= 250 ? 'black' : '#666',
-                            fontWeight: '900',
-                            cursor: coins >= 250 ? 'pointer' : 'not-allowed',
-                            boxShadow: coins >= 250 ? '0 0 20px rgba(255, 215, 0, 0.6)' : 'none'
-                        }}
-                    >
-                        SPIN FOR 250 🪙
-                    </button>
-                </div>
-                {/* Decoration */}
-                <div style={{ position: 'absolute', top: -30, left: -30, fontSize: '10rem', opacity: 0.1, filter: 'blur(5px)' }}>🎁</div>
-                <div style={{ position: 'absolute', bottom: -30, right: -30, fontSize: '10rem', opacity: 0.1, filter: 'blur(5px)' }}>✨</div>
-            </div>
+            {/* MYSTERY CRATE REMOVED BY USER REQUEST (Step 5496) */}
 
             {/* HERO MERCH CARD (Static) */}
             <div className="glass-panel" style={{

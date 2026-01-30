@@ -99,88 +99,92 @@ const DailyStash = ({ onClose }) => {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0,0,0,0.85)', zIndex: 6000,
+            background: 'rgba(0,0,0,0.9)', zIndex: 6000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(5px)'
+            backdropFilter: 'blur(10px)'
         }}>
             <div style={{
-                background: 'linear-gradient(180deg, #2b1d0e, #1a0b2e)',
+                background: 'linear-gradient(135deg, #FF9966, #FF5E62)', // Sunset Gradient
                 width: '90%', maxWidth: '400px',
                 padding: '40px 20px',
-                borderRadius: '20px',
+                borderRadius: '30px',
                 textAlign: 'center',
-                border: '4px solid #d4af37',
-                boxShadow: '0 0 50px rgba(212, 175, 55, 0.4)',
-                position: 'relative'
+                border: '4px solid white',
+                boxShadow: '0 0 80px rgba(255, 94, 98, 0.6)',
+                position: 'relative',
+                overflow: 'hidden'
             }}>
                 <button
                     onClick={onClose}
-                    style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: '#666', fontSize: '1.5rem', cursor: 'pointer' }}
+                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '50%', width: '40px', height: '40px', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                     ✕
                 </button>
 
-                <h1 style={{ color: '#d4af37', fontFamily: 'Kanit', textShadow: '0 2px 0 black', margin: '0 0 10px 0' }}>THE DAILY STASH</h1>
-                <div style={{ background: '#d4af37', color: 'black', display: 'inline-block', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold' }}>
-                    🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''}
-                </div>
+                <div style={{ position: 'relative', zIndex: 10 }}>
+                    <h1 style={{ color: 'white', fontFamily: '"Arial Black", sans-serif', textTransform: 'uppercase', fontSize: '2.5rem', textShadow: '0 5px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.4)', margin: '0 0 10px 0' }}>THE STASH</h1>
 
-                <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
+                    <div style={{ background: 'white', color: '#FF5E62', display: 'inline-block', padding: '5px 20px', borderRadius: '50px', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>
+                        🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''}
+                    </div>
+
+                    <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
+                        {status === 'LOCKED' && (
+                            <div
+                                onClick={openChest}
+                                style={{ fontSize: '10rem', cursor: 'pointer', animation: 'float 3s infinite ease-in-out', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}
+                            >
+                                🎁
+                                <div style={{ fontSize: '1rem', color: 'white', fontWeight: 'bold', marginTop: '-20px', opacity: 0.8 }}>TAP TO OPEN</div>
+                            </div>
+                        )}
+
+                        {status === 'OPENING' && (
+                            <div style={{ fontSize: '10rem', animation: 'shake 0.1s infinite', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}>
+                                🎁
+                            </div>
+                        )}
+
+                        {status === 'OPENED' && (
+                            <div style={{ animation: 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+                                <div style={{ fontSize: '8rem', marginBottom: '10px', filter: 'drop-shadow(0 0 30px gold)' }}>✨</div>
+                                <div style={{ fontSize: '2.5rem', color: 'white', fontWeight: '900', textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>{reward?.label}</div>
+                                {reward?.code && <div style={{ background: 'white', color: 'black', padding: '10px', marginTop: '10px', fontFamily: 'monospace', borderRadius: '10px', fontWeight: 'bold' }}>CODE: {reward.code}</div>}
+                            </div>
+                        )}
+
+                        {status === 'CLAIMED' && (
+                            <div>
+                                <div style={{ fontSize: '6rem', opacity: 0.5, filter: 'grayscale(1)' }}>🔒</div>
+                                <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'bold', fontSize: '1.2rem' }}>Come back in:</p>
+                                <div style={{ fontSize: '3rem', color: 'white', fontFamily: 'monospace', fontWeight: 'bold', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{timeLeft}</div>
+                            </div>
+                        )}
+                    </div>
+
                     {status === 'LOCKED' && (
-                        <div
-                            onClick={openChest}
-                            style={{ fontSize: '8rem', cursor: 'pointer', animation: 'bounce 1s infinite' }}
-                        >
-                            🎁
-                        </div>
-                    )}
-
-                    {status === 'OPENING' && (
-                        <div style={{ fontSize: '8rem', animation: 'shake 0.1s infinite' }}>
-                            🎁
-                        </div>
+                        <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'white', color: '#FF5E62', fontSize: '1.5rem', textTransform: 'uppercase' }}>
+                            OPEN CHEST
+                        </SquishyButton>
                     )}
 
                     {status === 'OPENED' && (
-                        <div style={{ animation: 'pop 0.5s' }}>
-                            <div style={{ fontSize: '6rem', marginBottom: '10px' }}>✨</div>
-                            <div style={{ fontSize: '2rem', color: 'white', fontWeight: 'bold' }}>{reward?.label}</div>
-                            {reward?.code && <div style={{ background: 'white', color: 'black', padding: '5px', marginTop: '10px', fontFamily: 'monospace' }}>CODE: {reward.code}</div>}
-                        </div>
+                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '20px', background: '#00ffaa', color: '#004400', fontSize: '1.5rem', textTransform: 'uppercase' }}>
+                            AWESOME!
+                        </SquishyButton>
                     )}
 
                     {status === 'CLAIMED' && (
-                        <div>
-                            <div style={{ fontSize: '5rem', opacity: 0.5 }}>🔒</div>
-                            <p style={{ color: '#aaa' }}>Come back in:</p>
-                            <div style={{ fontSize: '2rem', color: 'white', fontFamily: 'monospace' }}>{timeLeft}</div>
-                        </div>
+                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '20px', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: '1.2rem' }}>
+                            CLOSE
+                        </SquishyButton>
                     )}
                 </div>
-
-                {status === 'LOCKED' && (
-                    <SquishyButton onClick={openChest} style={{ width: '100%', background: '#d4af37', color: 'black' }}>
-                        OPEN CHEST
-                    </SquishyButton>
-                )}
-
-                {status === 'OPENED' && (
-                    <SquishyButton onClick={onClose} style={{ width: '100%', background: '#00ffaa' }}>
-                        AWESOME!
-                    </SquishyButton>
-                )}
-
-                {status === 'CLAIMED' && (
-                    <SquishyButton onClick={onClose} style={{ width: '100%', background: '#333' }}>
-                        CLOSE
-                    </SquishyButton>
-                )}
-
             </div>
             <style>{`
-                @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-                @keyframes shake { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
-                @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+                @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+                @keyframes shake { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+                @keyframes pop { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
             `}</style>
         </div>
     );
