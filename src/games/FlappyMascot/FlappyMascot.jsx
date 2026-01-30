@@ -247,24 +247,41 @@ const FlappyMascot = () => {
         // 1. Draw Wing (BACK) - Pixel Style
         // Flutter effect: Fast sine wave
         const flutter = Math.sin(Date.now() / 50) * 0.5; // Fast flutter
-        const wingAngle = (state.velocity * 0.1) + flutter;
+        // WING DRAWING FUNCTION (Classic Cartoon Bird Style)
+        const drawWing = (side = 'front') => {
+            const wingOffset = (state.velocity * 0.15) + flutter;
+            // Flap harder when going up
+            const flap = side === 'back' ? wingOffset * 0.8 : wingOffset;
 
-        ctx.save();
-        ctx.translate(-25, 10); // Shifted Back and Down to uncover face
-        ctx.rotate(wingAngle);
+            ctx.save();
+            ctx.translate(-20, 10); // Wing Root Position (Relative to Center)
+            ctx.rotate(flap);
 
-        ctx.fillStyle = '#fff';
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
+            ctx.fillStyle = '#fff'; // White Wings
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2.5;
 
-        // Pixel Wing Shape (Simple Rectangle with rounded cap?)
-        // Let's draw an oval but simplified
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+            ctx.beginPath();
+            // Angry Bird Wing Style (Rounded Chubby Triangle)
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(-15, -15, -35, -5); // Top Edge to Tip
+            ctx.quadraticCurveTo(-20, 10, 0, 5); // Bottom Edge back to Root
+            ctx.fill();
+            ctx.stroke();
 
-        ctx.restore();
+            // Detail Lines inside wing
+            ctx.beginPath();
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.moveTo(-10, -2);
+            ctx.lineTo(-25, -2);
+            ctx.stroke();
+
+            ctx.restore();
+        };
+
+        // 1. Draw Wing (BACK)
+        drawWing('back');
 
         // 2. Draw Legs (BACK)
         ctx.strokeStyle = 'orange';
@@ -286,16 +303,9 @@ const FlappyMascot = () => {
             else if (charData.id === 'flappy_face_bunny') img = bunnyImgRef.current;
 
             if (img && img.complete) {
-                // Determine source rect if sprite sheet, but here we assume single image
-                // Use source dimensions to prevent squashing if not square?
-                // For now, simple draw.
+                // Draw Image centered
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
             } else if (charData.id.startsWith('flappy_face')) {
-                // Dynamic Face Load for ball1-4
-                const num = charData.id.replace('flappy_face', '');
-                // Quick hack: Create image on fly if not ref'd? 
-                // Performance warning. Ideally use Ref map.
-                // But since we preloaded, cache should be hot.
                 const img = new Image();
                 img.src = charData.content;
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
@@ -308,27 +318,11 @@ const FlappyMascot = () => {
             ctx.font = '35px serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            // Adjust emoji position slightly to center it
             ctx.fillText(charData.content, 0, 2);
         }
 
         // 4. Draw Wing (FRONT)
-        ctx.save();
-        ctx.translate(-25, 10); // Matched Back Wing Position
-        ctx.rotate(wingAngle);
-
-        ctx.fillStyle = '#fff';
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 16, 11, 0, 0, Math.PI * 2); // Slightly larger
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.restore();
-
-        ctx.restore();
+        drawWing('front');
 
         // Ground
         ctx.fillStyle = '#ded895';
