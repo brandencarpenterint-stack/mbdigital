@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
+import { feedService } from '../../utils/feed';
+
+const BIOMES = [
+    { name: 'NEON CITY', bg: '#0d0221', grid: '#ff00ff', obs: ['#00ffaa', '#ff00ff'] },
+    { name: 'MAGMA CORE', bg: '#220000', grid: '#ff4400', obs: ['#ffaa00', '#ff4400'] },
+    { name: 'ICE CAVERN', bg: '#001133', grid: '#00ffff', obs: ['#ffffff', '#88ccff'] },
+    { name: 'TOXIC JUNGLE', bg: '#002200', grid: '#00ff00', obs: ['#ccff00', '#009900'] },
+    { name: 'THE VOID', bg: '#ffffff', grid: '#000000', obs: ['#000000', '#333333'] }
+];
 
 const FaceRunner = () => {
     const canvasRef = useRef(null);
@@ -16,16 +25,18 @@ const FaceRunner = () => {
     // State
     const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
     const [score, setScore] = useState(0);
-    const [selectedFace, setSelectedFace] = useState('face_money'); // default
-    // Using Ref for speed to avoid closure staleness in gameLoop
-    const speedRef = useRef(20);
-    const playingRef = useRef(false); // Track playing state for loop
+    const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('faceRunnerHighScore')) || 0);
+    const [selectedFace, setSelectedFace] = useState('face_money');
 
-    // Refs
-    const playerRef = useRef({ x: 0, y: 0, tilt: 0, squash: 1 });
-    const obstaclesRef = useRef([]); // {x, y, z, type}
-    const particlesRef = useRef([]);
+    // Refs for Loop
+    const playingRef = useRef(false);
+    const speedRef = useRef(20);
     const scoreRef = useRef(0);
+    const biomeIndexRef = useRef(0);
+
+    // Entities
+    const playerRef = useRef({ x: 0, y: 0, squash: 1 });
+    const obstaclesRef = useRef([]); // {x, y, z, color, rot}
     const requestRef = useRef(null);
 
     // Assets
@@ -33,58 +44,63 @@ const FaceRunner = () => {
 
     useEffect(() => {
         // Preload Faces
-        const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default', 'face_cat'];
+        const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default'];
         faces.forEach(f => {
             const img = new Image();
-            img.src = `/assets/skins/${f}.png?t=${Date.now()}`;
-            img.onerror = () => {
-                console.error(`Failed to load: ${f}`);
-                faceImgs.current[f] = null; // Fallback
-            };
+            img.src = `/assets/skins/${f}.png`;
             faceImgs.current[f] = img;
         });
+        return () => cancelAnimationFrame(requestRef.current);
     }, []);
 
     const startGame = () => {
         setGameState('PLAYING');
         playingRef.current = true;
         setScore(0);
-        speedRef.current = 20;
+        speedRef.current = 25; // Good starting speed
         scoreRef.current = 0;
-        playerRef.current = { x: 0, y: 0, tilt: 0, squash: 1 };
+        biomeIndexRef.current = 0;
+        playerRef.current = { x: 0, y: 0, squash: 1 };
         obstaclesRef.current = [];
-        particlesRef.current = [];
 
-        // Init Loop
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const spawnObstacle = () => {
-        // Spawn far away (z = TUNNEL_DEPTH)
-        // x,y range: -width/2 to width/2
+    const spawnObstacle = (currentBiome) => {
         const spread = 800;
+        const color = currentBiome.obs[Math.floor(Math.random() * currentBiome.obs.length)];
         obstaclesRef.current.push({
-            x: (Math.random() - 0.5) * spread,
-            y: (Math.random() - 0.5) * spread,
+            x: (Math.random() - 0.5) * spread * 1.5,
+            y: (Math.random() - 0.5) * spread * 1.5,
             z: TUNNEL_DEPTH,
-            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-            rot: Math.random() * Math.PI
+            color: color,
+            rot: Math.random() * Math.PI,
+            size: 100 + Math.random() * 100 // Varied sizes
         });
     };
 
     const gameLoop = () => {
+        if (!canvasRef.current) return;
         const ctx = canvasRef.current.getContext('2d');
         const width = CANVAS_WIDTH;
         const height = CANVAS_HEIGHT;
         const cx = width / 2;
         const cy = height / 2;
 
-        try {
-            // --- UPDATE ---
+        // Biome Logic
+        const distance = Math.floor(scoreRef.current);
+        const biomeStage = Math.floor(distance / 2500) % BIOMES.length;
+        biomeIndexRef.current = biomeStage;
+        const currentBiome = BIOMES[biomeStage];
 
-            // Spawn
-            if (Math.random() < 0.05 + (scoreRef.current * 0.0001)) {
-                spawnObstacle();
+        // --- UPDATE ---
+        if (playingRef.current) {
+            // Speed up slightly over time
+            speedRef.current = Math.min(25 + (scoreRef.current * 0.005), 80);
+
+            // Spawn Rate
+            if (Math.random() < 0.08) {
+                spawnObstacle(currentBiome);
             }
 
             // Move Obstacles
@@ -94,239 +110,182 @@ const FaceRunner = () => {
 
                 if (obs.z <= 0) {
                     obstaclesRef.current.splice(i, 1);
-                    scoreRef.current += 10;
-                    setScore(scoreRef.current);
-                    // Increase Speed cap at 80
-                    speedRef.current = Math.min(speedRef.current + 0.1, 80);
+                    scoreRef.current += 5; // 5m per obstacle passed
+                    setScore(Math.floor(scoreRef.current));
+                }
+            }
+        }
+
+        // --- DRAW ---
+        ctx.fillStyle = currentBiome.bg;
+        ctx.fillRect(0, 0, width, height);
+
+        // Tunnel Effect
+        ctx.strokeStyle = currentBiome.grid;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Radial Lines
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(angle) * width, cy + Math.sin(angle) * height);
+        }
+        // Moving Rings
+        const offset = (performance.now() * speedRef.current * 0.05) % 500;
+        for (let z = 500; z > 0; z -= 500 / 5) { // Fewer rings for mobile performance
+            const d = (z - offset + 500) % 500; // 0 to 500
+            if (d < 10) continue;
+            const scale = 500 / d; // Fake perspective
+            // Just draw a rect for speed instead of complex path
+            const size = 50 * scale;
+            if (size < width * 2) {
+                ctx.rect(cx - size, cy - size, size * 2, size * 2);
+            }
+        }
+        ctx.stroke();
+
+        // Obstacles
+        obstaclesRef.current.sort((a, b) => b.z - a.z);
+        obstaclesRef.current.forEach(obs => {
+            if (obs.z < 10) return;
+            const fov = 600;
+            const scale = fov / obs.z;
+            const sx = cx + obs.x * scale;
+            const sy = cy + obs.y * scale;
+            const size = obs.size * scale;
+
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(obs.rot + (performance.now() * 0.002));
+
+            // Hitbox Check
+            if (obs.z < 100 && playingRef.current) {
+                const dx = sx - (cx + playerRef.current.x);
+                const dy = sy - (cy + playerRef.current.y);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < (size / 2 + 30)) { // 30 is player radius approx
+                    handleCrash();
                 }
             }
 
-            // --- DRAW ---
-            // 1. Clear & Background
-            ctx.fillStyle = '#110022';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = obs.color;
+            ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
+            ctx.fillRect(-size / 2, -size / 2, size, size);
+            // Detail
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
+            ctx.restore();
+        });
 
-            // Tunnel Grid Effect
-            ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for (let i = 0; i < 20; i++) {
-                // Concentric Lines
-                const z = (performance.now() * speedRef.current * 0.1 + i * 200) % 2000;
-                const s = 400 / (z + 1);
-                if (s > 0) {
-                    ctx.rect(cx - width * s, cy - height * s, width * s * 2, height * s * 2);
-                }
-            }
-            // Radial Lines
-            ctx.moveTo(cx, cy); ctx.lineTo(0, 0);
-            ctx.moveTo(cx, cy); ctx.lineTo(width, 0);
-            ctx.moveTo(cx, cy); ctx.lineTo(0, height);
-            ctx.moveTo(cx, cy); ctx.lineTo(width, height);
-            ctx.stroke();
-
-
-            // 2. Draw Obstacles (Back to Front)
-            obstaclesRef.current.sort((a, b) => b.z - a.z); // Draw farthest first
-
-            obstaclesRef.current.forEach(obs => {
-                if (obs.z < 10) return; // Too close / behind
-
-                const fov = 600;
-                const scale = fov / obs.z;
-                const sx = cx + obs.x * scale;
-                const sy = cy + obs.y * scale;
-                const size = 150 * scale; // Base size of obstacle
-
-                ctx.save();
-                ctx.translate(sx, sy);
-                ctx.rotate(obs.rot + (performance.now() * 0.005));
-
-                // Check Collision here where we know Screen X/Y
-                // Player is at PlayerRef.x + cx, PlayerRef.y + cy
-                if (obs.z < 100) {
-                    const dx = sx - (cx + playerRef.current.x);
-                    const dy = sy - (cy + playerRef.current.y);
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < (size / 2 + 40)) { // 40 is player radius
-                        // CRASH
-                        handleCrash(ctx);
-                        return;
-                    }
-                }
-
-                ctx.fillStyle = obs.color;
-                ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
-
-                // Inner
-                ctx.fillStyle = 'black';
-                ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
-
-                ctx.restore();
-            });
-
-            if (!playingRef.current) return;
-
-            // 3. Draw Player Face
-            // Mouse controls offset
+        // Player
+        if (playingRef.current) {
             const p = playerRef.current;
-            p.tilt *= 0.9;
-            p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05; // Breathing
+            p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05;
 
             ctx.save();
             ctx.translate(cx + p.x, cy + p.y);
-            ctx.rotate(p.x * 0.001); // Tilt based on movement
             ctx.scale(p.squash, 1 / p.squash);
 
             const img = faceImgs.current[selectedFace];
-            const faceSize = 120; // Big face!
+            const size = 100;
+
             if (img && img.complete && img.naturalWidth > 0) {
-                ctx.drawImage(img, -faceSize / 2, -faceSize / 2, faceSize, faceSize);
+                ctx.shadowBlur = 20; ctx.shadowColor = 'white';
+                ctx.drawImage(img, -size / 2, -size / 2, size, size);
             } else {
                 ctx.fillStyle = 'white';
-                ctx.strokeStyle = '#00ffaa';
-                ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.arc(0, 0, faceSize / 2, 0, Math.PI * 2);
-                ctx.fill(); ctx.stroke();
-
-                // Eyes for fallback
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(-20, -10, 10, 0, Math.PI * 2);
-                ctx.arc(20, -10, 10, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
             }
-
             ctx.restore();
-
-            // DEBUG INFO ON SCREEN
-            ctx.fillStyle = 'lime';
-            ctx.font = '12px monospace';
-            ctx.fillText(`State: ${gameState}`, 10, 20);
-            ctx.fillText(`PlayingRef: ${playingRef.current}`, 10, 35);
-            ctx.fillText(`Obs: ${obstaclesRef.current.length}`, 10, 50);
-            const currentImg = faceImgs.current[selectedFace];
-            ctx.fillText(`Face: ${selectedFace} (${currentImg ? (currentImg.complete ? 'OK' : 'Loading') : 'Missing'})`, 10, 65);
-            ctx.fillText(`Pos: ${Math.round(p.x)}, ${Math.round(p.y)}`, 10, 80);
-
-
-        } catch (err) {
-            console.error("Game Loop Error:", err);
-            cancelAnimationFrame(requestRef.current);
-            return;
         }
+
+        // HUD - Biome Name (Cinematic)
+        ctx.fillStyle = 'white';
+        ctx.font = '20px "Orbitron", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(currentBiome.name, cx, 40);
+        ctx.font = '14px monospace';
+        ctx.fillText(`DISTANCE: ${Math.floor(scoreRef.current)}m`, cx, 65);
 
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const handleCrash = (ctx) => {
-        const finalScore = scoreRef.current;
-        const highScore = parseInt(localStorage.getItem('faceRunnerHighScore')) || 0;
+    const handleCrash = () => {
+        const finalScore = Math.floor(scoreRef.current);
         if (finalScore > highScore) {
             localStorage.setItem('faceRunnerHighScore', finalScore);
+            setHighScore(finalScore);
+            feedService.publish(`reached ${finalScore}m in Face Runner!`, 'win');
         }
         setGameState('GAME_OVER');
         playingRef.current = false;
         playCrash();
-        cancelAnimationFrame(requestRef.current);
     };
 
-    const handleMouseMove = (e) => {
-        if (gameState !== 'PLAYING') return;
+    const handleInput = (clientX, clientY) => {
+        if (!canvasRef.current) return;
         const rect = canvasRef.current.getBoundingClientRect();
         const scaleX = CANVAS_WIDTH / rect.width;
         const scaleY = CANVAS_HEIGHT / rect.height;
 
-        // Relative to center
-        // Limit movement
-        const rawX = (e.clientX - rect.left) * scaleX - (CANVAS_WIDTH / 2);
-        const rawY = (e.clientY - rect.top) * scaleY - (CANVAS_HEIGHT / 2);
+        // Map input to canvas coordinates relative to center
+        // Limit x/y to bounds
+        let x = (clientX - rect.left) * scaleX - (CANVAS_WIDTH / 2);
+        let y = (clientY - rect.top) * scaleY - (CANVAS_HEIGHT / 2);
 
-        playerRef.current.x = rawX;
-        playerRef.current.y = rawY;
+        // Clamp
+        x = Math.max(-CANVAS_WIDTH / 2 + 50, Math.min(CANVAS_WIDTH / 2 - 50, x));
+        y = Math.max(-CANVAS_HEIGHT / 2 + 50, Math.min(CANVAS_HEIGHT / 2 - 50, y));
+
+        playerRef.current.x = x;
+        playerRef.current.y = y;
     };
 
     return (
-        <div style={{
-            width: '100%', minHeight: '100vh',
-            background: '#0a0a1a',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontFamily: '"Orbitron", sans-serif',
-            overflow: 'hidden'
+        <div className="page-enter" style={{
+            position: 'fixed', inset: 0,
+            background: 'black',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            touchAction: 'none' // DISALLOW SCROLLING
         }}>
-            <h1 style={{ fontSize: '3rem', color: '#00ffaa', textShadow: '0 0 20px #00ffaa', marginBottom: '10px' }}>FACE WARP</h1>
+            <canvas
+                ref={canvasRef}
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                onMouseMove={(e) => handleInput(e.clientX, e.clientY)}
+                onTouchMove={(e) => {
+                    e.preventDefault(); // Stop scroll
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }}
+                onTouchStart={(e) => {
+                    // Initial jump to finger
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }}
+                style={{
+                    width: '100%', height: '100%',
+                    objectFit: 'contain',
+                    maxWidth: '800px', maxHeight: '600px',
+                    // Border changes color with Biome
+                    border: `4px solid ${BIOMES[Math.floor(Math.floor(score) / 2500) % BIOMES.length]?.obs[0] || 'white'}`
+                }}
+            />
 
-            <div style={{
-                position: 'relative',
-                border: '4px solid #00ffaa',
-                boxShadow: '0 0 50px rgba(0, 255, 170, 0.2)',
-                cursor: 'none' // Hide cursor for immersion
-            }}>
-                <canvas
-                    ref={canvasRef}
-                    width={CANVAS_WIDTH}
-                    height={CANVAS_HEIGHT}
-                    onMouseMove={handleMouseMove}
-                    onTouchMove={(e) => {
-                        e.preventDefault();
-                        const touch = e.touches[0];
-                        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-                    }}
-                    style={{ background: 'black', display: 'block', maxWidth: '100vw' }}
-                />
+            {gameState === 'START' && (
+                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '2px solid cyan' }}>
+                    <h1 style={{ color: 'cyan', fontSize: '3rem', margin: 0 }}>FACE WARP</h1>
+                    <p style={{ color: 'white', marginBottom: '20px' }}>Avoid the Void.</p>
+                    <SquishyButton onClick={startGame} style={{ background: 'cyan', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>RUN</SquishyButton>
+                </div>
+            )}
 
-                {/* UI OVERLAY */}
-                {gameState !== 'PLAYING' && (
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'default'
-                    }}>
-                        {gameState === 'GAME_OVER' && (
-                            <>
-                                <h2 style={{ fontSize: '4rem', color: '#ff0055', margin: 0 }}>CRASHED!</h2>
-                                <p style={{ fontSize: '2rem' }}>Score: {score}</p>
-                            </>
-                        )}
-
-                        <div style={{ margin: '30px 0', display: 'flex', gap: '20px' }}>
-                            {['face_money', 'face_bear', 'face_bunny', 'face_cat', 'face_default'].map(f => (
-                                <button
-                                    key={f}
-                                    onClick={() => setSelectedFace(f)}
-                                    style={{
-                                        background: selectedFace === f ? '#00ffaa' : '#333',
-                                        border: 'none', borderRadius: '10px', padding: '10px',
-                                        transform: selectedFace === f ? 'scale(1.1)' : 'scale(1)',
-                                        transition: 'all 0.2s',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <img src={`/assets/skins/${f}.png`} width="60" height="60" style={{ display: 'block' }} />
-                                </button>
-                            ))}
-                        </div>
-
-                        <SquishyButton onClick={startGame} style={{
-                            fontSize: '2rem', padding: '20px 60px',
-                            background: 'linear-gradient(45deg, #00ffaa, #00ccff)',
-                            color: 'black', fontWeight: '900'
-                        }}>
-                            {gameState === 'START' ? 'ENTER TUNNEL' : 'WARP AGAIN'}
-                        </SquishyButton>
-                    </div>
-                )}
-
-                {gameState === 'PLAYING' && (
-                    <div style={{ position: 'absolute', top: 20, right: 20, fontSize: '2rem', fontWeight: 'bold' }}>
-                        SCORE: {score}
-                    </div>
-                )}
-            </div>
-
-            <p style={{ marginTop: '20px', color: '#888' }}>Use Mouse/Touch to dodge the blocks!</p>
+            {gameState === 'GAME_OVER' && (
+                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '2px solid red' }}>
+                    <h1 style={{ color: 'red', fontSize: '3rem', margin: 0 }}>CRASHED!</h1>
+                    <p style={{ color: 'white', fontSize: '2rem', fontWeight: 'bold' }}>{Math.floor(score)}m</p>
+                    <p style={{ color: '#aaa', marginBottom: '20px' }}>BEST: {highScore}m</p>
+                    <SquishyButton onClick={startGame} style={{ background: 'white', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>AGAIN</SquishyButton>
+                </div>
+            )}
         </div>
     );
 };
