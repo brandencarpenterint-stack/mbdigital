@@ -10,7 +10,7 @@ const AVATARS = [
 ];
 
 const OnboardingModal = () => {
-    const { updateProfile, earnCoins, userProfile } = useGamification() || {};
+    const { updateProfile, addCoins, userProfile } = useGamification() || {};
     const [visible, setVisible] = useState(false);
 
     // Form State
@@ -31,12 +31,12 @@ const OnboardingModal = () => {
             return;
         }
 
-        if (updateProfile && earnCoins) {
+        if (updateProfile && addCoins) {
             // 1. Update Profile
             updateProfile({ name: name.toUpperCase(), avatar: avatar });
 
             // 2. Award Starter Funds
-            earnCoins(500);
+            addCoins(500);
 
             // 3. Mark Complete
             localStorage.setItem('arcade_hasOnboarded', 'true');
