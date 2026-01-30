@@ -17,11 +17,13 @@ const MODEL_FRIENDS = [
 ];
 
 const ProfileModal = ({ onClose }) => {
-    const { unlockedAchievements, stats, userProfile, updateProfile } = useGamification();
+    const { unlockedAchievements, stats, userProfile, updateProfile, getLevelInfo } = useGamification();
     const [activeTab, setActiveTab] = useState('PROFILE'); // PROFILE, SQUAD
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(userProfile.name);
     const [editAvatar, setEditAvatar] = useState(userProfile.avatar);
+
+    const levelInfo = getLevelInfo();
 
     // Squad State
     const [friendCode, setFriendCode] = useState('');
@@ -146,9 +148,25 @@ const ProfileModal = ({ onClose }) => {
                                 <div style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3px solid white', overflow: 'hidden' }}>
                                     <img src={userProfile.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </div>
-                                <div>
+                                <div style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0, fontSize: '1.8rem' }}>{userProfile.name}</h3>
-                                    <button onClick={() => setIsEditing(true)} style={{ background: 'transparent', border: 'none', color: '#63b3ed', cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+                                        <div style={{
+                                            background: 'linear-gradient(90deg, #ff0080, #7928ca)',
+                                            padding: '2px 8px', borderRadius: '4px',
+                                            fontSize: '0.8rem', fontWeight: 'bold'
+                                        }}>
+                                            LVL {levelInfo.level}
+                                        </div>
+                                        <div style={{ flex: 1, height: '6px', background: '#333', borderRadius: '3px', overflow: 'hidden' }}>
+                                            <div style={{ width: `${levelInfo.progress}%`, height: '100%', background: '#00ffaa' }} />
+                                        </div>
+                                        <div style={{ fontSize: '0.7rem', color: '#aaa' }}>{Math.floor(levelInfo.progress)}%</div>
+                                    </div>
+                                    <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '2px' }}>
+                                        {Math.floor(levelInfo.xp)} / {Math.floor(levelInfo.nextXP)} XP
+                                    </div>
+                                    <button onClick={() => setIsEditing(true)} style={{ background: 'transparent', border: 'none', color: '#63b3ed', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem' }}>
                                         EDIT PROFILE ✏️
                                     </button>
                                 </div>
