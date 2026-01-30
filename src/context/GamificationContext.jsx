@@ -5,6 +5,7 @@ import { SHOP_ITEMS } from '../config/ShopItems';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
 import { triggerConfetti } from '../utils/confetti';
+import { supabase } from '../lib/supabaseClient';
 
 const GamificationContext = createContext();
 
@@ -87,6 +88,104 @@ export const GamificationProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('merchboy_achievements', JSON.stringify(unlockedAchievements));
     }, [unlockedAchievements]);
+
+    // --- CLOUD SYNC ---
+    useEffect(() => {
+        const syncCloud = async () => {
+            if (!supabase) return;
+            let storedId = localStorage.getItem('merchboy_client_id');
+
+            // Generate ID if missing (First Time)
+            if (!storedId) {
+                // If creating profile, we likely want to associate with existing data if possible?
+                // For now, random UUID for device.
+                try {
+                    storedId = crypto.randomUUID();
+                } catch (e) {
+                    storedId = `LEGACY-${Math.floor(Math.random() * 1000000)}`;
+                }
+                localStorage.setItem('merchboy_client_id', storedId);
+
+                // Try Upsert initial state
+                await supabase.from('profiles').upsert({
+                    id: storedId,
+                    display_name: userProfile.name,
+                    friend_code: userProfile.code,
+                    coins: coins,
+                    stats: stats,
+                    achievements: unlockedAchievements,
+                    daily_data: dailyState,
+                    settings: { version: '1.0' },
+                    last_seen: new Date()
+                }, { onConflict: 'id' });
+                return;
+            }
+
+            // Attempt Load
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', storedId).single();
+            if (data) {
+                console.log("☁️ CLOUD SYNC: Loading Profile", data);
+                // HYDRATE STATE FROM CLOUD
+                if (data.coins !== undefined && data.coins !== null) setCoins(Number(data.coins));
+                if (data.stats && typeof data.stats === 'object') setStats(data.stats);
+                if (data.achievements && Array.isArray(data.achievements)) setUnlockedAchievements(data.achievements);
+                if (data.daily_data) setDailyState(data.daily_data);
+
+                // Update Profile Info
+                setUserProfile(prev => ({
+                    ...prev,
+                    name: data.display_name || prev.name,
+                    avatar: data.avatar_url || prev.avatar,
+                    code: data.friend_code || prev.code
+                }));
+
+                // If cloud data exists, load it
+                // setCoins(data.coins); // Wait, this might reset local progress if offline play happened.
+                // For now, just log it.
+                // console.log("Cloud Sync Active:", data);
+            }
+        };
+        syncCloud();
+    }, []);
+
+    // Debounced Save
+    useEffect(() => {
+        const timeout = setTimeout(async () => {
+            const storedId = localStorage.getItem('merchboy_client_id');
+            if (storedId) {
+                // Calculate XP locally to avoid ReferenceError
+                const achXP = unlockedAchievements.length * 500;
+                const fishXP = (stats.fishCaught || 0) * 50;
+                const gamesXP = (stats.gamesPlayedCount || 0) * 100;
+                const currentTotalXP = achXP + fishXP + gamesXP;
+
+                try {
+                    await supabase.from('profiles').upsert({
+                        id: storedId,
+                        display_name: userProfile.name,
+                        friend_code: userProfile.code,
+                        avatar_url: userProfile.avatar,
+                        coins: coins,
+                        xp: currentTotalXP,
+                        games_played: stats.gamesPlayedCount || 0,
+                        high_scores: {
+                            merch_jump: stats.merchJumpHighScore || 0,
+                            snake: stats.snakeHighScore || 0,
+                            flappy: stats.flappyHighScore || 0
+                        },
+                        stats: stats,
+                        achievements: unlockedAchievements,
+                        daily_data: dailyState,
+                        last_seen: new Date()
+                    });
+                } catch (e) {
+                    console.error("Cloud Save Failed", e);
+                }
+            }
+        }, 3000); // 3 seconds debounce
+        return () => clearTimeout(timeout);
+    }, [coins, stats, userProfile, unlockedAchievements, dailyState]);
+
 
     // Check Achievements whenever stats change
     useEffect(() => {
