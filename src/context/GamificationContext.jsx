@@ -282,6 +282,23 @@ export const GamificationProvider = ({ children }) => {
 
     // ... (rest of context) ...
 
+    const claimDailyLogin = () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (dailyState.lastCheckIn === today) return false;
+
+        setDailyState(prev => ({
+            ...prev,
+            lastCheckIn: today,
+            streak: prev.streak + 1
+        }));
+
+        playWin();
+        triggerConfetti();
+        addCoins(100);
+        showToast("Daily Login: +100 Coins", "coin");
+        return true;
+    };
+
     const skipQuest = (questId) => {
         if (dailyState.skipsAvailable <= 0) {
             showToast("No skips left today!", "error");
