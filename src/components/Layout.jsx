@@ -6,12 +6,14 @@ import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
+import { useTheme } from '../context/ThemeContext';
 import DailyStash from './DailyStash';
 import DailyQuestModal from './DailyQuestModal';
 import OnboardingModal from './OnboardingModal';
 import SocialSidebar from './SocialSidebar';
 import PocketCompanion from './PocketCompanion';
 import HypeTicker from './HypeTicker';
+import PirateRadio from './PirateRadio';
 import useRetroSound from '../hooks/useRetroSound';
 import './Layout.css';
 
@@ -28,6 +30,7 @@ const Layout = () => {
     const { dailyState, shopState } = useGamification() || { dailyState: null, shopState: null };
     const { soundEnabled, toggleSound } = useSettings();
     const { getMood, isCritical } = usePocketBro() || { getMood: () => '🥚', isCritical: false };
+    const { setThemeId } = useTheme();
 
     // Glitch State
     const [clickCount, setClickCount] = useState(0);
@@ -95,50 +98,13 @@ const Layout = () => {
         }
     }, [glitchMode]);
 
-    // Theme Switcher
+    // Theme Switcher - Sync from Shop State to Theme Context
     useEffect(() => {
-        const equippedTheme = shopState?.equipped?.theme || 'default';
-        const root = document.documentElement.style;
-        const body = document.body.style;
-
-        if (equippedTheme === 'theme_matrix') {
-            root.setProperty('--bg-deep', '#000000');
-            root.setProperty('--neon-blue', '#00ff00');
-            root.setProperty('--neon-pink', '#003300'); // Low key matrix
-            body.backgroundImage = 'linear-gradient(0deg, rgba(0,255,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,0,0.1) 1px, transparent 1px)';
-            body.backgroundSize = '20px 20px';
-        } else if (equippedTheme === 'theme_sunset') {
-            root.setProperty('--bg-deep', '#2e003e');
-            root.setProperty('--neon-blue', '#00d2ff');
-            root.setProperty('--neon-pink', '#ff0055');
-            root.setProperty('--glass-surface', 'rgba(255, 100, 200, 0.1)');
-            body.backgroundImage = 'linear-gradient(to bottom, #2e003e 0%, #000 100%)';
-            body.backgroundSize = 'cover';
-        } else if (equippedTheme === 'theme_gold') {
-            root.setProperty('--bg-deep', '#050505');
-            root.setProperty('--neon-blue', '#ffd700');
-            root.setProperty('--neon-pink', '#ffffff');
-            root.setProperty('--glass-border', 'rgba(255, 215, 0, 0.3)');
-            body.backgroundImage = 'radial-gradient(circle at center, #222 0%, #000 100%)';
-            body.backgroundSize = 'cover';
-        } else if (equippedTheme === 'theme_space') {
-            root.setProperty('--bg-deep', '#000');
-            root.setProperty('--neon-blue', '#ffffff');
-            root.setProperty('--neon-pink', '#0044ff');
-            body.backgroundImage = 'none'; // Allow CSS stars or just black
-            body.backgroundColor = '#000';
-        } else {
-            // Reset to Default
-            root.removeProperty('--bg-deep');
-            root.removeProperty('--neon-blue');
-            root.removeProperty('--neon-pink');
-            root.removeProperty('--glass-surface');
-            root.removeProperty('--glass-border');
-            body.backgroundImage = '';
-            body.backgroundSize = '';
-            body.backgroundColor = '';
+        const equippedTheme = shopState?.equipped?.theme;
+        if (equippedTheme) {
+            setThemeId(equippedTheme);
         }
-    }, [shopState?.equipped?.theme]);
+    }, [shopState?.equipped?.theme, setThemeId]);
 
     // Red Dot Logic
     const hasUnclaimedQuests = dailyState?.quests?.some(q => q.progress >= q.target && !q.claimed);
@@ -262,6 +228,9 @@ const Layout = () => {
 
             {!isFullScreenGame && (
                 <>
+                    {/* PIRATE RADIO */}
+                    <PirateRadio />
+
                     {/* THE UTILITY BELT (Bottom Dock) */}
                     <div className="glass-panel" style={{
                         position: 'fixed',
