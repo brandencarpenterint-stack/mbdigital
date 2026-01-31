@@ -42,12 +42,18 @@ export const GamificationProvider = ({ children }) => {
         // Generate a persistent code if one doesn't exist
         if (!stored.code) {
             stored.code = `OP-${Math.floor(Math.random() * 9000 + 1000)}`;
-            // We'll save this back to storage in the effect or next update, 
-            // but returning it ensures it's in state immediately.
+        }
+
+        // 2026-01-31: No more generic 'OPERATOR'. Generate cool default.
+        if (!stored.name || stored.name === 'OPERATOR') {
+            const prefixes = ['AGENT', 'NEON', 'CYBER', 'COSMIC', 'VOID', 'SHADOW', 'PIXEL'];
+            const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const randomSuffix = Math.floor(Math.random() * 9999);
+            stored.name = `${randomPrefix}-${randomSuffix}`;
         }
 
         return {
-            name: stored.name || 'OPERATOR',
+            name: stored.name,
             avatar: stored.avatar || '/assets/merchboy_face.png',
             code: stored.code,
             squad: stored.squad || null,
@@ -55,7 +61,47 @@ export const GamificationProvider = ({ children }) => {
         };
     });
 
-    const updateProfile = (updates) => {
+    const updateProfile = async (updates) => {
+        // Special Handling for Name Updates
+        if (updates.name) {
+            let proposedName = updates.name.trim().toUpperCase();
+
+            // 1. Block "OPERATOR"
+            if (proposedName === 'OPERATOR') {
+                showToast("Name 'OPERATOR' is restricted.", 'error');
+                return;
+            }
+
+            // 2. Length Check
+            if (proposedName.length < 3 || proposedName.length > 15) {
+                showToast("Name must be 3-15 chars.", "error");
+                return;
+            }
+
+            // 3. Profanity/Forbidden Block (Simple List)
+            const forbidden = ['ADMIN', 'SYSTEM', 'MOD', 'NULL', 'UNDEFINED'];
+            if (forbidden.some(word => proposedName.includes(word))) {
+                showToast("Name contains restricted words.", "error");
+                return;
+            }
+
+            // 4. Uniqueness Check (Supabase)
+            if (session && supabase) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .ilike('display_name', proposedName) // Case-insensitive check
+                    .neq('id', session.user.id); // Exclude self
+
+                if (data && data.length > 0) {
+                    showToast(`Name '${proposedName}' is taken!`, 'error');
+                    return;
+                }
+            }
+
+            updates.name = proposedName;
+        }
+
         setUserProfile(prev => {
             const newState = { ...prev, ...updates };
             localStorage.setItem('merchboy_profile', JSON.stringify(newState));
