@@ -10,7 +10,7 @@ import { triggerConfetti } from '../utils/confetti';
 
 import PocketRoom from './PocketRoom';
 import { DECOR_ITEMS } from '../config/DecorItems';
-import SootSprite from './SootSprite';
+// import SootSprite from './SootSprite'; // Component missing, disabled for build fix
 
 const AVATARS = [
     '/assets/skins/face_default.png',
@@ -448,11 +448,12 @@ const ProfileModal = ({ onClose }) => {
                                         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                                         zIndex: 20, pointerEvents: 'none'
                                     }}>
-                                        <SootSprite
+                                        {/* <SootSprite
                                             stage={visitingFriend.pocket_state?.stage || 'EGG'}
                                             mood={visitingFriend.pocket_state?.happy > 50 ? 'happy' : 'sad'}
-                                            skin={null} // TODO: Add skin to mock data
-                                        />
+                                            skin={null} 
+                                        /> */}
+                                        <div style={{ fontSize: '3rem' }}>🥚</div>
                                     </div>
                                 </div>
 

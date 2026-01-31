@@ -219,7 +219,7 @@ const SettingsPage = () => {
                                     style={{
                                         flex: 1, minWidth: '140px',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                                        padding: '12px', borderRadius: '10px', border: 'none',
+                                        padding: '12px', borderRadius: '10px',
                                         background: 'black', color: 'white', fontWeight: 'bold', cursor: 'pointer',
                                         fontFamily: 'inherit', border: '1px solid #333'
                                     }}
