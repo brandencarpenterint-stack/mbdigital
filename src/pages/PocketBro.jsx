@@ -172,7 +172,7 @@ const PocketBro = () => {
 
     return (
         <div className="page-enter" style={{
-            background: stats.tempStatus === 'shine' ? 'radial-gradient(circle, gold, #222)' : 'radial-gradient(circle at center, #2e003e 0%, #000000 100%)',
+            background: stats.tempStatus === 'shine' ? 'radial-gradient(circle, gold, #222)' : 'transparent', // Transparency allows global CosmicBackground
             transition: 'background 1s',
             minHeight: '100vh',
             display: 'flex',
@@ -198,23 +198,24 @@ const PocketBro = () => {
                 {/* THE DEVICE */}
                 <div style={{
                     width: '320px',
-                    background: 'linear-gradient(145deg, #222, #111)',
-                    borderRadius: '50px 50px 50px 50px',
-                    padding: '30px',
-                    boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.1)',
-                    border: '4px solid #333',
+                    background: 'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
+                    borderRadius: '40px',
+                    padding: '25px',
+                    boxShadow: '0 50px 100px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05)',
+                    border: '1px solid #333',
                     position: 'relative'
                 }}>
 
                     {/* Screen */}
                     <div className={bgItem ? bgItem.className : ''} style={{
                         height: '320px',
-                        background: bgItem ? bgItem.css.background : '#9ea7a0',
-                        backgroundImage: bgItem ? bgItem.css.backgroundImage : (!bgItem ? 'radial-gradient(#8b968d 15%, transparent 16%), radial-gradient(#8b968d 15%, transparent 16%)' : undefined),
-                        backgroundSize: bgItem ? undefined : '10px 10px',
-                        borderRadius: '20px',
-                        border: '8px solid #000',
-                        boxShadow: 'inset 5px 5px 15px rgba(0,0,0,0.4)',
+                        background: bgItem ? bgItem.css.background : '#8b9bb4', // LCD Base Color
+                        // Default to Scanlines if no BG, otherwise use BG css
+                        backgroundImage: bgItem ? bgItem.css.backgroundImage : 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+                        backgroundSize: bgItem ? undefined : '100% 2px, 3px 100%', // Scanline size
+                        borderRadius: '15px',
+                        border: '6px solid #111',
+                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)',
                         padding: '20px',
                         display: 'flex', flexDirection: 'column',
                         position: 'relative', overflow: 'hidden'
