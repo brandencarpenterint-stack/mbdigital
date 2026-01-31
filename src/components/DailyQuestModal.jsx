@@ -37,7 +37,7 @@ const DailyQuestModal = ({ onClose }) => {
                     onClick={onClose}
                     style={{
                         position: 'absolute', top: '15px', right: '15px',
-                        background: 'none', border: 'none', color: '#fff',
+                        border: 'none', color: '#fff',
                         fontSize: '1.5rem', cursor: 'pointer',
                         width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'rgba(255,255,255,0.1)', borderRadius: '50%'
@@ -140,14 +140,15 @@ const DailyQuestModal = ({ onClose }) => {
                                         onClick={() => claimQuest(q.id)}
                                         disabled={!isDone || q.claimed}
                                         style={{
-                                            padding: '8px 15px',
-                                            minWidth: '80px',
-                                            background: q.claimed ? 'transparent' : (isDone ? 'var(--neon-green)' : '#333'),
-                                            color: q.claimed ? 'var(--neon-green)' : (isDone ? 'black' : '#888'),
-                                            border: q.claimed ? '1px solid var(--neon-green)' : 'none',
+                                            background: q.claimed ? 'transparent' : (isDone ? '#39ff14' : '#333'),
+                                            color: q.claimed ? '#39ff14' : (isDone ? '#000' : '#888'),
+                                            border: q.claimed ? '1px solid #39ff14' : 'none',
                                             borderRadius: '8px', fontWeight: 'bold',
                                             cursor: (isDone && !q.claimed) ? 'pointer' : 'default',
-                                            fontSize: '0.8rem'
+                                            fontSize: '0.8rem',
+                                            boxShadow: (isDone && !q.claimed) ? '0 0 15px rgba(57, 255, 20, 0.6)' : 'none',
+                                            textTransform: 'uppercase',
+                                            minWidth: '90px'
                                         }}
                                     >
                                         {q.claimed ? 'DONE' : (isDone ? 'CLAIM' : '...')}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const SquadContext = createContext();
 
@@ -10,10 +11,11 @@ export const SquadProvider = ({ children }) => {
         return localStorage.getItem('userSquad') || null;
     });
 
-    // Simulated Global State
+    // Global State
     const [squadScores, setSquadScores] = useState({
-        NEON: 450250,
-        ZEN: 448100
+        CYBER: 450250,
+        SOLAR: 448100,
+        VOID: 432000
     });
 
     // Save Squad selection
@@ -23,14 +25,22 @@ export const SquadProvider = ({ children }) => {
         }
     }, [userSquad]);
 
-    // Simulate "Live" Global Warfare
+    // LIVE Global Warfare (Aggregation)
     useEffect(() => {
-        const interval = setInterval(() => {
-            setSquadScores(prev => ({
-                NEON: prev.NEON + Math.floor(Math.random() * 10),
-                ZEN: prev.ZEN + Math.floor(Math.random() * 10)
-            }));
-        }, 3000); // Updates every 3 seconds
+        const fetchScores = async () => {
+            // DB columns missing. Using local/mock scores for now.
+            // if (!supabase) return;
+            // try {
+            //    const { data, error } = await supabase.from('profiles').select('squad, xp');
+            //    ...
+            // } catch (e) { ... }
+
+            // Keep Mock Scores
+            // console.log("Squad Sync Skipped (DB Schema Pending)");
+        };
+
+        fetchScores(); // Initial
+        const interval = setInterval(fetchScores, 10000); // Poll every 10s
 
         return () => clearInterval(interval);
     }, []);
@@ -50,11 +60,20 @@ export const SquadProvider = ({ children }) => {
     };
 
     const getLeadingSquad = () => {
-        return squadScores.NEON > squadScores.ZEN ? 'NEON' : 'ZEN';
+        return Object.keys(squadScores).reduce((a, b) => squadScores[a] > squadScores[b] ? a : b);
+    };
+
+    const getSquadDetails = (id) => {
+        const DETAILS = {
+            CYBER: { name: 'Cyber Punks', color: '#00f3ff', icon: '🦾' },
+            SOLAR: { name: 'Solar Knights', color: '#ffaa00', icon: '☀️' },
+            VOID: { name: 'Void Walkers', color: '#9d00ff', icon: '🌑' }
+        };
+        return DETAILS[id] || { name: 'Unknown', color: '#fff' };
     };
 
     return (
-        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad }}>
+        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad, getSquadDetails }}>
             {children}
         </SquadContext.Provider>
     );

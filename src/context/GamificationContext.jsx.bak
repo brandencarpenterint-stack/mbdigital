@@ -18,6 +18,7 @@ export const GamificationProvider = ({ children }) => {
             legendariesCaught: 0,
             bossKills: 0,
             galaxyHighScore: 0,
+            galaxyHighScore: 0,
             brickHighScore: 0,
             crazyFishingHighScore: 0,
             gamesPlayed: []
@@ -50,8 +51,7 @@ export const GamificationProvider = ({ children }) => {
             name: stored.name || 'OPERATOR',
             avatar: stored.avatar || '/assets/merchboy_face.png',
             code: stored.code,
-            squad: stored.squad || null,
-            placedStickers: stored.placedStickers || []
+            squad: stored.squad || null
         };
     });
 
@@ -102,118 +102,85 @@ export const GamificationProvider = ({ children }) => {
         localStorage.setItem('merchboy_stickers', JSON.stringify(unlockedStickers));
     }, [unlockedStickers]);
 
-    // --- AUTH & CLOUD SYNC ---
-    const [session, setSession] = useState(null);
-
-    // Initial Auth Check
+    // --- CLOUD SYNC ---
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session?.user) syncCloud(session.user.id);
-            else syncCloud(null); // Load legacy/local
-        });
+        const syncCloud = async () => {
+            if (!supabase) return;
+            let storedId = localStorage.getItem('merchboy_client_id');
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            if (session?.user) {
-                showToast(`Welcome back, ${session.user.email}!`, 'success');
-                syncCloud(session.user.id);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
-    const loginWithProvider = async (provider) => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: provider,
-            options: {
-                redirectTo: window.location.origin
-            }
-        });
-        if (error) showToast(error.message, 'error');
-    };
-
-    const logout = async () => {
-        await supabase.auth.signOut();
-        showToast('Logged out!', 'info');
-        setSession(null);
-        // Optionally revert to local/guest state?
-        // For now, we keep the data on screen but it won't save to the cloud ID anymore.
-    };
-
-    const syncCloud = async (userId) => {
-        if (!supabase) return;
-
-        // Determine ID: Auth ID > Local Stored ID > Generate New
-        let targetId = userId;
-        if (!targetId) {
-            targetId = localStorage.getItem('merchboy_client_id');
-            if (!targetId) {
+            // Generate ID if missing (First Time)
+            if (!storedId) {
+                // If creating profile, we likely want to associate with existing data if possible?
+                // For now, random UUID for device.
                 try {
-                    targetId = crypto.randomUUID();
+                    storedId = crypto.randomUUID();
                 } catch (e) {
-                    targetId = `LEGACY-${Math.floor(Math.random() * 1000000)}`;
+                    storedId = `LEGACY-${Math.floor(Math.random() * 1000000)}`;
                 }
-                localStorage.setItem('merchboy_client_id', targetId);
+                localStorage.setItem('merchboy_client_id', storedId);
+
+                // Try Upsert initial state
+                await supabase.from('profiles').upsert({
+                    id: storedId,
+                    display_name: userProfile.name,
+                    friend_code: userProfile.code,
+                    coins: coins,
+                    stats: stats,
+                    achievements: unlockedAchievements,
+                    daily_data: dailyState,
+                    settings: { version: '1.0' },
+                    last_seen: new Date()
+                }, { onConflict: 'id' });
+                return;
             }
-        }
 
-        // Attempt Load
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', targetId).single();
-        if (data) {
-            console.log("☁️ CLOUD SYNC: Loading Profile", data);
+            // Attempt Load
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', storedId).single();
+            if (data) {
+                console.log("☁️ CLOUD SYNC: Loading Profile", data);
+                // HYDRATE STATE FROM CLOUD
+                if (data.coins !== undefined && data.coins !== null) setCoins(Number(data.coins));
+                if (data.stats && typeof data.stats === 'object') setStats(data.stats);
+                if (data.achievements && Array.isArray(data.achievements)) setUnlockedAchievements(data.achievements);
+                if (data.daily_data) setDailyState(data.daily_data);
 
-            // HYDRATE STATE FROM CLOUD
-            if (data.coins !== undefined && data.coins !== null) setCoins(Number(data.coins));
-            if (data.stats && typeof data.stats === 'object') setStats(data.stats);
-            if (data.achievements && Array.isArray(data.achievements)) {
-                setUnlockedAchievements(prev => [...new Set([...prev, ...data.achievements])]);
+                // Update Profile Info
+                setUserProfile(prev => ({
+                    ...prev,
+                    name: data.display_name || prev.name,
+                    avatar: data.avatar_url || prev.avatar,
+                    code: data.friend_code || prev.code,
+                    squad: data.squad || prev.squad
+                }));
+
+                // If cloud data exists, load it
+                // setCoins(data.coins); // Wait, this might reset local progress if offline play happened.
+                // For now, just log it.
+                // console.log("Cloud Sync Active:", data);
             }
-            if (data.daily_data) setDailyState(data.daily_data);
-
-            // Update Profile Info
-            setUserProfile(prev => ({
-                ...prev,
-                name: data.display_name || prev.name,
-                avatar: data.avatar_url || prev.avatar,
-                code: data.friend_code || prev.code,
-                squad: data.squad || prev.squad
-            }));
-        } else if (userId) {
-            // New Auth User -> Upload current local state to Cloud to "Migrate"
-            console.log("Creating Cloud Profile for new user...");
-            // The Debounced Save will handle the upsert shortly, or we can force one now.
-        }
-    };
+        };
+        syncCloud();
+    }, []);
 
     // Debounced Save
     useEffect(() => {
         const timeout = setTimeout(async () => {
-            // ID Priority: Session > Local
-            let targetId = session?.user?.id || localStorage.getItem('merchboy_client_id');
-
-            if (targetId) {
-                // Calculate XP locally
+            const storedId = localStorage.getItem('merchboy_client_id');
+            if (storedId) {
+                // Calculate XP locally to avoid ReferenceError
                 const achXP = unlockedAchievements.length * 500;
                 const fishXP = (stats.fishCaught || 0) * 50;
                 const gamesXP = (stats.gamesPlayedCount || 0) * 100;
                 const currentTotalXP = achXP + fishXP + gamesXP;
 
-                // Read Pocket Bro State
-                let pocketData = {};
-                try {
-                    pocketData = JSON.parse(localStorage.getItem('pocketBroState')) || {};
-                } catch (e) { }
-
                 try {
                     await supabase.from('profiles').upsert({
-                        id: targetId,
+                        id: storedId,
                         display_name: userProfile.name,
                         friend_code: userProfile.code,
                         avatar_url: userProfile.avatar,
-                        coins: coins,
                         squad: userProfile.squad,
+                        coins: coins,
                         xp: currentTotalXP,
                         games_played: stats.gamesPlayedCount || 0,
                         high_scores: {
@@ -229,11 +196,6 @@ export const GamificationProvider = ({ children }) => {
                             cosmic_slots: stats.slotsBiggestWin || 0
                         },
                         stats: stats,
-                        room_data: pocketData.placedItems || [],
-                        pocket_state: {
-                            stage: pocketData.stage,
-                            skin: shopState.equipped?.pocketbro || null
-                        },
                         achievements: unlockedAchievements,
                         daily_data: dailyState,
                         last_seen: new Date()
@@ -244,7 +206,7 @@ export const GamificationProvider = ({ children }) => {
             }
         }, 3000); // 3 seconds debounce
         return () => clearTimeout(timeout);
-    }, [coins, stats, userProfile, unlockedAchievements, dailyState, session]);
+    }, [coins, stats, userProfile, unlockedAchievements, dailyState]);
 
 
     // Check Achievements whenever stats change
@@ -261,19 +223,18 @@ export const GamificationProvider = ({ children }) => {
     const unlock = (achievement) => {
         setUnlockedAchievements(prev => [...prev, achievement.id]);
         playWin(); // Sound
-        addCoins(100); // bonus coins
 
         // SCREEN GOES NUTS
         triggerConfetti();
         setTimeout(() => triggerConfetti(), 300);
         setTimeout(() => triggerConfetti(), 600);
 
-        showToast(achievement.title, 'achievement', {
-            description: achievement.description,
-            reward: achievement.reward || '100 Coins'
-        });
+        showToast(achievement.title, 'achievement');
 
         // Push to Global Feed
+        // Using dynamic import or assuming feedService is available via import?
+        // We need to import feedService at top.
+        // For now, assuming it's imported or I add import.
         import('../utils/feed').then(({ feedService }) => {
             feedService.publish(`unlocked achievement: ${achievement.title} 🏆`, 'win', userProfile.name);
         });
@@ -508,20 +469,6 @@ export const GamificationProvider = ({ children }) => {
         if (!shopState.unlocked.includes(item.id)) {
             spendCoins(item.price);
             setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
-
-            // SPECIAL HANDLING FOR POCKET DECOR
-            if (item.type === 'decor') {
-                try {
-                    const pocketState = JSON.parse(localStorage.getItem('pocketBroState') || '{}');
-                    pocketState.unlockedDecor = [...new Set([...(pocketState.unlockedDecor || []), item.id])];
-                    localStorage.setItem('pocketBroState', JSON.stringify(pocketState));
-                    // Note: PocketBroContext will need to hydrate this or reload. 
-                    // Since it writes to LS on change, this might race. 
-                    // Ideally, GamificationContext should expose a "purchaseHook".
-                    // For now, this works for persistent storage.
-                } catch (e) { console.error("Decor unlock failed", e); }
-            }
-
             playWin();
             showToast(`Purchased ${item.name}!`, "success");
             return true;
@@ -722,8 +669,7 @@ export const GamificationProvider = ({ children }) => {
             stats, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
             claimQuest, skipQuest, checkHighscoreQuest, shopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,
-            unlockedStickers, buyCapsule, triggerConfetti,
-            session, loginWithProvider, logout
+            unlockedStickers, buyCapsule
         }}>
             {children}
         </GamificationContext.Provider>

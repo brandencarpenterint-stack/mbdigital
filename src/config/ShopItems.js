@@ -93,12 +93,34 @@ export const SHOP_ITEMS = [
     { id: 'pb_cyber', type: 'pb_skin', name: 'Cyber Shell', price: 2500, category: 'pocketbro', slot: 'pocketbro', description: 'High tech housing.', icon: '🤖' },
     { id: 'pb_party', type: 'pb_skin', name: 'Party Mode', price: 1000, category: 'pocketbro', slot: 'pocketbro', description: 'Always celebrating.', icon: '🎉' },
 
+    // --- HOME DECOR (Pocket Bro) ---
+    // Backgrounds
+    { id: 'bg_cyber', type: 'decor', name: 'Cyber City', price: 500, category: 'homedecor', slot: 'decor', description: 'Neon skyline view.', icon: '🌃' },
+    { id: 'bg_dojo', type: 'decor', name: 'Zen Dojo', price: 800, category: 'homedecor', slot: 'decor', description: 'Peaceful vibes.', icon: '⛩️' },
+    { id: 'bg_space', type: 'decor', name: 'Deep Space', price: 1000, category: 'homedecor', slot: 'decor', description: 'Stars everywhere.', icon: '🌌' },
+    { id: 'bg_magma', type: 'decor', name: 'Magma Core', price: 2000, category: 'homedecor', slot: 'decor', description: 'Hot stuff.', icon: '🔥' },
+    // Furniture
+    { id: 'furn_arcade', type: 'decor', name: 'Arcade Cab', price: 2000, category: 'homedecor', slot: 'decor', description: 'Mini cabinet.', icon: '🕹️' },
+    { id: 'furn_pc', type: 'decor', name: 'Battlestation', price: 2500, category: 'homedecor', slot: 'decor', description: 'RGB Everything.', icon: '🖥️' },
+    { id: 'furn_bed', type: 'decor', name: 'Cozy Bed', price: 1000, category: 'homedecor', slot: 'decor', description: 'Nap time.', icon: '🛏️' },
+    { id: 'furn_plant', type: 'decor', name: 'Houseplant', price: 200, category: 'homedecor', slot: 'decor', description: 'Oxygen.', icon: '🪴' },
+    { id: 'furn_cat_tree', type: 'decor', name: 'Cat Tower', price: 600, category: 'homedecor', slot: 'decor', description: 'For the cat.', icon: '🐈' },
+    { id: 'furn_ufo', type: 'decor', name: 'Model UFO', price: 1500, category: 'homedecor', slot: 'decor', description: 'I want to believe.', icon: '🛸' },
+    { id: 'rug_dance', type: 'decor', name: 'Dance Floor', price: 500, category: 'homedecor', slot: 'decor', description: 'Disco lights.', icon: '🕺' },
+
     // --- DASHBOARD THEMES ---
     { id: 'theme_default', type: 'theme', name: 'Neon Dark', price: 0, category: 'themes', slot: 'theme', description: 'Standard OS.', icon: '🌑' },
     { id: 'theme_matrix', type: 'theme', name: 'The Matrix', price: 2000, category: 'themes', slot: 'theme', description: 'Wake up, Neo.', icon: '🟢' },
     { id: 'theme_sunset', type: 'theme', name: 'Sunset 80s', price: 2000, category: 'themes', slot: 'theme', description: 'Retrowave vibes.', icon: '🌅' },
     { id: 'theme_space', type: 'theme', name: 'Deep Space', price: 2000, category: 'themes', slot: 'theme', description: 'Among the stars.', icon: '🌌' },
     { id: 'theme_gold', type: 'theme', name: 'Midas OS', price: 10000, category: 'themes', slot: 'theme', description: 'Pure luxury.', icon: '🥇' },
+
+    // --- POWER UPS (CONSUMABLES) ---
+    { id: 'snake_life', type: 'consumable', name: 'Extra Life', price: 200, category: 'powerups', description: 'Resurrect once in Snake.', icon: '❤️' },
+    { id: 'snake_slow', type: 'consumable', name: 'Slo-Mo Pill', price: 150, category: 'powerups', description: 'Slow down time in Snake.', icon: '⏱️' },
+    { id: 'fish_bait', type: 'consumable', name: 'Master Bait', price: 100, category: 'powerups', description: 'Guaranteed Rare bite.', icon: '🪱' },
+    { id: 'flappy_shield', type: 'consumable', name: 'Energy Shield', price: 250, category: 'powerups', description: 'Crash protection (1 hit).', icon: '🛡️' },
+    { id: 'brick_magnet', type: 'consumable', name: 'Magno-Paddle', price: 300, category: 'powerups', description: 'Catch the ball.', icon: '🧲' },
 ];
 
 export const CATEGORIES = [
@@ -107,6 +129,8 @@ export const CATEGORIES = [
     { id: 'brick', name: 'Neon Bricks', icon: '🧱' },
     { id: 'galaxy', name: 'Galaxy Defender', icon: '🚀' },
     { id: 'flappy', name: 'Flappy Mascot', icon: '🐥' },
-    { id: 'pocketbro', name: 'Pocket Bro', icon: '🥚' },
+    { id: 'pocketbro', name: 'Pocket Skins', icon: '🥚' },
+    { id: 'homedecor', name: 'Home Decor', icon: '🛋️' },
     { id: 'themes', name: 'OS Themes', icon: '🎨' },
+    { id: 'powerups', name: 'Power Ups', icon: '⚡' },
 ];

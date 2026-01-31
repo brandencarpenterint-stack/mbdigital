@@ -5,6 +5,7 @@ import { feedService } from '../../utils/feed';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import GameOverCard from '../../components/GameOverCard';
 
 const MOLE_COUNT = 16;
 const GAME_DURATION = 30;
@@ -230,46 +231,13 @@ const WhackAMoleGame = () => {
             </div>
 
             {gameOver && (
-                <div style={{
-                    position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                    padding: '40px',
-                    borderRadius: '20px',
-                    border: '4px solid #ff0055',
-                    textAlign: 'center',
-                    zIndex: 100,
-                    width: '90%',
-                    maxWidth: '400px'
-                }}>
-                    <h2 style={{ fontSize: '3rem', color: '#ff0055', margin: '0 0 20px 0' }}>TIME'S UP!</h2>
-                    <p style={{ fontSize: '2rem', marginBottom: '30px', color: 'white' }}>Final Score: {score}</p>
-                    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                        <SquishyButton onClick={startGame} style={{
-                            padding: '10px 20px',
-                            fontSize: '1.2rem',
-                            backgroundColor: '#ff0055',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                        }}>
-                            AGAIN
-                        </SquishyButton>
-                        <Link to="/arcade" style={{
-                            padding: '10px 20px',
-                            fontSize: '1.2rem',
-                            backgroundColor: '#333',
-                            color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: '5px',
-                            display: 'inline-block'
-                        }}>
-                            EXIT
-                        </Link>
-                    </div>
-                </div>
+                <GameOverCard
+                    score={score}
+                    bestScore={highScore}
+                    gameId="whack"
+                    onReplay={startGame}
+                    onHome={() => window.location.href = '/arcade'}
+                />
             )}
 
             <div style={{ marginTop: '20px' }}>

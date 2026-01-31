@@ -103,96 +103,75 @@ const NeonBrickBreaker = () => {
         };
 
         // PATTERNS
-        if (lvl === 1) { // Standard
+        // PATTERNS
+        if (lvl === 1) { // Standard Warmup
             for (let r = 0; r < 5; r++) {
-                for (let c = 0; c < BRICK_COLS; c++) addBrick(c, r);
+                for (let c = 0; c < BRICK_COLS; c++) addBrick(c, r, null, 1);
             }
         }
-        else if (lvl === 2) { // Money Face High Res
-            const map = [
-                "  XXXXXX  ",
-                " X      X ",
-                " X $  $ X ",
-                " X      X ",
-                "  XXXXXX  "
-            ];
-            drawMap(map, (char) => char === '$' ? { color: '#00ff00', hp: 2 } : { color: '#ff0055', hp: 1 });
-        }
-        else if (lvl === 3) { // Bunny
-            const map = [
-                "X        X",
-                "X        X",
-                " XXXXXXXX ",
-                " X O  O X ",
-                "  XXXXXX  "
-            ];
-            drawMap(map, (char) => char === 'O' ? { color: '#ff00ff', hp: 2 } : { color: '#00ccff', hp: 1 });
-        }
-        else if (lvl === 4) { // DNA Helix
-            for (let r = 0; r < 18; r++) {
-                const shift = Math.floor(Math.sin(r * 0.5) * 3) + 4;
-                addBrick(shift, r, '#00ffaa', 1);
-                addBrick(9 - shift, r, '#ff00aa', 1);
-            }
-        }
-        else if (lvl === 5) { // The Skull
-            const map = [
-                "  XXXXXX  ",
-                " XXXXXXXX ",
-                "XX O  O XX",
-                "XXXXXXXXXX",
-                " X  XX  X ",
-                " X X  X X ",
-                "  XXXXXX  "
-            ];
-            drawMap(map, (char) => char === 'O' ? { color: '#000', hp: 1 } : { color: '#ddd', hp: 2 });
-        }
-        else if (lvl === 6) { // The Castle (Steel Walls)
-            const map = [
-                "S S    S S",
-                "SSSSSSSSSS",
-                "SXXRRRRXXS",
-                "SXXRRRRXXS",
-                "SSSS  SSSS",
-                "SXXS  SXXS",
-                "SXXS  SXXS"
-            ];
-            drawMap(map, (char) => char === 'R' ? { color: 'red', hp: 3 } : { color: 'blue', hp: 1 });
-        }
-        else if (lvl === 7) { // Invader Fleet
-            for (let r = 0; r < 12; r += 2) {
-                for (let c = 1; c < 9; c += 2) {
-                    addBrick(c, r, '#76ff03', r < 4 ? 3 : 1);
+        else if (lvl === 2) { // INSANE: CHECKERBOARD
+            for (let r = 0; r < 14; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    if ((r + c) % 2 === 0) addBrick(c, r, '#ff0055', 1); // Red
+                    else addBrick(c, r, '#00ff00', 1); // Green
                 }
             }
         }
-        else if (lvl === 8) { // Matrix Rain
-            for (let c = 0; c < BRICK_COLS; c++) {
-                const len = Math.floor(Math.random() * 15);
-                for (let r = 0; r < len; r++) {
-                    if (Math.random() > 0.5) addBrick(c, r, '#00ff00', 1);
-                }
-            }
-        }
-        else if (lvl === 9) { // Checkered Death
-            for (let r = 0; r < 15; r++) {
-                for (let c = (r % 2); c < BRICK_COLS; c += 2) {
-                    addBrick(c, r, r > 10 ? '#ff0000' : '#ffff00', r > 10 ? 3 : 1);
-                }
-            }
-        }
-        else { // LVL 10+: BOSS FACE
+        else if (lvl === 3) { // THE JAIL
             const map = [
                 "SSSSSSSSSS",
-                "SXXXXXXXXS",
-                "SX R  R XS",
-                "SX R  R XS",
-                "SXXXXXXXXS",
-                "SX RRRR XS",
-                "SXXXXXXXXS",
+                "S        S",
+                "S XXXXXX S",
+                "S X    X S",
+                "S X ^^ X S",
+                "S X    X S",
+                "S XXXXXX S",
+                "S        S",
                 "SSSSSSSSSS"
             ];
-            drawMap(map, (char) => char === 'R' ? { color: '#ff0000', hp: 5 } : { color: '#444', hp: 3 });
+            drawMap(map, (char) => char === '^' ? { color: '#ff00aa', hp: 2 } : { color: '#00ccff', hp: 1 });
+        }
+        else if (lvl === 4) { // ALIEN SWARM
+            for (let r = 0; r < 16; r += 2) {
+                for (let c = (r % 4 === 0 ? 0 : 1); c < BRICK_COLS; c += 2) {
+                    addBrick(c, r, '#76ff03', r < 6 ? 2 : 1);
+                }
+            }
+        }
+        else if (lvl === 5) { // THE BOSS SKULL (Re-vamped)
+            const map = [
+                "   XXXX   ",
+                " XXXXXXXX ",
+                "XXXXXXXXXX",
+                "XX O  O XX",
+                "XXXXXXXXXX",
+                " XXXXXXXX ",
+                "  XX  XX  ",
+                "  XX  XX  ",
+                "  XX  XX  "
+            ];
+            drawMap(map, (char) => char === 'O' ? { color: '#000', hp: 1 } : { color: '#fff', hp: 3 });
+        }
+        else if (lvl === 6) { // STEEL RAIN
+            for (let r = 0; r < 12; r++) {
+                if (r % 3 === 0) {
+                    for (let c = 0; c < BRICK_COLS; c++) {
+                        if (c % 2 === 0) addBrick(c, r, '#aaa', 999, 'steel');
+                    }
+                } else {
+                    for (let c = 0; c < BRICK_COLS; c++) addBrick(c, r, '#00bfff', 1);
+                }
+            }
+        }
+        else { // LVL 7+: RANDOM CHAOS
+            for (let r = 0; r < 15; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    if (Math.random() > 0.3) {
+                        const hp = Math.floor(Math.random() * 3) + 1;
+                        addBrick(c, r, `hsl(${Math.random() * 360}, 100%, 50%)`, hp);
+                    }
+                }
+            }
         }
 
         return bricks;
@@ -243,7 +222,7 @@ const NeonBrickBreaker = () => {
         setScore(0);
         setLives(3);
         setGameOver(false);
-        startLevel(4); // Start at Hard Levels
+        startLevel(1); // Start at Level 1
         requestAnimationFrame(gameLoop);
     };
 

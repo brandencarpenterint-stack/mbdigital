@@ -4,6 +4,7 @@ import './Home.css';
 import { useSquad } from '../context/SquadContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import { useGamification } from '../context/GamificationContext';
+import LiveFeed from '../components/LiveFeed';
 
 const Home = () => {
     const { squadScores } = useSquad();
@@ -124,10 +125,10 @@ const Home = () => {
                     <div style={{ position: 'absolute', right: '20px', bottom: '20px', fontSize: '10rem', opacity: 0.5 }}>👟</div>
                 </div>
 
-                {/* 3. SUB SLAYER (Took System Logs Spot? No, let's just shift) */}
-
-                {/* 3. LIVE FEED REMOVED - Replacing with Sub Slayer or shift layout? */}
-                {/* Actually, grid auto-flow handles it. Just remove the div. */}
+                {/* 3. LIVE FEED (GLOBAL CHAT + TREASURY) */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                    <LiveFeed />
+                </div>
 
                 {/* ROW 2: APPS moved up? */}
 

@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGamification } from '../context/GamificationContext';
+import { usePocketBro } from '../context/PocketBroContext';
 import { useToast } from '../context/ToastContext';
 import SquishyButton from '../components/SquishyButton';
+import PocketPet from '../components/pocket-pet/PocketPet';
+import useRetroSound from '../hooks/useRetroSound';
 
 const HustleMode = () => {
-    const { addCoins, incrementStat } = useGamification();
+    const { addCoins, incrementStat, shopState } = useGamification();
+    const { stats } = usePocketBro();
+    const equippedSkin = shopState?.equipped?.pocketbro || null;
     const { showToast } = useToast();
+    const { playWin, playCollect } = useRetroSound();
 
     // Timer State
     const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
@@ -41,9 +47,7 @@ const HustleMode = () => {
         setCompletedSessions(s => s + 1);
 
         // Play Sound
-        const audio = new Audio('/assets/win.mp3');
-        audio.volume = 0.5;
-        audio.play().catch(e => console.log('No audio'));
+        playWin();
 
         showToast("HUSTLE COMPLETE! +300 COINS", "success");
         setMode('BREAK');
@@ -51,8 +55,7 @@ const HustleMode = () => {
     };
 
     const handleBreakComplete = () => {
-        const audio = new Audio('/assets/notification.mp3');
-        audio.play().catch(e => console.log('No audio'));
+        playCollect();
 
         showToast("BREAK OVER! BACK TO WORK.", "info");
         setMode('WORK');
@@ -138,13 +141,24 @@ const HustleMode = () => {
                     marginBottom: '20px',
                     position: 'relative'
                 }}>
-                    {/* Placeholder for Character Animation */}
+                    {/* ANIMATION ZONE */}
                     <div style={{
-                        fontSize: '6rem',
-                        animation: isActive ? (mode === 'WORK' ? 'shake 0.5s infinite' : 'float 3s infinite ease-in-out') : 'none',
-                        filter: `drop-shadow(0 0 20px ${themeColor})`
+                        height: '180px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '20px',
+                        position: 'relative'
                     }}>
-                        {mode === 'WORK' ? '👨‍💻' : '🧘'}
+                        <div style={{ width: '150px', height: '150px' }}>
+                            <PocketPet
+                                stage={stats.stage}
+                                type={stats.type || 'SOOT'}
+                                mood={isActive ? 'happy' : 'neutral'}
+                                isSleeping={mode === 'BREAK'}
+                                skin={equippedSkin}
+                            />
+                        </div>
                     </div>
                 </div>
 

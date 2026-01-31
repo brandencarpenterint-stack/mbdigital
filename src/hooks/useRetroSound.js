@@ -146,7 +146,29 @@ const useRetroSound = () => {
         });
     };
 
-    return { playBeep, playBoop, playJump, playCollect, playCrash, playWin };
+    const playClick = () => {
+        if (!shouldPlay()) return;
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle'; // Softer than square
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.05); // Chirp up
+
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.05);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+    };
+
+    return { playBeep, playBoop, playJump, playCollect, playCrash, playWin, playClick };
 };
 
 export default useRetroSound;

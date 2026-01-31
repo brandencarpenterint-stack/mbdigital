@@ -208,6 +208,20 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
                         }}
                     />
                 ))}
+
+                {/* Custom Color Picker */}
+                <label style={{
+                    width: '30px', height: '30px', borderRadius: '50%',
+                    overflow: 'hidden', cursor: 'pointer', border: '2px solid #555',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <input
+                        type="color"
+                        value={color}
+                        onChange={(e) => { setColor(e.target.value); setTool('pencil'); }}
+                        style={{ width: '150%', height: '150%', padding: 0, border: 'none', background: 'none' }}
+                    />
+                </label>
                 <div style={{ width: '2px', background: '#555' }} />
                 <SquishyButton onClick={() => setTool('bucket')} style={{ background: tool === 'bucket' ? '#444' : 'transparent', border: 'none', fontSize: '1.2rem' }}>🪣</SquishyButton>
                 <SquishyButton onClick={() => setTool('pencil')} style={{ background: tool === 'pencil' ? '#444' : 'transparent', border: 'none', fontSize: '1.2rem' }}>✏️</SquishyButton>

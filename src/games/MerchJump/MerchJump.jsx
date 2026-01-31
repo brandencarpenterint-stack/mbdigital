@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { useGamification } from '../../context/GamificationContext';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
+import GameOverCard from '../../components/GameOverCard';
 import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
 
@@ -391,52 +391,55 @@ const MerchJump = () => {
 
                 {/* MENUS */}
                 {gameState !== 'PLAYING' && (
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        color: '#333', borderRadius: '10px'
-                    }}>
-                        {gameState === 'GAMEOVER' && (
-                            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                                <h2 style={{ color: '#ff0055', fontSize: '2rem', margin: 0 }}>FALLEN!</h2>
-                                <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{Math.floor(scoreRef.current)}m</p>
-                                <p style={{ color: '#888' }}>BEST: {highScore}m</p>
-                            </div>
-                        )}
-
-                        {gameState === 'MENU' && (
-                            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>SELECT DRIP:</p>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                    {SKINS.map(skin => (
-                                        <button
-                                            key={skin.id}
-                                            onClick={() => { setSelectedSkin(skin); playBoop(); }}
-                                            style={{
-                                                background: selectedSkin.id === skin.id ? '#87CEEB' : '#eee',
-                                                border: 'none', borderRadius: '10px', padding: '10px',
-                                                cursor: 'pointer',
-                                                transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)',
-                                                boxShadow: selectedSkin.id === skin.id ? '0 5px 15px rgba(0,0,0,0.1)' : 'none'
-                                            }}
-                                        >
-                                            <img src={skin.src} width="40" height="40" style={{ display: 'block', margin: '0 auto' }} />
-                                        </button>
-                                    ))}
+                    <>
+                        {gameState === 'GAMEOVER' ? (
+                            <GameOverCard
+                                score={Math.floor(scoreRef.current)}
+                                bestScore={highScore}
+                                gameId="merch_jump"
+                                onReplay={initGame}
+                                onHome={() => window.location.href = '/arcade'} // Simple redirect
+                            />
+                        ) : (
+                            // ... MAIN MENU ...
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                color: '#333', borderRadius: '10px'
+                            }}>
+                                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                                    <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>SELECT DRIP:</p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        {SKINS.map(skin => (
+                                            <button
+                                                key={skin.id}
+                                                onClick={() => { setSelectedSkin(skin); playBoop(); }}
+                                                style={{
+                                                    background: selectedSkin.id === skin.id ? '#87CEEB' : '#eee',
+                                                    border: 'none', borderRadius: '10px', padding: '10px',
+                                                    cursor: 'pointer',
+                                                    transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)',
+                                                    boxShadow: selectedSkin.id === skin.id ? '0 5px 15px rgba(0,0,0,0.1)' : 'none'
+                                                }}
+                                            >
+                                                <img src={skin.src} width="40" height="40" style={{ display: 'block', margin: '0 auto' }} />
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
+
+                                <SquishyButton onClick={initGame} style={{
+                                    padding: '20px 50px',
+                                    background: '#333',
+                                    color: 'white', fontWeight: 'bold', fontSize: '1.2rem',
+                                    border: 'none', borderRadius: '100px'
+                                }}>
+                                    JUMP
+                                </SquishyButton>
                             </div>
                         )}
-
-                        <SquishyButton onClick={initGame} style={{
-                            padding: '20px 50px',
-                            background: '#333',
-                            color: 'white', fontWeight: 'bold', fontSize: '1.2rem',
-                            border: 'none', borderRadius: '100px'
-                        }}>
-                            {gameState === 'GAMEOVER' ? 'RETRY' : 'JUMP'}
-                        </SquishyButton>
-                    </div>
+                    </>
                 )}
             </div>
 

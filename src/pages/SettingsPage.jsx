@@ -8,7 +8,7 @@ import SquishyButton from '../components/SquishyButton';
 
 const SettingsPage = () => {
     const { soundEnabled, toggleSound } = useSettings();
-    const { getLevelInfo, userProfile, updateProfile } = useGamification();
+    const { getLevelInfo, userProfile, updateProfile, session, loginWithProvider, logout } = useGamification();
     const { showToast } = useToast();
     const { playBeep, playBoop } = useRetroSound();
 
@@ -176,7 +176,62 @@ const SettingsPage = () => {
                     </div>
                 </section>
 
-                {/* 3. DANGER ZONE */}
+                {/* 3. CLOUD SYNC */}
+                <section className="glass-panel" style={{ padding: '25px', border: '1px solid var(--neon-blue)' }}>
+                    <h2 style={{ marginTop: 0, color: 'var(--neon-blue)', fontSize: '1.2rem', borderBottom: '1px solid rgba(0,255,255,0.1)', paddingBottom: '15px' }}>
+                        CLOUD SYNC
+                    </h2>
+
+                    {session ? (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <div style={{ fontSize: '1rem', color: '#00ff00', fontWeight: 'bold' }}>✅ ONLINE</div>
+                                <div style={{ fontSize: '0.8rem', color: '#aaa' }}>Synced as <span style={{ color: 'white' }}>{session.user.email}</span></div>
+                            </div>
+                            <SquishyButton
+                                onClick={logout}
+                                style={{ background: '#333', border: '1px solid #555', fontSize: '0.8rem', padding: '10px 20px' }}>
+                                DISCONNECT
+                            </SquishyButton>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div style={{ fontSize: '0.9rem', color: '#ccc', lineHeight: '1.4' }}>
+                                Link your account to save progress across devices and never lose your high scores.
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={() => loginWithProvider('google')}
+                                    className="squishy-btn"
+                                    style={{
+                                        flex: 1, minWidth: '140px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                        padding: '12px', borderRadius: '10px', border: 'none',
+                                        background: 'white', color: '#333', fontWeight: 'bold', cursor: 'pointer',
+                                        fontFamily: 'inherit'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '1.2rem' }}>G</span> GOOGLE
+                                </button>
+                                <button
+                                    onClick={() => loginWithProvider('apple')}
+                                    className="squishy-btn"
+                                    style={{
+                                        flex: 1, minWidth: '140px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                        padding: '12px', borderRadius: '10px', border: 'none',
+                                        background: 'black', color: 'white', fontWeight: 'bold', cursor: 'pointer',
+                                        fontFamily: 'inherit', border: '1px solid #333'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '1.2rem' }}></span> APPLE
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </section>
+
+                {/* 4. DANGER ZONE */}
                 <section className="glass-panel" style={{ padding: '25px', border: '1px solid rgba(255, 0, 0, 0.3)', background: 'rgba(20, 0, 0, 0.6)' }}>
                     <h2 style={{ marginTop: 0, color: 'red', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,0,0,0.1)', paddingBottom: '10px' }}>
                         DANGER ZONE

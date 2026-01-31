@@ -5,11 +5,13 @@ import { SHOP_ITEMS, CATEGORIES } from '../config/ShopItems';
 import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
+import GachaponModal from '../components/GachaponModal';
 
 const ShopPage = () => {
     const { shopState, buyItem, equipItem, unlockedAchievements } = useGamification() || {};
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [coins, setCoins] = useState(0);
+    const [showGacha, setShowGacha] = useState(false);
     const { playBeep, playCollect, playBoop } = useRetroSound();
 
 
@@ -110,6 +112,28 @@ const ShopPage = () => {
                     </a>
                 </div>
                 <img src="/assets/merchboy_money.png" alt="Merch Boy Money" style={{ width: '100px', height: '100px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }} />
+            </div>
+
+            {/* GACHAPON STATION CARD */}
+            <div className="glass-panel" style={{
+                maxWidth: '1200px', margin: '0 auto 40px auto',
+                background: 'linear-gradient(90deg, #110033 0%, #330066 100%)',
+                color: 'white', padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px',
+                border: '1px solid #ff00ff',
+                boxShadow: '0 0 30px rgba(255, 0, 255, 0.2)'
+            }}>
+                <div>
+                    <span style={{ color: '#ff00ff', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.8rem' }}>NEW ARRIVAL</span>
+                    <h2 style={{ fontSize: '2rem', margin: '10px 0', fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 10px #ff00ff' }}>STICKER STATION</h2>
+                    <p style={{ color: '#aaa', margin: '0 0 20px 0' }}>Collect rare holographic stickers for your album.</p>
+                    <button onClick={() => setShowGacha(true)} className="squishy-btn" style={{
+                        background: '#ff00ff', color: 'white', padding: '12px 30px', borderRadius: '30px', fontWeight: 'bold', border: 'none', cursor: 'pointer',
+                        boxShadow: '0 0 20px #ff00ff'
+                    }}>
+                        PLAY GACHA 🔮
+                    </button>
+                </div>
+                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 20px rgba(255,0,255,0.5))' }}>🔮</div>
             </div>
 
             {/* ITEMS GRID */}
@@ -223,6 +247,7 @@ const ShopPage = () => {
             <div style={{ textAlign: 'center', marginTop: '60px' }}>
                 <Link to="/arcade" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem', letterSpacing: '1px' }}>← RETURN TO ARCADE</Link>
             </div>
+            {showGacha && <GachaponModal onClose={() => setShowGacha(false)} />}
         </div>
     );
 };

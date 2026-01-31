@@ -128,39 +128,90 @@ const DailyStash = ({ onClose }) => {
                         🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''}
                     </div>
 
-                    <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
-                        {status === 'LOCKED' && (
-                            <div
-                                onClick={openChest}
-                                style={{ fontSize: '10rem', cursor: 'pointer', animation: 'float 3s infinite ease-in-out', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}
-                            >
-                                🎁
-                                <div style={{ fontSize: '1rem', color: 'white', fontWeight: 'bold', marginTop: '-20px', opacity: 0.8 }}>TAP TO OPEN</div>
+                    <div style={{ perspective: '800px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
+                        {/* 3D CUBE CONTAINER */}
+                        <div className={`loot-box ${status === 'OPENING' ? 'shaking' : ''} ${status === 'OPENED' ? 'opened' : ''}`}>
+                            <div className="face front">
+                                <div className="lock">🔒</div>
                             </div>
-                        )}
+                            <div className="face back"></div>
+                            <div className="face right"></div>
+                            <div className="face left"></div>
+                            <div className="face top"></div>
+                            <div className="face bottom"></div>
 
-                        {status === 'OPENING' && (
-                            <div style={{ fontSize: '10rem', animation: 'shake 0.1s infinite', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}>
-                                🎁
+                            {/* REWARD POPUP */}
+                            <div className={`reward-item ${status === 'OPENED' ? 'visible' : ''}`}>
+                                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 20px gold)' }}>
+                                    {reward?.type === 'coins' ? '💰' : reward?.type === 'code' ? '🎟️' : '🧢'}
+                                </div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)', marginTop: '10px' }}>
+                                    {reward?.label}
+                                </div>
+                                {reward?.code && <div style={{ background: 'white', color: 'black', padding: '5px 10px', marginTop: '5px', borderRadius: '5px', fontWeight: 'bold' }}>{reward.code}</div>}
                             </div>
-                        )}
-
-                        {status === 'OPENED' && (
-                            <div style={{ animation: 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
-                                <div style={{ fontSize: '8rem', marginBottom: '10px', filter: 'drop-shadow(0 0 30px gold)' }}>✨</div>
-                                <div style={{ fontSize: '2.5rem', color: 'white', fontWeight: '900', textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>{reward?.label}</div>
-                                {reward?.code && <div style={{ background: 'white', color: 'black', padding: '10px', marginTop: '10px', fontFamily: 'monospace', borderRadius: '10px', fontWeight: 'bold' }}>CODE: {reward.code}</div>}
-                            </div>
-                        )}
+                        </div>
 
                         {status === 'CLAIMED' && (
-                            <div>
-                                <div style={{ fontSize: '6rem', opacity: 0.5, filter: 'grayscale(1)' }}>🔒</div>
-                                <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'bold', fontSize: '1.2rem' }}>Come back in:</p>
-                                <div style={{ fontSize: '3rem', color: 'white', fontFamily: 'monospace', fontWeight: 'bold', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{timeLeft}</div>
+                            <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '10px' }}>
+                                <div style={{ fontSize: '4rem', opacity: 0.5, filter: 'grayscale(1)' }}>🔒</div>
+                                <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'bold', fontSize: '1.2rem' }}>Next Loot:</p>
+                                <div style={{ fontSize: '2.5rem', color: 'white', fontFamily: 'monospace', fontWeight: 'bold', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{timeLeft}</div>
                             </div>
                         )}
                     </div>
+
+                    <style>{`
+                        .loot-box {
+                            width: 150px; height: 150px;
+                            position: relative;
+                            transform-style: preserve-3d;
+                            transform: rotateX(-20deg) rotateY(30deg);
+                            transition: transform 0.5s;
+                        }
+                        .loot-box.shaking { animation: shakeBox 0.5s infinite; }
+                        .loot-box.opened { transform: rotateX(-20deg) rotateY(30deg) translateY(50px); }
+                        .loot-box.opened .top { transform: rotateX(120deg) translateZ(75px); } /* Open Lid */
+                        
+                        .face {
+                            position: absolute;
+                            width: 150px; height: 150px;
+                            background: linear-gradient(135deg, #ff0055, #cc0044);
+                            border: 2px solid #ff99aa;
+                            opacity: 0.9;
+                            display: flex; alignItems: center; justifyContent: center;
+                            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+                        }
+                        .front { transform: translateZ(75px); }
+                        .back  { transform: rotateY(180deg) translateZ(75px); }
+                        .right { transform: rotateY(90deg) translateZ(75px); background: #aa0033; }
+                        .left  { transform: rotateY(-90deg) translateZ(75px); background: #aa0033; }
+                        .top   { transform: rotateX(90deg) translateZ(75px); background: gold; transition: transform 0.5s ease-out; transform-origin: top; }
+                        .bottom { transform: rotateX(-90deg) translateZ(75px); background: #550011; }
+
+                        .lock { font-size: 3rem; }
+
+                        .reward-item {
+                            position: absolute;
+                            top: 50%; left: 50%;
+                            transform: translate(-50%, -50%) scale(0);
+                            display: flex; flexDirection: column; alignItems: center; justify-content: center;
+                            text-align: center;
+                            width: 200px;
+                            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                            pointer-events: none;
+                        }
+                        .reward-item.visible {
+                            transform: translate(-50%, -250%) scale(1);
+                            opacity: 1;
+                        }
+
+                        @keyframes shakeBox {
+                            0% { transform: rotateX(-20deg) rotateY(25deg); }
+                            50% { transform: rotateX(-20deg) rotateY(35deg); }
+                            100% { transform: rotateX(-20deg) rotateY(25deg); }
+                        }
+                    `}</style>
 
                     {status === 'LOCKED' && (
                         <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'white', color: '#FF5E62', fontSize: '1.5rem', textTransform: 'uppercase' }}>
@@ -182,9 +233,7 @@ const DailyStash = ({ onClose }) => {
                 </div>
             </div>
             <style>{`
-                @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-                @keyframes shake { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
-                @keyframes pop { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+
             `}</style>
         </div>
     );

@@ -77,6 +77,63 @@ const LiveFeed = () => {
         };
     }, []);
 
+    // Treasury State
+    const [treasuryUSD, setTreasuryUSD] = useState(null);
+
+    useEffect(() => {
+        const fetchTreasury = async () => {
+            try {
+                // 1. Fetch SOL Balance
+                let solAmount = 0;
+                try {
+                    const solResp = await fetch('https://api.mainnet-beta.solana.com', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0', id: 1, method: 'getBalance',
+                            params: ['GQfGtoF7FA3iZfmwmThQrmiZv87zmk6PnqrRFYFsWSHv']
+                        })
+                    });
+                    const solData = await solResp.json();
+                    if (solData.result) solAmount = solData.result.value / 1000000000;
+                } catch (e) { console.error('SOL fetch error', e); }
+
+                // 2. Fetch BTC Balance
+                let btcAmount = 0;
+                try {
+                    // Using blockchain.info plain text API (returns satoshis)
+                    const btcResp = await fetch('https://blockchain.info/q/addressbalance/bc1q6dn4yaswgw9gja7pgfnakcf93r74svj5qk82qj');
+                    const btcSats = await btcResp.text();
+                    btcAmount = parseInt(btcSats) / 100000000;
+                } catch (e) { console.error('BTC fetch error', e); }
+
+                // 3. Fetch Prices (Coinbase)
+                let solPrice = 0;
+                let btcPrice = 0;
+                try {
+                    const [pSol, pBtc] = await Promise.all([
+                        fetch('https://api.coinbase.com/v2/prices/SOL-USD/spot').then(r => r.json()),
+                        fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot').then(r => r.json())
+                    ]);
+                    solPrice = parseFloat(pSol.data.amount);
+                    btcPrice = parseFloat(pBtc.data.amount);
+                } catch (e) { console.error('Price fetch error', e); }
+
+                // 4. Calculate Total
+                const total = (solAmount * solPrice) + (btcAmount * btcPrice);
+                // Format Currency
+                setTreasuryUSD(new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total));
+
+            } catch (e) {
+                console.error("Treasury update failed", e);
+            }
+        };
+
+        fetchTreasury();
+        const interval = setInterval(fetchTreasury, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div className="glass-panel" style={{
             width: '100%', maxWidth: '800px', margin: '0 auto 20px auto',
@@ -86,6 +143,18 @@ const LiveFeed = () => {
             height: '120px', overflow: 'hidden',
             position: 'relative'
         }}>
+            {/* TREASURY DISPLAY (Left) */}
+            <div style={{
+                position: 'absolute', top: 5, left: 10,
+                fontSize: '0.7rem', color: '#ffd700',
+                display: 'flex', alignItems: 'center', gap: '5px',
+                fontFamily: 'monospace'
+            }}>
+                <span>🏛️ TREASURY:</span>
+                <span style={{ fontWeight: 'bold' }}>{treasuryUSD || 'Loading...'}</span>
+            </div>
+
+            {/* LIVE FEED BADGE (Right) */}
             <div style={{
                 position: 'absolute', top: 5, right: 10,
                 fontSize: '0.7rem', color: 'var(--neon-green)',

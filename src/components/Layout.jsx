@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import ProfileModal from './ProfileModal';
 import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
@@ -9,14 +8,20 @@ import { usePocketBro } from '../context/PocketBroContext';
 import DailyStash from './DailyStash';
 import DailyQuestModal from './DailyQuestModal';
 import OnboardingModal from './OnboardingModal';
+import SocialSidebar from './SocialSidebar';
+import PocketCompanion from './PocketCompanion';
+import HypeTicker from './HypeTicker';
+import useRetroSound from '../hooks/useRetroSound';
 import './Layout.css';
 
 const Layout = () => {
+    // ... (Hooks remain same, just rendering changes)
     const location = useLocation();
     const [showProfile, setShowProfile] = useState(false);
     const [showDaily, setShowDaily] = useState(false);
     const [showQuests, setShowQuests] = useState(false);
     const [coins, setCoins] = useState(0);
+    const [isDailyReady, setIsDailyReady] = useState(false);
 
     // Contexts
     const { dailyState, shopState } = useGamification() || { dailyState: null, shopState: null };
@@ -29,12 +34,21 @@ const Layout = () => {
 
     // Header Face Cycle
     const [faceIndex, setFaceIndex] = useState(0);
+    const { playClick } = useRetroSound();
+
     const FACES = [
         '/assets/merchboy_money.png', // Money Eyes
         '/assets/merchboy_cat.png',   // Bear/Cat
         '/assets/merchboy_bunny.png', // Bunny
         '/assets/merchboy_face.png'   // Standard
     ];
+
+    // Global Click Sound
+    useEffect(() => {
+        const handleClick = () => playClick();
+        window.addEventListener('mousedown', handleClick); // mousedown feels snappier than click
+        return () => window.removeEventListener('mousedown', handleClick);
+    }, [playClick]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -51,10 +65,24 @@ const Layout = () => {
         const updateCoins = () => {
             setCoins(parseInt(localStorage.getItem('arcadeCoins')) || 0);
         };
+        const checkDaily = () => {
+            const lastClaim = localStorage.getItem('dailyStashClaim');
+            if (!lastClaim) {
+                setIsDailyReady(true);
+            } else {
+                const diff = Date.now() - parseInt(lastClaim);
+                setIsDailyReady(diff > 24 * 60 * 60 * 1000);
+            }
+        };
+
         updateCoins();
-        const interval = setInterval(updateCoins, 1000);
+        checkDaily();
+        const interval = setInterval(() => {
+            updateCoins();
+            checkDaily();
+        }, 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [showDaily]); // Re-check when modal closes
 
     // Handle Glitch Class
     useEffect(() => {
@@ -118,9 +146,11 @@ const Layout = () => {
 
     return (
         <div className="layout-container" style={{ paddingBottom: isFullScreenGame ? 0 : '120px' }}>
+            {!isFullScreenGame && <HypeTicker />}
+
             {!isFullScreenGame && (
                 <header className="glass-panel main-header" style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+                    position: 'fixed', top: '30px', left: 0, right: 0, zIndex: 1000,
                     borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '10px 20px', height: '60px'
@@ -150,9 +180,12 @@ const Layout = () => {
                             </div>
                         </a>
                         <style>{`
-                            @keyframes float {
                                 0%, 100% { transform: translateY(0); }
                                 50% { transform: translateY(-5px); }
+                            }
+                            @keyframes bounce {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-10px); }
                             }
                         `}</style>
                     </div>
@@ -190,7 +223,9 @@ const Layout = () => {
                             style={{
                                 background: 'transparent', border: 'none', cursor: 'pointer',
                                 fontSize: '1.5rem', padding: '0',
-                                animation: 'wiggle 2s infinite ease-in-out'
+                                opacity: isDailyReady ? 1 : 0.6,
+                                filter: isDailyReady ? 'drop-shadow(0 0 5px gold)' : 'grayscale(100%)',
+                                animation: isDailyReady ? 'bounce 1s infinite' : 'none'
                             }}
                         >
                             🎁
@@ -205,20 +240,13 @@ const Layout = () => {
                 </header>
             )}
 
-            {/* PAGE TRANSITIONS */}
-            <AnimatePresence mode="wait">
-                <motion.main
-                    key={location.pathname}
-                    className="main-content"
-                    style={{ paddingTop: '90px', minHeight: '100vh' }}
-                    initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                >
-                    <Outlet />
-                </motion.main>
-            </AnimatePresence>
+            {/* PAGE CONTENT */}
+            <main
+                className="main-content"
+                style={{ paddingTop: '90px', minHeight: '100vh', opacity: 1 }}
+            >
+                <Outlet />
+            </main>
 
             {!isFullScreenGame && (
                 <>
@@ -282,7 +310,7 @@ const Layout = () => {
                                 position: 'relative'
                             }}
                         >
-                            👤
+                            <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 0 5px #d53f8c)' }}>👾</span>
                             {/* Mood Indicator Badge */}
                             <div style={{
                                 position: 'absolute',
@@ -333,6 +361,12 @@ const Layout = () => {
             }}>
                 POWERED BY MERCHBOY
             </div>
+
+            {/* Social Plaza Sidebar - v2.0 Feature */}
+            <SocialSidebar />
+
+            {/* COMPANION MODE */}
+            <PocketCompanion />
         </div>
     );
 };

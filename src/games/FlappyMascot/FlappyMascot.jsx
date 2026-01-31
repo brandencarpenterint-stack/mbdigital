@@ -49,7 +49,7 @@ const CHARACTERS = [
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
     // Global Shop State
-    const { shopState, updateStat, incrementStat, equipItem, addCoins, userProfile, stats, coins } = useGamification() || {};
+    const { shopState, updateStat, incrementStat, equipItem, addCoins, userProfile, stats, coins, consumeItem } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
@@ -332,6 +332,8 @@ const FlappyMascot = () => {
         // 4. Draw Wing (FRONT)
         drawWing('front');
 
+        ctx.restore();
+
         // Ground
         ctx.fillStyle = '#ded895';
         ctx.fillRect(0, GAME_HEIGHT - 20, GAME_WIDTH, 20);
@@ -403,6 +405,29 @@ const FlappyMascot = () => {
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                         <h2 style={{ fontSize: '3rem', color: '#ff9900' }}>GAME OVER</h2>
                         <p style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'white' }}>Score: {score}</p>
+
+                        {/* REVIVE OPTION */}
+                        {(shopState?.inventory?.['flappy_shield'] > 0) && (
+                            <SquishyButton
+                                onClick={() => {
+                                    if (consumeItem('flappy_shield')) {
+                                        setGameOver(false);
+                                        setGameActive(true);
+                                        gameActiveRef.current = true;
+                                        // Reset Position Safe
+                                        gameState.current.birdY = GAME_HEIGHT / 2;
+                                        gameState.current.velocity = 0;
+                                        // Push pipes away to give breathing room
+                                        gameState.current.pipes.forEach(p => p.x += 300);
+                                        requestAnimationFrame(gameLoop);
+                                    }
+                                }}
+                                style={{ marginBottom: '15px', padding: '10px 30px', background: 'var(--neon-blue)', border: 'none', borderRadius: '5px', color: 'black', fontWeight: 'bold' }}
+                            >
+                                🛡️ USE SHIELD ({shopState.inventory['flappy_shield']})
+                            </SquishyButton>
+                        )}
+
                         <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#ff9900', border: 'none', borderRadius: '5px', color: 'white' }}>Try Again</SquishyButton>
                         <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Back to Base</Link>
                     </div>

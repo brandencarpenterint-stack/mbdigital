@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const ToastContext = createContext();
@@ -7,62 +7,81 @@ export const useToast = () => useContext(ToastContext);
 
 export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
+    const [achievementQueue, setAchievementQueue] = useState([]);
+    const [currentAchievement, setCurrentAchievement] = useState(null);
+
+    // Debug
+    useEffect(() => { console.log("Toast System Online 🍞"); }, []);
 
     // Add a new toast
     // type: 'success', 'info', 'warning', 'achievement', 'xp', 'coin'
-    const showToast = useCallback((message, type = 'info') => {
+    const showToast = useCallback((message, type = 'info', details = null) => {
         const id = Date.now() + Math.random();
-        setToasts(prev => [...prev, { id, message, type }]);
 
-        // Auto remove after 3s
-        setTimeout(() => {
-            removeToast(id);
-        }, 3000);
+        if (type === 'achievement') {
+            setAchievementQueue(prev => [...prev, { id, message, type, details }]);
+        } else {
+            setToasts(prev => [...prev, { id, message, type, details }]);
+            // Auto remove standard toasts
+            setTimeout(() => {
+                removeToast(id);
+            }, 3000);
+        }
     }, []);
 
     const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
     }, []);
 
+    // PROCESS ACHIEVEMENT QUEUE
+    useEffect(() => {
+        if (!currentAchievement && achievementQueue.length > 0) {
+            // Pop the next one
+            const next = achievementQueue[0];
+            setCurrentAchievement(next);
+            setAchievementQueue(prev => prev.slice(1));
+
+            // Wait 5 seconds (Enter -> Read -> Exit), then clear
+            setTimeout(() => {
+                setCurrentAchievement(null);
+            }, 5000);
+        }
+    }, [currentAchievement, achievementQueue]);
+
     return (
         <ToastContext.Provider value={{ showToast }}>
             {children}
 
-            {/* TOAST CONTAINER OVERLAY */}
+            {/* STANDARD TOASTS (Top Right) */}
             <div style={{
                 position: 'fixed',
                 top: '20px',
-                right: '20px', // Top Right for Desktop
+                right: '20px',
                 zIndex: 11000,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
-                pointerEvents: 'none' // Allow clicks through container
+                pointerEvents: 'none'
             }}>
-                <AnimatePresence>
-                    {toasts.map(toast => (
-                        <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
-                    ))}
-                </AnimatePresence>
+                {toasts.map(toast => (
+                    <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
+                ))}
             </div>
 
-            {/* CENTERED ACHIEVEMENT OVERLAY (Special Case) */}
+            {/* SEQUENTIAL ACHIEVEMENT OVERLAY (Center) */}
+            {/* SEQUENTIAL ACHIEVEMENT OVERLAY (Center) */}
             <div style={{
-                position: 'fixed', top: '100px', left: '50%', transform: 'translateX(-50%)',
-                zIndex: 11001, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center'
+                position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 11001, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90%', maxWidth: '400px'
             }}>
-                <AnimatePresence>
-                    {toasts.filter(t => t.type === 'achievement').map(toast => (
-                        <AchievementToast key={toast.id} toast={toast} />
-                    ))}
-                </AnimatePresence>
+                {currentAchievement && (
+                    <AchievementToast key={currentAchievement.id} toast={currentAchievement} />
+                )}
             </div>
 
         </ToastContext.Provider>
     );
 };
-
-// --- SUB COMPONENTS ---
 
 const ToastItem = ({ toast, onClose }) => {
     // Styling based on type
@@ -79,12 +98,7 @@ const ToastItem = ({ toast, onClose }) => {
     if (toast.type === 'achievement') return null;
 
     return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, x: 50, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 50, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        <div
             style={{
                 background: bg,
                 color: 'white',
@@ -97,38 +111,71 @@ const ToastItem = ({ toast, onClose }) => {
                 minWidth: '200px',
                 pointerEvents: 'auto',
                 fontFamily: '"Orbitron", sans-serif',
-                fontSize: '0.8rem'
+                fontSize: '0.8rem',
+                animation: 'fadeIn 0.3s ease-out'
             }}
         >
             <span style={{ fontSize: '1.2rem' }}>{icon}</span>
             <span>{toast.message}</span>
-        </motion.div>
+            <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+        </div>
     );
 };
 
 const AchievementToast = ({ toast }) => {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.5 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.5 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        <div
             style={{
-                background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                color: 'black',
-                padding: '15px 30px',
-                borderRadius: '50px',
-                border: '4px solid white',
-                boxShadow: '0 0 30px rgba(255, 215, 0, 0.6)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                background: 'rgba(0,0,0,0.9)', // Dark base
+                color: 'white',
+                padding: '2px', // Border wrapper
+                borderRadius: '20px',
+                backgroundOrigin: 'border-box',
+                backgroundClip: 'content-box, border-box',
+                backgroundImage: 'linear-gradient(#000,#000), linear-gradient(135deg, gold, #ff0055)', // Neon Border
+                boxShadow: '0 0 50px rgba(255, 215, 0, 0.4)',
                 textAlign: 'center',
                 pointerEvents: 'none',
-                marginBottom: '10px'
+                marginBottom: '10px',
+                width: '100%',
+                animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }}
         >
-            <div style={{ fontSize: '2rem', marginBottom: '5px' }}>🏆</div>
-            <div style={{ fontWeight: '900', fontSize: '1.2rem', fontFamily: '"Orbitron", sans-serif' }}>ACHIEVEMENT UNLOCKED</div>
-            <div style={{ fontWeight: 'bold' }}>{toast.message}</div>
-        </motion.div>
+            <div style={{ padding: '20px', borderRadius: '18px', background: '#111' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '10px', animation: 'bounce 1s infinite' }}>🏆</div>
+                <div style={{ color: 'gold', fontWeight: '900', fontSize: '1.2rem', fontFamily: '"Orbitron", sans-serif', letterSpacing: '2px', marginBottom: '5px' }}>
+                    ACHIEVEMENT UNLOCKED
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '5px' }}>{toast.message}</div>
+
+                {toast.details?.description && (
+                    <div style={{ fontSize: '0.9rem', color: '#aaa', fontStyle: 'italic', marginBottom: '10px' }}>
+                        "{toast.details.description}"
+                    </div>
+                )}
+
+                {/* REWARD SECTION */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    {toast.details?.reward && (
+                        <div style={{ background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', color: '#00ff00', fontWeight: 'bold' }}>
+                            🎁 {toast.details.reward}
+                        </div>
+                    )}
+                    <div style={{ background: 'rgba(255,255,0,0.1)', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', color: 'gold', fontWeight: 'bold' }}>
+                        ⚡ +500 XP
+                    </div>
+                </div>
+            </div>
+            <style>{`
+                @keyframes bounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+                @keyframes popIn {
+                    from { opacity: 0; transform: scale(0.5) translateY(50px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
+        </div>
     );
 };

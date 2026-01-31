@@ -1380,8 +1380,20 @@ const CrazyFishing = () => {
     );
 
     // ROTATE OVERLAY
-    // ROTATION WARNING REMOVED (User Feedback)
-    // if (isPortrait && window.innerWidth < 768) { ... }
+    // ROTATE OVERLAY
+    if (isPortrait && window.innerWidth < 768) {
+        return (
+            <Overlay title="ROTATE PHONE" onClose={() => { }} color="orange">
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📱🔄</div>
+                    <div>Please rotate your device specifically for this fishing trip!</div>
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '20px' }}>
+                        (Landscape Mode Required)
+                    </div>
+                </div>
+            </Overlay>
+        );
+    }
 
     // RENDER UI
     return (

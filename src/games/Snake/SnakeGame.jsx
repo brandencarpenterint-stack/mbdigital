@@ -5,6 +5,7 @@ import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 import { triggerConfetti, triggerWinConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import GameOverCard from '../../components/GameOverCard';
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 150;
@@ -26,8 +27,8 @@ const SnakeGame = () => {
     const [shake, setShake] = useState(0);
 
     // Hooks
-    const { playJump, playCrash, playCollect } = useRetroSound();
-    const { shopState, addCoins, updateStat, userProfile, stats } = useGamification() || {};
+    const { playJump, playCrash, playCollect, playWin } = useRetroSound();
+    const { shopState, addCoins, updateStat, userProfile, stats, consumeItem } = useGamification() || {};
 
     // Sync local high score with global stat on mount
     useEffect(() => {
@@ -350,30 +351,35 @@ const SnakeGame = () => {
 
                 {/* Game Over */}
                 {gameOver && (
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        backdropFilter: 'blur(5px)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 10
-                    }}>
-                        <h2 style={{ fontSize: '2.5rem', color: '#ff0055', textShadow: '0 0 20px #ff0055', marginBottom: '10px' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '30px', color: '#ccc' }}>SCORE: <span style={{ color: 'white' }}>{score}</span></p>
-
-                        <button
-                            onClick={restartGame}
-                            className="squishy-btn"
-                            style={{
-                                padding: '15px 40px', fontSize: '1.2rem',
-                                background: 'var(--neon-green)', color: 'black',
-                                border: 'none', borderRadius: '30px', fontWeight: '900',
-                                boxShadow: '0 0 20px var(--neon-green)'
-                            }}
-                        >
-                            RETRY
-                        </button>
-                        <Link to="/arcade" style={{ marginTop: '20px', color: '#888', textDecoration: 'none', fontSize: '0.8rem' }}>EXIT TO ARCADE</Link>
-                    </div>
+                    <GameOverCard
+                        score={score}
+                        bestScore={highScore}
+                        gameId="snake"
+                        onReplay={restartGame}
+                        onHome={() => window.location.href = '/arcade'}
+                    >
+                        {(shopState?.inventory?.['snake_life'] > 0) && (
+                            <button
+                                onClick={() => {
+                                    if (consumeItem('snake_life')) {
+                                        setGameOver(false);
+                                        setSnake([{ x: 10, y: 10 }]);
+                                        setDirection('RIGHT');
+                                    }
+                                }}
+                                className="squishy-btn"
+                                style={{
+                                    padding: '15px 30px', fontSize: '1.2rem',
+                                    background: '#ff0055', color: 'white',
+                                    border: 'none', borderRadius: '30px', fontWeight: '900',
+                                    boxShadow: '0 0 20px #ff0055',
+                                    display: 'flex', alignItems: 'center', gap: '5px'
+                                }}
+                            >
+                                ❤️ REVIVE ({shopState.inventory['snake_life']})
+                            </button>
+                        )}
+                    </GameOverCard>
                 )}
             </div>
 

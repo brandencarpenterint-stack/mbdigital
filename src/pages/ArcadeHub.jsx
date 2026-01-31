@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import LiveFeed from '../components/LiveFeed';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useGamification } from '../context/GamificationContext';
+import { usePocketBro } from '../context/PocketBroContext';
+import PocketPet from '../components/pocket-pet/PocketPet';
 import './Home.css'; // Shared styles for dashboard grid
 
 const games = [
@@ -89,6 +91,15 @@ const games = [
         leaderboardId: 'memory_match'
     },
     {
+        id: 'sub-hunter',
+        title: 'VOID HUNTER',
+        desc: 'Destroy the Subs!',
+        gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+        icon: '⚓',
+        colSpan: 1,
+        leaderboardId: 'sub_hunter'
+    },
+    {
         id: 'flappy',
         title: 'FLAPPY MASCOT',
         desc: 'Don\'t crash.',
@@ -114,7 +125,9 @@ const getHighScore = (id, stats) => {
 };
 
 const ArcadeHub = () => {
-    const { stats } = useGamification() || {};
+    const { stats, shopState } = useGamification() || {};
+    const { stats: broStats, getMood } = usePocketBro() || {};
+    const equippedSkin = shopState?.equipped?.pocketbro || null;
     const [selectedLeaderboard, setSelectedLeaderboard] = useState('crazy_fishing');
 
     return (
@@ -148,23 +161,44 @@ const ArcadeHub = () => {
                 </Link>
             </div>
 
-            {/* Pocket Bro Apartment (Top Feature) */}
+            {/* Pocket Bro Live Card */}
             <div className="bento-card" style={{
-                background: 'linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%)',
-                padding: '30px',
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                padding: '20px',
                 marginBottom: '40px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-                border: '4px solid #fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                border: '2px solid #555', boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                position: 'relative', overflow: 'hidden'
             }}>
-                <h2 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: '#006064' }}>POCKET BRO'S ROOM</h2>
-                <p style={{ color: '#555', marginBottom: '20px' }}>Your digital companion lives here.</p>
+                {/* Live Pet Preview */}
+                <div style={{ position: 'relative', height: '120px', width: '120px', marginBottom: '10px' }}>
+                    <PocketPet
+                        stage={broStats?.stage || 'EGG'}
+                        type={broStats?.type || 'SOOT'}
+                        mood={getMood()}
+                        isSleeping={broStats?.isSleeping}
+                        skin={equippedSkin}
+                    />
+                </div>
+
+                <h2 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', color: 'white', zIndex: 2 }}>POCKET BRO</h2>
+                <p style={{ color: '#aaa', marginBottom: '15px', fontSize: '0.9rem', zIndex: 2 }}>
+                    Your digital companion is waiting.
+                </p>
                 <Link to="/pocketbro" className="squishy-btn" style={{
-                    background: '#0ea5e9', color: 'white', padding: '15px 40px',
-                    borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.2rem',
-                    boxShadow: '0 5px 15px rgba(14, 165, 233, 0.4)'
+                    background: 'var(--neon-pink)', color: 'white', padding: '10px 30px',
+                    borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '1rem',
+                    boxShadow: '0 0 15px var(--neon-pink)', zIndex: 2
                 }}>
                     ENTER ROOM 🚪
                 </Link>
+
+                {/* Background Decor */}
+                <div style={{
+                    position: 'absolute', inset: 0,
+                    backgroundImage: 'radial-gradient(circle at center, transparent 0%, #000 100%)',
+                    zIndex: 1
+                }}></div>
             </div>
 
             {/* BENTO GRID GAMES */}
