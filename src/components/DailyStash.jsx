@@ -2,22 +2,17 @@ import React, { useState, useEffect } from 'react';
 import SquishyButton from './SquishyButton';
 import { useGamification } from '../context/GamificationContext';
 import { triggerConfetti } from '../utils/confetti';
-
-const REWARDS = [
-    { type: 'coins', amount: 50, label: '50 COINS', rare: false },
-    { type: 'coins', amount: 100, label: '100 COINS', rare: false },
-    { type: 'coins', amount: 500, label: '💰 500 COINS!', rare: true },
-    { type: 'item', label: '🧢 Cap Sticker', rare: false },
-    { type: 'code', label: '🎟️ 10% OFF Merch Code', code: 'BRO10', rare: true },
-];
+import useRetroSound from '../hooks/useRetroSound';
 
 const DailyStash = ({ onClose }) => {
     const { addCoins } = useGamification();
-    const [status, setStatus] = useState('LOCKED'); // LOCKED, OPENING, OPENED, CLAIMED
+    const { playClick, playFanfare, playCoin } = useRetroSound();
+
+    // Status: LOCKED -> OPENING -> OPENED -> CLAIMED
+    const [status, setStatus] = useState('LOCKED');
     const [reward, setReward] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
     const [streak, setStreak] = useState(parseInt(localStorage.getItem('dailyStreak')) || 0);
-
 
     useEffect(() => {
         checkAvailability();
@@ -47,6 +42,7 @@ const DailyStash = ({ onClose }) => {
     };
 
     const openChest = () => {
+        playClick(); // Click sound
         setStatus('OPENING');
 
         // Streak Logic
@@ -64,33 +60,37 @@ const DailyStash = ({ onClose }) => {
         localStorage.setItem('dailyStreak', newStreak);
         setStreak(newStreak);
 
-        // Random Reward Logic
+        // Simple Tiered Rewards based on RNG
         const roll = Math.random();
-        let selected;
-        if (roll > 0.95) selected = REWARDS[2]; // 500 coins (5%)
-        else if (roll > 0.90) selected = REWARDS[4]; // Code (5%)
-        else if (roll > 0.60) selected = REWARDS[3]; // Sticker (30%)
-        else if (roll > 0.30) selected = REWARDS[1]; // 100 coins (30%)
-        else selected = REWARDS[0]; // 50 coins (30%)
+        let baseAmount = 50;
+        let isBigWin = false;
+
+        if (roll > 0.95) { baseAmount = 500; isBigWin = true; } // Jackpot
+        else if (roll > 0.85) { baseAmount = 250; isBigWin = true; }
+        else if (roll > 0.60) baseAmount = 100;
 
         setTimeout(() => {
-            const finalReward = { ...selected };
+            // Apply Streak Bonus
+            const bonus = Math.floor(baseAmount * (1 + (newStreak - 1) * 0.1));
 
-            // Apply Streak Bonus to Coins
-            if (finalReward.type === 'coins') {
-                const bonus = Math.floor(finalReward.amount * (1 + (newStreak - 1) * 0.1));
-                finalReward.amount = bonus;
-                finalReward.label = `${bonus} COINS`;
-            }
-
-            setReward(finalReward);
+            setReward({
+                amount: bonus,
+                label: `${bonus} COINS`,
+                isBigWin
+            });
             setStatus('OPENED');
-            triggerConfetti();
+
+            if (isBigWin) {
+                playFanfare();
+                triggerConfetti();
+            } else {
+                playCoin();
+                triggerConfetti(); // Always confetti because why not
+            }
 
             // Apply Reward
-            if (finalReward.type === 'coins') {
-                addCoins(finalReward.amount);
-            }
+            addCoins(bonus);
+
             // Save Claim Time
             localStorage.setItem('dailyStashClaim', Date.now().toString());
         }, 2000); // 2s animation
@@ -99,40 +99,59 @@ const DailyStash = ({ onClose }) => {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0,0,0,0.9)', zIndex: 6000,
+            background: 'rgba(0,0,0,0.85)', zIndex: 6000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(8px)',
+            fontFamily: '"Orbitron", sans-serif'
         }}>
-            <div style={{
-                background: 'linear-gradient(135deg, #FF9966, #FF5E62)', // Sunset Gradient
-                width: '90%', maxWidth: '400px',
+            <div className="glass-panel" style={{
+                background: 'linear-gradient(135deg, #1a0b2e 0%, #2b003e 100%)',
+                width: '90%', maxWidth: '450px',
                 padding: '40px 20px',
-                borderRadius: '30px',
+                borderRadius: '20px',
                 textAlign: 'center',
-                border: '4px solid white',
-                boxShadow: '0 0 80px rgba(255, 94, 98, 0.6)',
+                border: '1px solid var(--neon-pink)',
+                boxShadow: '0 0 50px rgba(255, 0, 85, 0.2)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
                 <button
                     onClick={onClose}
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '50%', width: '40px', height: '40px', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#ff0055', fontSize: '1.5rem', cursor: 'pointer', zIndex: 20 }}
                 >
                     ✕
                 </button>
 
                 <div style={{ position: 'relative', zIndex: 10 }}>
-                    <h1 style={{ color: 'white', fontFamily: '"Arial Black", sans-serif', textTransform: 'uppercase', fontSize: '2.5rem', textShadow: '0 5px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.4)', margin: '0 0 10px 0' }}>THE STASH</h1>
+                    <h1 style={{
+                        color: 'white',
+                        letterSpacing: '4px',
+                        fontSize: '2rem',
+                        textShadow: '0 0 10px var(--neon-pink)',
+                        margin: '0 0 10px 0'
+                    }}>
+                        NEON STASH
+                    </h1>
 
-                    <div style={{ background: 'white', color: '#FF5E62', display: 'inline-block', padding: '5px 20px', borderRadius: '50px', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>
-                        🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''}
+                    <div style={{
+                        background: 'rgba(255, 0, 85, 0.1)',
+                        color: 'var(--neon-pink)',
+                        display: 'inline-block',
+                        padding: '5px 15px',
+                        borderRadius: '4px',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                        border: '1px solid var(--neon-pink)',
+                        marginBottom: '20px'
+                    }}>
+                        🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''} (+{Math.round((streak * 0.1) * 100)}%)
                     </div>
 
                     <div style={{ perspective: '800px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
-                        {/* 3D CUBE CONTAINER */}
+                        {/* 3D CUBE - CYBERPUNK STYLE */}
                         <div className={`loot-box ${status === 'OPENING' ? 'shaking' : ''} ${status === 'OPENED' ? 'opened' : ''}`}>
                             <div className="face front">
-                                <div className="lock">🔒</div>
+                                <div className="lock-icon">{status === 'CLAIMED' ? '🚫' : '🔒'}</div>
                             </div>
                             <div className="face back"></div>
                             <div className="face right"></div>
@@ -142,21 +161,29 @@ const DailyStash = ({ onClose }) => {
 
                             {/* REWARD POPUP */}
                             <div className={`reward-item ${status === 'OPENED' ? 'visible' : ''}`}>
-                                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 20px gold)' }}>
-                                    {reward?.type === 'coins' ? '💰' : reward?.type === 'code' ? '🎟️' : '🧢'}
+                                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 20px gold)', animation: 'spinCoin 3s infinite linear' }}>
+                                    💰
                                 </div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)', marginTop: '10px' }}>
-                                    {reward?.label}
+                                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'gold', textShadow: '0 0 10px gold', marginTop: '10px' }}>
+                                    {reward?.amount}
                                 </div>
-                                {reward?.code && <div style={{ background: 'white', color: 'black', padding: '5px 10px', marginTop: '5px', borderRadius: '5px', fontWeight: 'bold' }}>{reward.code}</div>}
+                                <div style={{ color: 'white', fontSize: '1rem', letterSpacing: '2px' }}>CREDITS</div>
                             </div>
                         </div>
 
                         {status === 'CLAIMED' && (
-                            <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '10px' }}>
-                                <div style={{ fontSize: '4rem', opacity: 0.5, filter: 'grayscale(1)' }}>🔒</div>
-                                <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'bold', fontSize: '1.2rem' }}>Next Loot:</p>
-                                <div style={{ fontSize: '2.5rem', color: 'white', fontFamily: 'monospace', fontWeight: 'bold', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{timeLeft}</div>
+                            <div style={{
+                                position: 'absolute',
+                                background: 'rgba(0,0,0,0.9)',
+                                padding: '30px',
+                                border: '1px solid #333',
+                                borderRadius: '15px',
+                                boxShadow: '0 0 30px black'
+                            }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', margin: 0 }}>Next Supply Drop</p>
+                                <div style={{ fontSize: '2.5rem', color: 'var(--neon-blue)', fontWeight: 'bold', textShadow: '0 0 10px var(--neon-blue)', marginTop: '5px' }}>
+                                    {timeLeft}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -167,34 +194,34 @@ const DailyStash = ({ onClose }) => {
                             position: relative;
                             transform-style: preserve-3d;
                             transform: rotateX(-20deg) rotateY(30deg);
-                            transition: transform 0.5s;
+                            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
                         }
                         .loot-box.shaking { animation: shakeBox 0.5s infinite; }
-                        .loot-box.opened { transform: rotateX(-20deg) rotateY(30deg) translateY(50px); }
-                        .loot-box.opened .top { transform: rotateX(120deg) translateZ(75px); } /* Open Lid */
+                        .loot-box.opened { transform: rotateX(-20deg) rotateY(30deg) translateY(60px); }
+                        .loot-box.opened .top { transform: rotateX(130deg) translateZ(75px); } 
                         
                         .face {
                             position: absolute;
                             width: 150px; height: 150px;
-                            background: linear-gradient(135deg, #ff0055, #cc0044);
-                            border: 2px solid #ff99aa;
-                            opacity: 0.9;
+                            background: rgba(20, 10, 30, 0.95);
+                            border: 2px solid var(--neon-pink);
                             display: flex; alignItems: center; justifyContent: center;
-                            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+                            box-shadow: inset 0 0 30px rgba(255, 0, 85, 0.2);
                         }
                         .front { transform: translateZ(75px); }
                         .back  { transform: rotateY(180deg) translateZ(75px); }
-                        .right { transform: rotateY(90deg) translateZ(75px); background: #aa0033; }
-                        .left  { transform: rotateY(-90deg) translateZ(75px); background: #aa0033; }
-                        .top   { transform: rotateX(90deg) translateZ(75px); background: gold; transition: transform 0.5s ease-out; transform-origin: top; }
-                        .bottom { transform: rotateX(-90deg) translateZ(75px); background: #550011; }
+                        .right { transform: rotateY(90deg) translateZ(75px); border-color: #aa0033; }
+                        .left  { transform: rotateY(-90deg) translateZ(75px); border-color: #aa0033; }
+                        .top   { transform: rotateX(90deg) translateZ(75px); background: var(--neon-pink); border-color: white; transform-origin: top; transition: transform 0.5s ease-out; }
+                        .bottom { transform: rotateX(-90deg) translateZ(75px); background: #000; }
 
-                        .lock { font-size: 3rem; }
+                        .lock-icon { font-size: 3rem; filter: drop-shadow(0 0 10px var(--neon-pink)); }
 
                         .reward-item {
                             position: absolute;
                             top: 50%; left: 50%;
-                            transform: translate(-50%, -50%) scale(0);
+                            transform: translate(-50%, 0) scale(0);
+                            opacity: 0;
                             display: flex; flexDirection: column; alignItems: center; justify-content: center;
                             text-align: center;
                             width: 200px;
@@ -202,7 +229,7 @@ const DailyStash = ({ onClose }) => {
                             pointer-events: none;
                         }
                         .reward-item.visible {
-                            transform: translate(-50%, -250%) scale(1);
+                            transform: translate(-50%, -200%) scale(1);
                             opacity: 1;
                         }
 
@@ -211,30 +238,31 @@ const DailyStash = ({ onClose }) => {
                             50% { transform: rotateX(-20deg) rotateY(35deg); }
                             100% { transform: rotateX(-20deg) rotateY(25deg); }
                         }
+                        @keyframes spinCoin {
+                            0% { transform: rotateY(0deg); }
+                            100% { transform: rotateY(360deg); }
+                        }
                     `}</style>
 
                     {status === 'LOCKED' && (
-                        <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'white', color: '#FF5E62', fontSize: '1.5rem', textTransform: 'uppercase' }}>
-                            OPEN CHEST
+                        <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'var(--neon-pink)', color: 'white', fontSize: '1.2rem', textTransform: 'uppercase', boxShadow: '0 0 20px var(--neon-pink)' }}>
+                            DECRYPT LOOT 🔓
                         </SquishyButton>
                     )}
 
                     {status === 'OPENED' && (
-                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '20px', background: '#00ffaa', color: '#004400', fontSize: '1.5rem', textTransform: 'uppercase' }}>
-                            AWESOME!
+                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '20px', background: 'var(--neon-blue)', color: 'black', fontSize: '1.2rem', textTransform: 'uppercase', boxShadow: '0 0 20px var(--neon-blue)' }}>
+                            COLLECT & CLOSE
                         </SquishyButton>
                     )}
 
                     {status === 'CLAIMED' && (
-                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '20px', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: '1.2rem' }}>
-                            CLOSE
+                        <SquishyButton onClick={onClose} style={{ width: '100%', padding: '15px', background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: '1rem' }}>
+                            RETURN TO BASE
                         </SquishyButton>
                     )}
                 </div>
             </div>
-            <style>{`
-
-            `}</style>
         </div>
     );
 };
