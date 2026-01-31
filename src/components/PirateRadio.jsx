@@ -3,10 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../context/SettingsContext';
 
 const TRACKS = [
-    { title: "Neon Drifter", src: "/assets/audio/music_neon.mp3", duration: "3:45" }, // You'll need real files or placeholders
-    { title: "Night City", src: "/assets/audio/music_city.mp3", duration: "2:20" },
-    { title: "Cyber Soul", src: "/assets/audio/music_soul.mp3", duration: "4:00" },
-    { title: "Lofi Study", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Elipsis.mp3", duration: "Stream" }, // Real test URL
+    { title: "Lofi Study", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Elipsis.mp3", duration: "Stream" },
+    { title: "CPU Talk", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/BoxCat_Games/Nameless_the_Hackers_RPG_Soundtrack/BoxCat_Games_-_10_-_CPU_Talk.mp3", duration: "Stream" },
+    { title: "Night Float", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3", duration: "Stream" },
 ];
 
 const PirateRadio = () => {
@@ -80,6 +79,7 @@ const PirateRadio = () => {
                 src={currentTrack.src}
                 onEnded={handleEnded}
                 loop={false}
+                crossOrigin="anonymous"
             />
 
             {/* COLLAPSED / EXPAND TOGGLE */}
