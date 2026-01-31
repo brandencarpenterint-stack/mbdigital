@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProfileModal from './ProfileModal';
 import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
@@ -243,9 +244,20 @@ const Layout = () => {
             {/* PAGE CONTENT */}
             <main
                 className="main-content"
-                style={{ paddingTop: '90px', minHeight: '100vh', opacity: 1 }}
+                style={{ paddingTop: '90px', minHeight: '100vh' }}
             >
-                <Outlet />
+                <AnimatePresence mode='wait'>
+                    <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        style={{ width: '100%' }}
+                    >
+                        <Outlet />
+                    </motion.div>
+                </AnimatePresence>
             </main>
 
             {!isFullScreenGame && (
