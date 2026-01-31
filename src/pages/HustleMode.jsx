@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGamification } from '../context/GamificationContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import { useToast } from '../context/ToastContext';
@@ -12,13 +13,14 @@ const HustleMode = () => {
     const { stats } = usePocketBro();
     const equippedSkin = shopState?.equipped?.pocketbro || null;
     const { showToast } = useToast();
-    const { playWin, playCollect } = useRetroSound();
+    const { playWin, playCollect, playClick } = useRetroSound();
 
     // Timer State
     const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState('WORK'); // 'WORK' or 'BREAK'
     const [completedSessions, setCompletedSessions] = useState(0);
+    const [deepFocus, setDeepFocus] = useState(false);
 
     const totalTime = mode === 'WORK' ? 25 * 60 : 5 * 60;
     const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -39,34 +41,35 @@ const HustleMode = () => {
             }
         }
         return () => clearInterval(interval);
-    }, [isActive, timeLeft, mode]); // removed dependencies that don't change often
+    }, [isActive, timeLeft, mode]);
 
     const handleWorkComplete = () => {
         addCoins(300);
         incrementStat('hustleSessions', 1);
         setCompletedSessions(s => s + 1);
-
-        // Play Sound
         playWin();
-
         showToast("HUSTLE COMPLETE! +300 COINS", "success");
         setMode('BREAK');
         setTimeLeft(5 * 60);
+        setDeepFocus(false); // Auto exit deep focus
     };
 
     const handleBreakComplete = () => {
         playCollect();
-
         showToast("BREAK OVER! BACK TO WORK.", "info");
         setMode('WORK');
         setTimeLeft(25 * 60);
     };
 
-    const toggleTimer = () => setIsActive(!isActive);
+    const toggleTimer = () => {
+        playClick();
+        setIsActive(!isActive);
+    };
 
     const resetTimer = () => {
         setIsActive(false);
         setTimeLeft(mode === 'WORK' ? 25 * 60 : 5 * 60);
+        setDeepFocus(false);
     };
 
     const formatTime = (seconds) => {
@@ -75,13 +78,13 @@ const HustleMode = () => {
         return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    // Dynamic Styles based on Mode
+    // Dynamic Styles
     const themeColor = mode === 'WORK' ? 'var(--neon-pink)' : 'var(--neon-green)';
     const bgColor = mode === 'WORK' ? '#1a0b2e' : '#002222';
 
     return (
         <div className="page-enter" style={{
-            background: `linear-gradient(to bottom, ${bgColor}, #000)`,
+            background: deepFocus ? '#000' : `linear-gradient(to bottom, ${bgColor}, #000)`,
             minHeight: '100vh',
             padding: '20px',
             color: 'white',
@@ -91,99 +94,123 @@ const HustleMode = () => {
             alignItems: 'center',
             justifyContent: 'center',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            transition: 'background 1s ease'
         }}>
 
-            {/* Header */}
-            <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
-                <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', opacity: 0.8 }}>⬅</Link>
-            </div>
+            {/* Back Button (Hidden in Deep Focus) */}
+            <AnimatePresence>
+                {!deepFocus && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}
+                    >
+                        <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', opacity: 0.8 }}>⬅</Link>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* Background Ambience */}
+            {/* Ambient Grid */}
             <div style={{
                 position: 'absolute', inset: 0,
-                background: `radial-gradient(circle at 50% 50%, ${themeColor} 0%, transparent 60%)`,
-                opacity: 0.1,
+                backgroundImage: 'linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px)',
+                backgroundSize: '40px 40px',
+                opacity: deepFocus ? 0.05 : 0.2,
+                transform: 'perspective(500px) rotateX(20deg)',
+                transformOrigin: 'top',
                 pointerEvents: 'none'
             }} />
 
-            <div className="glass-panel" style={{
-                padding: '40px',
-                width: '100%',
-                maxWidth: '450px',
-                textAlign: 'center',
-                border: `1px solid ${themeColor}`,
-                boxShadow: `0 0 50px ${themeColor}40`, // 40 is hex opacity
-                marginTop: '-50px' // Optical center correction
-            }}>
-
+            {/* MAIN PANEL */}
+            <motion.div
+                layout
+                animate={{ scale: deepFocus ? 1.1 : 1 }}
+                transition={{ duration: 0.5 }}
+                className="glass-panel"
+                style={{
+                    padding: '40px',
+                    width: '100%',
+                    maxWidth: '450px',
+                    textAlign: 'center',
+                    border: `2px solid ${themeColor}`,
+                    background: deepFocus ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.6)',
+                    boxShadow: isActive ? `0 0 50px ${themeColor}60` : `0 0 20px ${themeColor}20`,
+                    marginTop: '-50px',
+                    position: 'relative',
+                    zIndex: 20
+                }}
+            >
                 {/* STATUS BADGE */}
-                <div style={{
-                    display: 'inline-block',
-                    padding: '8px 20px',
-                    borderRadius: '50px',
-                    background: themeColor,
-                    color: '#000',
-                    fontWeight: '900',
-                    fontSize: '1rem',
-                    marginBottom: '30px',
-                    boxShadow: `0 0 20px ${themeColor}`
-                }}>
-                    {mode === 'WORK' ? '🔥 HUSTLE HARD' : '☕ RECHARGE'}
-                </div>
+                <motion.div
+                    animate={{ y: isActive ? [0, -5, 0] : 0 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                        display: 'inline-block',
+                        padding: '8px 20px',
+                        borderRadius: '4px',
+                        background: themeColor,
+                        color: '#000',
+                        fontWeight: '900',
+                        fontSize: '1rem',
+                        marginBottom: '30px',
+                        boxShadow: `0 0 20px ${themeColor}`,
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px'
+                    }}
+                >
+                    {mode === 'WORK' ? '🔥 NEON HUSTLE' : '☕ SYSTEM RECHARGE'}
+                </motion.div>
 
                 {/* ANIMATION ZONE */}
                 <div style={{
                     height: '180px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '20px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px',
                     position: 'relative'
                 }}>
-                    {/* ANIMATION ZONE */}
-                    <div style={{
-                        height: '180px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '20px',
-                        position: 'relative'
-                    }}>
-                        <div style={{ width: '150px', height: '150px' }}>
-                            <PocketPet
-                                stage={stats.stage}
-                                type={stats.type || 'SOOT'}
-                                mood={isActive ? 'happy' : 'neutral'}
-                                isSleeping={mode === 'BREAK'}
-                                skin={equippedSkin}
-                            />
-                        </div>
+                    {isActive && (
+                        <div style={{
+                            position: 'absolute', width: '150px', height: '150px', borderRadius: '50%',
+                            border: `2px dashed ${themeColor}`,
+                            animation: 'spin 10s linear infinite',
+                            opacity: 0.5
+                        }} />
+                    )}
+                    <div style={{ width: '150px', height: '150px', filter: deepFocus ? 'drop-shadow(0 0 20px white)' : 'none' }}>
+                        <PocketPet
+                            stage={stats.stage}
+                            type={stats.type || 'SOOT'}
+                            mood={isActive ? 'happy' : 'neutral'}
+                            isSleeping={mode === 'BREAK'}
+                            skin={equippedSkin}
+                        />
                     </div>
                 </div>
 
                 {/* TIMER */}
                 <div style={{
-                    fontSize: '5rem',
+                    fontSize: '5.5rem',
                     fontWeight: 'bold',
-                    fontFamily: 'monospace', // Orbitron looks good but monospace prevents jitter
+                    fontFamily: 'monospace',
                     color: themeColor,
-                    textShadow: `0 0 20px ${themeColor}`,
+                    textShadow: `0 0 30px ${themeColor}`,
                     marginBottom: '10px',
-                    letterSpacing: '-2px'
+                    letterSpacing: '-4px',
+                    lineHeight: 1
                 }}>
                     {formatTime(timeLeft)}
                 </div>
 
-                {/* PROGRESS RING/BAR */}
-                <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '40px', overflow: 'hidden' }}>
-                    <div style={{
-                        width: `${progress}%`,
-                        height: '100%',
-                        background: themeColor,
-                        boxShadow: `0 0 10px ${themeColor}`,
-                        transition: 'width 1s linear'
-                    }}></div>
+                {/* PROGRESS BAR */}
+                <div style={{ height: '6px', background: '#333', borderRadius: '3px', marginBottom: '40px', overflow: 'hidden', position: 'relative' }}>
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        style={{
+                            height: '100%',
+                            background: themeColor,
+                            boxShadow: `0 0 15px ${themeColor}`
+                        }}
+                    />
                 </div>
 
                 {/* CONTROLS */}
@@ -192,14 +219,15 @@ const HustleMode = () => {
                         onClick={toggleTimer}
                         style={{
                             fontSize: '1.2rem',
-                            padding: '15px 50px',
-                            background: isActive ? '#333' : themeColor,
-                            color: isActive ? '#fff' : '#000',
+                            padding: '15px 40px',
+                            background: isActive ? 'transparent' : themeColor,
+                            color: isActive ? themeColor : '#000',
                             fontWeight: 'bold',
-                            border: isActive ? '1px solid #555' : 'none'
+                            border: `2px solid ${themeColor}`,
+                            boxShadow: `0 0 20px ${themeColor}40`
                         }}
                     >
-                        {isActive ? 'PAUSE' : 'START'}
+                        {isActive ? 'PAUSE' : 'INITIATE'}
                     </SquishyButton>
 
                     <button
@@ -210,40 +238,29 @@ const HustleMode = () => {
                     </button>
                 </div>
 
-                <p style={{ color: '#888', fontSize: '0.9rem', letterSpacing: '1px' }}>
-                    {mode === 'WORK'
-                        ? "EARN 300 COINS PER SESSION."
-                        : "TAKE A BREATH. YOU EARNED IT."}
-                </p>
-
-                {/* STATS */}
-                <div style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-                    <div>
-                        <div style={{ fontSize: '0.8rem', color: '#888' }}>TODAY</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{completedSessions}</div>
-                    </div>
-                    {/* Add Total logic later if needed */}
+                {/* DEEP FOCUS TOGGLE */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', opacity: isActive ? 1 : 0.5 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                            type="checkbox"
+                            checked={deepFocus}
+                            onChange={(e) => setDeepFocus(e.target.checked)}
+                            style={{ accentColor: themeColor }}
+                        />
+                        DEEP FOCUS MODE
+                    </label>
                 </div>
-            </div>
+
+                <div style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px', display: 'flex', justifyContent: 'center', gap: '30px' }}>
+                    <div>
+                        <div style={{ fontSize: '0.7rem', color: '#888', letterSpacing: '1px' }}>SESSIONS</div>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white' }}>{completedSessions}</div>
+                    </div>
+                </div>
+            </motion.div>
 
             <style>{`
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-10px); }
-                }
-                @keyframes shake {
-                    0% { transform: translate(1px, 1px) rotate(0deg); }
-                    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-                    20% { transform: translate(-3px, 0px) rotate(1deg); }
-                    30% { transform: translate(3px, 2px) rotate(0deg); }
-                    40% { transform: translate(1px, -1px) rotate(1deg); }
-                    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-                    60% { transform: translate(-3px, 1px) rotate(0deg); }
-                    70% { transform: translate(3px, 1px) rotate(-1deg); }
-                    80% { transform: translate(-1px, -1px) rotate(1deg); }
-                    90% { transform: translate(1px, 2px) rotate(0deg); }
-                    100% { transform: translate(1px, -2px) rotate(-1deg); }
-                }
+                @keyframes spin { 100% { transform: rotate(360deg); } }
             `}</style>
         </div>
     );
