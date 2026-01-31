@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import SquishyButton from '../components/SquishyButton';
 import { Link } from 'react-router-dom';
 import BeatVisualizer from '../components/BeatVisualizer';
+import { motion } from 'framer-motion';
 
 const BeatLab = () => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -17,7 +18,7 @@ const BeatLab = () => {
     });
 
     const audioCtx = useRef(null);
-    const analyserNode = useRef(null); // Visualizer Node
+    const analyserNode = useRef(null); // Visualizer node
     const timerRef = useRef(null);
     const stepRef = useRef(0);
 
@@ -257,9 +258,17 @@ const BeatLab = () => {
         setIsPlaying(!isPlaying);
     };
 
+    const TRACK_COLORS = {
+        kick: '#ff0055',    // Neon Pink
+        snare: '#ffcc00',   // Gold
+        hihat: '#00ccff',   // Cyan
+        bass: '#bf00ff',    // Purple
+        fx: '#00ff66'       // Green
+    };
+
     return (
         <div className="page-enter" style={{
-            background: 'linear-gradient(to bottom, #101018, #000)',
+            background: 'linear-gradient(to bottom, #050510, #000)',
             minHeight: '100vh',
             padding: '20px',
             paddingBottom: '140px',
@@ -268,11 +277,17 @@ const BeatLab = () => {
             textAlign: 'center'
         }}>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', opacity: 0.8 }}>⬅</Link>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', position: 'relative', zIndex: 10 }}>
+                <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', opacity: 0.8, color: 'white' }}>⬅</Link>
                 <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '1.8rem', color: 'var(--neon-blue)', textShadow: '0 0 10px var(--neon-blue)', margin: 0 }}>BEAT LAB 2.0</h1>
-                    <div style={{ fontSize: '0.7rem', color: '#666' }}>PROFESSIONAL AUDIO WORKSTATION</div>
+                    <motion.h1
+                        animate={{ textShadow: ['0 0 10px #00ccff', '0 0 20px #bf00ff', '0 0 10px #00ccff'] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        style={{ fontSize: '1.8rem', color: '#fff', margin: 0, letterSpacing: '2px' }}
+                    >
+                        BEAT LAB 3.0
+                    </motion.h1>
+                    <div style={{ fontSize: '0.7rem', color: '#666', letterSpacing: '2px' }}>SONIC ARCHITECTURE</div>
                 </div>
                 <div style={{ width: '2rem' }}></div>
             </div>
@@ -280,8 +295,13 @@ const BeatLab = () => {
             {/* VISUALIZER */}
             <BeatVisualizer audioCtx={audioCtx} isPlaying={isPlaying} />
 
-            {/* Main Controls */}
-            <div className="glass-panel" style={{ padding: '20px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Main Controls Round */}
+            <div className="glass-panel" style={{
+                padding: '20px', marginBottom: '20px',
+                background: 'rgba(20, 20, 30, 0.6)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)'
+            }}>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                     {/* Play Button */}
                     <SquishyButton
@@ -296,34 +316,35 @@ const BeatLab = () => {
                             minWidth: '150px'
                         }}
                     >
-                        {isPlaying ? 'STOP ■' : 'PLAY ▶'}
+                        {isPlaying ? 'HALT ■' : 'ENGAGE ▶'}
                     </SquishyButton>
 
                     {/* Bank Selector */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ fontSize: '0.7rem', color: '#888' }}>SOUND BANK</label>
+                        <label style={{ fontSize: '0.7rem', color: '#888', letterSpacing: '1px' }}>SOUND BANK</label>
                         <select
                             value={selectedBank}
                             onChange={(e) => setSelectedBank(e.target.value)}
                             style={{
-                                background: '#222', color: 'white', border: '1px solid #444',
+                                background: '#111', color: 'var(--neon-blue)', border: '1px solid var(--neon-blue)',
                                 padding: '10px', borderRadius: '5px', fontFamily: 'inherit',
-                                cursor: 'pointer'
+                                cursor: 'pointer', outline: 'none',
+                                boxShadow: '0 0 5px var(--neon-blue)'
                             }}
                         >
-                            <option value="retro">RETRO (Classic)</option>
-                            <option value="8bit">8-BIT (Chiptune)</option>
-                            <option value="trap">TRAP (Deep Bass)</option>
+                            <option value="retro">RETRO WAVE</option>
+                            <option value="8bit">8-BIT CHIP</option>
+                            <option value="trap">DEEP TRAP</option>
                         </select>
                     </div>
 
                     {/* BPM */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ fontSize: '0.7rem', color: '#888' }}>TEMPO: {bpm}</label>
+                        <label style={{ fontSize: '0.7rem', color: '#888' }}>TEMPO: {bpm} BPM</label>
                         <input
                             type="range" min="60" max="180" value={bpm}
                             onChange={(e) => setBpm(parseInt(e.target.value))}
-                            style={{ accentColor: 'var(--neon-blue)', width: '120px' }}
+                            style={{ accentColor: 'var(--neon-pink)', width: '120px' }}
                         />
                     </div>
                 </div>
@@ -331,51 +352,64 @@ const BeatLab = () => {
 
             {/* PRESETS */}
             <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <span style={{ color: '#888', alignSelf: 'center', fontSize: '0.8rem' }}>LOAD:</span>
-                <button onClick={() => loadPreset('MUSHROOM')} style={{ padding: '8px 15px', background: '#e52521', color: '#fff', border: 'none', borderRadius: '15px', cursor: 'pointer', fontWeight: 'bold' }}>MUSHROOM 🍄</button>
-                <button onClick={() => loadPreset('SPEEDSTER')} style={{ padding: '8px 15px', background: '#0066cc', color: '#fff', border: 'none', borderRadius: '15px', cursor: 'pointer', fontWeight: 'bold' }}>SPEEDSTER 🦔</button>
-                <button onClick={() => loadPreset('HERO')} style={{ padding: '8px 15px', background: '#107a28', color: '#fff', border: 'none', borderRadius: '15px', cursor: 'pointer', fontWeight: 'bold' }}>HERO 🛡️</button>
-                <button onClick={clearPattern} style={{ padding: '8px 15px', background: '#333', color: '#ccc', border: '1px solid #444', borderRadius: '15px', cursor: 'pointer' }}>CLEAR 🗑️</button>
+                <span style={{ color: '#888', alignSelf: 'center', fontSize: '0.8rem' }}>PRESETS:</span>
+                <button onClick={() => loadPreset('MUSHROOM')} className="preset-btn" style={{ borderColor: '#e52521', color: '#e52521' }}>MUSHROOM 🍄</button>
+                <button onClick={() => loadPreset('SPEEDSTER')} className="preset-btn" style={{ borderColor: '#0066cc', color: '#0066cc' }}>SPEEDSTER 🦔</button>
+                <button onClick={() => loadPreset('HERO')} className="preset-btn" style={{ borderColor: '#107a28', color: '#107a28' }}>HERO 🛡️</button>
+                <button onClick={clearPattern} className="preset-btn" style={{ borderColor: '#555', color: '#aaa' }}>CLEAR 🗑️</button>
             </div>
+
+            <style>{`
+                .preset-btn {
+                    padding: 8px 15px;
+                    background: transparent;
+                    border: 1px solid;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-family: inherit;
+                    transition: all 0.2s;
+                }
+                .preset-btn:hover {
+                    background: rgba(255,255,255,0.1);
+                    transform: scale(1.05);
+                }
+            `}</style>
 
             {/* Sequencer Grid */}
             <div className="glass-panel" style={{
                 padding: '20px',
                 border: '1px solid #333',
-                background: 'rgba(0,0,0,0.6)',
-                overflowX: 'auto'
+                background: 'rgba(0,0,0,0.8)',
+                overflowX: 'auto',
+                boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8)'
             }}>
                 {Object.keys(activeTracks).map(track => (
                     <div key={track} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                         <div style={{
-                            width: '50px', textAlign: 'right', marginRight: '10px',
-                            color: track === 'kick' ? '#ff0055' :
-                                track === 'snare' ? '#ffd700' :
-                                    track === 'hihat' ? '#00ccff' :
-                                        track === 'bass' ? '#9d00ff' : '#00ff00',
-                            fontWeight: 'bold', fontSize: '0.7rem'
+                            width: '60px', textAlign: 'right', marginRight: '15px',
+                            color: TRACK_COLORS[track],
+                            fontWeight: 'bold', fontSize: '0.7rem',
+                            textShadow: `0 0 5px ${TRACK_COLORS[track]}`
                         }}>
                             {track.toUpperCase()}
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gap: '3px', flex: 1, minWidth: '300px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gap: '4px', flex: 1, minWidth: '350px' }}>
                             {activeTracks[track].map((isActive, i) => (
-                                <div
+                                <motion.div
                                     key={i}
+                                    whileTap={{ scale: 0.8 }}
                                     onClick={() => toggleStep(track, i)}
                                     style={{
                                         aspectRatio: '1/1.5',
-                                        background: isActive ? (
-                                            track === 'kick' ? '#ff0055' :
-                                                track === 'snare' ? '#ffd700' :
-                                                    track === 'hihat' ? '#00ccff' :
-                                                        track === 'bass' ? '#9d00ff' : '#00ff00'
-                                        ) : (i % 4 === 0 ? '#444' : '#2a2a2a'),
+                                        background: isActive ? TRACK_COLORS[track] : (i % 4 === 0 ? '#333' : '#1a1a1a'),
                                         borderRadius: '3px',
                                         cursor: 'pointer',
-                                        border: i === currentStep ? '1px solid white' : 'none',
-                                        opacity: isActive ? 1 : 0.4,
-                                        transform: i === currentStep ? 'scale(1.1)' : 'scale(1)',
-                                        transition: 'all 0.1s'
+                                        border: i === currentStep ? '1px solid white' : `1px solid ${isActive ? TRACK_COLORS[track] : '#222'}`,
+                                        opacity: isActive ? 1 : 0.6,
+                                        transform: i === currentStep ? 'scale(1.15)' : 'scale(1)',
+                                        boxShadow: isActive ? `0 0 10px ${TRACK_COLORS[track]}` : 'none',
+                                        zIndex: i === currentStep ? 10 : 1
                                     }}
                                 />
                             ))}
@@ -384,8 +418,8 @@ const BeatLab = () => {
                 ))}
             </div>
 
-            <p style={{ marginTop: '20px', color: '#555', fontSize: '0.6rem' }}>
-                BEAT LAB 2.0 // AUDIO ENGINE ONLINE
+            <p style={{ marginTop: '20px', color: '#555', fontSize: '0.6rem', letterSpacing: '2px' }}>
+                AUDIO ENGINE CONNECTED // 44.1KHZ
             </p>
         </div>
     );
