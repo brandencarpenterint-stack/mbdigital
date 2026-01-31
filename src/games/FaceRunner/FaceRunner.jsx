@@ -27,6 +27,7 @@ const FaceRunner = () => {
 
     // State
     const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
+    const [canRestart, setCanRestart] = useState(false);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('faceRunnerHighScore')) || 0);
 
@@ -40,7 +41,7 @@ const FaceRunner = () => {
 
     // Refs for Loop
     const playingRef = useRef(false);
-    const speedRef = useRef(20);
+    const speedRef = useRef(30); // Start faster
     const scoreRef = useRef(0);
     const biomeIndexRef = useRef(0);
 
@@ -65,9 +66,10 @@ const FaceRunner = () => {
 
     const startGame = () => {
         setGameState('PLAYING');
+        setCanRestart(false);
         playingRef.current = true;
         setScore(0);
-        speedRef.current = 25; // Good starting speed
+        speedRef.current = 30; // Faster start speed
         scoreRef.current = 0;
         biomeIndexRef.current = 0;
         playerRef.current = { x: 0, y: 0, squash: 1 };
@@ -105,8 +107,8 @@ const FaceRunner = () => {
 
         // --- UPDATE ---
         if (playingRef.current) {
-            // Speed up slightly over time
-            speedRef.current = Math.min(25 + (scoreRef.current * 0.005), 80);
+            // Speed up over time (faster scaling)
+            speedRef.current = Math.min(30 + (scoreRef.current * 0.015), 120);
 
             // Spawn Rate
             if (Math.random() < 0.08) {
@@ -236,6 +238,10 @@ const FaceRunner = () => {
         setGameState('GAME_OVER');
         playingRef.current = false;
         playCrash();
+
+        // Delay restart capability
+        setCanRestart(false);
+        setTimeout(() => setCanRestart(true), 1500);
     };
 
     const handleInput = (clientX, clientY) => {
@@ -299,7 +305,18 @@ const FaceRunner = () => {
                     <h1 style={{ color: 'red', fontSize: '3rem', margin: 0 }}>CRASHED!</h1>
                     <p style={{ color: 'white', fontSize: '2rem', fontWeight: 'bold' }}>{Math.floor(score)}m</p>
                     <p style={{ color: '#aaa', marginBottom: '20px' }}>BEST: {highScore}m</p>
-                    <SquishyButton onClick={startGame} style={{ background: 'white', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>AGAIN</SquishyButton>
+                    <SquishyButton
+                        onClick={() => canRestart && startGame()}
+                        style={{
+                            background: canRestart ? 'white' : '#555',
+                            color: canRestart ? 'black' : '#888',
+                            fontSize: '1.5rem',
+                            padding: '15px 40px',
+                            cursor: canRestart ? 'pointer' : 'wait'
+                        }}
+                    >
+                        {canRestart ? 'AGAIN' : 'WAIT...'}
+                    </SquishyButton>
                 </div>
             )}
 

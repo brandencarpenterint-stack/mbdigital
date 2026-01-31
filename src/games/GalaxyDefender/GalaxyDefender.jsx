@@ -59,6 +59,7 @@ const GalaxyDefender = () => {
         const img = new Image();
         img.src = '/assets/boy_face.png'; // Head Logo
         bossImgRef.current = img;
+        return () => cancelAnimationFrame(gameState.current.animationId); // Cleanup on unmount
     }, []);
 
     const startGame = () => {
@@ -130,7 +131,8 @@ const GalaxyDefender = () => {
             playCrash();
         }
 
-        cancelAnimationFrame(gameState.current.animationId);
+        // DO NOT CANCEL ANIMATION FRAME HERE to prevent freeze
+        // cancelAnimationFrame(gameState.current.animationId);
 
         const finalScore = gameState.current.scoreInternal + (win ? 1000 : 0);
         setScore(finalScore);
@@ -159,7 +161,8 @@ const GalaxyDefender = () => {
     };
 
     const gameLoop = (timestamp) => {
-        if (!gameActiveRef.current) return;
+        // REMOVED EARLY RETURN to allow rendering
+        // if (!gameActiveRef.current) return;
 
         const ctx = canvasRef.current.getContext('2d');
         const state = gameState.current;
@@ -205,205 +208,205 @@ const GalaxyDefender = () => {
         }
 
         // --- UPDATE ---
-        if (state.invincible > 0) state.invincible--;
+        if (gameActiveRef.current) {
+            if (state.invincible > 0) state.invincible--;
 
-        // 1. Spawning
-        if (!state.boss) {
-            // Level Up / Spawn Boss check
-            // Every 1000 points = Boss
-            const pointsSinceBoss = state.scoreInternal % 1000;
-            const isBossTime = state.scoreInternal > 0 && pointsSinceBoss >= 900 && !state.bossActive;
-            // We use a flag 'bossActive' to ensure we only spawn once per threshold
-            // Better logic: Target score for next boss
-            const nextBossScore = state.level * 1000;
+            // 1. Spawning
+            if (!state.boss) {
+                // Level Up / Spawn Boss check
+                const nextBossScore = state.level * 1000;
 
-            if (state.scoreInternal >= nextBossScore) {
-                // SPAWN BOSS
-                state.boss = {
-                    x: GAME_WIDTH / 2 - BOSS_SIZE / 2,
-                    y: -BOSS_SIZE,
-                    hp: BOSS_HP_MAX * state.level,
-                    dir: 1,
-                    flash: 0,
-                    lastAttack: 0,
-                    type: state.level % 3 // Vary boss type (0, 1, 2)
-                };
-                state.bossActive = true;
-                // Clear enemies
-                state.enemies = [];
-            } else {
-                // Normal Spawning
-                const spawnRate = Math.max(400, 1000 - (state.level * 100));
+                if (state.scoreInternal >= nextBossScore) {
+                    // SPAWN BOSS
+                    state.boss = {
+                        x: GAME_WIDTH / 2 - BOSS_SIZE / 2,
+                        y: -BOSS_SIZE,
+                        hp: BOSS_HP_MAX * state.level,
+                        dir: 1,
+                        flash: 0,
+                        lastAttack: 0,
+                        type: state.level % 3 // Vary boss type (0, 1, 2)
+                    };
+                    state.bossActive = true;
+                    // Clear enemies
+                    state.enemies = [];
+                } else {
+                    // Normal Spawning
+                    const spawnRate = Math.max(400, 1000 - (state.level * 100));
 
-                if (timestamp - state.lastEnemySpawn > spawnRate) {
-                    spawnEnemy(timestamp);
-                }
-            }
-        }
-
-        // 2. Boss Logic
-        if (state.boss) {
-            // Entrance
-            if (state.boss.y < 50) {
-                state.boss.y += 1;
-            } else {
-                // Battle phase
-                state.boss.x += (2 + state.level) * state.boss.dir;
-                if (state.boss.x + BOSS_SIZE > GAME_WIDTH || state.boss.x < 0) {
-                    state.boss.dir *= -1;
-                }
-
-                // Silly Bounce
-                const bounce = Math.sin(timestamp / 200) * 10;
-
-                // MOUTH LASER ATTACK
-                // Fires faster at higher levels
-                const fireRate = Math.max(500, 2000 - (state.level * 200));
-
-                if (timestamp - state.boss.lastAttack > fireRate) {
-                    const bossCenterX = state.boss.x + BOSS_SIZE / 2;
-                    // Spread shot at higher levels
-                    if (state.level >= 2) {
-                        state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: -2 });
-                        state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: 2 });
+                    if (timestamp - state.lastEnemySpawn > spawnRate) {
+                        spawnEnemy(timestamp);
                     }
-                    state.enemyLasers.push({
-                        x: bossCenterX - 10,
-                        y: state.boss.y + BOSS_SIZE - 20,
-                        width: 20,
-                        height: 40,
-                        speed: 8,
-                        dx: 0
-                    });
-                    state.boss.lastAttack = timestamp;
                 }
             }
-        } else {
-            // Powerup Spawning (Random chance when no boss)
-            if (Math.random() < 0.002 && state.powerups.length === 0) {
-                state.powerups.push({
-                    x: Math.random() * (GAME_WIDTH - 40),
-                    y: -40,
-                    type: 'DOUBLE',
-                    speed: 2
-                });
-            }
-        }
 
-        // 3. Move Objects
-        state.bullets = state.bullets.filter(b => b.y > -20);
-        state.bullets.forEach(b => b.y -= 15);
-
-        state.enemies.forEach(e => e.y += e.speed);
-
-        state.enemyLasers = state.enemyLasers.filter(l => l.y < GAME_HEIGHT);
-        state.enemyLasers.forEach(l => {
-            l.y += l.speed;
-            if (l.dx) l.x += l.dx; // Horizontal movement for boss spread
-        });
-
-        // Move Powerups
-        state.powerups.forEach(p => p.y += p.speed);
-
-        // 4. Collision: Player Bullets
-        for (let bIdx = state.bullets.length - 1; bIdx >= 0; bIdx--) {
-            const b = state.bullets[bIdx];
-            let hit = false;
-
-            // Boss Hit
+            // 2. Boss Logic
             if (state.boss) {
-                if (b.x > state.boss.x && b.x < state.boss.x + BOSS_SIZE &&
-                    b.y > state.boss.y && b.y < state.boss.y + BOSS_SIZE) {
-                    state.boss.hp--;
-                    state.boss.flash = 3;
-                    hit = true;
-                    playCollect();
-                    if (state.boss.hp <= 0) {
-                        incrementStat('bossKills', 1);
-                        // Boss Defeated
-                        state.boss = null;
-                        state.level++;
-                        state.scoreInternal += 500; // Bonus
-                        playWin();
-                        triggerConfetti();
+                // Entrance
+                if (state.boss.y < 50) {
+                    state.boss.y += 1;
+                } else {
+                    // Battle phase
+                    state.boss.x += (2 + state.level) * state.boss.dir;
+                    if (state.boss.x + BOSS_SIZE > GAME_WIDTH || state.boss.x < 0) {
+                        state.boss.dir *= -1;
                     }
+
+                    // Silly Bounce
+                    // const bounce = Math.sin(timestamp / 200) * 10; // Unused variable
+
+                    // MOUTH LASER ATTACK
+                    // Fires faster at higher levels
+                    const fireRate = Math.max(500, 2000 - (state.level * 200));
+
+                    if (timestamp - state.boss.lastAttack > fireRate) {
+                        const bossCenterX = state.boss.x + BOSS_SIZE / 2;
+                        // Spread shot at higher levels
+                        if (state.level >= 2) {
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: -2 });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: 2 });
+                        }
+                        state.enemyLasers.push({
+                            x: bossCenterX - 10,
+                            y: state.boss.y + BOSS_SIZE - 20,
+                            width: 20,
+                            height: 40,
+                            speed: 8,
+                            dx: 0
+                        });
+                        state.boss.lastAttack = timestamp;
+                    }
+                }
+            } else {
+                // Powerup Spawning (Random chance when no boss)
+                if (Math.random() < 0.002 && state.powerups.length === 0) {
+                    state.powerups.push({
+                        x: Math.random() * (GAME_WIDTH - 40),
+                        y: -40,
+                        type: 'DOUBLE',
+                        speed: 2
+                    });
                 }
             }
 
-            // Enemy Hit
-            if (!hit && !state.boss) {
-                for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
-                    const e = state.enemies[eIdx];
-                    if (b.x < e.x + ENEMY_SIZE &&
-                        b.x + BULLET_SIZE > e.x &&
-                        b.y < e.y + ENEMY_SIZE &&
-                        b.y + BULLET_SIZE > e.y) {
-                        state.enemies.splice(eIdx, 1);
-                        state.scoreInternal += 50;
-                        setScore(state.scoreInternal);
-                        playCollect();
+            // 3. Move Objects
+            state.bullets = state.bullets.filter(b => b.y > -20);
+            state.bullets.forEach(b => b.y -= 15);
+
+            state.enemies.forEach(e => e.y += e.speed);
+
+            state.enemyLasers = state.enemyLasers.filter(l => l.y < GAME_HEIGHT);
+            state.enemyLasers.forEach(l => {
+                l.y += l.speed;
+                if (l.dx) l.x += l.dx; // Horizontal movement for boss spread
+            });
+
+            // Move Powerups
+            state.powerups.forEach(p => p.y += p.speed);
+
+            // 4. Collision: Player Bullets
+            for (let bIdx = state.bullets.length - 1; bIdx >= 0; bIdx--) {
+                const b = state.bullets[bIdx];
+                let hit = false;
+
+                // Boss Hit
+                if (state.boss) {
+                    if (b.x > state.boss.x && b.x < state.boss.x + BOSS_SIZE &&
+                        b.y > state.boss.y && b.y < state.boss.y + BOSS_SIZE) {
+                        state.boss.hp--;
+                        state.boss.flash = 3;
                         hit = true;
-                        break;
+                        playCollect();
+                        if (state.boss.hp <= 0) {
+                            incrementStat('bossKills', 1);
+                            // Boss Defeated
+                            state.boss = null;
+                            state.level++;
+                            state.scoreInternal += 500; // Bonus
+                            playWin();
+                            triggerConfetti();
+                        }
                     }
                 }
-            }
-            if (hit) state.bullets.splice(bIdx, 1);
-        }
 
-        // 5. Collision: Player vs Everything
-        const playerX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
-        const playerY = GAME_HEIGHT - 80;
-        const pRect = { x: playerX, y: playerY, w: PLAYER_SIZE, h: PLAYER_SIZE };
-
-        // Hit by Enemy
-        for (let i = state.enemies.length - 1; i >= 0; i--) {
-            const e = state.enemies[i];
-            // Check Overlap
-            if (e.x < pRect.x + pRect.w && e.x + ENEMY_SIZE > pRect.x &&
-                e.y < pRect.y + pRect.h && e.y + ENEMY_SIZE > pRect.y) {
-                takeDamage();
-                state.enemies.splice(i, 1);
+                // Enemy Hit
+                if (!hit && !state.boss) {
+                    for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
+                        const e = state.enemies[eIdx];
+                        if (b.x < e.x + ENEMY_SIZE &&
+                            b.x + BULLET_SIZE > e.x &&
+                            b.y < e.y + ENEMY_SIZE &&
+                            b.y + BULLET_SIZE > e.y) {
+                            state.enemies.splice(eIdx, 1);
+                            state.scoreInternal += 50;
+                            setScore(state.scoreInternal);
+                            playCollect();
+                            hit = true;
+                            break;
+                        }
+                    }
+                }
+                if (hit) state.bullets.splice(bIdx, 1);
             }
-            // Enemy reached bottom
-            if (e.y > GAME_HEIGHT) {
-                state.enemies.splice(i, 1); // Despawn
-            }
-        }
 
-        // Hit by Boss Laser
-        for (let i = state.enemyLasers.length - 1; i >= 0; i--) {
-            const l = state.enemyLasers[i];
-            if (l.x < pRect.x + pRect.w && l.x + l.width > pRect.x &&
-                l.y < pRect.y + pRect.h && l.y + l.height > pRect.y) {
-                takeDamage();
-                state.enemyLasers.splice(i, 1);
-            }
-        }
+            // 5. Collision: Player vs Everything
+            const playerX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
+            const playerY = GAME_HEIGHT - 80;
+            const pRect = { x: playerX, y: playerY, w: PLAYER_SIZE, h: PLAYER_SIZE };
 
-        // Powerup Collection
-        for (let i = state.powerups.length - 1; i >= 0; i--) {
-            const p = state.powerups[i];
-            // Hitbox Check
-            if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
-                p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
-                // Collect
-                state.weaponLevel = 2;
-                state.weaponTimer = 600; // 10 seconds approx (60fps)
-                state.powerups.splice(i, 1);
-                playCollect();
-                triggerConfetti(); // Mini confetti for powerup
-            } else if (p.y > GAME_HEIGHT) {
-                state.powerups.splice(i, 1);
+            // Hit by Enemy
+            for (let i = state.enemies.length - 1; i >= 0; i--) {
+                const e = state.enemies[i];
+                // Check Overlap
+                if (e.x < pRect.x + pRect.w && e.x + ENEMY_SIZE > pRect.x &&
+                    e.y < pRect.y + pRect.h && e.y + ENEMY_SIZE > pRect.y) {
+                    takeDamage();
+                    state.enemies.splice(i, 1);
+                }
+                // Enemy reached bottom
+                if (e.y > GAME_HEIGHT) {
+                    state.enemies.splice(i, 1); // Despawn
+                }
             }
-        }
 
+            // Hit by Boss Laser
+            for (let i = state.enemyLasers.length - 1; i >= 0; i--) {
+                const l = state.enemyLasers[i];
+                if (l.x < pRect.x + pRect.w && l.x + l.width > pRect.x &&
+                    l.y < pRect.y + pRect.h && l.y + l.height > pRect.y) {
+                    takeDamage();
+                    state.enemyLasers.splice(i, 1);
+                }
+            }
+
+            // Powerup Collection
+            for (let i = state.powerups.length - 1; i >= 0; i--) {
+                const p = state.powerups[i];
+                // Hitbox Check
+                if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
+                    p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
+                    // Collect
+                    state.weaponLevel = 2;
+                    state.weaponTimer = 600; // 10 seconds approx (60fps)
+                    state.powerups.splice(i, 1);
+                    playCollect();
+                    triggerConfetti(); // Mini confetti for powerup
+                } else if (p.y > GAME_HEIGHT) {
+                    state.powerups.splice(i, 1);
+                }
+            }
+
+        } // END UPDATE IF
 
         // --- DRAW ---
 
         // Player
+        const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2); // Duplicate calc for draw
+        const playerYDraw = GAME_HEIGHT - 80;
+
         if (state.invincible % 10 < 5) { // Flash if invincible
             ctx.save();
-            ctx.translate(playerX + PLAYER_SIZE / 2, playerY + PLAYER_SIZE / 2);
+            ctx.translate(playerXDraw + PLAYER_SIZE / 2, playerYDraw + PLAYER_SIZE / 2);
 
             // Flames
             ctx.fillStyle = `rgba(0, 200, 255, ${0.5 + Math.random() * 0.5})`;
@@ -562,9 +565,8 @@ const GalaxyDefender = () => {
 
         ctx.restore(); // Undo shake
 
-        if (gameActiveRef.current) {
-            state.animationId = requestAnimationFrame(gameLoop);
-        }
+        // ALWAYS loop so rendering continues
+        state.animationId = requestAnimationFrame(gameLoop);
     };
 
     // Controls
