@@ -169,7 +169,7 @@ const ShopPage = () => {
                                 padding: '15px 40px'
                             }}
                         >
-                            VIEW IN STORE ->
+                            VIEW IN STORE -&gt;
                         </SquishyButton>
                     </div>
                     <motion.div
@@ -209,7 +209,7 @@ const ShopPage = () => {
                             <p style={{ margin: '5px 0 0 0', color: '#aaa' }}>Test your luck! Win rare stickers for your Bro Card.</p>
                         </div>
                     </div>
-                    <div style={{ color: '#d53f8c', fontWeight: 'bold', padding: '10px 20px', border: '2px solid #d53f8c', borderRadius: '4px' }}>OPEN ></div>
+                    <div style={{ color: '#d53f8c', fontWeight: 'bold', padding: '10px 20px', border: '2px solid #d53f8c', borderRadius: '4px' }}>OPEN &gt;</div>
                 </div>
 
                 {/* ITEMS GRID */}
