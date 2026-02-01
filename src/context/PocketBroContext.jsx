@@ -107,11 +107,39 @@ export const PocketBroProvider = ({ children }) => {
                         // Evolution Logic based on Stage
                         if (newStats.stage === 'BABY') {
                             // Branching Logic for CHILD stage
-                            if ((newStats.history?.nightActions || 0) > 20) { nextType = 'GHOST'; nextColor = '#e0e0e0'; }
-                            else if (newStats.history?.avgHunger > 70) { nextType = 'SLIME'; nextColor = '#00ff00'; }
-                            else if (newStats.history?.avgHappy > 90 && newStats.energy > 80) { nextType = 'ROBOT'; nextColor = '#607d8b'; }
-                            else if (Math.random() > 0.8) { nextType = 'DINO'; nextColor = '#4CAF50'; } // Rare Dino
+                            const night = (newStats.history?.nightActions || 0);
+                            const avgHappy = newStats.history?.avgHappy || 50;
+                            const avgHunger = newStats.history?.avgHunger || 50;
+                            const energy = newStats.energy || 50;
+                            const rng = Math.random();
+
+                            // 1. Check for SPECIAL (Perfect Stats) -> ORB
+                            if (avgHappy > 95 && avgHunger > 95) {
+                                nextType = 'ORB';
+                                nextColor = '#00BCD4'; // Cyan
+                            }
+                            // 2. Check for CHAOS (Low Happy, High Night) -> ALIEN
+                            else if (avgHappy < 40 && night > 10) {
+                                nextType = 'ALIEN';
+                                nextColor = '#9C27B0'; // Purple
+                            }
+                            // 3. Environment Checks
+                            else if (night > 20) { nextType = 'GHOST'; nextColor = '#e0e0e0'; }
+                            else if (avgHunger > 70) { nextType = 'SLIME'; nextColor = '#00ff00'; }
+                            else if (avgHappy > 80 && energy > 80) { nextType = 'ROBOT'; nextColor = '#607d8b'; }
+
+                            // 4. Rare Reroll (DINO)
+                            else if (rng > 0.85) { nextType = 'DINO'; nextColor = '#4CAF50'; }
                             else { nextType = 'SOOT'; nextColor = '#111'; }
+
+                            // 5. COLOR MUTATION (Shiny!)
+                            if (Math.random() > 0.9) {
+                                // Gilded / Shiny
+                                nextColor = '#FFD700'; // GOLD
+                            } else if (Math.random() > 0.9) {
+                                // Void / Shadow
+                                nextColor = '#000000';
+                            }
                         }
 
                         // FUTURE: Add more branching for Teen/Adult
