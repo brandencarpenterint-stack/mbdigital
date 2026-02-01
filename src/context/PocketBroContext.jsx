@@ -102,20 +102,34 @@ export const PocketBroProvider = ({ children }) => {
                         // EVOLUTION TIME
                         // Determine Type
                         let nextType = newStats.type || 'SOOT';
+                        let nextColor = newStats.color || '#111';
 
                         // Evolution Logic based on Stage
                         if (newStats.stage === 'BABY') {
-                            // Branching Logic
-                            if ((newStats.history?.nightActions || 0) > 50) nextType = 'GHOST';
-                            else if (newStats.history?.avgHunger > 80) nextType = 'SLIME';
-                            else if (newStats.history?.avgHappy > 90 && newStats.energy > 80) nextType = 'ROBOT';
-                            else nextType = 'SOOT';
+                            // Branching Logic for CHILD stage
+                            if ((newStats.history?.nightActions || 0) > 20) { nextType = 'GHOST'; nextColor = '#e0e0e0'; }
+                            else if (newStats.history?.avgHunger > 70) { nextType = 'SLIME'; nextColor = '#00ff00'; }
+                            else if (newStats.history?.avgHappy > 90 && newStats.energy > 80) { nextType = 'ROBOT'; nextColor = '#607d8b'; }
+                            else if (Math.random() > 0.8) { nextType = 'DINO'; nextColor = '#4CAF50'; } // Rare Dino
+                            else { nextType = 'SOOT'; nextColor = '#111'; }
                         }
+
                         // FUTURE: Add more branching for Teen/Adult
+                        if (newStats.stage === 'CHILD') {
+                            if (newStats.type === 'SLIME') { nextColor = '#00FA9A'; } // Evolve color
+                            if (newStats.type === 'DINO') { nextColor = '#388E3C'; } // Darker Green
+                        }
 
                         newStats.stage = nextStageKey;
                         newStats.type = nextType;
-                        // Effect?
+                        newStats.color = nextColor;
+                        newStats.tempStatus = 'EVOLUTION'; // Trigger Effect
+
+                        // Clear Effect after 5s (managed by existing timeout logic? No, global loop overwrites)
+                        // We rely on UI to see this state and play animation.
+                        // Ideally we should use triggerEffect() but we are inside setState.
+                        // We can set a flag that useEffect picks up?
+                        // "tempStatus" is inside stats, so UI can read it.
                     }
                 }
 

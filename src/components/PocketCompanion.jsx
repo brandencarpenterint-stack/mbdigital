@@ -83,6 +83,16 @@ const PocketCompanion = () => {
         }
     }, [isCritical, location.pathname, isGame]);
 
+    // Evolution Effect
+    const [showEvolutionFlash, setShowEvolutionFlash] = useState(false);
+    useEffect(() => {
+        if (stats.tempStatus === 'EVOLUTION') {
+            setShowEvolutionFlash(true);
+            setMessage("WHAT IS HAPPENING?! 🌟");
+            setTimeout(() => setShowEvolutionFlash(false), 2000);
+        }
+    }, [stats.tempStatus]);
+
     // CONDITIONAL RENDER AT THE END
     if (location.pathname === '/pocketbro') return null;
 
@@ -127,6 +137,22 @@ const PocketCompanion = () => {
                 pointerEvents: 'none' // Click through for gameplay
             }}
         >
+            <AnimatePresence>
+                {showEvolutionFlash && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                            position: 'fixed', inset: 0,
+                            background: 'white', zIndex: 9999,
+                            pointerEvents: 'none'
+                        }}
+                    />
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {message && (
                     <motion.div
@@ -190,6 +216,7 @@ const PocketCompanion = () => {
                         mood={isCritical ? 'sad' : 'happy'}
                         skin={equippedSkin}
                         isSleeping={stats.isSleeping}
+                        color={stats.color}
                     />
                 </div>
             </motion.div>

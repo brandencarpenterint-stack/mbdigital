@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, stage = 'BABY', skin = null }) => {
+const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, stage = 'BABY', skin = null, color = '#111' }) => {
     const [blink, setBlink] = useState(false);
 
     // Blinking logic
@@ -29,11 +29,11 @@ const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, st
     const renderBaby = () => (
         <g className={isEating ? "bounce" : "float"}>
             {/* Main Body */}
-            <circle cx="50" cy="50" r="25" fill="#111" />
+            <circle cx="50" cy="50" r="25" fill={color} />
 
             {/* Fuzz */}
             {[...Array(12)].map((_, i) => (
-                <circle key={i} cx={50 + 22 * Math.cos(i * 30 * Math.PI / 180)} cy={50 + 22 * Math.sin(i * 30 * Math.PI / 180)} r="6" fill="#111" />
+                <circle key={i} cx={50 + 22 * Math.cos(i * 30 * Math.PI / 180)} cy={50 + 22 * Math.sin(i * 30 * Math.PI / 180)} r="6" fill={color} />
             ))}
 
             {/* Eyes (Big relative to body) */}
@@ -52,10 +52,10 @@ const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, st
     const renderChild = () => (
         <g className={isEating ? "bounce" : "slide"}>
             {/* Bigger Body */}
-            <circle cx="50" cy="50" r="35" fill="#111" />
+            <circle cx="50" cy="50" r="35" fill={color} />
             {/* Fuzz */}
             {[...Array(20)].map((_, i) => (
-                <circle key={i} cx={50 + 32 * Math.cos(i * 18 * Math.PI / 180)} cy={50 + 32 * Math.sin(i * 18 * Math.PI / 180)} r="7" fill="#111" />
+                <circle key={i} cx={50 + 32 * Math.cos(i * 18 * Math.PI / 180)} cy={50 + 32 * Math.sin(i * 18 * Math.PI / 180)} r="7" fill={color} />
             ))}
 
             {/* Tiny Feet */}
@@ -81,9 +81,9 @@ const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, st
     const renderTeen = () => (
         <g className="vibrate">
             {/* Spiky Body */}
-            <circle cx="50" cy="50" r="38" fill="#111" />
+            <circle cx="50" cy="50" r="38" fill={color} />
             {[...Array(15)].map((_, i) => (
-                <path key={i} d={`M 50 50 L ${50 + 50 * Math.cos(i * 24 * Math.PI / 180)} ${50 + 50 * Math.sin(i * 24 * Math.PI / 180)} L ${50 + 40 * Math.cos((i * 24 + 12) * Math.PI / 180)} ${50 + 40 * Math.sin((i * 24 + 12) * Math.PI / 180)} Z`} fill="#111" />
+                <path key={i} d={`M 50 50 L ${50 + 50 * Math.cos(i * 24 * Math.PI / 180)} ${50 + 50 * Math.sin(i * 24 * Math.PI / 180)} L ${50 + 40 * Math.cos((i * 24 + 12) * Math.PI / 180)} ${50 + 40 * Math.sin((i * 24 + 12) * Math.PI / 180)} Z`} fill={color} />
             ))}
 
             {/* Sunglasses? No, just angry eyes */}
@@ -102,10 +102,10 @@ const SootRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, st
     const renderAdult = () => (
         <g className="breathe">
             {/* Totoro-ish Shape */}
-            <ellipse cx="50" cy="55" rx="45" ry="40" fill="#111" />
+            <ellipse cx="50" cy="55" rx="45" ry="40" fill={color} />
             {/* Ears */}
-            <path d="M 20 30 L 15 5 L 35 25 Z" fill="#111" />
-            <path d="M 80 30 L 85 5 L 65 25 Z" fill="#111" />
+            <path d="M 20 30 L 15 5 L 35 25 Z" fill={color} />
+            <path d="M 80 30 L 85 5 L 65 25 Z" fill={color} />
 
             {/* White Belly */}
             <ellipse cx="50" cy="70" rx="30" ry="20" fill="#222" />

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-const SlimeRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, stage = 'BABY' }) => {
+const SlimeRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, stage = 'BABY', color = '#00ff88' }) => {
     const [wobble, setWobble] = useState(0);
 
     useEffect(() => {
@@ -12,9 +12,9 @@ const SlimeRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, s
     }, []);
 
     // Slime Color Palette
-    const mainColor = "#00ff88";
-    const highlightColor = "#ccffdd";
-    const darkColor = "#00aa55";
+    const mainColor = color;
+    // Simple darkening logic for depth could be complex, or we just transparent black overlay
+    const darkColor = "rgba(0,0,0,0.2)";
 
     const renderBaby = () => (
         <g className="gelatin">
@@ -42,10 +42,10 @@ const SlimeRenderer = ({ mood = 'happy', isSleeping = false, isEating = false, s
             <path d="M 30 20 L 40 5 L 50 20 L 60 5 L 70 20 Z" fill="gold" />
 
             {/* BIG Blob Body */}
-            <path d="M 10 90 Q 50 105 90 90 Q 100 70 95 40 Q 80 10 50 10 Q 20 10 5 40 Q 0 70 10 90 Z" fill="#00dddd" opacity="0.85" />
+            <path d="M 10 90 Q 50 105 90 90 Q 100 70 95 40 Q 80 10 50 10 Q 20 10 5 40 Q 0 70 10 90 Z" fill={mainColor} opacity="0.85" />
 
             {/* Inner Core */}
-            <circle cx="50" cy="60" r="15" fill="#005555" opacity="0.4" />
+            <circle cx="50" cy="60" r="15" fill={darkColor} opacity="0.4" />
 
             {/* Eyes */}
             <circle cx="35" cy="50" r="7" fill="black" />
