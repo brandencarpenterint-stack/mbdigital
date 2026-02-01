@@ -15,116 +15,95 @@ const BroCannon = () => {
     const { stats, updateStat } = useGamification();
 
     // GAME STATE
-    const [gameState, setGameState] = useState('AIM'); // AIM, POWER, FLYING, LANDED
+    // GAME STATE
+    const [gameState, setGameState] = useState('MENU'); // MENU, AIM, POWER, FLYING, LANDED
     const [angle, setAngle] = useState(45);
     const [power, setPower] = useState(0);
     const [distance, setDistance] = useState(0);
     const [maxAltitude, setMaxAltitude] = useState(0);
     const [coinsEarned, setCoinsEarned] = useState(0);
 
+    // SKINS
+    const SKINS = [
+        { id: 'face_default', name: 'OG', src: '/assets/skins/face_default.png?t=v2' },
+        { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png?t=v2' },
+        { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png?t=v2' },
+        { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png?t=v2' },
+    ];
+    const [selectedSkin, setSelectedSkin] = useState(SKINS[0]);
+
     // UPGRADES (Hydrate from stats)
     const [upgrades, setUpgrades] = useState(stats.broCannonUpgrades || { power: 1, aero: 1, bounce: 1 });
     const PRICES = { power: 10, aero: 15, bounce: 20 };
 
-    // PHYSICS REFS (Mutable for performance)
+    // PHYSICS REFS
     const physics = useRef({
-        x: 0,
-        y: GROUND_LEVEL,
-        vx: 0,
-        vy: 0,
-        rot: 0,
-        vRot: 0,
-        isBouncing: false
+        x: 0, y: GROUND_LEVEL, vx: 0, vy: 0, rot: 0, isBouncing: false
     });
     const cameraX = useRef(0);
     const rafRef = useRef();
 
-    // ENTITIES (Generated once per run)
+    // ENTITIES
     const [entities, setEntities] = useState([]);
 
-    // --- SETUP & LOOP ---
-
     useEffect(() => {
-        // Generate World on Mount
         const newEntities = [];
         for (let i = 500; i < 50000; i += Math.random() * 300 + 200) {
-            const type = Math.random() > 0.8 ? 'BOOST' : (Math.random() > 0.7 ? 'OBSTACLE' : 'COIN');
-            newEntities.push({
-                id: i,
-                x: i,
-                y: Math.random() * 500 + 100, // Sky items
-                type: type,
-                hit: false
-            });
+            newEntities.push({ id: i, x: i, y: Math.random() * 500 + 100, type: Math.random() > 0.8 ? 'BOOST' : 'COIN' });
         }
         setEntities(newEntities);
-
         return () => cancelAnimationFrame(rafRef.current);
     }, []);
 
-    // OSCILLATORS (Aim & Power)
+    // OSCILLATORS (FAST & CHAOTIC)
     useEffect(() => {
         let oscDir = 1;
         const interval = setInterval(() => {
             if (gameState === 'AIM') {
                 setAngle(prev => {
-                    if (prev >= 80) oscDir = -1;
-                    if (prev <= 10) oscDir = 1;
-                    return prev + (oscDir * 1.5); // Speed of aim
+                    if (prev >= 85) oscDir = -1;
+                    if (prev <= 5) oscDir = 1;
+                    return prev + (oscDir * 4); // WAY FASTER (was 1.5)
                 });
             } else if (gameState === 'POWER') {
                 setPower(prev => {
                     if (prev >= 100) oscDir = -1;
                     if (prev <= 0) oscDir = 1;
-                    return prev + (oscDir * 2); // Speed of power
+                    return prev + (oscDir * 5); // WAY FASTER (was 2)
                 });
             }
         }, 16);
         return () => clearInterval(interval);
     }, [gameState]);
 
-
-    // MAIN GAME LOOP
+    // --- MAIN LOOP (tick) ---
     const tick = () => {
         if (gameState !== 'FLYING') return;
-
         const p = physics.current;
-
-        // 1. Gravity & Drag
-        const drag = 0.99 + (upgrades.aero * 0.0005); // Improved Aero
+        const drag = 0.99 + (upgrades.aero * 0.0005);
         p.vx *= drag;
         p.vy *= drag;
         p.vy -= GRAVITY;
-
-        // 2. Position
         p.x += p.vx;
         p.y += p.vy;
-        p.rot += p.vx * 0.5; // Rotation follows speed
+        p.rot += p.vx * 0.5;
 
-        // 3. Ground Collision
+        // Ground/Bounce
         if (p.y <= GROUND_LEVEL) {
             p.y = GROUND_LEVEL;
-
-            // Bounce Check
             if (Math.abs(p.vy) > 2 || Math.abs(p.vx) > 2) {
                 const bounce = 0.5 + (upgrades.bounce * 0.05);
                 p.vy *= -bounce;
-                p.vx *= 0.8; // Friction
+                p.vx *= 0.8;
                 playCrash();
             } else {
-                // Stop
                 finishRun();
-                return; // Stop Loop
+                return;
             }
         }
 
-        // 4. Update React State for UI (throttled/batched by React, mostly fine)
-        setDistance(Math.floor(p.x / 10)); // 10px = 1 unit
-        if (p.y > maxAltitude) setMaxAltitude(Math.floor(p.y));
-
+        setDistance(Math.floor(p.x / 10));
         cameraX.current = p.x;
-
-        // 5. Continue
         rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -136,15 +115,11 @@ const BroCannon = () => {
             // LAUNCH
             const rad = (angle * Math.PI) / 180;
             const force = (power * 0.5) + 15 + (upgrades.power * 2);
-
             physics.current = {
-                x: 0,
-                y: GROUND_LEVEL + 50, // Nozzle height
-                vx: Math.cos(rad) * force,
-                vy: Math.sin(rad) * force,
+                x: 0, y: GROUND_LEVEL + 50,
+                vx: Math.cos(rad) * force, vy: Math.sin(rad) * force,
                 rot: 0
             };
-
             playJump();
             setGameState('FLYING');
             rafRef.current = requestAnimationFrame(tick);
@@ -154,14 +129,10 @@ const BroCannon = () => {
     const finishRun = () => {
         setGameState('LANDED');
         cancelAnimationFrame(rafRef.current);
-
-        // Calculate Rewards
         const finalDist = Math.floor(physics.current.x / 10);
         const coins = Math.floor(finalDist / 5);
-
         setCoinsEarned(coins);
         updateStat('arcadeCoins', (stats.arcadeCoins || 0) + coins);
-
         if (finalDist > (stats.broCannonHighScore || 0)) {
             updateStat('broCannonHighScore', finalDist);
             playWin();
@@ -172,20 +143,15 @@ const BroCannon = () => {
         setAngle(45);
         setPower(0);
         setDistance(0);
-        setGameState('AIM');
+        setGameState('AIM'); // Go straight to Reshoot
         physics.current.x = 0;
         cameraX.current = 0;
     };
 
-    const buyUpgrade = (type) => {
-        const cost = PRICES[type] * upgrades[type];
-        if ((stats.arcadeCoins || 0) >= cost) {
-            playCollect();
-            const next = { ...upgrades, [type]: upgrades[type] + 1 };
-            setUpgrades(next);
-            updateStat('broCannonUpgrades', next);
-            updateStat('arcadeCoins', stats.arcadeCoins - cost);
-        }
+    const goToMenu = () => {
+        setAngle(45); setPower(0); setDistance(0);
+        setGameState('MENU');
+        physics.current.x = 0; cameraX.current = 0;
     };
 
     // VISUALS
@@ -194,14 +160,13 @@ const BroCannon = () => {
 
     return (
         <div style={{
-            width: '100vw', height: '100vh',
-            background: skyGradient,
+            width: '100vw', height: '100vh', background: skyGradient,
             overflow: 'hidden', position: 'relative', touchAction: 'none',
             fontFamily: '"Orbitron", sans-serif', color: 'white'
         }} onClick={interact}>
 
             {/* UI LAYER */}
-            <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 100 }}>
+            <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 100, pointerEvents: 'none' }}>
                 <div style={{ fontSize: '2rem', textShadow: '2px 2px 0 black' }}>{distance}m</div>
                 <div style={{ fontSize: '1rem', opacity: 0.8 }}>ALT: {Math.floor(physics.current.y - GROUND_LEVEL)}m</div>
             </div>
@@ -211,30 +176,35 @@ const BroCannon = () => {
                 EXIT
             </SquishyButton>
 
-            {/* UPGRADE SHOP (Visible in AIM/POWER) */}
-            {(gameState === 'AIM' || gameState === 'POWER') && (
+            {/* MAIN MENU / SKIN SELECT */}
+            {gameState === 'MENU' && (
                 <div style={{
-                    position: 'absolute', bottom: 20, right: 20, zIndex: 50,
-                    background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '20px',
-                    border: '2px solid gold'
+                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)',
+                    zIndex: 200, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center'
                 }} onClick={e => e.stopPropagation()}>
-                    <h3 style={{ margin: '0 0 10px 0', color: 'gold' }}>SHOP (${stats.arcadeCoins || 0})</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                        {Object.keys(PRICES).map(key => (
-                            <div key={key} onClick={() => buyUpgrade(key)}
+                    <h1 style={{ fontSize: '3rem', color: 'gold', marginBottom: '20px' }}>BRO CANNON</h1>
+                    <p style={{ marginBottom: '20px' }}>SELECT PAYLOAD:</p>
+
+                    <div style={{ display: 'flex', gap: '15px', marginBottom: '40px' }}>
+                        {SKINS.map(skin => (
+                            <div key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop(); }}
                                 style={{
-                                    background: '#333', padding: '10px', borderRadius: '10px',
-                                    textAlign: 'center', cursor: 'pointer',
-                                    border: (stats.arcadeCoins >= PRICES[key] * upgrades[key]) ? '1px solid green' : '1px solid #555'
+                                    border: selectedSkin.id === skin.id ? '3px solid gold' : '1px solid #555',
+                                    borderRadius: '15px', padding: '10px',
+                                    background: selectedSkin.id === skin.id ? 'rgba(255, 215, 0, 0.2)' : '#222',
+                                    cursor: 'pointer', transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)',
+                                    transition: 'all 0.2s'
                                 }}>
-                                <div style={{ fontSize: '1.5rem' }}>
-                                    {key === 'power' ? '💥' : (key === 'aero' ? '💨' : '🏀')}
-                                </div>
-                                <div style={{ fontSize: '0.7rem' }}>LVL {upgrades[key]}</div>
-                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>${PRICES[key] * upgrades[key]}</div>
+                                <img src={skin.src} width="60" height="60" style={{ display: 'block' }} />
+                                <div style={{ fontSize: '0.7rem', textAlign: 'center', marginTop: '5px' }}>{skin.name}</div>
                             </div>
                         ))}
                     </div>
+
+                    <SquishyButton onClick={resetGame} style={{ fontSize: '1.5rem', padding: '15px 50px', background: 'var(--neon-green)', color: 'black' }}>
+                        PLAY
+                    </SquishyButton>
                 </div>
             )}
 
@@ -253,7 +223,7 @@ const BroCannon = () => {
                             width: `${gameState === 'AIM' ? angle : power}%`,
                             height: '100%',
                             background: gameState === 'AIM' ? 'orange' : 'red',
-                            transition: 'width 0.05s linear'
+                            transition: 'width 0.01s linear' // Faster transition for chaos
                         }} />
                     </div>
                 </div>
@@ -268,18 +238,23 @@ const BroCannon = () => {
                 }} onClick={e => e.stopPropagation()}>
                     <h1 style={{ fontSize: '4rem', color: 'gold', margin: 0 }}>{distance}m</h1>
                     <h2 style={{ color: 'white' }}>EARNED {coinsEarned} COINS</h2>
-                    <SquishyButton onClick={resetGame} style={{ fontSize: '1.5rem', padding: '20px 40px', background: 'var(--neon-blue)' }}>
-                        LAUNCH AGAIN
-                    </SquishyButton>
+                    <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+                        <SquishyButton onClick={resetGame} style={{ fontSize: '1.2rem', padding: '15px 30px', background: 'var(--neon-blue)' }}>
+                            LAUNCH AGAIN
+                        </SquishyButton>
+                        <SquishyButton onClick={goToMenu} style={{ fontSize: '1.2rem', padding: '15px 30px', background: '#444' }}>
+                            MENU
+                        </SquishyButton>
+                    </div>
                 </div>
             )}
 
-
-            {/* GAME CANVAS (DOM-based Camera) */}
+            {/* GAME CANVAS */}
             <div style={{
                 position: 'absolute', inset: 0,
                 transform: `translateX(${-cameraX.current + 100}px) translateY(${Math.min(0, -physics.current.y + 300)}px)`,
-                transition: 'transform 0s linear' // Instant update for rigid camera
+                transition: 'transform 0s linear',
+                pointerEvents: 'none' // Critical: Clicks pass to container
             }}>
                 {/* GROUND */}
                 <div style={{
@@ -288,46 +263,29 @@ const BroCannon = () => {
                     borderTop: '5px solid #81c784'
                 }} />
 
-                {/* CANNON BASE */}
+                {/* CANNON */}
                 <div style={{
                     position: 'absolute', left: -50, bottom: GROUND_LEVEL,
                     width: '60px', height: '40px', background: '#444', borderRadius: '10px'
                 }} />
-
-                {/* CANNON BARREL */}
                 <div style={{
                     position: 'absolute', left: -40, bottom: GROUND_LEVEL + 20,
                     width: '80px', height: '20px', background: '#222',
-                    transformOrigin: 'left center',
-                    transform: `rotate(${-angle}deg)`,
-                    borderRadius: '5px',
-                    border: '2px solid #555'
+                    transformOrigin: 'left center', transform: `rotate(${-angle}deg)`,
+                    borderRadius: '5px', border: '2px solid #555'
                 }} />
 
-                {/* PROJECTILE (BRO) */}
+                {/* PROJECTILE */}
                 {(gameState === 'FLYING' || gameState === 'LANDED') && (
                     <div style={{
-                        position: 'absolute',
-                        left: physics.current.x,
-                        bottom: physics.current.y,
-                        width: '40px', height: '40px',
-                        transform: `translate(-50%, 50%) rotate(${physics.current.rot}deg)`,
-                        fontSize: '30px',
-                        // Emoji centered
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        position: 'absolute', left: physics.current.x, bottom: physics.current.y,
+                        width: '50px', height: '50px',
+                        transform: `translate(-50%, 50%) rotate(${physics.current.rot}deg)`
                     }}>
-                        😎
+                        <img src={selectedSkin.src} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                 )}
-
-                {/* DECOR / MARKERS */}
-                {[0, 100, 200, 500, 1000].map(d => (
-                    <div key={d} style={{ position: 'absolute', left: d * 10, bottom: GROUND_LEVEL - 30, color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem' }}>
-                        {d}m
-                    </div>
-                ))}
             </div>
-
         </div>
     );
 };
