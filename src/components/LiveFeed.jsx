@@ -156,7 +156,39 @@ const LiveFeed = () => {
 
         fetchTreasury();
         const interval = setInterval(fetchTreasury, 60000); // Update every minute
-        return () => clearInterval(interval);
+
+        // --- 5. GHOST TRAFFIC (BOT ACTIVITY) ---
+        // Keeps the world alive even if empty.
+        const botInterval = setInterval(() => {
+            const BOTS = ['NeonSlayer', 'CyberRat', 'VoidWalker', 'PixelKing', 'GlitchWitch', 'RetroDad'];
+            const EVENTS = [
+                { text: 'just won Snake!', type: 'win' },
+                { text: 'found a rare sticker.', type: 'info' },
+                { text: 'is vibing in the lounge.', type: 'info' },
+                { text: 'lost 50 coins in Slots.', type: 'fail' },
+                { text: 'evolved their PocketBro!', type: 'win' },
+                { text: 'hacked the mainframe...', type: 'info' }
+            ];
+
+            // 30% chance to spawn a message every 10s
+            if (Math.random() > 0.7) {
+                const bot = BOTS[Math.floor(Math.random() * BOTS.length)];
+                const evt = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+                const ghostMsg = {
+                    id: `ghost-${Date.now()}`,
+                    user: bot,
+                    text: evt.text,
+                    time: 'Now',
+                    color: evt.type === 'win' ? 'gold' : (evt.type === 'fail' ? '#ff4444' : '#00ccff')
+                };
+                setMessages(prev => [ghostMsg, ...prev].slice(0, 5));
+            }
+        }, 10000);
+
+        return () => {
+            clearInterval(interval);
+            clearInterval(botInterval);
+        };
     }, []);
 
     return (
