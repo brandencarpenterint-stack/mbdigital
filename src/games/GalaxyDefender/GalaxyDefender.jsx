@@ -13,9 +13,9 @@ const LANE_WIDTH = GAME_WIDTH / LANES;
 const PLAYER_SIZE = 50;
 const BULLET_SIZE = 8;
 const ENEMY_SIZE = 40;
-const BOSS_SIZE = 100;
-const BOSS_HP_MAX = 30;
-const MAX_LIVES = 1; // SURVIVAL MODE
+const BOSS_SIZE = 120;
+const BOSS_HP_MAX = 50;
+const MAX_LIVES = 3; // INCREASED LIVES for fun
 
 const GalaxyDefender = () => {
     const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
@@ -57,7 +57,7 @@ const GalaxyDefender = () => {
 
     useEffect(() => {
         const img = new Image();
-        img.src = '/assets/boy_face.png'; // Head Logo
+        img.src = '/assets/merchboy_face.png'; // Head Logo
         bossImgRef.current = img;
         return () => cancelAnimationFrame(gameState.current.animationId); // Cleanup on unmount
     }, []);
@@ -87,8 +87,10 @@ const GalaxyDefender = () => {
             shake: 0,
             stars: [],
             powerups: [],
-            weaponLevel: 2,     // START WITH BOOST 🚀
-            weaponTimer: 1200,  // 20 Seconds of Power
+            powerups: [],
+            weapon: 'NORMAL',     // NORMAL, SPREAD, RAPID, LASER
+            weaponTimer: 0,
+            hasShield: false,
             level: 1,
             bossActive: false,
             animationId: null
@@ -108,6 +110,14 @@ const GalaxyDefender = () => {
     const takeDamage = () => {
         const state = gameState.current;
         if (state.invincible > 0) return;
+
+        if (state.hasShield) {
+            state.hasShield = false;
+            state.invincible = 60;
+            state.shake = 10;
+            playBeep(); // Shield break sound (placeholder)
+            return;
+        }
 
         state.invincible = 60; // 1 second (approx)
         state.shake = 10;
@@ -272,14 +282,18 @@ const GalaxyDefender = () => {
                         state.boss.lastAttack = timestamp;
                     }
                 }
-            } else {
                 // Powerup Spawning (Random chance when no boss)
-                if (Math.random() < 0.002 && state.powerups.length === 0) {
+                if (Math.random() < 0.005 && state.powerups.length === 0) {
+                    const typeRoll = Math.random();
+                    let type = 'SPREAD';
+                    if (typeRoll > 0.6) type = 'RAPID';
+                    if (typeRoll > 0.9) type = 'SHIELD';
+
                     state.powerups.push({
                         x: Math.random() * (GAME_WIDTH - 40),
                         y: -40,
-                        type: 'DOUBLE',
-                        speed: 2
+                        type,
+                        speed: 3
                     });
                 }
             }
@@ -380,9 +394,14 @@ const GalaxyDefender = () => {
                 // Hitbox Check
                 if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
                     p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
-                    // Collect
-                    state.weaponLevel = 2;
-                    state.weaponTimer = 600;
+
+                    if (p.type === 'SHIELD') {
+                        state.hasShield = true;
+                    } else {
+                        state.weapon = p.type;
+                        state.weaponTimer = 600; // 10 seconds
+                    }
+
                     state.powerups.splice(i, 1);
                     playCollect();
                     triggerConfetti();
@@ -480,6 +499,16 @@ const GalaxyDefender = () => {
             }
 
             ctx.restore();
+            // Shield Visual
+            if (state.hasShield) {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, 40 + Math.sin(Date.now() / 100) * 2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         // Bullets
@@ -512,14 +541,22 @@ const GalaxyDefender = () => {
         });
 
         // Powerups
+        // Powerups
         state.powerups.forEach(p => {
-            ctx.fillStyle = 'gold';
+            ctx.fillStyle = p.type === 'SHIELD' ? '#00ffff' : 'gold';
             ctx.beginPath();
             ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2);
             ctx.fill();
+
             ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
-            ctx.fillText('P', p.x + 8, p.y + 22);
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let icon = 'P';
+            if (p.type === 'SPREAD') icon = '⚡';
+            if (p.type === 'RAPID') icon = '🚀';
+            if (p.type === 'SHIELD') icon = '🛡️';
+            ctx.fillText(icon, p.x + 15, p.y + 15);
         });
 
         // Boss
@@ -578,16 +615,26 @@ const GalaxyDefender = () => {
         if (!gameActiveRef.current) return;
         const state = gameState.current;
         const now = Date.now();
-        if (now - state.lastShotTime > 200) {
+
+        const fireRate = state.weapon === 'RAPID' ? 100 : 250;
+        if (now - state.lastShotTime > fireRate) {
             const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
 
-            // Double Shot Logic
-            if (state.weaponTimer > 0) {
-                state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
-                state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
-                state.weaponTimer--;
+            // Weapon Logic
+            if (state.weaponTimer > 0) state.weaponTimer--;
+            else state.weapon = 'NORMAL';
+
+            if (state.weapon === 'SPREAD') {
+                // Triple Shot
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0, w: 8, h: 20 });
+                state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: -2, w: 6, h: 15 });
+                state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 2, w: 6, h: 15 });
+            } else if (state.weapon === 'RAPID') {
+                // Fast Center
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 25, dx: 0, w: 6, h: 25 });
             } else {
-                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0 });
+                // Normal
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0, w: 8, h: 20 });
             }
 
             state.lastShotTime = now;
