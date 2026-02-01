@@ -165,6 +165,20 @@ const Home = () => {
                     <div style={{ alignSelf: 'flex-end', fontSize: '3rem', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }}>⏱️</div>
                 </Link>
 
+                {/* COLORING BOOK (Restored) */}
+                <Link to="/coloring" className="bento-card" style={{
+                    textDecoration: 'none', color: 'white', padding: '25px',
+                    background: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+                    display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
+                    overflow: 'hidden'
+                }}>
+                    <h3 style={{ zIndex: 1, color: '#333' }}>COLORING BOOK</h3>
+                    <div style={{ alignSelf: 'flex-end', position: 'relative' }}>
+                        <div style={{ fontSize: '4rem', position: 'absolute', top: -20, right: 30, opacity: 0.3, transform: 'rotate(-20deg)' }}>🎨</div>
+                        <img src="/assets/merchboy_bunny.png" alt="Bunny" style={{ width: '80px', height: '80px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', transform: 'rotate(10deg)' }} />
+                    </div>
+                </Link>
+
                 {/* BEAT LAB */}
                 <Link to="/beatlab" className="bento-card" style={{
                     textDecoration: 'none', color: 'white', padding: '25px',

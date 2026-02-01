@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import Layout from './components/Layout';
 const Home = lazy(() => import('./pages/Home'));
-// const Coloring = lazy(() => import('./pages/Coloring')); // REMOVED
+const Coloring = lazy(() => import('./pages/Coloring'));
 const ArcadeHub = lazy(() => import('./pages/ArcadeHub'));
 const ShopPage = lazy(() => import('./pages/ShopPage'));
 const BeatLab = lazy(() => import('./pages/BeatLab'));
@@ -49,7 +49,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="settings" element={<SettingsPage />} />
-            {/* <Route path="coloring" element={<Coloring />} /> */}
+            <Route path="coloring" element={<Coloring />} />
             <Route path="beatlab" element={<BeatLab />} />
             <Route path="pocketbro" element={<PocketBro />} />
             <Route path="subslayer" element={<SubSlayer />} />
