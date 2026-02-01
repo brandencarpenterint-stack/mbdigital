@@ -119,7 +119,8 @@ const BroCannon = () => {
 
         p.x += p.vx;
         p.y += p.vy;
-        p.rot += p.vx * 0.5;
+        // ROTATION (More FUN spin)
+        p.rot += p.vx * 2.0; // Faster spin!
 
         // ENTITY COLLISION
         itemsRef.current.forEach(item => {
@@ -168,9 +169,12 @@ const BroCannon = () => {
 
         setDistance(Math.floor(p.x / 10));
 
-        // CAMERA
+        // CAMERA UPDATE
+        // Locked Vertical (User Request: "locked vertacly just moving in line horizontal")
+        // We keep Y fixed at 0 (looking at ground/cannon level)
+        // Adjust offset so cannon/player is somewhat centered or left
         cameraRef.current.x = p.x - 100;
-        cameraRef.current.y = Math.max(0, p.y - 300);
+        cameraRef.current.y = 0; // LOCKED VERTICAL
 
         raFrame.current = requestAnimationFrame(tick);
     };
@@ -192,7 +196,7 @@ const BroCannon = () => {
             };
 
             playJump();
-            shakeRef.current = 20; // BIG SHAKE ON LAUNCH
+            shakeRef.current = 20;
             spawnParticles(0, GROUND_LEVEL + 50, 20, 'white');
 
             setGameState('FLYING');
@@ -207,7 +211,7 @@ const BroCannon = () => {
         cancelAnimationFrame(raFrame.current);
 
         const finalDist = Math.floor(physics.current.x / 10);
-        const coins = Math.floor(finalDist / 10); // HARDER COINS
+        const coins = Math.floor(finalDist / 10);
 
         setCoinsEarned(coins);
         updateStat('arcadeCoins', (stats.arcadeCoins || 0) + coins);
@@ -221,7 +225,7 @@ const BroCannon = () => {
         setAngle(45); setPower(0); setDistance(0);
         setGameState('AIM'); gameStateRef.current = 'AIM';
         physics.current.x = 0; physics.current.y = GROUND_LEVEL;
-        cameraRef.current = { x: -100, y: 0 }; // Consistent start pos
+        cameraRef.current = { x: -100, y: 0 };
         itemsRef.current.forEach(i => i.active = true);
         particlesRef.current = [];
     };
@@ -244,7 +248,7 @@ const BroCannon = () => {
     };
 
     // Derived Logic for Rendering
-    const skyColor = Math.min(255, Math.floor(physics.current.y / 20)); // Slower sky darken
+    const skyColor = Math.min(255, Math.floor(physics.current.y / 20));
     const skyGradient = `linear-gradient(to bottom, rgb(0, 0, ${50 - (skyColor / 5)}), rgb(135, 206, 235))`;
 
     // Render Window for Items
@@ -266,6 +270,17 @@ const BroCannon = () => {
                 <div style={{ fontSize: '2rem', textShadow: '2px 2px 0 black' }}>{distance}m</div>
                 <div style={{ fontSize: '1rem', opacity: 0.8 }}>ALT: {Math.floor(physics.current.y - GROUND_LEVEL)}m</div>
             </div>
+
+            {/* HIGH ALTITUDE INDICATOR */}
+            {gameState === 'FLYING' && (physics.current.y > 600) && (
+                <div style={{
+                    position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)',
+                    textAlign: 'center', pointerEvents: 'none', zIndex: 90
+                }}>
+                    <div style={{ fontSize: '2rem' }}>☝️</div>
+                    <div style={{ fontSize: '0.8rem' }}>HIGH UP!</div>
+                </div>
+            )}
 
             <SquishyButton onClick={(e) => { e.stopPropagation(); navigate('/arcade'); }}
                 style={{ position: 'absolute', top: 20, right: 20, zIndex: 100, background: '#ff4444' }}>
