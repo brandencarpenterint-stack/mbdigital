@@ -7,15 +7,15 @@ import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 480;
-const GAME_HEIGHT = 640; // Expanded to Portrait (100% taller)
+const GAME_HEIGHT = 640;
 const LANES = 5;
-const LANE_WIDTH = GAME_WIDTH / LANES; // 96px
-const PLAYER_SIZE = 50; // Scaled down
+const LANE_WIDTH = GAME_WIDTH / LANES;
+const PLAYER_SIZE = 50;
 const BULLET_SIZE = 8;
 const ENEMY_SIZE = 40;
 const BOSS_SIZE = 100;
 const BOSS_HP_MAX = 30;
-const MAX_LIVES = 3;
+const MAX_LIVES = 1; // SURVIVAL MODE
 
 const GalaxyDefender = () => {
     const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
@@ -85,11 +85,11 @@ const GalaxyDefender = () => {
             scoreInternal: 0,
             invincible: 0,
             shake: 0,
-            stars: [], // Background stars
-            powerups: [], // {x, y, type}
-            weaponLevel: 1,
-            weaponTimer: 0,
-            level: 1, // Difficulty level
+            stars: [],
+            powerups: [],
+            weaponLevel: 2,     // START WITH BOOST 🚀
+            weaponTimer: 1200,  // 20 Seconds of Power
+            level: 1,
             bossActive: false,
             animationId: null
         };
@@ -135,9 +135,6 @@ const GalaxyDefender = () => {
             playCrash();
         }
 
-        // DO NOT CANCEL ANIMATION FRAME HERE to prevent freeze
-        // cancelAnimationFrame(gameState.current.animationId);
-
         const finalScore = gameState.current.scoreInternal + (win ? 1000 : 0);
         setScore(finalScore);
 
@@ -157,17 +154,14 @@ const GalaxyDefender = () => {
     const spawnEnemy = (timestamp) => {
         const lane = Math.floor(Math.random() * LANES);
         const x = lane * LANE_WIDTH + (LANE_WIDTH / 2) - (ENEMY_SIZE / 2);
-        // Variable Speed based on level
-        const speed = 2 + (gameState.current.level) + Math.random() * 2;
+        // SURVIVAL SCALING (Faster!)
+        const speed = 4 + (gameState.current.level * 1.2) + Math.random() * 2;
 
         gameState.current.enemies.push({ x, y: -ENEMY_SIZE, lane, speed });
         gameState.current.lastEnemySpawn = timestamp;
     };
 
     const gameLoop = (timestamp) => {
-        // REMOVED EARLY RETURN to allow rendering
-        // if (!gameActiveRef.current) return;
-
         const ctx = canvasRef.current.getContext('2d');
         const state = gameState.current;
 
@@ -235,8 +229,8 @@ const GalaxyDefender = () => {
                     // Clear enemies
                     state.enemies = [];
                 } else {
-                    // Normal Spawning
-                    const spawnRate = Math.max(400, 1000 - (state.level * 100));
+                    // Normal Spawning - FASTER SPAWN RATES
+                    const spawnRate = Math.max(250, 900 - (state.level * 150));
 
                     if (timestamp - state.lastEnemySpawn > spawnRate) {
                         spawnEnemy(timestamp);
@@ -255,9 +249,6 @@ const GalaxyDefender = () => {
                     if (state.boss.x + BOSS_SIZE > GAME_WIDTH || state.boss.x < 0) {
                         state.boss.dir *= -1;
                     }
-
-                    // Silly Bounce
-                    // const bounce = Math.sin(timestamp / 200) * 10; // Unused variable
 
                     // MOUTH LASER ATTACK
                     // Fires faster at higher levels
@@ -391,10 +382,10 @@ const GalaxyDefender = () => {
                     p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
                     // Collect
                     state.weaponLevel = 2;
-                    state.weaponTimer = 600; // 10 seconds approx (60fps)
+                    state.weaponTimer = 600;
                     state.powerups.splice(i, 1);
                     playCollect();
-                    triggerConfetti(); // Mini confetti for powerup
+                    triggerConfetti();
                 } else if (p.y > GAME_HEIGHT) {
                     state.powerups.splice(i, 1);
                 }
@@ -405,7 +396,7 @@ const GalaxyDefender = () => {
         // --- DRAW ---
 
         // Player
-        const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2); // Duplicate calc for draw
+        const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
         const playerYDraw = GAME_HEIGHT - 80;
 
         if (state.invincible % 10 < 5) { // Flash if invincible
