@@ -369,7 +369,8 @@ const NeonBrickBreaker = () => {
             let activeBricks = 0;
             state.bricks.forEach(brick => {
                 if (!brick.active) return;
-                activeBricks++;
+                // Fix: Ignore steel bricks for win condition
+                if (brick.type !== 'steel') activeBricks++;
 
                 // Check against ALL balls
                 state.balls.forEach(ball => {
