@@ -236,6 +236,59 @@ export const GamificationProvider = ({ children }) => {
         // For now, we keep the data on screen but it won't save to the cloud ID anymore.
     };
 
+    // --- ECONOMY HELPERS ---
+    const addCoins = (amount) => {
+        // Apply Pet Multiplier (Check Local Storage to avoid direct dependency)
+        let multiplier = 1.0;
+        try {
+            const stored = localStorage.getItem('merchboy_multiplier');
+            if (stored) multiplier = parseFloat(stored);
+        } catch (e) { }
+
+        const finalAmount = Math.floor(amount * multiplier);
+
+        setCoins(prev => prev + finalAmount);
+
+        if (finalAmount > 0) {
+            if (multiplier > 1.0) showToast(`+${finalAmount} Coins (Pet Bonus!)`, 'coin');
+            else showToast(`+${finalAmount} Coins`, 'coin');
+        }
+    };
+
+    const spendCoins = (amount) => {
+        if (coins >= amount) {
+            setCoins(prev => prev - amount);
+            return true;
+        }
+        showToast("Not enough coins!", "error");
+        return false;
+    };
+
+    const incrementStat = (key, amount = 1) => {
+        setStats(prev => {
+            // Defensive: Don't increment arrays
+            if (Array.isArray(prev[key])) {
+                console.warn(`Attempted to increment array stat ${key}. Use updateStat instead.`);
+                return prev;
+            }
+
+            const newVal = (prev[key] || 0) + amount;
+
+            // DAILY QUEST TRACKING HOOK
+            setDailyState(dPrev => {
+                const updatedQuests = dPrev.quests.map(q => {
+                    if (!q.claimed && q.type === key && !q.condition) {
+                        return { ...q, progress: q.progress + amount };
+                    }
+                    return q;
+                });
+                return { ...dPrev, quests: updatedQuests };
+            });
+
+            return { ...prev, [key]: newVal };
+        });
+    };
+
     // --- SHOP STATE (Moved Up to avoid TDZ) ---
     const [shopState, setShopState] = useState(() => {
         const defaults = {
