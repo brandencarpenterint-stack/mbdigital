@@ -276,6 +276,7 @@ const ArcadeHub = () => {
                     textShadow: '0 0 20px var(--neon-pink)',
                     margin: '0',
                     fontFamily: '"Orbitron", sans-serif',
+                    animation: 'textGlowPulse 3s infinite ease-in-out'
                 }}>
                     ARCADE <span style={{ color: 'var(--neon-pink)' }}>ZONE</span>
                 </h1>
@@ -395,6 +396,24 @@ const ArcadeHub = () => {
                                     border: '1px solid #00C6FF'
                                 }}>DAILY 🎣</div>
                             )}
+                            {(game.id === 'merch-jump') && (
+                                <div style={{
+                                    position: 'absolute', top: 15, right: 15,
+                                    background: 'var(--neon-pink)', color: 'white',
+                                    padding: '4px 10px', borderRadius: '20px',
+                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
+                                    boxShadow: '0 0 15px var(--neon-pink)'
+                                }}>UPDATED 🎈</div>
+                            )}
+                            {(game.id === 'neon-bricks') && (
+                                <div style={{
+                                    position: 'absolute', top: 15, right: 15,
+                                    background: '#da22ff', color: 'white',
+                                    padding: '4px 10px', borderRadius: '20px',
+                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
+                                    boxShadow: '0 0 10px #da22ff'
+                                }}>FIXED 🔧</div>
+                            )}
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2 }}>
                                 <div style={{ flex: 1, textAlign: 'left' }}>
@@ -426,7 +445,7 @@ const ArcadeHub = () => {
                             {/* Overlay Decor (Giant Icon) */}
                             <div style={{
                                 position: 'absolute', bottom: -10, right: -10,
-                                fontSize: '9rem', opacity: 0.2, transform: 'rotate(-15deg)', pointerEvents: 'none'
+                                fontSize: '8rem', opacity: 0.15, transform: 'rotate(-15deg)', pointerEvents: 'none'
                             }}>
                                 {game.icon}
                             </div>

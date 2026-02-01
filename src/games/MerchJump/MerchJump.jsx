@@ -151,16 +151,15 @@ const MerchJump = () => {
     const generatePlatform = (y, biome) => {
         const score = scoreRef.current;
 
-        // MERCH BALLOON (Rainbow Glow) - Around 5000m
-        if (Math.abs(score - 5000) < 500 && Math.random() < 0.1 && itemsRef.current.length === 0) {
+        // MERCH BALLOON (Rainbow Glow & Boost)
+        // Spawn chance between 2000m and 6000m? Or just around specific milestones?
+        // User wants "no more red balloon", implies standard boost is now Merch Balloon.
+        // Let's make it spawn periodically or at key milestones.
+
+        // Spawn rule: Rare chance if score > 1000 and no items present
+        if (score > 1000 && Math.random() < 0.005 && itemsRef.current.length === 0) {
             itemsRef.current.push({
                 x: Math.random() * (WIDTH - 60), y: y - 100, type: 'merch_balloon', w: 50, h: 50
-            });
-        }
-        // Standard Balloon - Around 2500m (optional, or kept as random rare spawn elsewhere)
-        if (Math.abs(score - 2500) < 400 && Math.random() < 0.05 && itemsRef.current.length === 0) {
-            itemsRef.current.push({
-                x: Math.random() * (WIDTH - 40), y: y - 100, type: 'balloon', w: 30, h: 40
             });
         }
 
@@ -307,13 +306,11 @@ const MerchJump = () => {
 
         itemsRef.current.forEach((item, idx) => {
             if (player.x > item.x - 30 && player.x < item.x + item.w + 30 && player.y > item.y - 30 && player.y < item.y + item.h + 30) {
-                if (item.type === 'balloon') {
-                    player.vy = -35; playCollect(); itemsRef.current.splice(idx, 1);
-                } else if (item.type === 'merch_balloon') {
+                if (item.type === 'merch_balloon') {
                     player.vy = -60; // SUPER BOOST
                     playCollect();
                     itemsRef.current.splice(idx, 1);
-                    feedService.publish(`found the Legendary Merch Balloon! 🌈`, 'win', userProfile?.name);
+                    feedService.publish(`found a Merch Balloon! 🎈`, 'win', userProfile?.name);
                 }
             }
         });
@@ -400,12 +397,7 @@ const MerchJump = () => {
 
         // Items
         itemsRef.current.forEach(item => {
-            if (item.type === 'balloon') {
-                ctx.strokeStyle = 'white'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(item.x + 15, item.y + 40);
-                ctx.lineTo(item.x + 15 + Math.sin(performance.now() * 0.01) * 5, item.y + 80); ctx.stroke();
-                ctx.fillStyle = 'red'; ctx.beginPath(); ctx.ellipse(item.x + 15, item.y + 20, 15, 20, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(item.x + 10, item.y + 10, 4, 0, Math.PI * 2); ctx.fill();
-            } else if (item.type === 'merch_balloon') {
+            if (item.type === 'merch_balloon') {
                 // RAINBOW GLOW
                 if (merchBalloonImgRef.current) {
                     ctx.save();

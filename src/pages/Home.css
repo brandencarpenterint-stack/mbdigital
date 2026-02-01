@@ -11,6 +11,7 @@
     font-size: clamp(2.5rem, 5vw, 4rem);
     background: linear-gradient(to right, #00FA9A, #00ccff);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
     font-family: 'Kanit', sans-serif;
@@ -235,4 +236,17 @@
 
 .bento-card:active {
     transform: scale(0.98);
+}
+
+@keyframes textGlowPulse {
+
+    0%,
+    100% {
+        text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
+    }
+
+    50% {
+        text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+        opacity: 0.8;
+    }
 }
