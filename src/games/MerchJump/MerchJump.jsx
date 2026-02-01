@@ -120,8 +120,10 @@ const MerchJump = () => {
         biomeRef.current = BIOMES[0];
         trailRef.current = []; // Reset Trail
 
-        // Random Rocket Start 
-        const startVy = -(20 + Math.random() * 25);
+        // Random Rocket Start 🚀 (2000m to 5000m)
+        // v = sqrt(2gh)
+        // h=2000 -> v=40. h=5000 -> v=63.
+        const startVy = -(40 + Math.random() * 23); // Range [40, 63]
         playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: startVy, width: 40, height: 60 };
 
         platformsRef.current = [];
