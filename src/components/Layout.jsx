@@ -282,9 +282,9 @@ const Layout = () => {
                             🏠
                         </Link>
 
-                        {/* 2. BEAT LAB (Demoted from Center) */}
-                        <Link to="/beatlab" className="dock-icon" style={{ opacity: location.pathname === '/beatlab' ? 1 : 0.5 }}>
-                            🎹
+                        {/* 2. HUSTLE MODE (Productivity) */}
+                        <Link to="/hustle" className="dock-icon" style={{ opacity: location.pathname === '/hustle' ? 1 : 0.5 }}>
+                            ⏱️
                         </Link>
 
                         {/* 3. ARCADE (Promoted to CENTER FAB) */}

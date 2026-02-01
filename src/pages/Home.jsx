@@ -149,20 +149,20 @@ const Home = () => {
                     </div>
                 </Link>
 
-                {/* COLORING BOOK (Updated Icon) */}
-                <Link to="/coloring" className="bento-card" style={{
+                {/* HUSTLE MODE (Productivity) */}
+                <Link to="/hustle" className="bento-card" style={{
                     textDecoration: 'none', color: 'white', padding: '25px',
-                    background: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+                    background: 'linear-gradient(135deg, #434343 0%, #000000 100%)',
                     display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
-                    overflow: 'hidden'
+                    border: '1px solid #555'
                 }}>
-                    <h3 style={{ zIndex: 1 }}>COLORING BOOK</h3>
-                    <div style={{ alignSelf: 'flex-end', position: 'relative' }}>
-                        {/* Paint Splat */}
-                        <div style={{ fontSize: '4rem', position: 'absolute', top: -20, right: 30, opacity: 0.3, transform: 'rotate(-20deg)' }}>🎨</div>
-                        {/* Cute Face */}
-                        <img src="/assets/merchboy_bunny.png" alt="Bunny" style={{ width: '80px', height: '80px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', transform: 'rotate(10deg)' }} />
+                    <div>
+                        <h3 style={{ margin: 0, color: '#f0f0f0' }}>HUSTLE MODE</h3>
+                        <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '5px', fontWeight: 'bold' }}>
+                            LO-FI FOCUS TIMER
+                        </div>
                     </div>
+                    <div style={{ alignSelf: 'flex-end', fontSize: '3rem', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }}>⏱️</div>
                 </Link>
 
                 {/* BEAT LAB */}
