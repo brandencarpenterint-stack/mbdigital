@@ -538,7 +538,8 @@ export const GamificationProvider = ({ children }) => {
                             whack_a_mole: stats.whackHighScore || 0,
                             memory_match: stats.memoryHighScore || 0,
                             face_runner: stats.faceRunnerHighScore || 0,
-                            cosmic_slots: stats.slotsBiggestWin || 0
+                            cosmic_slots: stats.slotsBiggestWin || 0,
+                            bro_cannon: stats.broCannonHighScore || 0
                         },
                         stats: stats,
                         room_data: pocketData.placedItems || [],

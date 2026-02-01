@@ -61,6 +61,58 @@ const BroCannon = () => {
     const currentZone = ZONES.find(z => distance < z.limit) || ZONES[3];
 
     // ... (Oscillators/Effect unchanged)
+    // OSCILLATORS would be here if I hadn't removed them. Let's assume handleAction handles AIM/POWER.
+    const handleAction = () => {
+        if (phase === 'AIM') {
+            setPhase('POWER');
+        } else if (phase === 'POWER') {
+            launch();
+        }
+    };
+
+    // ANIMATION LOOPS for stats (AIM/POWER)
+    useEffect(() => {
+        if (phase === 'AIM') {
+            const interval = setInterval(() => {
+                setAngle(prev => {
+                    const next = prev + 1; // Simple linear for now, usually pingpong
+                    return next > 90 ? 0 : next;
+                });
+            }, 10);
+            return () => clearInterval(interval);
+        } else if (phase === 'POWER') {
+            const interval = setInterval(() => {
+                setPower(prev => {
+                    const next = prev + 2;
+                    return next > 100 ? 0 : next;
+                });
+            }, 10);
+            return () => clearInterval(interval);
+        }
+    }, [phase]);
+
+
+    const finishGame = () => {
+        if (gameLoop.current) cancelAnimationFrame(gameLoop.current);
+        setPhase('RESULT');
+
+        // REWARDS
+        const finalDistance = Math.floor(pos.current.x);
+        const rewardCoins = Math.floor(finalDistance / 10);
+
+        playWin();
+
+        // 1. Give Coins
+        if (rewardCoins > 0) {
+            updateStat('arcadeCoins', (stats.arcadeCoins || 0) + rewardCoins);
+        }
+
+        // 2. High Score Check
+        if (finalDistance > (stats.broCannonHighScore || 0)) {
+            updateStat('broCannonHighScore', finalDistance);
+            // Maybe show "NEW RECORD" toast in UI?
+        }
+    };
 
     const launch = () => {
         playWin();
