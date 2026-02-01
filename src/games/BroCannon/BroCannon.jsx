@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useGamification } from '../../context/GamificationContext';
+import { useNavigate } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import SquishyButton from '../../components/SquishyButton';
-import { useNavigate } from 'react-router-dom';
+import { useGamification } from '../../context/GamificationContext';
 
 const GRAVITY = 0.5;
-const GROUND_LEVEL = 50; // Pixels from bottom
+const GROUND_LEVEL = 50;
 const WORLD_HEIGHT = 2000; // For sky gradient
 
 const BroCannon = () => {
@@ -15,8 +14,14 @@ const BroCannon = () => {
     const { stats, updateStat } = useGamification();
 
     // GAME STATE
-    // GAME STATE
     const [gameState, setGameState] = useState('MENU'); // MENU, AIM, POWER, FLYING, LANDED
+    const gameStateRef = useRef('MENU');
+
+    // Sync State to Ref for Loop
+    useEffect(() => {
+        gameStateRef.current = gameState;
+    }, [gameState]);
+
     const [angle, setAngle] = useState(45);
     const [power, setPower] = useState(0);
     const [distance, setDistance] = useState(0);
@@ -78,7 +83,8 @@ const BroCannon = () => {
 
     // --- MAIN LOOP (tick) ---
     const tick = () => {
-        if (gameState !== 'FLYING') return;
+        if (gameStateRef.current !== 'FLYING') return;
+
         const p = physics.current;
         const drag = 0.99 + (upgrades.aero * 0.0005);
         p.vx *= drag;
@@ -115,24 +121,35 @@ const BroCannon = () => {
             // LAUNCH
             const rad = (angle * Math.PI) / 180;
             const force = (power * 0.5) + 15 + (upgrades.power * 2);
+
             physics.current = {
-                x: 0, y: GROUND_LEVEL + 50,
-                vx: Math.cos(rad) * force, vy: Math.sin(rad) * force,
+                x: 0,
+                y: GROUND_LEVEL + 50, // Nozzle height
+                vx: Math.cos(rad) * force,
+                vy: Math.sin(rad) * force,
                 rot: 0
             };
+
             playJump();
             setGameState('FLYING');
+            // Loop will check Ref
+            gameStateRef.current = 'FLYING';
             rafRef.current = requestAnimationFrame(tick);
         }
     };
 
     const finishRun = () => {
         setGameState('LANDED');
+        gameStateRef.current = 'LANDED';
         cancelAnimationFrame(rafRef.current);
+
+        // Calculate Rewards
         const finalDist = Math.floor(physics.current.x / 10);
         const coins = Math.floor(finalDist / 5);
+
         setCoinsEarned(coins);
         updateStat('arcadeCoins', (stats.arcadeCoins || 0) + coins);
+
         if (finalDist > (stats.broCannonHighScore || 0)) {
             updateStat('broCannonHighScore', finalDist);
             playWin();
@@ -143,7 +160,8 @@ const BroCannon = () => {
         setAngle(45);
         setPower(0);
         setDistance(0);
-        setGameState('AIM'); // Go straight to Reshoot
+        setGameState('AIM');
+        gameStateRef.current = 'AIM';
         physics.current.x = 0;
         cameraX.current = 0;
     };
@@ -151,7 +169,19 @@ const BroCannon = () => {
     const goToMenu = () => {
         setAngle(45); setPower(0); setDistance(0);
         setGameState('MENU');
+        gameStateRef.current = 'MENU';
         physics.current.x = 0; cameraX.current = 0;
+    };
+
+    const buyUpgrade = (type) => {
+        const cost = PRICES[type] * upgrades[type];
+        if ((stats.arcadeCoins || 0) >= cost) {
+            playCollect();
+            const next = { ...upgrades, [type]: upgrades[type] + 1 };
+            setUpgrades(next);
+            updateStat('broCannonUpgrades', next);
+            updateStat('arcadeCoins', stats.arcadeCoins - cost);
+        }
     };
 
     // VISUALS
@@ -175,6 +205,33 @@ const BroCannon = () => {
                 style={{ position: 'absolute', top: 20, right: 20, zIndex: 100, background: '#ff4444' }}>
                 EXIT
             </SquishyButton>
+
+            {/* UPGRADE SHOP (Visible in AIM/POWER) */}
+            {(gameState === 'AIM' || gameState === 'POWER') && (
+                <div style={{
+                    position: 'absolute', bottom: 20, right: 20, zIndex: 50,
+                    background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '20px',
+                    border: '2px solid gold'
+                }} onClick={e => e.stopPropagation()}>
+                    <h3 style={{ margin: '0 0 10px 0', color: 'gold' }}>SHOP (${stats.arcadeCoins || 0})</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                        {Object.keys(PRICES).map(key => (
+                            <div key={key} onClick={() => buyUpgrade(key)}
+                                style={{
+                                    background: '#333', padding: '10px', borderRadius: '10px',
+                                    textAlign: 'center', cursor: 'pointer',
+                                    border: (stats.arcadeCoins >= PRICES[key] * upgrades[key]) ? '1px solid green' : '1px solid #555'
+                                }}>
+                                <div style={{ fontSize: '1.5rem' }}>
+                                    {key === 'power' ? '💥' : (key === 'aero' ? '💨' : '🏀')}
+                                </div>
+                                <div style={{ fontSize: '0.7rem' }}>LVL {upgrades[key]}</div>
+                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>${PRICES[key] * upgrades[key]}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* MAIN MENU / SKIN SELECT */}
             {gameState === 'MENU' && (
