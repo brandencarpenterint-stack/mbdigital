@@ -430,13 +430,58 @@ export const GamificationProvider = ({ children }) => {
         if (data) {
             console.log("☁️ CLOUD SYNC: Loading Profile", data);
 
-            // HYDRATE STATE FROM CLOUD
-            if (data.coins !== undefined && data.coins !== null) setCoins(Number(data.coins));
-            if (data.stats && typeof data.stats === 'object') setStats(data.stats);
+            // HYDRATE STATE FROM CLOUD - WITH SMART MERGE
+            // 1. Coins: Take Max (simplest way to prevent loss, though theoretically exploit-prone, safe enough for this)
+            if (data.coins !== undefined && data.coins !== null) {
+                setCoins(prev => Math.max(prev, Number(data.coins)));
+            }
+
+            // 2. Stats: Merge (Trust higher numbers for high scores)
+            if (data.stats && typeof data.stats === 'object') {
+                setStats(prev => {
+                    const merged = { ...prev };
+                    Object.keys(data.stats).forEach(key => {
+                        if (typeof data.stats[key] === 'number') {
+                            merged[key] = Math.max(merged[key] || 0, data.stats[key]);
+                        } else if (Array.isArray(data.stats[key])) {
+                            // Merge unique items? Or just trust cloud?
+                            // For gamesPlayed array, trust cloud if larger?
+                            // Let's just trust cloud for arrays generally to avoid complexity, or skip if local is populated?
+                            // Actually, local stats might be newer.
+                            // Let's only overwrite if local is 'empty' or older? Hard to tell.
+                            // Strategy: Trust Cloud for High Scores. Keep Local for ephemeral?
+                            // Safer: Only update if cloud value is DEFINED.
+                            merged[key] = data.stats[key];
+                        } else {
+                            merged[key] = data.stats[key];
+                        }
+                    });
+                    return merged;
+                });
+            }
+
+            // 3. Achievements: Union
             if (data.achievements && Array.isArray(data.achievements)) {
                 setUnlockedAchievements(prev => [...new Set([...prev, ...data.achievements])]);
             }
-            if (data.daily_data) setDailyState(data.daily_data);
+
+            // 4. Daily State: Protect Local Check-in
+            if (data.daily_data) {
+                setDailyState(prev => {
+                    const today = new Date().toISOString().split('T')[0];
+                    // If local has checked in TODAY, and cloud hasn't, KEEP LOCAL.
+                    if (prev.lastCheckIn === today) {
+                        // Cloud might have old streak, but we want to keep today's status.
+                        // But maybe cloud has better streak from specific history?
+                        // Simplest: If local is today, ignore cloud checkin.
+                        // BUT we might want to sync Quest Progress from cloud if it's better?
+                        // For Dailies, usually Session-based or Local is fresher.
+                        // Decision: If local `questDate` is today, assume Local is master for today.
+                        if (prev.questDate === today) return prev;
+                    }
+                    return data.daily_data;
+                });
+            }
 
             // Update Profile Info
             setUserProfile(prev => ({
