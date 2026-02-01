@@ -11,6 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import { feedService } from '../utils/feed';
 import { triggerConfetti } from '../utils/confetti';
+import StickerSprite from './StickerSprite';
 
 import { useToast } from '../context/ToastContext';
 import PocketRoom from './PocketRoom';
@@ -584,10 +585,14 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                                 userSelect: 'none'
                                                             }}
                                                         >
-                                                            {def.image ? (
-                                                                <img src={def.image} alt={def.name} style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.5))' }} />
+                                                            {def.sheet ? (
+                                                                <StickerSprite sticker={def} size='100%' />
                                                             ) : (
-                                                                def.icon || '❓'
+                                                                def.image ? (
+                                                                    <img src={def.image} alt={def.name} style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.5))' }} />
+                                                                ) : (
+                                                                    def.icon || '❓'
+                                                                )
                                                             )}
                                                         </motion.div>
                                                     );
@@ -620,7 +625,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                                 aspectRatio: '1/1', cursor: 'pointer'
                                                             }}
                                                         >
-                                                            {s.image ? <img src={s.image} style={{ width: '80%', height: '80%', objectFit: 'contain' }} /> : s.icon}
+                                                            {s.sheet ? <StickerSprite sticker={s} size={50} /> : (s.image ? <img src={s.image} style={{ width: '80%', height: '80%', objectFit: 'contain' }} /> : s.icon)}
                                                         </div>
                                                     ))}
                                                 </div>
