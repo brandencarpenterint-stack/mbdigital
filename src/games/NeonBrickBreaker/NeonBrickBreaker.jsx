@@ -293,144 +293,156 @@ const NeonBrickBreaker = () => {
         const state = gameState.current;
 
         // --- UPDATE ---
+        if (!state.transitioning) {
 
-        // 1. Balls
-        const { balls, paddleX } = state;
-        for (let i = balls.length - 1; i >= 0; i--) {
-            const ball = balls[i];
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-            ball.rot += 0.005; // Almost zero rotation
+            // 1. Balls
+            const { balls, paddleX } = state;
+            for (let i = balls.length - 1; i >= 0; i--) {
+                const ball = balls[i];
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+                ball.rot += 0.005; // Almost zero rotation
 
-            // Walls
-            if (ball.x + BALL_SIZE > GAME_WIDTH || ball.x < 0) {
-                ball.dx = -ball.dx;
-                playBeep();
-            }
-            if (ball.y < 0) {
-                ball.dy = -ball.dy;
-                playBeep();
-            }
-
-            // Paddle
-            if (ball.y + BALL_SIZE > GAME_HEIGHT - PADDLE_HEIGHT - 10 &&
-                ball.x + BALL_SIZE > paddleX &&
-                ball.x < paddleX + PADDLE_WIDTH) {
-
-                // English/Spin
-                const hitPoint = ball.x - (paddleX + PADDLE_WIDTH / 2);
-                ball.dx = hitPoint * 0.2;
-                ball.dy = -Math.abs(ball.dy); // Force up
-                playBeep();
-                if (navigator.vibrate) navigator.vibrate(15);
-            }
-
-            // Death
-            if (ball.y > GAME_HEIGHT) {
-                balls.splice(i, 1);
-                triggerShake(10);
-                playCrash();
-            }
-        }
-
-        // Life Loss Check
-        if (balls.length === 0) {
-            if (lives > 1) {
-                setLives(l => l - 1);
-                // Respawn ball
-                state.balls.push({
-                    x: GAME_WIDTH / 2,
-                    y: GAME_HEIGHT - 40,
-                    dx: 4 * (Math.random() > 0.5 ? 1 : -1),
-                    dy: -4,
-                    rot: 0,
-                    imgIndex: Math.floor(Math.random() * 4)
-                });
-            } else {
-                endGame(false);
-                return;
-            }
-        }
-
-        // 2. Bricks
-        let activeBricks = 0;
-        state.bricks.forEach(brick => {
-            if (!brick.active) return;
-            activeBricks++;
-
-            // Check against ALL balls
-            state.balls.forEach(ball => {
-                if (ball.x < brick.x + brick.width &&
-                    ball.x + BALL_SIZE > brick.x &&
-                    ball.y < brick.y + brick.height &&
-                    ball.y + BALL_SIZE > brick.y) {
-
-                    ball.dy = -ball.dy;
-
-                    if (brick.type === 'steel') {
-                        playBeep();
-                        triggerShake(2);
-                        return; // Indestructible
-                    }
-
-                    brick.hp -= 1;
-                    if (brick.hp <= 0) {
-                        brick.active = false;
-                        setScore(prev => prev + brick.value);
-                        playCollect();
-                        spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                        triggerShake(3);
-
-                        if (Math.random() < 0.15) {
-                            state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
-                        }
-                    } else {
-                        // Hit Sound
-                        playBeep();
-                        // Visual Damage (Darken)
-                        brick.color = 'white'; // Flash white
-                        setTimeout(() => brick.color = brick.color, 50); // Reset? Need to store original color.
-                        // Simplified: Just use opacity or predefined colors for HP.
-                        // For now, let's just flash?
-                    }
+                // Walls
+                if (ball.x + BALL_SIZE > GAME_WIDTH || ball.x < 0) {
+                    ball.dx = -ball.dx;
+                    playBeep();
                 }
-            });
-        });
+                if (ball.y < 0) {
+                    ball.dy = -ball.dy;
+                    playBeep();
+                }
 
-        if (activeBricks === 0) {
-            // NEXT LEVEL
-            triggerConfetti();
-            playWin();
-            nextLevelTimeoutRef.current = setTimeout(() => {
-                startLevel(levelRef.current + 1);
-                requestAnimationFrame(gameLoop);
-            }, 1000);
-            return;
-        }
+                // Paddle
+                if (ball.y + BALL_SIZE > GAME_HEIGHT - PADDLE_HEIGHT - 10 &&
+                    ball.x + BALL_SIZE > paddleX &&
+                    ball.x < paddleX + PADDLE_WIDTH) {
 
-        // 3. Powerups
-        for (let i = state.powerups.length - 1; i >= 0; i--) {
-            const p = state.powerups[i];
-            p.y += 3;
-            if (p.y > GAME_HEIGHT - PADDLE_HEIGHT - 10 &&
-                p.y < GAME_HEIGHT - 10 &&
-                p.x > state.paddleX &&
-                p.x < state.paddleX + PADDLE_WIDTH) {
-                if (p.type === 'multiball') activateMultiball();
-                state.powerups.splice(i, 1);
-            } else if (p.y > GAME_HEIGHT) {
-                state.powerups.splice(i, 1);
+                    // English/Spin
+                    const hitPoint = ball.x - (paddleX + PADDLE_WIDTH / 2);
+                    ball.dx = hitPoint * 0.2;
+                    ball.dy = -Math.abs(ball.dy); // Force up
+                    playBeep();
+                    if (navigator.vibrate) navigator.vibrate(15);
+                }
+
+                // Death
+                if (ball.y > GAME_HEIGHT) {
+                    balls.splice(i, 1);
+                    triggerShake(10);
+                    playCrash();
+                }
             }
-        }
 
-        // 4. Particles
-        for (let i = state.particles.length - 1; i >= 0; i--) {
-            const p = state.particles[i];
-            p.x += p.dx;
-            p.y += p.dy;
-            p.life -= 0.04;
-            if (p.life <= 0) state.particles.splice(i, 1);
-        }
+            // Life Loss Check
+            if (balls.length === 0) {
+                if (lives > 1) {
+                    setLives(l => l - 1);
+                    // Respawn ball
+                    state.balls.push({
+                        x: GAME_WIDTH / 2,
+                        y: GAME_HEIGHT - 40,
+                        dx: 4 * (Math.random() > 0.5 ? 1 : -1),
+                        dy: -4,
+                        rot: 0,
+                        imgIndex: Math.floor(Math.random() * 4)
+                    });
+                } else {
+                    endGame(false);
+                    return;
+                }
+            }
+
+            // 2. Bricks
+            let activeBricks = 0;
+            state.bricks.forEach(brick => {
+                if (!brick.active) return;
+                activeBricks++;
+
+                // Check against ALL balls
+                state.balls.forEach(ball => {
+                    if (ball.x < brick.x + brick.width &&
+                        ball.x + BALL_SIZE > brick.x &&
+                        ball.y < brick.y + brick.height &&
+                        ball.y + BALL_SIZE > brick.y) {
+
+                        ball.dy = -ball.dy;
+
+                        if (brick.type === 'steel') {
+                            playBeep();
+                            triggerShake(2);
+                            return; // Indestructible
+                        }
+
+                        brick.hp -= 1;
+                        if (brick.hp <= 0) {
+                            brick.active = false;
+                            setScore(prev => prev + brick.value);
+                            playCollect();
+                            spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                            triggerShake(3);
+
+                            if (Math.random() < 0.15) {
+                                state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
+                            }
+                        } else {
+                            // Hit Sound
+                            playBeep();
+                            // Visual Damage (Darken)
+                            brick.color = 'white'; // Flash white
+                            setTimeout(() => brick.color = brick.color, 50); // Reset? Need to store original color.
+                            // Simplified: Just use opacity or predefined colors for HP.
+                            // For now, let's just flash?
+                        }
+                    }
+                });
+            });
+
+            if (activeBricks === 0 && !gameState.current.transitioning) {
+                // NEXT LEVEL
+                gameState.current.transitioning = true;
+                triggerConfetti();
+                playWin();
+
+                setTimeout(() => {
+                    startLevel(levelRef.current + 1);
+                    // Ensure transitioning is reset inside startLevel or here
+                    gameState.current.transitioning = false;
+                }, 1000);
+            }
+
+            if (gameState.current.transitioning) {
+                // Keep drawing but skip other updates? 
+                // Actually, let's just let it run but maybe pause balls?
+                state.balls.forEach(b => { b.x += 0; b.y += 0; }); // Pause movement
+                // Continue to draw loop
+            }
+
+            // 3. Powerups
+            for (let i = state.powerups.length - 1; i >= 0; i--) {
+                const p = state.powerups[i];
+                p.y += 3;
+                if (p.y > GAME_HEIGHT - PADDLE_HEIGHT - 10 &&
+                    p.y < GAME_HEIGHT - 10 &&
+                    p.x > state.paddleX &&
+                    p.x < state.paddleX + PADDLE_WIDTH) {
+                    if (p.type === 'multiball') activateMultiball();
+                    state.powerups.splice(i, 1);
+                } else if (p.y > GAME_HEIGHT) {
+                    state.powerups.splice(i, 1);
+                }
+            }
+
+            // 4. Particles
+            for (let i = state.particles.length - 1; i >= 0; i--) {
+                const p = state.particles[i];
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.04;
+                if (p.life <= 0) state.particles.splice(i, 1);
+            }
+
+        } // End Update
 
         // --- DRAW ---
         // Clear with slight trail effect? No, clean clear.

@@ -678,7 +678,10 @@ const GalaxyDefender = () => {
                         <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
                     ))}
                 </div>
-                <span>SCORE: {score}</span>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <span>LVL {Math.floor(score / 1000) + 1}</span>
+                    <span>SCORE: {score}</span>
+                </div>
             </div>
 
             <div style={{ position: 'relative', width: '100%', maxWidth: '480px' }}>
