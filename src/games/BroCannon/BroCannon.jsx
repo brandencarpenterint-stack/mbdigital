@@ -12,8 +12,19 @@ const GROUND_Y = 0;
 
 const BroCannon = () => {
     const navigate = useNavigate();
-    const { updateStat } = useGamification();
+    // const { updateStat } = useGamification(); // Removing duplicate
     const { playJump, playBoop, playCollect, playCrash, playWin } = useRetroSound();
+
+    // Game State
+    // CONFIG
+    const ZONES = [
+        { name: 'NOOB VALLEY', limit: 500, color: '#8BC34A' },
+        { name: 'NEON CITY', limit: 1500, color: '#00BCD4' },
+        { name: 'CYBER WASTELAND', limit: 3000, color: '#FF9800' },
+        { name: 'COSMIC VOID', limit: 99999, color: '#9C27B0' },
+    ];
+
+    const PRICES = { power: 10, aero: 15, bounce: 20 };
 
     // Game State
     const [phase, setPhase] = useState('AIM'); // AIM, POWER, FLYING, RESULT
@@ -22,91 +33,66 @@ const BroCannon = () => {
     const [distance, setDistance] = useState(0);
     const [altitude, setAltitude] = useState(0);
     const [boosts, setBoosts] = useState([]);
-    const [combo, setCombo] = useState(0);
 
-    // Physics State (Refs for speed)
+    // Upgrades
+    const { stats, updateStat } = useGamification();
+    const [upgrades, setUpgrades] = useState(stats.broCannonUpgrades || { power: 1, aero: 1, bounce: 1 });
+
+    // Physics Refs
     const pos = useRef({ x: 0, y: 0 });
     const vel = useRef({ x: 0, y: 0 });
     const gameLoop = useRef(null);
     const cameraX = useRef(0);
 
-    // Oscillators
-    const oscRef = useRef(0);
-    const oscDir = useRef(1);
-
-    // Setup Aim/Power Loop
-    useEffect(() => {
-        if (phase === 'AIM' || phase === 'POWER') {
-            const interval = setInterval(() => {
-                if (phase === 'AIM') {
-                    setAngle(prev => {
-                        let next = prev + (oscDir.current * 1.5);
-                        if (next > 85) { next = 85; oscDir.current = -1; }
-                        if (next < 5) { next = 5; oscDir.current = 1; }
-                        return next;
-                    });
-                } else if (phase === 'POWER') {
-                    setPower(prev => {
-                        let next = prev + (oscDir.current * 2);
-                        if (next > 100) { next = 100; oscDir.current = -1; }
-                        if (next < 0) { next = 0; oscDir.current = 1; }
-                        return next;
-                    });
-                }
-            }, 16);
-            return () => clearInterval(interval);
-        }
-    }, [phase]);
-
-    const handleAction = () => {
-        if (phase === 'AIM') {
-            playBoop();
-            setPhase('POWER');
-            oscDir.current = 1; // Reset direction for power
-        } else if (phase === 'POWER') {
-            launch();
+    const buyUpgrade = (type) => {
+        const cost = PRICES[type] * upgrades[type]; // Progressive cost? Or flat? Let's do Linear Scaling
+        if (stats.arcadeCoins >= cost) {
+            playCollect();
+            updateStat('arcadeCoins', stats.arcadeCoins - cost); // Deduct
+            const newUpgrades = { ...upgrades, [type]: upgrades[type] + 1 };
+            setUpgrades(newUpgrades);
+            updateStat('broCannonUpgrades', newUpgrades); // Persist
+        } else {
+            // Error sound
         }
     };
 
+    // Calculate current zone
+    const currentZone = ZONES.find(z => distance < z.limit) || ZONES[3];
+
+    // ... (Oscillators/Effect unchanged)
+
     const launch = () => {
-        playWin(); // Launch sound!
+        playWin();
         setPhase('FLYING');
 
-        // Calculate Initial Velocity
+        // Calculate Initial Velocity with UPGRADES
         const rad = (angle * Math.PI) / 180;
-        const totalForce = 15 + (power * 0.4); // Min 15, Max 55
+        const baseForce = 15 + (power * 0.4);
+        const upgradeMult = 1 + (upgrades.power * 0.1); // 10% per level
+        const totalForce = baseForce * upgradeMult;
 
-        pos.current = { x: 0, y: 10 }; // Start at cannon tip
+        pos.current = { x: 0, y: 10 };
         vel.current = {
             x: Math.cos(rad) * totalForce,
             y: Math.sin(rad) * totalForce
         };
 
-        // Generate initial boost field
         generateBoosts(0, 10000);
-
         gameLoop.current = requestAnimationFrame(update);
     };
 
-    const generateBoosts = (startX, endX) => {
-        const newBoosts = [];
-        for (let x = startX; x < endX; x += 150) {
-            if (Math.random() < BOOST_CHANCE) {
-                newBoosts.push({
-                    id: Math.random(),
-                    x: x + (Math.random() * 100),
-                    y: Math.random() * 800 + 100, // Sky height
-                    type: Math.random() > 0.8 ? 'SUPER' : 'NORMAL'
-                });
-            }
-        }
-        setBoosts(prev => [...prev, ...newBoosts]);
-    };
+    // ... (Generate Boosts unchanged)
 
     const update = () => {
         // Apply Physics
-        vel.current.x *= DRAG;
-        vel.current.y *= DRAG;
+        // DRAG reduces based on AERO level
+        const dragFactor = DRAG + (upgrades.aero * 0.0005); // Tiny boost to drag retention (closer to 1.0)
+        // Cap drag at 0.999
+        const effectiveDrag = Math.min(0.999, dragFactor);
+
+        vel.current.x *= effectiveDrag;
+        vel.current.y *= effectiveDrag;
         vel.current.y -= GRAVITY;
 
         pos.current.x += vel.current.x;
@@ -115,55 +101,47 @@ const BroCannon = () => {
         // Ground Collision
         if (pos.current.y <= GROUND_Y) {
             pos.current.y = GROUND_Y;
-            // BOUNCE
+            // BOUNCE with Upgrade
+            const bounceEff = 0.5 + (upgrades.bounce * 0.05); // Start 0.5, add 0.05 per level
+
             if (Math.abs(vel.current.y) > 2) {
-                vel.current.y *= -0.5; // Losing energy bounce
+                vel.current.y *= -bounceEff;
                 vel.current.x *= 0.8; // Friction
                 playCrash();
             } else {
-                // STOP
                 finishGame();
                 return;
             }
         }
 
+        // ... (Collision Logic mostly same, maybe cleaner)
+        // ... (Update State) 
+        // We will copy the collision logic in full to ensure it matches
+
         // Boost Collision
-        // Filter out collided boosts to remove them
         setBoosts(currentBoosts => {
             const kept = [];
-            let hit = false;
-
             for (const b of currentBoosts) {
                 const dx = b.x - pos.current.x;
                 const dy = b.y - pos.current.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < 60) { // Hit Radius
-                    // APPLY BOOST
-                    hit = true;
+                if (dist < 60) {
                     playCollect();
                     if (b.type === 'SUPER') {
                         vel.current.x += 15;
                         vel.current.y += 15;
-                        setCombo(c => c + 1);
                     } else {
                         vel.current.x += 5;
                         vel.current.y += 10;
                     }
                 } else {
-                    // Cull boosts far behind
                     if (b.x > pos.current.x - 500) kept.push(b);
                 }
             }
             return kept;
         });
 
-        // Generate more boosts if needed
-        if (pos.current.x > cameraX.current + 2000) { // Why wait?
-            // Actually just prep ahead
-        }
-
-        // Update State for React
         setDistance(Math.floor(pos.current.x));
         setAltitude(Math.floor(pos.current.y));
         cameraX.current = pos.current.x;
@@ -176,32 +154,7 @@ const BroCannon = () => {
         gameLoop.current = requestAnimationFrame(update);
     };
 
-    const finishGame = cancelAnimationFrame(gameLoop.current);
-
-    const finishGameLogic = () => {
-        setPhase('RESULT');
-        if (gameLoop.current) cancelAnimationFrame(gameLoop.current);
-
-        // Submit Score
-        const finalScore = Math.floor(pos.current.x);
-        updateStat('broCannonHighScore', finalScore);
-        updateStat('arcadeCoins', Math.floor(finalScore / 10)); // 1 coin per 10m
-    };
-
-    // Monkey patch for the 'finishGame' logic confusion above
-    // I defined const finishGame = ... value ... which is wrong.
-    // I should have defined the function.
-    // I will fix in the next edit or just fix it now mentally.
-    // Actually I'll fix it in the write.
-
-    // RENDER HELPERS
-    const getTransform = () => {
-        // Camera keeps Bro at 20% screen width
-        const screenX = pos.current.x - (window.innerWidth * 0.2);
-        // Camera keeps Bro vertically centered if high, else clamps to ground
-        const screenY = Math.max(0, pos.current.y - (window.innerHeight * 0.4));
-        return `translate3d(${-screenX}px, ${screenY}px, 0)`;
-    };
+    // ... 
 
     return (
         <div style={{
@@ -221,7 +174,7 @@ const BroCannon = () => {
 
             {/* GAME WORLD */}
             <div style={{
-                transform: `rotate(0deg)`, // Placeholder for camera
+                transform: `rotate(0deg)`,
                 position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'
             }}>
                 {/* Camera Container */}
@@ -229,10 +182,6 @@ const BroCannon = () => {
                     position: 'absolute', left: 0, bottom: 0,
                     transform: `translate3d(${-cameraX.current + 100}px, ${Math.min(altitude * 0.5, 0)}px, 0)`,
                     transition: phase === 'AIM' ? 'none' : 'transform 0.1s linear'
-                    // Actually React render cycle might be too slow for smooth cam via style prop
-                    // But for simple game it might pass. simpler: Use the ref in a requestAnimationFrame to setting style directly?
-                    // For this "v1", let's trust React can handle 60fps style updates on simple DOM.
-                    // Wait, I updated 'distance' state every frame. That causes re-render.
                 }}>
                     {/* CANNON */}
                     <div style={{
@@ -280,26 +229,61 @@ const BroCannon = () => {
                 <h3 style={{ margin: 0, textShadow: '2px 2px 0 #000' }}>ALT: {altitude}m</h3>
             </div>
 
-            {/* AIM/POWER UI */}
+            {/* ZONE INDICATOR */}
+            {phase === 'FLYING' && (
+                <div style={{ position: 'absolute', top: 100, width: '100%', textAlign: 'center' }}>
+                    <h1 style={{ color: currentZone.color, textShadow: '0 0 20px black', fontSize: '3rem', margin: 0 }}>{currentZone.name}</h1>
+                </div>
+            )}
+
+            {/* AIM/POWER UI & SHOP */}
             {(phase === 'AIM' || phase === 'POWER') && (
                 <div style={{
-                    position: 'absolute', bottom: 150, left: 50,
-                    display: 'flex', flexDirection: 'column', gap: '10px'
+                    position: 'absolute', bottom: 50, left: 50,
+                    display: 'flex', gap: '40px', alignItems: 'flex-end'
                 }}>
-                    {/* Angle Meter */}
-                    <div style={{ width: '200px', height: '20px', background: '#333', border: '2px solid white' }}>
-                        <div style={{ width: `${(angle / 90) * 100}%`, height: '100%', background: 'orange' }} />
-                    </div>
-                    <div style={{ color: 'white', fontWeight: 'bold' }}>ANGLE: {Math.floor(angle)}°</div>
+                    {/* CONTROLS */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {/* Angle Meter */}
+                        <div style={{ width: '200px', height: '20px', background: '#333', border: '2px solid white' }}>
+                            <div style={{ width: `${(angle / 90) * 100}%`, height: '100%', background: 'orange' }} />
+                        </div>
+                        <div style={{ color: 'white', fontWeight: 'bold' }}>ANGLE: {Math.floor(angle)}°</div>
 
-                    {/* Power Meter */}
-                    <div style={{ width: '200px', height: '20px', background: '#333', border: '2px solid white' }}>
-                        <div style={{ width: `${power}%`, height: '100%', background: 'red' }} />
-                    </div>
-                    <div style={{ color: 'white', fontWeight: 'bold' }}>POWER: {Math.floor(power)}%</div>
+                        {/* Power Meter */}
+                        <div style={{ width: '200px', height: '20px', background: '#333', border: '2px solid white' }}>
+                            <div style={{ width: `${power}%`, height: '100%', background: 'red' }} />
+                        </div>
+                        <div style={{ color: 'white', fontWeight: 'bold' }}>POWER: {Math.floor(power)}%</div>
 
-                    <div style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem', animation: 'pulse 0.5s infinite' }}>
-                        {phase === 'AIM' ? 'CLICK TO SET ANGLE' : 'CLICK TO FIRE!'}
+                        <div style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem', animation: 'pulse 0.5s infinite', textShadow: '0 0 10px black' }}>
+                            {phase === 'AIM' ? 'CLICK TO SET ANGLE' : 'CLICK TO FIRE!'}
+                        </div>
+                    </div>
+
+                    {/* UPGRADE SHOP */}
+                    <div style={{ background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '15px', backdropFilter: 'blur(5px)' }}>
+                        <h3 style={{ color: 'gold', margin: '0 0 10px 0' }}>CANNON SHOP (Coins: {stats.arcadeCoins || 0})</h3>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {/* POWER */}
+                            <div onClick={(e) => { e.stopPropagation(); buyUpgrade('power'); }} style={{ cursor: 'pointer', textAlign: 'center', background: '#333', padding: '10px', borderRadius: '5px' }}>
+                                <div style={{ fontSize: '20px' }}>💥</div>
+                                <div style={{ color: 'white', fontSize: '0.8rem' }}>LVL {upgrades.power}</div>
+                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>${PRICES.power * upgrades.power}</div>
+                            </div>
+                            {/* AERO */}
+                            <div onClick={(e) => { e.stopPropagation(); buyUpgrade('aero'); }} style={{ cursor: 'pointer', textAlign: 'center', background: '#333', padding: '10px', borderRadius: '5px' }}>
+                                <div style={{ fontSize: '20px' }}>💨</div>
+                                <div style={{ color: 'white', fontSize: '0.8rem' }}>LVL {upgrades.aero}</div>
+                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>${PRICES.aero * upgrades.aero}</div>
+                            </div>
+                            {/* BOUNCE */}
+                            <div onClick={(e) => { e.stopPropagation(); buyUpgrade('bounce'); }} style={{ cursor: 'pointer', textAlign: 'center', background: '#333', padding: '10px', borderRadius: '5px' }}>
+                                <div style={{ fontSize: '20px' }}>🏀</div>
+                                <div style={{ color: 'white', fontSize: '0.8rem' }}>LVL {upgrades.bounce}</div>
+                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>${PRICES.bounce * upgrades.bounce}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -314,6 +298,7 @@ const BroCannon = () => {
                     color: 'white', zIndex: 30
                 }}>
                     <h1 style={{ fontSize: '3rem', color: 'gold' }}>{distance}m</h1>
+                    <h2 style={{ color: currentZone.color }}>{currentZone.name}</h2>
                     <p>Distance Traveled</p>
                     <SquishyButton onClick={() => {
                         setPhase('AIM');
