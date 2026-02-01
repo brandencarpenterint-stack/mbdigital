@@ -468,57 +468,163 @@ const MerchJump = () => {
         inputRef.current = (clientX - rect.left) * scaleX;
     };
 
+    // STREAKS
+    const STREAKS = [
+        { id: 'none', name: 'NONE', price: 0, color: 'transparent' },
+        { id: 'rainbow', name: 'RAINBOW', price: 500, gradient: ['red', 'orange', 'yellow', 'green', 'blue', 'violet'] },
+        { id: 'black_death', name: 'BLACK DEATH', price: 1000, gradient: ['#000', '#220000', '#550000', '#ff0000'] },
+        { id: 'fire', name: 'INFERNO', price: 750, gradient: ['#fff', '#ffaa00', '#ff4500', '#550000'] }
+    ];
+
+    const [selectedStreak, setSelectedStreak] = useState(STREAKS[0]);
+    const [unlockedStreaks, setUnlockedStreaks] = useState(['none']);
+
+    // Hydrate unlocked streaks from stats
+    useEffect(() => {
+        if (stats?.unlockedStreaks) {
+            setUnlockedStreaks(stats.unlockedStreaks);
+        }
+    }, [stats]);
+
+    const buyStreak = (streak) => {
+        if (unlockedStreaks.includes(streak.id)) {
+            setSelectedStreak(streak);
+            playBoop();
+        } else {
+            const cost = streak.price;
+            if ((stats.arcadeCoins || 0) >= cost) {
+                playCollect();
+                const newUnlocked = [...unlockedStreaks, streak.id];
+                setUnlockedStreaks(newUnlocked);
+                updateStat('unlockedStreaks', newUnlocked);
+                updateStat('arcadeCoins', (stats.arcadeCoins || 0) - cost);
+                setSelectedStreak(streak);
+            } else {
+                playCrash(); // Too poor
+            }
+        }
+    };
+
+    // Refs
+    // ... itemsRef ...
+    // Add Trail Ref
+    const trailRef = useRef([]);
+
+    // ... initGame ...
+    // Reset Trail
+    trailRef.current = [];
+    // ...
+
+    // ... gameLoop ...
+    // TRAIL LOGIC (Only during BOOST - High Upward Velocity)
+    if (player.vy < -10 && selectedStreak.id !== 'none') {
+        trailRef.current.push({ x: player.x, y: player.y, age: 1.0 });
+    }
+
+    // Update Trail
+    for (let i = trailRef.current.length - 1; i >= 0; i--) {
+        trailRef.current[i].y += shift; // Scroll with world
+        trailRef.current[i].age -= 0.05;
+        if (trailRef.current[i].age <= 0) trailRef.current.splice(i, 1);
+    }
+
+    // ... (Drawing platform code) ...
+
+    // DRAW TRAIL (Behind Player)
+    if (selectedStreak.id !== 'none') {
+        const t = trailRef.current;
+        if (t.length > 1) {
+            // Draw as complex ribbon or particles?
+            // Let's do particles/circles for "Rainbow"
+            if (selectedStreak.id === 'rainbow') {
+                t.forEach((p, i) => {
+                    ctx.globalAlpha = p.age;
+                    ctx.fillStyle = `hsl(${i * 20}, 100%, 50%)`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y + 20, 20 * p.age, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            } else if (selectedStreak.id === 'black_death') {
+                // Smoky
+                t.forEach((p, i) => {
+                    ctx.globalAlpha = p.age;
+                    ctx.fillStyle = i % 2 === 0 ? 'black' : '#330000';
+                    ctx.beginPath();
+                    ctx.arc(p.x + (Math.random() - 0.5) * 10, p.y + 20, 25 * p.age, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            } else {
+                // Gradient Strip
+                // ... generic gradient ...
+                t.forEach((p, i) => {
+                    const colors = selectedStreak.gradient;
+                    ctx.globalAlpha = p.age;
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y + 20, 15 * p.age, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    // ... drawRig ...
+    // ... end gameLoop ...
+
     return (
         <div className="page-enter" style={{
             minHeight: '100vh',
             background: '#222',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', flexDirection: 'row', // ROW LAYOUT
+            alignItems: 'center', justifyContent: 'center',
             fontFamily: 'sans-serif',
-            touchAction: 'none'
+            touchAction: 'none',
+            gap: '20px'
         }}>
-            <h1 style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                MERCH JUMP
-            </h1>
+            {/* GAME CONTAINER */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h1 style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    MERCH JUMP
+                </h1>
 
-            <div style={{ position: 'relative', width: '100%', maxWidth: '400px', aspectRatio: '2/3' }}>
-                <canvas
-                    ref={canvasRef}
-                    width={WIDTH}
-                    height={HEIGHT}
-                    onMouseMove={handleInput}
-                    onTouchMove={(e) => { e.preventDefault(); handleInput(e); }}
-                    onTouchStart={handleInput}
-                    style={{
-                        width: '100%', height: '100%',
-                        background: '#87CEEB',
-                        border: '4px solid white',
-                        borderRadius: '10px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-                    }}
-                />
-
-                {/* MENUS */}
-                {gameState !== 'PLAYING' && (
-                    <>
-                        {gameState === 'GAMEOVER' ? (
-                            <GameOverCard
-                                score={Math.floor(scoreRef.current)}
-                                bestScore={highScore}
-                                gameId="merch_jump"
-                                onReplay={initGame}
-                                onHome={() => window.location.href = '/arcade'} // Simple redirect
-                            />
-                        ) : (
-                            // ... MAIN MENU ...
-                            <div style={{
-                                position: 'absolute', inset: 0,
-                                background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)',
-                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                color: '#333', borderRadius: '10px'
-                            }}>
-                                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                                    <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>SELECT DRIP:</p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ position: 'relative', width: '400px', height: '600px' }}>
+                    {/* CANVAS & MENUS */}
+                    <canvas
+                        ref={canvasRef}
+                        width={WIDTH}
+                        height={HEIGHT}
+                        onMouseMove={handleInput}
+                        onTouchMove={(e) => { e.preventDefault(); handleInput(e); }}
+                        onTouchStart={handleInput}
+                        style={{
+                            width: '100%', height: '100%',
+                            background: '#87CEEB',
+                            border: '4px solid white',
+                            borderRadius: '10px',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+                        }}
+                    />
+                    {/* MENUS (Keep existing menu logic, just wrapped) */}
+                    {gameState !== 'PLAYING' && (
+                        <>
+                            {gameState === 'GAMEOVER' ? (
+                                <GameOverCard
+                                    score={Math.floor(scoreRef.current)}
+                                    bestScore={highScore}
+                                    gameId="merch_jump"
+                                    onReplay={initGame}
+                                    onHome={() => window.location.href = '/arcade'}
+                                />
+                            ) : (
+                                <div style={{
+                                    position: 'absolute', inset: 0,
+                                    background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                    color: '#333', borderRadius: '10px'
+                                }}>
+                                    <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>SKIN SELECT</h2>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
                                         {SKINS.map(skin => (
                                             <button
                                                 key={skin.id}
@@ -528,32 +634,75 @@ const MerchJump = () => {
                                                     border: 'none', borderRadius: '10px', padding: '10px',
                                                     cursor: 'pointer',
                                                     transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)',
-                                                    boxShadow: selectedSkin.id === skin.id ? '0 5px 15px rgba(0,0,0,0.1)' : 'none'
                                                 }}
                                             >
                                                 <img src={skin.src} width="40" height="40" style={{ display: 'block', margin: '0 auto' }} />
                                             </button>
                                         ))}
                                     </div>
+                                    <SquishyButton onClick={initGame} style={{
+                                        padding: '20px 50px',
+                                        background: '#333',
+                                        color: 'white', fontWeight: 'bold', fontSize: '1.2rem',
+                                        border: 'none', borderRadius: '100px'
+                                    }}>
+                                        JUMP
+                                    </SquishyButton>
+                                    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#666' }}>CHECK SHOP FOR TRAILS 👉</p>
                                 </div>
+                            )}
+                        </>
+                    )}
+                </div>
 
-                                <SquishyButton onClick={initGame} style={{
-                                    padding: '20px 50px',
-                                    background: '#333',
-                                    color: 'white', fontWeight: 'bold', fontSize: '1.2rem',
-                                    border: 'none', borderRadius: '100px'
-                                }}>
-                                    JUMP
-                                </SquishyButton>
-                            </div>
-                        )}
-                    </>
-                )}
+                <p style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>
+                    Slide to Move • Reach 2500m for Next Biome
+                </p>
             </div>
 
-            <p style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>
-                Slide to Move • Reach 2500m for Next Biome
-            </p>
+            {/* SIDE SHOP */}
+            <div style={{
+                width: '250px', height: '600px',
+                background: '#1a1a1a', borderRadius: '20px',
+                border: '2px solid #444', padding: '20px',
+                display: 'flex', flexDirection: 'column',
+                color: 'white', overflowY: 'auto'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>BOOST SHOP</h2>
+                    <span style={{ color: 'gold' }}>${stats?.arcadeCoins || 0}</span>
+                </div>
+
+                {STREAKS.map(streak => {
+                    const isUnlocked = unlockedStreaks.includes(streak.id);
+                    const isEquipped = selectedStreak.id === streak.id;
+
+                    return (
+                        <div key={streak.id} onClick={() => buyStreak(streak)} style={{
+                            background: isEquipped ? '#333' : '#222',
+                            border: isEquipped ? '2px solid cyan' : (isUnlocked ? '1px solid #555' : '1px solid #333'),
+                            borderRadius: '10px', padding: '15px', marginBottom: '10px',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            opacity: isUnlocked ? 1 : 0.7
+                        }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{streak.name}</div>
+                            {streak.gradient && (
+                                <div style={{
+                                    height: '10px', borderRadius: '5px', marginBottom: '10px',
+                                    background: `linear-gradient(to right, ${streak.gradient.join(',')})`
+                                }} />
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                                {isUnlocked ? (
+                                    <span style={{ color: 'cyan' }}>{isEquipped ? 'EQUIPPED' : 'TAP TO EQUIP'}</span>
+                                ) : (
+                                    <span style={{ color: 'gold' }}>${streak.price}</span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
 
             {/* HOME BUTTON */}
             <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
