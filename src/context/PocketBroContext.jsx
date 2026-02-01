@@ -58,7 +58,7 @@ export const PocketBroProvider = ({ children }) => {
             stage: 'EGG',
             isSleeping: false,
             lastInteraction: Date.now(),
-            unlockedDecor: [],
+            unlockedDecor: ['furn_plant', 'rug_retro'],
             decor: { background: null, rug: null, item_left: null, item_right: null }
         };
     });

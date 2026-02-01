@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 
 const SocialSidebar = () => {
-    const { userProfile } = useGamification();
+    const { userProfile, setViewedProfile } = useGamification();
     const { showToast } = useToast();
     const [isOpen, setIsOpen] = useState(false); // Default collapsed
     const [onlineUsers, setOnlineUsers] = useState([]);
@@ -14,7 +14,7 @@ const SocialSidebar = () => {
     // Poll for Online Users
     useEffect(() => {
         const fetchOnlineUsers = async () => {
-            if (!supabase || !isOpen) return; // Only fetch if open to save resources? Or maybe fetch count when closed.
+            if (!supabase || !isOpen) return;
 
             setLoading(true);
             try {
@@ -23,9 +23,9 @@ const SocialSidebar = () => {
 
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('id, display_name, avatar_url, last_seen, coins')
+                    .select('id, display_name, avatar_url, last_seen, coins, achievements, stats, placedStickers')
                     .gt('last_seen', fiveMinutesAgo)
-                    .neq('display_name', userProfile?.name) // Don't show self? Or do show self? Let's hide self.
+                    .neq('display_name', userProfile?.name) // Don't show self
                     .order('last_seen', { ascending: false })
                     .limit(20);
 
@@ -47,6 +47,19 @@ const SocialSidebar = () => {
     const handleChallenge = (user) => {
         showToast(`Challenge sent to ${user.display_name}! ⚔️`, 'success');
         // Future: Insert into 'challenges' table
+    };
+
+    const handleProfileClick = (user) => {
+        // Construct a partial profile object from the Supabase data
+        const profileData = {
+            name: user.display_name,
+            avatar: user.avatar_url,
+            code: 'UNKNOWN', // Friend code might not be public in this query
+            stats: user.stats || {},
+            achievements: user.achievements || [],
+            placedStickers: user.placedStickers || []
+        };
+        setViewedProfile(profileData);
     };
 
     return (
@@ -148,8 +161,11 @@ const SocialSidebar = () => {
                             gap: '10px',
                             background: 'rgba(255,255,255,0.05)',
                             border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.2s'
-                        }}>
+                            transition: 'all 0.2s',
+                            cursor: 'pointer' // Indicate clickable
+                        }}
+                            onClick={() => handleProfileClick(user)} // CLICK TO VIEW PROFILE
+                        >
                             {/* AVATAR */}
                             <div style={{ position: 'relative' }}>
                                 <div style={{
@@ -181,7 +197,10 @@ const SocialSidebar = () => {
                             {/* ACTIONS */}
                             <div style={{ display: 'flex', gap: '5px' }}>
                                 <button
-                                    onClick={() => handleChallenge(user)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Don't trigger profile view
+                                        handleChallenge(user);
+                                    }}
                                     title="Challenge"
                                     style={{
                                         background: 'var(--neon-pink)',
@@ -204,7 +223,11 @@ const SocialSidebar = () => {
                     {onlineUsers.length === 0 && !loading && (
                         <div style={{ marginTop: '20px', borderTop: '1px dashed #333', paddingTop: '10px' }}>
                             <div style={{ fontSize: '0.7rem', color: '#444', textAlign: 'center', marginBottom: '10px' }}>OFFLINE SIMULATION</div>
-                            <div className="glass-panel" style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.5 }}>
+                            <div
+                                className="glass-panel"
+                                style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8, cursor: 'pointer' }}
+                                onClick={() => handleProfileClick({ display_name: 'Bot_Alpha', avatar_url: null, coins: 99999 })}
+                            >
                                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#333' }}></div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontSize: '0.9rem', color: '#666' }}>Bot_Alpha</div>

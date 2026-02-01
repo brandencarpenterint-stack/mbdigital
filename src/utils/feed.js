@@ -1,10 +1,26 @@
 
 import { supabase } from '../lib/supabaseClient';
 
-class FeedService extends EventTarget {
+class FeedService {
+    constructor() {
+        this.listeners = [];
+    }
+
+    addEventListener(event, callback) {
+        this.listeners.push({ event, callback });
+    }
+
+    removeEventListener(event, callback) {
+        this.listeners = this.listeners.filter(l => l.event !== event || l.callback !== callback);
+    }
+
     async publish(message, type, user = 'Operator') {
         // Dispatch Local Event (for immediate feedback)
-        this.dispatchEvent(new CustomEvent('feed-message', { detail: { message, type, user, local: true } }));
+        const eventData = new CustomEvent('feed-message', { detail: { message, type, user, local: true } });
+
+        this.listeners.forEach(l => {
+            if (l.event === 'feed-message') l.callback(eventData);
+        });
 
         // Push to Cloud
         if (supabase) {

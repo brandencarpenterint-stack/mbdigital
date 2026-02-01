@@ -57,7 +57,8 @@ export const GamificationProvider = ({ children }) => {
             avatar: stored.avatar || '/assets/merchboy_face.png',
             code: stored.code,
             squad: stored.squad || null,
-            placedStickers: stored.placedStickers || []
+            placedStickers: stored.placedStickers || [],
+            friends: stored.friends || []
         };
     });
 
@@ -108,6 +109,53 @@ export const GamificationProvider = ({ children }) => {
             return newState;
         });
         showToast('Profile Updated!', 'success');
+    };
+
+    const addFriend = async (friendCode) => {
+        if (!friendCode) return;
+        const normalizedCode = friendCode.trim().toUpperCase();
+
+        // 1. Validation
+        if (normalizedCode === userProfile.code) {
+            showToast("You can't friend yourself (sadly).", "error");
+            return;
+        }
+        if (userProfile.friends.some(f => f.code === normalizedCode)) {
+            showToast("Already in your squad!", "info");
+            return;
+        }
+
+        // 2. Lookup
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url, high_scores, friend_code, id')
+                .eq('friend_code', normalizedCode)
+                .single();
+
+            if (data) {
+                const newFriend = {
+                    name: data.display_name,
+                    code: data.friend_code,
+                    avatar: data.avatar_url,
+                    id: data.id,
+                    score: data.high_scores?.crazy_fishing || 0 // Default 'score' to show
+                };
+
+                setUserProfile(prev => ({
+                    ...prev,
+                    friends: [...prev.friends, newFriend]
+                }));
+                showToast(`Added ${newFriend.name} to Squad!`, "success");
+
+                // Cloud save will trigger automatically via debounce
+            } else {
+                showToast("Agent not found with that code.", "error");
+            }
+        } else {
+            // Offline/Mock Fallback
+            showToast("Offline: Cannot verify friend code.", "error");
+        }
     };
 
     // --- DAILY REWARDS STATE ---
@@ -224,7 +272,8 @@ export const GamificationProvider = ({ children }) => {
                 name: data.display_name || prev.name,
                 avatar: data.avatar_url || prev.avatar,
                 code: data.friend_code || prev.code,
-                squad: data.squad || prev.squad
+                squad: data.squad || prev.squad,
+                friends: data.friends || prev.friends || []
             }));
         } else if (userId) {
             // New Auth User -> Upload current local state to Cloud to "Migrate"
@@ -278,10 +327,12 @@ export const GamificationProvider = ({ children }) => {
                         room_data: pocketData.placedItems || [],
                         pocket_state: {
                             stage: pocketData.stage,
-                            skin: shopState.equipped?.pocketbro || null
+                            skin: shopState.equipped?.pocketbro || null,
+                            theme: shopState.equipped?.theme || 'theme_default'
                         },
                         achievements: unlockedAchievements,
                         daily_data: dailyState,
+                        friends: userProfile.friends,
                         last_seen: new Date()
                     });
                 } catch (e) {
@@ -290,7 +341,7 @@ export const GamificationProvider = ({ children }) => {
             }
         }, 3000); // 3 seconds debounce
         return () => clearTimeout(timeout);
-    }, [coins, stats, userProfile, unlockedAchievements, dailyState, session]);
+    }, [coins, stats, userProfile, unlockedAchievements, dailyState, session, shopState]);
 
 
     // Check Achievements whenever stats change
@@ -555,18 +606,8 @@ export const GamificationProvider = ({ children }) => {
             spendCoins(item.price);
             setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
 
-            // SPECIAL HANDLING FOR POCKET DECOR
-            if (item.type === 'decor') {
-                try {
-                    const pocketState = JSON.parse(localStorage.getItem('pocketBroState') || '{}');
-                    pocketState.unlockedDecor = [...new Set([...(pocketState.unlockedDecor || []), item.id])];
-                    localStorage.setItem('pocketBroState', JSON.stringify(pocketState));
-                    // Note: PocketBroContext will need to hydrate this or reload. 
-                    // Since it writes to LS on change, this might race. 
-                    // Ideally, GamificationContext should expose a "purchaseHook".
-                    // For now, this works for persistent storage.
-                } catch (e) { console.error("Decor unlock failed", e); }
-            }
+            // DECOR handled by component invocation of PocketBroContext
+
 
             playWin();
             showToast(`Purchased ${item.name}!`, "success");
@@ -769,7 +810,8 @@ export const GamificationProvider = ({ children }) => {
             claimQuest, skipQuest, checkHighscoreQuest, shopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,
             unlockedStickers, buyCapsule, triggerConfetti,
-            session, loginWithProvider, logout
+            session, loginWithProvider, logout,
+            addFriend, viewedProfile, setViewedProfile
         }}>
             {children}
         </GamificationContext.Provider>

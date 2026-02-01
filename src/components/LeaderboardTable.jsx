@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { LeaderboardService } from '../services/LeaderboardService';
+import { useGamification } from '../context/GamificationContext';
 
 const LeaderboardTable = ({ gameId }) => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { setViewedProfile } = useGamification();
 
     useEffect(() => {
         const fetchScores = async () => {
@@ -14,6 +16,22 @@ const LeaderboardTable = ({ gameId }) => {
         };
         fetchScores();
     }, [gameId]);
+
+    const handleRowClick = (entry) => {
+        // Construct a partial profile from leaderboard data
+        const partialProfile = {
+            name: entry.player,
+            // Generate a consistent avatar if we don't have one, or use a default
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`,
+            code: 'UNKNOWN',
+            squad: null,
+            stats: {
+                gameHighScore: entry.score // Just show what we know
+            },
+            isMock: true // Flag to tell ProfileModal this is a partial view
+        };
+        setViewedProfile(partialProfile);
+    };
 
     if (loading) return <div style={{ color: '#666' }}>Loading Global Ranks...</div>;
 
@@ -26,11 +44,33 @@ const LeaderboardTable = ({ gameId }) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', color: 'white' }}>
                     <tbody>
                         {scores.map((entry, idx) => (
-                            <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
+                            <tr
+                                key={idx}
+                                onClick={() => handleRowClick(entry)}
+                                style={{
+                                    borderBottom: '1px solid #333',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
                                 <td style={{ padding: '8px', color: idx < 3 ? 'gold' : 'white', fontWeight: idx < 3 ? 'bold' : 'normal' }}>
                                     #{idx + 1}
                                 </td>
-                                <td style={{ padding: '8px' }}>{entry.player}</td>
+                                <td style={{ padding: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {/* Avatar Fallback */}
+                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#333', overflow: 'hidden' }}>
+                                            <img
+                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`}
+                                                alt="av"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        </div>
+                                        {entry.player}
+                                    </div>
+                                </td>
                                 <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'monospace' }}>
                                     {entry.score.toLocaleString()}
                                 </td>

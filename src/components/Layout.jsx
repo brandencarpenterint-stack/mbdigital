@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import ProfileModal from './ProfileModal';
+// Lazy Load Modals to prevent circular dependencies & reduce bundle size
+const ProfileModal = React.lazy(() => import('./ProfileModal'));
+const DailyStash = React.lazy(() => import('./DailyStash'));
+const DailyQuestModal = React.lazy(() => import('./DailyQuestModal'));
+const OnboardingModal = React.lazy(() => import('./OnboardingModal'));
+const SocialSidebar = React.lazy(() => import('./SocialSidebar'));
+
 import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import { useTheme } from '../context/ThemeContext';
-import DailyStash from './DailyStash';
-import DailyQuestModal from './DailyQuestModal';
-import OnboardingModal from './OnboardingModal';
-import SocialSidebar from './SocialSidebar';
+import { useNotifications } from '../context/NotificationContext';
+import NotificationList from './NotificationList';
 import PocketCompanion from './PocketCompanion';
 import HypeTicker from './HypeTicker';
 import PirateRadio from './PirateRadio';
@@ -20,14 +24,16 @@ import './Layout.css';
 const Layout = () => {
     // ... (Hooks remain same, just rendering changes)
     const location = useLocation();
-    const [showProfile, setShowProfile] = useState(false);
+    // const [showProfile, setShowProfile] = useState(false); // REPLACED BY GLOBAL CONTEXT
     const [showDaily, setShowDaily] = useState(false);
     const [showQuests, setShowQuests] = useState(false);
     const [coins, setCoins] = useState(0);
     const [isDailyReady, setIsDailyReady] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     // Contexts
-    const { dailyState, shopState } = useGamification() || { dailyState: null, shopState: null };
+    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile } = useGamification() || { dailyState: null, shopState: null, userProfile: null };
+    const { unreadCount } = useNotifications();
     const { soundEnabled, toggleSound } = useSettings();
     const { getMood, isCritical } = usePocketBro() || { getMood: () => '🥚', isCritical: false };
     const { setThemeId } = useTheme();
@@ -157,7 +163,30 @@ const Layout = () => {
                         `}</style>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', position: 'relative' }}>
+                        {/* NOTIFICATIONS */}
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            style={{
+                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                fontSize: '1.5rem', padding: '0', position: 'relative'
+                            }}
+                        >
+                            🔔
+                            {unreadCount > 0 && (
+                                <div style={{
+                                    position: 'absolute', top: -5, right: -5,
+                                    width: '18px', height: '18px', background: '#ff0055', color: 'white',
+                                    borderRadius: '50%', fontSize: '0.7rem', display: 'flex',
+                                    justifyContent: 'center', alignItems: 'center', border: '2px solid black',
+                                    animation: 'pulse 1s infinite'
+                                }}>
+                                    {unreadCount}
+                                </div>
+                            )}
+                        </button>
+                        {showNotifications && <NotificationList onClose={() => setShowNotifications(false)} />}
+
                         {/* QUESTS BUTTON */}
                         <button
                             onClick={() => setShowQuests(true)}
@@ -283,10 +312,10 @@ const Layout = () => {
 
                         {/* 5. PROFILE (With PocketBro Status) */}
                         <button
-                            onClick={() => setShowProfile(true)}
+                            onClick={() => setViewedProfile(userProfile)}
                             className="dock-icon"
                             style={{
-                                opacity: showProfile ? 1 : 0.5,
+                                opacity: viewedProfile ? 1 : 0.5,
                                 background: 'transparent', border: 'none', cursor: 'pointer',
                                 position: 'relative'
                             }}
@@ -327,24 +356,21 @@ const Layout = () => {
                 </>
             )}
 
-            {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
-            {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
-            {showQuests && <DailyQuestModal onClose={() => setShowQuests(false)} />}
-            <SquadSelector />
-            <OnboardingModal />
+            {/* GLOBAL PROFILE MODAL -> USES VIEWED PROFILE */}
+            <React.Suspense fallback={null}>
+                {viewedProfile && (
+                    <ProfileModal
+                        onClose={() => setViewedProfile(null)}
+                        readOnlyProfile={viewedProfile.code === userProfile?.code ? null : viewedProfile}
+                    />
+                )}
 
-            {/* GLOBAL BRANDING FOOTER */}
-            <div style={{
-                position: 'fixed', bottom: '2px', left: 0, right: 0,
-                textAlign: 'center', fontSize: '0.6rem', color: 'var(--text-secondary)',
-                zIndex: 2000, pointerEvents: 'none',
-                textShadow: '0 1px 2px rgba(0,0,0,0.8)'
-            }}>
-                POWERED BY MERCHBOY
-            </div>
-
-            {/* Social Plaza Sidebar - v2.0 Feature */}
-            <SocialSidebar />
+                {showDaily && <DailyStash onClose={() => setShowDaily(false)} />}
+                {showQuests && <DailyQuestModal onClose={() => setShowQuests(false)} />}
+                <SquadSelector />
+                <OnboardingModal />
+                <SocialSidebar />
+            </React.Suspense>
 
             {/* COMPANION MODE */}
             <PocketCompanion />

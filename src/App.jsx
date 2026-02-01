@@ -1,28 +1,30 @@
 import { Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import Coloring from './pages/Coloring';
-import ArcadeHub from './pages/ArcadeHub';
-import ShopPage from './pages/ShopPage';
-import SnakeGame from './games/Snake/SnakeGame';
-import WhackAMoleGame from './games/WhackAMole/WhackAMoleGame';
-import MemoryMatchGame from './games/MemoryMatch/MemoryMatchGame';
-import GalaxyDefender from './games/GalaxyDefender/GalaxyDefender';
-import NeonBrickBreaker from './games/NeonBrickBreaker/NeonBrickBreaker';
-import FlappyMascot from './games/FlappyMascot/FlappyMascot';
-import CrazyFishing from './games/CrazyFishing/CrazyFishing';
-import FaceRunner from './games/FaceRunner/FaceRunner';
-import MerchJump from './games/MerchJump/MerchJump';
-import CosmicSlots from './games/CosmicSlots/CosmicSlots';
-import SubHunterGame from './games/SubHunter/SubHunterGame';
+const Home = lazy(() => import('./pages/Home'));
+const Coloring = lazy(() => import('./pages/Coloring'));
+const ArcadeHub = lazy(() => import('./pages/ArcadeHub'));
+const ShopPage = lazy(() => import('./pages/ShopPage'));
+const BeatLab = lazy(() => import('./pages/BeatLab'));
+const PocketBro = lazy(() => import('./pages/PocketBro'));
+const SubSlayer = lazy(() => import('./pages/SubSlayer'));
+const HustleMode = lazy(() => import('./pages/HustleMode'));
+const BroCard = lazy(() => import('./pages/BroCard'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
-import BeatLab from './pages/BeatLab';
-
-import PocketBro from './pages/PocketBro';
-import SubSlayer from './pages/SubSlayer';
-import HustleMode from './pages/HustleMode';
-import BroCard from './pages/BroCard';
-import SettingsPage from './pages/SettingsPage';
+// GAMES
+const SnakeGame = lazy(() => import('./games/Snake/SnakeGame'));
+const WhackAMoleGame = lazy(() => import('./games/WhackAMole/WhackAMoleGame'));
+const MemoryMatchGame = lazy(() => import('./games/MemoryMatch/MemoryMatchGame'));
+const GalaxyDefender = lazy(() => import('./games/GalaxyDefender/GalaxyDefender'));
+const NeonBrickBreaker = lazy(() => import('./games/NeonBrickBreaker/NeonBrickBreaker'));
+const FlappyMascot = lazy(() => import('./games/FlappyMascot/FlappyMascot'));
+const CrazyFishing = lazy(() => import('./games/CrazyFishing/CrazyFishing'));
+const FaceRunner = lazy(() => import('./games/FaceRunner/FaceRunner'));
+const MerchJump = lazy(() => import('./games/MerchJump/MerchJump'));
+const CosmicSlots = lazy(() => import('./games/CosmicSlots/CosmicSlots'));
+const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
+const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
 
 import CosmicBackground from './components/CosmicBackground';
 
@@ -42,33 +44,36 @@ function App() {
         zIndex: 9999,
         opacity: 0.4
       }} />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="coloring" element={<Coloring />} />
-          <Route path="beatlab" element={<BeatLab />} />
-          <Route path="pocketbro" element={<PocketBro />} />
-          <Route path="subslayer" element={<SubSlayer />} />
-          <Route path="hustle" element={<HustleMode />} />
-          <Route path="profile" element={<BroCard />} />
-          <Route path="arcade" element={<ArcadeHub />} />
-          <Route path="shop" element={<ShopPage />} />
+      <Suspense fallback={<div style={{ color: 'white', textAlign: 'center', marginTop: '100px' }}>LOADING GAME...</div>}>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="coloring" element={<Coloring />} />
+            <Route path="beatlab" element={<BeatLab />} />
+            <Route path="pocketbro" element={<PocketBro />} />
+            <Route path="subslayer" element={<SubSlayer />} />
+            <Route path="hustle" element={<HustleMode />} />
+            <Route path="profile" element={<BroCard />} />
+            <Route path="arcade" element={<ArcadeHub />} />
+            <Route path="shop" element={<ShopPage />} />
 
-          {/* Game Routes Placeholders */}
-          <Route path="arcade/snake" element={<SnakeGame />} />
-          <Route path="arcade/whack" element={<WhackAMoleGame />} />
-          <Route path="arcade/memory" element={<MemoryMatchGame />} />
-          <Route path="arcade/galaxy" element={<GalaxyDefender />} />
-          <Route path="arcade/brick" element={<NeonBrickBreaker />} />
-          <Route path="arcade/flappy" element={<FlappyMascot />} />
-          <Route path="arcade/fishing" element={<CrazyFishing />} />
-          <Route path="arcade/face-runner" element={<FaceRunner />} />
-          <Route path="arcade/merch-jump" element={<MerchJump />} />
-          <Route path="arcade/slots" element={<CosmicSlots />} />
-          <Route path="arcade/sub-hunter" element={<SubHunterGame />} />
-        </Route>
-      </Routes>
+            {/* Game Routes Placeholders */}
+            <Route path="arcade/snake" element={<SnakeGame />} />
+            <Route path="arcade/whack" element={<WhackAMoleGame />} />
+            <Route path="arcade/memory" element={<MemoryMatchGame />} />
+            <Route path="arcade/galaxy" element={<GalaxyDefender />} />
+            <Route path="arcade/brick" element={<NeonBrickBreaker />} />
+            <Route path="arcade/flappy" element={<FlappyMascot />} />
+            <Route path="arcade/fishing" element={<CrazyFishing />} />
+            <Route path="arcade/face-runner" element={<FaceRunner />} />
+            <Route path="arcade/merch-jump" element={<MerchJump />} />
+            <Route path="arcade/slots" element={<CosmicSlots />} />
+            <Route path="arcade/sub-hunter" element={<SubHunterGame />} />
+            <Route path="arcade/bro-cannon" element={<BroCannon />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </>
   );
 }

@@ -109,6 +109,15 @@ const games = [
         icon: '🦅',
         colSpan: 1,
         leaderboardId: 'flappy_mascot'
+    },
+    {
+        id: 'bro-cannon',
+        title: 'BRO CANNON',
+        desc: 'Launch for the stars!',
+        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)', // Red/Pink
+        icon: '💣',
+        colSpan: 1,
+        leaderboardId: 'bro_cannon'
     }
 ];
 
@@ -124,6 +133,7 @@ const getHighScore = (id, stats) => {
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
+    if (id === 'bro-cannon') return stats.broCannonHighScore || 0;
     return 0;
 };
 
@@ -306,6 +316,20 @@ const ArcadeHub = () => {
                                         {game.title}
                                     </h2>
                                     <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '1rem', fontWeight: '500' }}>{game.desc}</p>
+
+                                    {/* FACTION CONTROL MOCK */}
+                                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.7rem', opacity: 0.8 }}>
+                                        {(() => {
+                                            const factions = ['CYBER', 'SOLAR', 'VOID'];
+                                            const owner = factions[game.id.charCodeAt(0) % 3];
+                                            const color = owner === 'CYBER' ? '#00f260' : owner === 'SOLAR' ? '#FFD700' : '#b026ff';
+                                            return (
+                                                <span style={{ border: `1px solid ${color}`, color: color, padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.5)' }}>
+                                                    {owner} ZONE
+                                                </span>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
 

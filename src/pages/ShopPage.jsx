@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useGamification } from '../context/GamificationContext';
+import { usePocketBro } from '../context/PocketBroContext';
 import { SHOP_ITEMS, CATEGORIES } from '../config/ShopItems';
 import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import useRetroSound from '../hooks/useRetroSound';
@@ -26,6 +27,7 @@ const getRarity = (price) => {
 
 const ShopPage = () => {
     const { shopState, buyItem, equipItem, unlockedAchievements, coins } = useGamification() || {};
+    const { unlockDecor: unlockPocketDecor, stats: pocketStats } = usePocketBro() || {};
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [showGacha, setShowGacha] = useState(false);
     const { playBeep, playCollect, playBoop } = useRetroSound();
@@ -224,7 +226,12 @@ const ShopPage = () => {
                     <AnimatePresence mode='popLayout'>
                         {filteredItems.map(item => {
                             const slot = item.slot || item.category;
-                            const isUnlocked = shopState.unlocked.includes(item.id);
+                            // Check ownership in PocketBro for decor, otherwise ShopState
+                            const isDecor = item.category === 'homedecor';
+                            const isUnlocked = isDecor
+                                ? pocketStats?.unlockedDecor?.includes(item.id)
+                                : shopState.unlocked.includes(item.id);
+
                             const isEquipped = shopState.equipped[slot] === item.id;
                             const canAfford = coins >= item.price;
                             const rarity = getRarity(item.price);
@@ -313,6 +320,9 @@ const ShopPage = () => {
                                                     if (buyItem(item)) {
                                                         playCollect();
                                                         triggerConfetti();
+                                                        if (isDecor && unlockPocketDecor) {
+                                                            unlockPocketDecor(item.id);
+                                                        }
                                                     }
                                                 }}
                                                 disabled={!canAfford}

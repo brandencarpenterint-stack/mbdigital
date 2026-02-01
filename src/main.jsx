@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { GamificationProvider } from './context/GamificationContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { PocketBroProvider } from './context/PocketBroContext'
 import { SquadProvider } from './context/SquadContext'
@@ -19,15 +20,17 @@ createRoot(document.getElementById('root')).render(
         <SettingsProvider>
           <ToastProvider>
             <GamificationProvider>
-              <PocketBroProvider>
-                <SquadProvider>
-                  <InventoryProvider>
-                    <BrowserRouter>
-                      <App />
-                    </BrowserRouter>
-                  </InventoryProvider>
-                </SquadProvider>
-              </PocketBroProvider>
+              <NotificationProvider>
+                <PocketBroProvider>
+                  <SquadProvider>
+                    <InventoryProvider>
+                      <BrowserRouter>
+                        <App />
+                      </BrowserRouter>
+                    </InventoryProvider>
+                  </SquadProvider>
+                </PocketBroProvider>
+              </NotificationProvider>
             </GamificationProvider>
           </ToastProvider>
         </SettingsProvider>
