@@ -125,7 +125,7 @@ const NeonBrickBreaker = () => {
                 }
             }
         }
-        else if (lvl === 3) { // THE JAIL
+        else if (lvl === 3) { // THE JAIL (OPENED)
             const map = [
                 "SSSSSSSSSS",
                 "S        S",
@@ -135,7 +135,7 @@ const NeonBrickBreaker = () => {
                 "S X    X S",
                 "S XXXXXX S",
                 "S        S",
-                "SSSSSSSSSS"
+                "S        S" // OPEN BOTTOM!
             ];
             drawMap(map, (char) => char === '^' ? { color: '#ff00aa', hp: 2 } : { color: '#00ccff', hp: 1 });
         }
