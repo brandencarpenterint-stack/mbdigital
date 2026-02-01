@@ -190,7 +190,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const [localStickers, setLocalStickers] = useState([]);
 
     const flattenedStickers = useMemo(() => {
-        return STICKER_COLLECTIONS.flatMap(c => c.stickers);
+        return STICKER_COLLECTIONS.flatMap(c => c.items);
     }, []);
 
     const getStickerUrl = (id) => flattenedStickers.find(s => s.id === id) || { icon: '❓' };
