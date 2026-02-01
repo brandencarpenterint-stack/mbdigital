@@ -493,7 +493,13 @@ const MerchJump = () => {
                         background: #87CEEB !important; 
                     }
                     .boost-shop {
-                        display: none !important; /* Hide shop during play on mobile to focus */
+                        display: flex !important; /* Always show shop */
+                        width: 100% !important;
+                        height: auto !important;
+                        max-height: none !important; /* Allow scroll */
+                        margin-top: 20px;
+                        padding-bottom: 50px; /* Space for dock if needed */
+                        background: #111 !important;
                     }
                     /* Hide header text on mobile */
                     .game-header {
