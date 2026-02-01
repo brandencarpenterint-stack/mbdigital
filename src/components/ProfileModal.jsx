@@ -82,7 +82,77 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         placeItem(item.id, x, y);
     };
 
-    // --- RESTORED LOGIC ---
+
+
+
+
+    // Theme Syncing: Remember my theme
+    const [originalTheme] = useState(themeId);
+
+    // 2. Read-Only & Hydration Logic
+    const isReadOnly = !!readOnlyProfile;
+    const [remoteProfile, setRemoteProfile] = useState(null);
+    const [loadingRemote, setLoadingRemote] = useState(false);
+
+    // Initial Display: Use what we have (partial or full)
+    // If we successfully fetched a remote profile, use that. 
+    // Otherwise fall back to the prop (partial), or myProfile (if not readOnly).
+    const displayProfile = remoteProfile || readOnlyProfile || myProfile;
+
+    // Detect if we need to hydrate (fetch full data)
+    // We fetch if it's readOnly AND (it's marked as mock OR we are missing key data like stickers)
+    useEffect(() => {
+        const fetchFullProfile = async () => {
+            if (!isReadOnly) return;
+            if (!readOnlyProfile.isMock && readOnlyProfile.placedStickers) return; // Already have full data?
+
+            // Identifying info
+            const code = readOnlyProfile.code;
+            const name = readOnlyProfile.name;
+
+            if ((!code || code === 'UNKNOWN') && !name) return; // Can't fetch
+
+            setLoadingRemote(true);
+            try {
+                let query = supabase.from('profiles').select('*');
+
+                if (code && code !== 'UNKNOWN') {
+                    query = query.eq('friend_code', code);
+                } else if (name) {
+                    query = query.eq('display_name', name);
+                }
+
+                const { data, error } = await query.single();
+
+                if (data) {
+                    // Map DB keys to our app's camelCase if needed, or just use as is if they match.
+                    // DB: display_name, avatar_url, friend_code, placedStickers (json), stats (json), achievements (array)
+                    const mapped = {
+                        name: data.display_name,
+                        avatar: data.avatar_url || readOnlyProfile.avatar,
+                        code: data.friend_code,
+                        id: data.id, // Need ID for updates
+                        stats: data.stats || {},
+                        achievements: data.achievements || [],
+                        placedStickers: data.placedStickers || [],
+                        guestbook: data.guestbook || [],
+                        squad: data.squad,
+                        xp: data.xp,
+                        pocket_state: data.pocket_state
+                    };
+                    setRemoteProfile(mapped);
+                }
+            } catch (err) {
+                console.error("Error hydrating profile:", err);
+            } finally {
+                setLoadingRemote(false);
+            }
+        };
+
+        fetchFullProfile();
+    }, [readOnlyProfile, isReadOnly]);
+
+    // --- RESTORED LOGIC (Moved here) ---
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(myProfile?.name || '');
@@ -184,74 +254,6 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     };
 
     // --- END RESTORED LOGIC ---
-
-
-
-    // Theme Syncing: Remember my theme
-    const [originalTheme] = useState(themeId);
-
-    // 2. Read-Only & Hydration Logic
-    const isReadOnly = !!readOnlyProfile;
-    const [remoteProfile, setRemoteProfile] = useState(null);
-    const [loadingRemote, setLoadingRemote] = useState(false);
-
-    // Initial Display: Use what we have (partial or full)
-    // If we successfully fetched a remote profile, use that. 
-    // Otherwise fall back to the prop (partial), or myProfile (if not readOnly).
-    const displayProfile = remoteProfile || readOnlyProfile || myProfile;
-
-    // Detect if we need to hydrate (fetch full data)
-    // We fetch if it's readOnly AND (it's marked as mock OR we are missing key data like stickers)
-    useEffect(() => {
-        const fetchFullProfile = async () => {
-            if (!isReadOnly) return;
-            if (!readOnlyProfile.isMock && readOnlyProfile.placedStickers) return; // Already have full data?
-
-            // Identifying info
-            const code = readOnlyProfile.code;
-            const name = readOnlyProfile.name;
-
-            if ((!code || code === 'UNKNOWN') && !name) return; // Can't fetch
-
-            setLoadingRemote(true);
-            try {
-                let query = supabase.from('profiles').select('*');
-
-                if (code && code !== 'UNKNOWN') {
-                    query = query.eq('friend_code', code);
-                } else if (name) {
-                    query = query.eq('display_name', name);
-                }
-
-                const { data, error } = await query.single();
-
-                if (data) {
-                    // Map DB keys to our app's camelCase if needed, or just use as is if they match.
-                    // DB: display_name, avatar_url, friend_code, placedStickers (json), stats (json), achievements (array)
-                    const mapped = {
-                        name: data.display_name,
-                        avatar: data.avatar_url || readOnlyProfile.avatar,
-                        code: data.friend_code,
-                        id: data.id, // Need ID for updates
-                        stats: data.stats || {},
-                        achievements: data.achievements || [],
-                        placedStickers: data.placedStickers || [],
-                        guestbook: data.guestbook || [],
-                        squad: data.squad,
-                        xp: data.xp,
-                        pocket_state: data.pocket_state
-                    };
-                    setRemoteProfile(mapped);
-                }
-            } catch (err) {
-                console.error("Error hydrating profile:", err);
-            } finally {
-                setLoadingRemote(false);
-            }
-        };
-
-        fetchFullProfile();
-    }, [readOnlyProfile, isReadOnly]);
 
     // ... (rest of effects)
 
