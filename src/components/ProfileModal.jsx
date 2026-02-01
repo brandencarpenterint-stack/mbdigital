@@ -12,6 +12,7 @@ import { usePocketBro } from '../context/PocketBroContext';
 import { feedService } from '../utils/feed';
 import { triggerConfetti } from '../utils/confetti';
 
+import { useToast } from '../context/ToastContext';
 import PocketRoom from './PocketRoom';
 import { DECOR_ITEMS } from '../config/DecorItems';
 import { supabase } from '../lib/supabaseClient';
@@ -61,6 +62,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const { userSquad, squadScores, getSquadDetails } = useSquad();
     const { themeId, setThemeId } = useTheme();
     const { playClick } = useRetroSound();
+    const { showToast } = useToast();
 
     const handleTabClick = (tab) => {
         playClick();
@@ -270,6 +272,40 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         const game = 'Crazy Fishing';
         const score = displayStats.crazyFishingHighScore ? displayStats.crazyFishingHighScore + 1 : 100;
         await sendChallenge(displayProfile, game, score);
+    };
+
+    // VISITING LOGIC
+    const handleVisit = async (friend) => {
+        // We need robust data. If the friend object is minimal, fetch full.
+        // Assuming we need to fetch if pocket_state is missing.
+        if (!friend.pocket_state || !friend.pocket_state.placedItems) {
+            try {
+                // Fallback attempt to get ID/Code
+                let query = supabase.from('profiles').select('*');
+                if (friend.code) query = query.eq('friend_code', friend.code);
+                else if (friend.name) query = query.eq('display_name', friend.name);
+                else {
+                    console.error("Cannot visit unknown friend");
+                    return;
+                }
+
+                const { data, error } = await query.single();
+                if (data) {
+                    const fullFriend = {
+                        ...friend,
+                        pocket_state: data.pocket_state || { placedItems: [] },
+                        avatar: data.avatar_url || friend.avatar
+                    };
+                    setVisitingFriend(fullFriend);
+                    return;
+                }
+            } catch (e) {
+                console.error("Visit failed", e);
+            }
+        }
+
+        // Use existing if robust enough
+        setVisitingFriend(friend);
     };
 
     return (
@@ -620,12 +656,54 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                     <div style={{ flex: 1, overflowY: 'auto' }}>
                                         {/* VIEWING A FRIEND'S ROOM? */}
                                         {visitingFriend ? (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-                                                {/* ... (Pocket Room View Code from previous version) ... */}
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', position: 'relative' }}>
+                                                <div style={{
+                                                    width: '100%', background: '#2d3748', padding: '10px',
+                                                    marginBottom: '10px', borderRadius: '10px',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden' }}>
+                                                            <img src={visitingFriend.avatar || AVATARS[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        </div>
+                                                        <h3 style={{ margin: 0, fontSize: '1rem', color: 'white' }}>VISITING: {visitingFriend.name}</h3>
+                                                    </div>
+                                                    <SquishyButton onClick={() => setVisitingFriend(null)} style={{ fontSize: '0.8rem', padding: '5px 10px', background: '#e53e3e' }}>
+                                                        LEAVE
+                                                    </SquishyButton>
+                                                </div>
+
+                                                <div style={{
+                                                    flex: 1, width: '100%', position: 'relative',
+                                                    background: '#000', borderRadius: '20px',
+                                                    overflow: 'hidden', border: '2px solid #333'
+                                                }}>
+                                                    {/* REMOTE ROOM */}
+                                                    <PocketRoom
+                                                        isEditing={false}
+                                                        customItems={visitingFriend.pocket_state?.placedItems || []}
+                                                    />
+
+                                                    {/* REMOTE PET (If we had visual components for it, currently PocketRoom is just furniture) */}
+                                                    {/* Ideally we overlay their pet here too, but PocketRoom only handles grid items. */
+                                                        /* We can reuse the visual logic from PocketCompanion if we want, but simpler is better for now. */
+                                                    }
+                                                </div>
+
+                                                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                                                    <SquishyButton onClick={() => {
+                                                        triggerConfetti();
+                                                        feedService.publish(`vibed with ${visitingFriend.name}'s room!`, 'love');
+                                                    }} style={{ background: 'var(--neon-pink)', width: '100%' }}>
+                                                        ✨ VIBE CHECK
+                                                    </SquishyButton>
+                                                </div>
                                             </div>
                                         ) : (
                                             /* SQUAD LIST VIEW (Normal) */
                                             <>
+                                                {/* ... (Existing Header Code) ... */}
+
                                                 <div style={{ background: '#2d3748', padding: '20px', borderRadius: '20px', marginBottom: '30px', textAlign: 'center' }}>
                                                     <div style={{ color: '#a0aec0', fontSize: '0.9rem', marginBottom: '5px' }}>YOUR SQUAD ID</div>
                                                     <div style={{ fontSize: '2rem', fontWeight: '900', color: '#63b3ed', letterSpacing: '2px' }}>
@@ -713,6 +791,12 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                                 style={{ fontSize: '0.8rem', padding: '8px 15px', background: '#ed64a6' }}
                                                             >
                                                                 😈
+                                                            </SquishyButton>
+                                                            <SquishyButton
+                                                                onClick={() => handleVisit(friend)}
+                                                                style={{ fontSize: '0.8rem', padding: '8px 15px', background: 'var(--neon-blue)', marginLeft: '10px' }}
+                                                            >
+                                                                🏠
                                                             </SquishyButton>
                                                         </div>
                                                     ))}
