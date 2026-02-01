@@ -15,11 +15,10 @@ const PIPE_SPACING = 200;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [
-    { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'MerchBoy' },
-    { id: 'flappy_face1', type: 'image', content: '/assets/neon_brick/ball1.png', name: 'Face 1' },
-    { id: 'flappy_face2', type: 'image', content: '/assets/neon_brick/ball2.png', name: 'Face 2' },
-    { id: 'flappy_face3', type: 'image', content: '/assets/neon_brick/ball3.png', name: 'Face 3' },
-    { id: 'flappy_face4', type: 'image', content: '/assets/neon_brick/ball4.png', name: 'Face 4' },
+    { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'Classic' },
+    { id: 'flappy_money', type: 'image', content: '/assets/merchboy_money.png', name: 'Money' },
+    { id: 'flappy_cat', type: 'image', content: '/assets/merchboy_cat.png', name: 'Bear' },
+    { id: 'flappy_bunny', type: 'image', content: '/assets/merchboy_bunny.png', name: 'Bunny' }, ,
     { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
     { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
     { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
@@ -108,11 +107,11 @@ const FlappyMascot = () => {
         const img5 = new Image(); img5.src = '/assets/skins/face_bunny.png'; bunnyImgRef.current = img5;
 
         // Preload User Faces
-        for (let i = 1; i <= 4; i++) {
+        const faces = ['merchboy_face.png', 'merchboy_money.png', 'merchboy_cat.png', 'merchboy_bunny.png'];
+        faces.forEach(f => {
             const img = new Image();
-            img.src = `/assets/neon_brick/ball${i}.png`;
-            // Store in window cache or dedicated ref if needed, but browser cache handles repeats well
-        }
+            img.src = '/assets/' + f;
+        });
 
         // Listen for coin updates
         const handleStorage = () => {
@@ -256,33 +255,32 @@ const FlappyMascot = () => {
         // Flutter effect: Fast sine wave
         const flutter = Math.sin(Date.now() / 50) * 0.5; // Fast flutter
         // WING DRAWING FUNCTION (Classic Cartoon Bird Style)
+        // WING DRAWING FUNCTION (Angry Bird Style: Small White Oval)
         const drawWing = (side = 'front') => {
             const wingOffset = (state.velocity * 0.15) + flutter;
             // Flap harder when going up
             const flap = side === 'back' ? wingOffset * 0.8 : wingOffset;
 
             ctx.save();
-            ctx.translate(-20, 10); // Wing Root Position (Relative to Center)
+            ctx.translate(-25, 5); // Wing Root Position (Further back)
             ctx.rotate(flap);
 
             ctx.fillStyle = '#fff'; // White Wings
             ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
 
             ctx.beginPath();
-            // Angry Bird Wing Style (Rounded Chubby Triangle)
-            ctx.moveTo(0, 0);
-            ctx.quadraticCurveTo(-15, -15, -35, -5); // Top Edge to Tip
-            ctx.quadraticCurveTo(-20, 10, 0, 5); // Bottom Edge back to Root
+            // Simple Teardrop / Oval Shape
+            ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Detail Lines inside wing
+            // Detail Line (Simple curve)
             ctx.beginPath();
             ctx.strokeStyle = '#ccc';
-            ctx.lineWidth = 1;
-            ctx.moveTo(-10, -2);
-            ctx.lineTo(-25, -2);
+            ctx.lineWidth = 2;
+            ctx.moveTo(-5, 0);
+            ctx.lineTo(5, 0);
             ctx.stroke();
 
             ctx.restore();
@@ -313,7 +311,9 @@ const FlappyMascot = () => {
             if (img && img.complete) {
                 // Draw Image centered
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
-            } else if (charData.id.startsWith('flappy_face')) {
+            } else if (charData.content.includes('/assets/')) {
+                // Generic Loader for new assets
+                // We should really strictly preload these but for now, rely on cache
                 const img = new Image();
                 img.src = charData.content;
                 ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
@@ -441,7 +441,7 @@ const FlappyMascot = () => {
                 <div style={{ display: 'flex', gap: '10px', padding: '0 10px' }}>
                     {CHARACTERS.map(char => {
                         // Unlocked if in Shop OR one of the default faces
-                        const isDefault = ['flappy_boy', 'flappy_face1', 'flappy_face2', 'flappy_face3', 'flappy_face4'].includes(char.id);
+                        const isDefault = ['flappy_boy', 'flappy_money', 'flappy_cat', 'flappy_bunny'].includes(char.id);
                         const isUnlocked = isDefault || shopState?.unlocked?.includes(char.id);
                         const isSelected = selectedId === char.id;
 
