@@ -10,13 +10,13 @@ import { feedService } from '../../utils/feed';
 const BIOMES = [
     { name: 'STREETS', limit: 2500, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
     { name: 'SUNSET WAVE', limit: 5000, bgTop: '#ff7e5f', bgBot: '#feb47b', plat: '#554433', text: 'white', border: '#332211' },
-    { name: 'TOXIC WASTE', limit: 7500, bgTop: '#4b1', bgBot: '#260', plat: '#3f3', text: '#cbff00', border: '#252' }, // New
+    { name: 'TOXIC WASTE', limit: 7500, bgTop: '#4b1', bgBot: '#260', plat: '#3f3', text: '#cbff00', border: '#252' },
     { name: 'CYBER CITY', limit: 10000, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
-    { name: 'ICE AGE', limit: 12500, bgTop: '#00d2ff', bgBot: '#3a7bd5', plat: '#e0ffff', text: '#caf0f8', border: '#90e0ef' }, // New
-    { name: 'VOLCANO', limit: 15000, bgTop: '#800000', bgBot: '#ff0000', plat: '#300', text: '#ff4500', border: '#ffaa00' }, // New
+    { name: 'ICE AGE', limit: 12500, bgTop: '#00d2ff', bgBot: '#3a7bd5', plat: '#e0ffff', text: '#caf0f8', border: '#90e0ef' },
+    { name: 'VOLCANO', limit: 15000, bgTop: '#800000', bgBot: '#ff0000', plat: '#300', text: '#ff4500', border: '#ffaa00' },
     { name: 'GLITCH REALM', limit: 17500, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
-    { name: 'MIDNIGHT TOKYO', limit: 20000, bgTop: '#0f0c29', bgBot: '#302b63', plat: '#ff00cc', text: '#00d4ff', border: '#ff00cc' }, // New
-    { name: 'STRATOSPHERE', limit: 22500, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' }, // New
+    { name: 'MIDNIGHT TOKYO', limit: 20000, bgTop: '#0f0c29', bgBot: '#302b63', plat: '#ff00cc', text: '#00d4ff', border: '#ff00cc' },
+    { name: 'STRATOSPHERE', limit: 22500, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' },
     { name: 'ASCENSION', limit: 999999, bgTop: '#FFD700', bgBot: '#FFFFFF', plat: '#FFFFFF', text: '#B8860B', border: '#FFD700' }
 ];
 
@@ -55,6 +55,7 @@ const MerchJump = () => {
     // Refs
     const playerRef = useRef({ x: WIDTH / 2, y: HEIGHT - 150, vy: 0, width: 40, height: 60 });
     const platformsRef = useRef([]);
+    const itemsRef = useRef([]); // SEPARATE REF FOR BALLOONS/ITEMS
     const cameraYRef = useRef(0);
     const scoreRef = useRef(0);
     const requestRef = useRef(null);
@@ -83,14 +84,20 @@ const MerchJump = () => {
         scoreRef.current = 0;
         cameraYRef.current = 0;
         biomeRef.current = BIOMES[0];
-        // Rocket Start 🚀
-        playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: -50, width: 40, height: 60 };
+
+        // Random Rocket Start 🚀 (500m to 2500m)
+        // v = sqrt(2gh)
+        // h=500 -> v=20. h=2500 -> v=45.
+        const startVy = -(20 + Math.random() * 25);
+        playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: startVy, width: 40, height: 60 };
 
         platformsRef.current = [];
+        itemsRef.current = []; // Reset items
         platformsRef.current.push({ x: WIDTH / 2 - 50, y: HEIGHT - 50, w: 100, h: 20, type: 'normal', color: BIOMES[0].plat, border: BIOMES[0].border });
 
         let y = HEIGHT - 200;
-        for (let i = 0; i < 15; i++) {
+        // Generate initial chunk
+        for (let i = 0; i < 20; i++) {
             generatePlatform(y, BIOMES[0]);
             y -= 80 + Math.random() * 40;
         }
@@ -100,13 +107,51 @@ const MerchJump = () => {
     };
 
     const generatePlatform = (y, biome) => {
-        const x = Math.random() * (WIDTH - 80);
-        // Sometimes spawn a 'break'
+        const score = scoreRef.current;
+
+        // 1. RED BALLOON 🎈 (Around 5000m)
+        // Spawn chance if near 5000m and rare
+        if (Math.abs(score - 4800) < 400 && Math.random() < 0.05 && itemsRef.current.length === 0) {
+            itemsRef.current.push({
+                x: Math.random() * (WIDTH - 40),
+                y: y - 100,
+                type: 'balloon',
+                w: 30, h: 40
+            });
+        }
+
+        // 2. Platform Logic
+        let x = Math.random() * (WIDTH - 80);
+        let w = 70 + Math.random() * 30;
+        let type = 'normal';
+
+        // Difficulty Scaling
+        if (score > 2500 && Math.random() > 0.7) type = 'moving';
+        if (score > 5000 && Math.random() > 0.8) type = 'crumble'; // Breaks on jump
+
+        // Gap Platforms (Score > 7500)
+        // "bricks with gaps in them" -> Spawn 2 small ones instead of 1 big one
+        if (score > 7500 && Math.random() > 0.8) {
+            const gap = 40 + Math.random() * 30;
+            const w2 = 40;
+            // Plat 1
+            platformsRef.current.push({
+                x: Math.max(0, x - gap / 2 - w2), y, w: w2, h: 15,
+                type: 'normal', color: biome.plat, border: biome.border
+            });
+            // Plat 2
+            platformsRef.current.push({
+                x: Math.min(WIDTH - w2, x + gap / 2), y, w: w2, h: 15,
+                type: 'normal', color: biome.plat, border: biome.border
+            });
+            return; // Done
+        }
+
         platformsRef.current.push({
-            x, y, w: 70 + Math.random() * 30, h: 15,
-            type: Math.random() > 0.8 ? 'moving' : 'normal',
+            x, y, w, h: 15,
+            type,
             vx: Math.random() > 0.5 ? 2 : -2,
-            color: biome.plat,
+            color: type === 'crumble' ? '#8B4513' : biome.plat, // Brown for crumble
             border: biome.border
         });
     };
@@ -234,18 +279,23 @@ const MerchJump = () => {
             cameraYRef.current += shift;
             scoreRef.current += Math.floor(shift);
             setScore(scoreRef.current);
+
             platformsRef.current.forEach(p => p.y += shift);
             platformsRef.current = platformsRef.current.filter(p => p.y < HEIGHT);
+
+            // Item Scroll
+            itemsRef.current.forEach(i => i.y += shift);
+            itemsRef.current = itemsRef.current.filter(i => i.y < HEIGHT);
+
             const lastP = platformsRef.current[platformsRef.current.length - 1];
             if (lastP && lastP.y > 100) {
-                // Pass currentBiome to generate platform with correct color
-                generatePlatform(lastP.y - (80 + Math.random() * 40), currentBiome);
+                generatePlatform(lastP.y - (80 - Math.min(20, scoreRef.current / 1000) + Math.random() * 40), currentBiome);
             }
         }
 
-        // Collision
+        // Collision: Platforms
         if (player.vy > 0) {
-            platformsRef.current.forEach(p => {
+            platformsRef.current.forEach((p, idx) => {
                 if (
                     player.x > p.x - 20 &&
                     player.x < p.x + p.w + 20 &&
@@ -254,9 +304,31 @@ const MerchJump = () => {
                 ) {
                     player.vy = JUMP_FORCE;
                     playJump();
+
+                    if (p.type === 'crumble') {
+                        platformsRef.current.splice(idx, 1);
+                        playCrash();
+                    }
                 }
             });
         }
+
+        // Collision: Items (Balloon)
+        itemsRef.current.forEach((item, idx) => {
+            // Simple Box collision
+            if (
+                player.x > item.x - 30 && player.x < item.x + item.w + 30 &&
+                player.y > item.y - 30 && player.y < item.y + item.h + 30
+            ) {
+                if (item.type === 'balloon') {
+                    // BOOST 1500m!
+                    player.vy = -35;
+                    playCollect();
+                    triggerConfetti();
+                    itemsRef.current.splice(idx, 1);
+                }
+            }
+        });
 
         // Platform Move
         platformsRef.current.forEach(p => {
@@ -272,7 +344,7 @@ const MerchJump = () => {
         }
 
         // --- DRAW ---
-        // Sky Background (Dynamic Biome)
+        // Sky Background
         const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
         grad.addColorStop(0, currentBiome.bgTop);
         grad.addColorStop(1, currentBiome.bgBot);
@@ -286,7 +358,7 @@ const MerchJump = () => {
             if (Math.random() > 0.5) ctx.filter = 'invert(1)';
         }
 
-        // Decor (Clouds or Grid based on Biome)
+        // Decor
         const cloudBiomes = ['STREETS', 'SUNSET WAVE', 'TOXIC WASTE', 'ICE AGE', 'STRATOSPHERE', 'ASCENSION'];
         if (cloudBiomes.includes(currentBiome.name)) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
@@ -296,14 +368,10 @@ const MerchJump = () => {
             for (let i = 0; i < 5; i++) {
                 const cx = ((i * 100) + cameraYRef.current * 0.2) % (WIDTH + 200) - 100;
                 const cy = (i * 150) % HEIGHT;
-                ctx.beginPath();
-                ctx.arc(cx, cy, 40, 0, Math.PI * 2);
-                ctx.arc(cx + 40, cy + 10, 50, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, 40, 0, Math.PI * 2); ctx.fill();
             }
-        }
-        else {
-            // Digital Grid (Cyber, Glitch, Volcano, Tokyo)
+        } else {
+            // Digital Grid
             ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
             if (currentBiome.name === 'VOLCANO') ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
             if (currentBiome.name === 'MIDNIGHT TOKYO') ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
@@ -317,10 +385,16 @@ const MerchJump = () => {
 
         // Platforms
         platformsRef.current.forEach(p => {
-            // If platform doesn't match current biome color (it was generated before transition), that's fine, it fades out.
-            // But we can check p.color
             ctx.fillStyle = p.color || currentBiome.plat;
+            if (p.type === 'crumble') ctx.fillStyle = '#A0522D'; // Sienna
+
             ctx.fillRect(p.x, p.y, p.w, p.h);
+
+            // Rumble cracks
+            if (p.type === 'crumble') {
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.moveTo(p.x + 5, p.y); ctx.lineTo(p.x + 15, p.y + p.h); ctx.stroke();
+            }
 
             // Highlight
             ctx.fillStyle = 'rgba(255,255,255,0.3)';
@@ -330,6 +404,26 @@ const MerchJump = () => {
             ctx.strokeStyle = p.border || currentBiome.border;
             ctx.lineWidth = 2;
             ctx.strokeRect(p.x, p.y, p.w, p.h);
+        });
+
+        // Items
+        itemsRef.current.forEach(item => {
+            if (item.type === 'balloon') {
+                // String
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(item.x + 15, item.y + 40);
+                ctx.lineTo(item.x + 15 + Math.sin(performance.now() * 0.01) * 5, item.y + 80);
+                ctx.stroke();
+
+                // Balloon
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.ellipse(item.x + 15, item.y + 20, 15, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Shine
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(item.x + 10, item.y + 10, 4, 0, Math.PI * 2); ctx.fill();
+            }
         });
 
         // Player Rig
