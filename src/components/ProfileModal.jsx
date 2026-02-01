@@ -74,6 +74,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     // Setup Room State
     const [isRoomEditing, setIsRoomEditing] = useState(false);
     const [selectedDecor, setSelectedDecor] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     const handleRoomPlace = (item, x, y) => {
         placeItem(item.id, x, y);
@@ -792,12 +793,28 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                             <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#ff0055', letterSpacing: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <span>GUESTBOOK ✍️</span>
                                                 {isReadOnly && (
-                                                    <SquishyButton onClick={() => {
-                                                        const emoji = ['🔥', '👾', '👽', '❤️', '💩', '👑'][Math.floor(Math.random() * 6)];
-                                                        handleSignGuestbook(emoji);
-                                                    }} style={{ fontSize: '0.7rem', padding: '5px 10px', background: '#ff0055' }}>
-                                                        SIGN LOG
-                                                    </SquishyButton>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <SquishyButton onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ fontSize: '0.7rem', padding: '5px 10px', background: '#ff0055' }}>
+                                                            SIGN LOG
+                                                        </SquishyButton>
+                                                        {showEmojiPicker && (
+                                                            <div style={{
+                                                                position: 'absolute', right: 0, top: '100%',
+                                                                background: '#222', border: '1px solid #555', borderRadius: '10px',
+                                                                padding: '10px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px',
+                                                                zIndex: 100, boxShadow: '0 5px 15px rgba(0,0,0,0.5)'
+                                                            }}>
+                                                                {['🔥', '👾', '👽', '❤️', '💩', '👑', '👋', '💀'].map(emoji => (
+                                                                    <div key={emoji}
+                                                                        onClick={() => { handleSignGuestbook(emoji); setShowEmojiPicker(false); }}
+                                                                        style={{ fontSize: '1.5rem', cursor: 'pointer', padding: '5px', borderRadius: '5px', background: 'rgba(255,255,255,0.1)' }}
+                                                                    >
+                                                                        {emoji}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </h3>
 
