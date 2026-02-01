@@ -236,6 +236,9 @@ export const GamificationProvider = ({ children }) => {
         // For now, we keep the data on screen but it won't save to the cloud ID anymore.
     };
 
+    // --- SOCIAL STATE ---
+    const [viewedProfile, setViewedProfile] = useState(null);
+
     // --- ECONOMY HELPERS ---
     const addCoins = (amount) => {
         // Apply Pet Multiplier (Check Local Storage to avoid direct dependency)
