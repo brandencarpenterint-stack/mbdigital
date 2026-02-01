@@ -16,6 +16,8 @@ const PirateRadio = () => {
     const [volume, setVolume] = useState(0.5);
     const [isExpanded, setIsExpanded] = useState(false);
 
+    const [errorCount, setErrorCount] = useState(0);
+
     const currentTrack = TRACKS[trackIndex];
 
     useEffect(() => {
@@ -26,7 +28,13 @@ const PirateRadio = () => {
 
     useEffect(() => {
         if (isPlaying && soundEnabled) {
-            audioRef.current?.play().catch(e => console.log("Audio autoplay blocked", e));
+            const playPromise = audioRef.current?.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    console.log("Audio autoplay blocked/error", e);
+                    setIsPlaying(false); // Revert UI
+                });
+            }
         } else {
             audioRef.current?.pause();
         }
@@ -38,16 +46,30 @@ const PirateRadio = () => {
     const nextTrack = () => {
         setTrackIndex((prev) => (prev + 1) % TRACKS.length);
         setIsPlaying(true);
+        setErrorCount(0);
     };
 
     const prevTrack = () => {
         setTrackIndex((prev) => (prev - 1 + TRACKS.length) % TRACKS.length);
         setIsPlaying(true);
+        setErrorCount(0);
     };
 
     // Auto next
     const handleEnded = () => {
         nextTrack();
+    };
+
+    const handleError = () => {
+        console.error("Radio Stream Failed:", currentTrack.src);
+        if (errorCount < 3) {
+            setErrorCount(prev => prev + 1);
+            // Try next track automatically
+            setTimeout(() => nextTrack(), 1000);
+        } else {
+            setIsPlaying(false); // Give up to prevent infinite loop
+            setErrorCount(0);
+        }
     };
 
     if (!soundEnabled) return null;
@@ -63,21 +85,22 @@ const PirateRadio = () => {
                 right: '20px',
                 width: isExpanded ? '300px' : '50px',
                 height: '50px',
-                border: '1px solid var(--neon-pink)',
+                border: isPlaying ? '1px solid var(--neon-green)' : '1px solid var(--neon-pink)', // Green when active
                 borderRadius: '25px',
                 background: 'rgba(0,0,0,0.8)',
                 zIndex: 900,
                 display: 'flex',
                 alignItems: 'center',
                 overflow: 'hidden',
-                boxShadow: '0 0 15px rgba(188, 19, 254, 0.3)',
-                transition: 'width 0.3s ease'
+                boxShadow: isPlaying ? '0 0 15px var(--neon-green)' : '0 0 5px rgba(188, 19, 254, 0.3)',
+                transition: 'all 0.3s ease'
             }}
         >
             <audio
                 ref={audioRef}
                 src={currentTrack.src}
                 onEnded={handleEnded}
+                onError={handleError}
                 loop={false}
                 crossOrigin="anonymous"
             />
@@ -88,9 +111,10 @@ const PirateRadio = () => {
                 style={{
                     width: '50px', height: '50px',
                     background: 'transparent', border: 'none',
-                    color: 'var(--neon-pink)',
+                    color: isPlaying ? 'var(--neon-green)' : 'var(--neon-pink)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', flexShrink: 0
+                    cursor: 'pointer', flexShrink: 0,
+                    animation: isPlaying ? 'pulse 2s infinite' : 'none'
                 }}
             >
                 {isExpanded ? '📻' : (isPlaying ? '🔊' : '🔇')}
@@ -110,7 +134,7 @@ const PirateRadio = () => {
                                 fontSize: '0.8rem', color: 'white', fontFamily: '"Orbitron", sans-serif',
                                 animation: isPlaying ? 'scrollText 5s linear infinite' : 'none'
                             }}>
-                                {currentTrack.title}
+                                {errorCount > 0 ? "SEARCHING FREQUENCY..." : currentTrack.title}
                             </div>
                         </div>
 
@@ -119,7 +143,6 @@ const PirateRadio = () => {
                             {isPlaying ? '⏸️' : '▶️'}
                         </button>
                         <button onClick={nextTrack} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>⏭️</button>
-
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -128,6 +151,11 @@ const PirateRadio = () => {
                 @keyframes scrollText {
                     0% { transform: translateX(100%); }
                     100% { transform: translateX(-100%); }
+                }
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                    100% { opacity: 1; }
                 }
             `}</style>
         </motion.div>

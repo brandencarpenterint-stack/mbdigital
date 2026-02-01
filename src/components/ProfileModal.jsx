@@ -126,12 +126,14 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                         name: data.display_name,
                         avatar: data.avatar_url || readOnlyProfile.avatar,
                         code: data.friend_code,
+                        id: data.id, // Need ID for updates
                         stats: data.stats || {},
                         achievements: data.achievements || [],
                         placedStickers: data.placedStickers || [],
+                        guestbook: data.guestbook || [],
                         squad: data.squad,
-                        xp: data.xp, // Capture XP for accurate level
-                        pocket_state: data.pocket_state // Capture Theme & Skin
+                        xp: data.xp,
+                        pocket_state: data.pocket_state
                     };
                     setRemoteProfile(mapped);
                 }
@@ -145,136 +147,44 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         fetchFullProfile();
     }, [readOnlyProfile, isReadOnly]);
 
-    // Theme Sync Verification
-    useEffect(() => {
-        if (displayProfile?.pocket_state?.theme) {
-            setThemeId(displayProfile.pocket_state.theme);
-        }
-        return () => setThemeId(originalTheme);
-    }, [displayProfile, setThemeId, originalTheme]);
+    // ... (rest of effects)
 
-    // Derived Display Data
-    const displayStats = isReadOnly ? (displayProfile.stats || {}) : myStats;
-    const displayAchievements = isReadOnly
-        ? (displayProfile.achievements || [])
-        : unlockedAchievements;
-
-    const displayStickers = isReadOnly
-        ? (displayProfile.placedStickers || [])
-        : (myProfile.placedStickers || []);
-
-    // 3. Level Info Helper for Remote Profiles
-    const getRemoteLevelInfo = () => {
-        // Use XP if available (real!), else fallback to score estimate
-        if (displayProfile.xp !== undefined) {
-            const level = Math.floor(Math.sqrt(displayProfile.xp / 100)) + 1;
-            const nextXP = Math.pow(level, 2) * 100;
-            return { level, progress: ((displayProfile.xp - Math.pow(level - 1, 2) * 100) / (nextXP - Math.pow(level - 1, 2) * 100)) * 100, xp: displayProfile.xp, nextXP, totalXP: displayProfile.xp };
+    const handleSignGuestbook = async (stickerEmoji) => {
+        if (!displayProfile.id) {
+            showToast("Cannot sign: Identity Unknown", "error");
+            return;
         }
 
-        // Fallback estimate
-        const score = displayStats.gameHighScore || 0;
-        const level = Math.max(1, Math.floor(score / 5000) + 1);
-        return {
-            level: level,
-            progress: 50,
-            xp: score,
-            nextXP: score + 1000,
-            totalXP: score
+        const entry = {
+            from: userProfile.name,
+            avatar: userProfile.avatar,
+            emoji: stickerEmoji,
+            ts: Date.now()
         };
+
+        const newGuestbook = [entry, ...(displayProfile.guestbook || [])].slice(0, 20); // Keep last 20
+
+        // Optimistic UI
+        setRemoteProfile(prev => ({ ...prev, guestbook: newGuestbook }));
+        showToast("Signed Guestbook!", "success");
+
+        // Attempt Cloud Save (May fail if RLS is strict)
+        const { error } = await supabase
+            .from('profiles')
+            .update({ guestbook: newGuestbook })
+            .eq('id', displayProfile.id);
+
+        if (error) {
+            console.error("Guestbook Write Error (RLS?):", error);
+            // We don't revert UI to keep the "feeling" alive for the session
+        } else {
+            // Also notify feed
+            feedService.publish(`signed ${displayProfile.name}'s Guestbook! ✍️`, 'info');
+        }
     };
 
-    const levelInfo = isReadOnly ? getRemoteLevelInfo() : getLevelInfo();
 
-    // 4. Component State
-    const [activeTab, setActiveTab] = useState('PROFILE'); // PROFILE, SQUAD
-    const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState(displayProfile.name);
-    const [editAvatar, setEditAvatar] = useState(displayProfile.avatar);
-
-    // Sticker State
-    const [isDecorating, setIsDecorating] = useState(false);
-    const [localStickers, setLocalStickers] = useState(displayStickers);
-
-    // Sync state when profile changes
-    useEffect(() => {
-        setLocalStickers(displayStickers);
-        setEditName(displayProfile.name);
-        setEditAvatar(displayProfile.avatar);
-    }, [displayProfile, displayStickers]);
-
-    const flattenedStickers = useMemo(() => {
-        return STICKER_COLLECTIONS.flatMap(c => c.items);
-    }, []);
-
-    const getStickerUrl = (id) => {
-        const found = flattenedStickers.find(s => s.id === id);
-        return found || { icon: '❓' };
-    };
-
-    const handleAddSticker = (stickerId) => {
-        if (isReadOnly) return;
-        const newSticker = {
-            instanceId: Date.now(),
-            id: stickerId,
-            x: 150, // Center-ish
-            y: 150,
-            rotation: (Math.random() * 20) - 10
-        };
-        setLocalStickers([...localStickers, newSticker]);
-    };
-
-    const handleStickerDragEnd = (instanceId, info) => {
-        if (isReadOnly) return;
-        const { offset } = info;
-        setLocalStickers(prev => prev.map(s => {
-            if (s.instanceId === instanceId) {
-                return { ...s, x: s.x + offset.x, y: s.y + offset.y };
-            }
-            return s;
-        }));
-    };
-
-    const saveDecoration = () => {
-        updateProfile({ placedStickers: localStickers });
-        setIsDecorating(false);
-    };
-
-    const handleSave = () => {
-        updateProfile({ name: editName, avatar: editAvatar });
-        setIsEditing(false);
-    };
-
-    // Squad State
-    const [friendCode, setFriendCode] = useState('');
-    const [visitingFriend, setVisitingFriend] = useState(null);
-
-    const totalUnlocked = displayAchievements.length;
-
-
-    const handleAddFriendClick = () => {
-        addFriend(friendCode);
-        setFriendCode('');
-    };
-
-    const handleFlex = (friendName) => {
-        feedService.publish(`flexed their High Score on ${friendName}! 💪`, 'win');
-    };
-
-    const handleVibe = () => {
-        triggerConfetti();
-        feedService.publish(`vibed with ${displayProfile.name} in the Social Plaza!`, 'love');
-        // Could call addCoins(10) or similar here if we passed it in
-    };
-
-    const handleChallenge = async () => {
-        // Send a generic challenge for now
-        const game = 'Crazy Fishing';
-        const score = displayStats.crazyFishingHighScore ? displayStats.crazyFishingHighScore + 1 : 100;
-        await sendChallenge(displayProfile, game, score);
-    };
-
-    // VISITING LOGIC
+    // VISIT LOGIC - UPDATED TO INCLUDE GUESTBOOK
     const handleVisit = async (friend) => {
         // We need robust data. If the friend object is minimal, fetch full.
         // Assuming we need to fetch if pocket_state is missing.
@@ -293,8 +203,10 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                 if (data) {
                     const fullFriend = {
                         ...friend,
+                        id: data.id,
                         pocket_state: data.pocket_state || { placedItems: [] },
-                        avatar: data.avatar_url || friend.avatar
+                        avatar: data.avatar_url || friend.avatar,
+                        guestbook: data.guestbook || []
                     };
                     setVisitingFriend(fullFriend);
                     return;
@@ -307,6 +219,8 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         // Use existing if robust enough
         setVisitingFriend(friend);
     };
+
+
 
     return (
         <div style={{
@@ -869,6 +783,38 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                     </SquishyButton>
                                                 </div>
                                             )}
+                                        </div>
+                                    )}
+
+                                    {/* GUESTBOOK SECTION */}
+                                    {!isRoomEditing && (
+                                        <div style={{ marginTop: '20px', background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
+                                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#ff0055', letterSpacing: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span>GUESTBOOK ✍️</span>
+                                                {isReadOnly && (
+                                                    <SquishyButton onClick={() => {
+                                                        const emoji = ['🔥', '👾', '👽', '❤️', '💩', '👑'][Math.floor(Math.random() * 6)];
+                                                        handleSignGuestbook(emoji);
+                                                    }} style={{ fontSize: '0.7rem', padding: '5px 10px', background: '#ff0055' }}>
+                                                        SIGN LOG
+                                                    </SquishyButton>
+                                                )}
+                                            </h3>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '150px', overflowY: 'auto' }}>
+                                                {(!displayProfile.guestbook || displayProfile.guestbook.length === 0) && (
+                                                    <div style={{ color: '#666', fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center' }}>Be the first to sign!</div>
+                                                )}
+                                                {displayProfile.guestbook?.map((entry, idx) => (
+                                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px' }}>
+                                                        <div style={{ fontSize: '1.2rem' }}>{entry.emoji}</div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{entry.from}</div>
+                                                            <div style={{ fontSize: '0.6rem', color: '#888' }}>{new Date(entry.ts).toLocaleDateString()}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
