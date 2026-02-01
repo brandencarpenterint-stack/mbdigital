@@ -403,6 +403,33 @@ export const PocketBroProvider = ({ children }) => {
         return loot;
     };
 
+    const consumeItem = (itemId) => {
+        if (itemId === 'void_egg') {
+            setStats(prev => ({
+                ...prev,
+                stage: 'BABY',
+                type: 'GHOST',
+                color: '#ddd',
+                xp: 0,
+                age: 0,
+                tempStatus: 'EVOLUTION'
+            }));
+            return "THE VOID CONSUMES YOU...";
+        }
+        if (itemId === 'glitch_brew') {
+            setStats(prev => ({
+                ...prev,
+                hunger: Math.random() * 100,
+                happy: Math.random() * 100,
+                energy: Math.random() * 100,
+                color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                tempStatus: 'GLITCH'
+            }));
+            return "REALITY DEBUGS ITSELF.";
+        }
+        return "Nothing happened.";
+    };
+
     const speedUpAdventure = (seconds = 10) => {
         if (!stats.adventure || !stats.adventure.active) return;
         setStats(prev => ({
@@ -419,7 +446,7 @@ export const PocketBroProvider = ({ children }) => {
             stats, feed, play, sleep, clean,
             triggerEffect, unlockDecor, equipDecor,
             getMood, isCritical, placeItem, removeItem, interactWithItem,
-            debugUpdate, explore, returnFromExplore, speedUpAdventure
+            debugUpdate, explore, returnFromExplore, speedUpAdventure, consumeItem
         }}>
             {children}
         </PocketBroContext.Provider>

@@ -9,6 +9,7 @@ import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
 import GachaponModal from '../components/GachaponModal';
+import BlackMarketModal from '../components/BlackMarketModal';
 import SquishyButton from '../components/SquishyButton';
 
 const RARITY_COLORS = {
@@ -30,7 +31,13 @@ const ShopPage = () => {
     const { unlockDecor: unlockPocketDecor, stats: pocketStats } = usePocketBro() || {};
     const [activeCategory, setActiveCategory] = useState('fishing');
     const [showGacha, setShowGacha] = useState(false);
+    const [showBlackMarket, setShowBlackMarket] = useState(false);
     const { playBeep, playCollect, playBoop } = useRetroSound();
+
+    // Check Black Market Availability
+    const isNight = new Date().getHours() >= 22 || new Date().getHours() < 4;
+    const isGlitch = useGamification()?.currentEvent?.id === 'GLITCH_STORM';
+    const canSeeBlackMarket = isNight || isGlitch;
 
     // Featured Item
     const featuredItem = useMemo(() => {
@@ -353,6 +360,22 @@ const ShopPage = () => {
             </div>
 
             {showGacha && <GachaponModal onClose={() => setShowGacha(false)} />}
+            {showBlackMarket && <BlackMarketModal onClose={() => setShowBlackMarket(false)} />}
+
+            {/* BLACK MARKET TRIGGER */}
+            {canSeeBlackMarket && (
+                <div
+                    onClick={() => setShowBlackMarket(true)}
+                    style={{
+                        position: 'fixed', bottom: 20, right: 20,
+                        fontSize: '2rem', cursor: 'pointer',
+                        filter: 'drop-shadow(0 0 5px #0f0)',
+                        animation: 'glitch 0.5s infinite alternate'
+                    }}
+                >
+                    👁️‍🗨️
+                </div>
+            )}
         </div>
     );
 };
