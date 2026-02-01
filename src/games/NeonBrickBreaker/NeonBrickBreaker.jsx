@@ -44,6 +44,7 @@ const NeonBrickBreaker = () => {
     const gameActiveRef = useRef(false);
     const ballImages = useRef([]); // Array of Image objects
     const shakeTimeoutRef = useRef(null);
+    const nextLevelTimeoutRef = useRef(null); // Fix for lingering timeouts
 
     const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
 
@@ -57,13 +58,20 @@ const NeonBrickBreaker = () => {
         shakeTime: 0
     });
 
-    // Preload Ball Images
+    // Lifecycle & Cleanup
     useEffect(() => {
         BALL_ASSETS.forEach(src => {
             const img = new Image();
             img.src = src;
             ballImages.current.push(img);
         });
+
+        return () => {
+            if (gameState.current.animationId) cancelAnimationFrame(gameState.current.animationId);
+            if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
+            if (nextLevelTimeoutRef.current) clearTimeout(nextLevelTimeoutRef.current);
+            gameActiveRef.current = false;
+        };
     }, []);
 
     // --- LEVEL GENERATION ---
@@ -281,7 +289,8 @@ const NeonBrickBreaker = () => {
     const gameLoop = () => {
         if (!gameActiveRef.current) return;
 
-        const ctx = canvasRef.current.getContext('2d');
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
         const state = gameState.current;
 
         // --- UPDATE ---
@@ -393,7 +402,7 @@ const NeonBrickBreaker = () => {
             // NEXT LEVEL
             triggerConfetti();
             playWin();
-            setTimeout(() => {
+            nextLevelTimeoutRef.current = setTimeout(() => {
                 startLevel(level + 1);
                 requestAnimationFrame(gameLoop);
             }, 1000);
