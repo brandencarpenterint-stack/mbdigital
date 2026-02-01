@@ -1,12 +1,36 @@
 import React from 'react';
 import { useNotifications } from '../context/NotificationContext';
 import SquishyButton from './SquishyButton';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationList = ({ onClose }) => {
     const { notifications, markRead } = useNotifications();
+    const navigate = useNavigate();
 
     const handleItemClick = (n) => {
         if (!n.read) markRead(n.id);
+    };
+
+    const handleAcceptChallenge = (n) => {
+        markRead(n.id);
+        const gameMap = {
+            'Snake': '/arcade/snake',
+            'FlappyMascot': '/arcade/flappy',
+            'NeonBrickBreaker': '/arcade/brick',
+            'CrazyFishing': '/arcade/fishing',
+            'GalaxyDefender': '/arcade/galaxy',
+            'WhackAMole': '/arcade/whack',
+            'MemoryMatch': '/arcade/memory',
+            'FaceRunner': '/arcade/face-runner',
+            'CosmicSlots': '/arcade/slots',
+            'SubHunter': '/arcade/sub-hunter',
+            'MerchJump': '/arcade/merch-jump',
+            'BroCannon': '/arcade/bro-cannon'
+        };
+
+        const route = gameMap[n.payload?.game] || '/arcade';
+        navigate(route);
+        if (onClose) onClose();
     };
 
     return (
@@ -31,7 +55,6 @@ const NotificationList = ({ onClose }) => {
                     {notifications.map(n => (
                         <div
                             key={n.id}
-                            onClick={() => handleItemClick(n)}
                             style={{
                                 background: n.read ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)',
                                 borderLeft: n.read ? '3px solid #444' : '3px solid var(--neon-pink)',
@@ -39,7 +62,10 @@ const NotificationList = ({ onClose }) => {
                                 cursor: 'pointer', transition: 'background 0.2s'
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                            <div
+                                onClick={() => handleItemClick(n)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}
+                            >
                                 {/* Avatar or Icon */}
                                 {n.type === 'challenge' ? (
                                     <span style={{ fontSize: '1.2rem' }}>⚔️</span>
@@ -60,8 +86,24 @@ const NotificationList = ({ onClose }) => {
                             {/* Actions */}
                             {n.type === 'challenge' && (
                                 <div style={{ marginTop: '8px', display: 'flex', gap: '5px' }}>
-                                    <SquishyButton style={{ fontSize: '0.7rem', padding: '4px 10px', background: 'var(--neon-blue)' }}>Accept</SquishyButton>
-                                    <button style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '0.7rem' }}>Ignore</button>
+                                    <SquishyButton
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAcceptChallenge(n);
+                                        }}
+                                        style={{ fontSize: '0.7rem', padding: '4px 10px', background: 'var(--neon-blue)' }}
+                                    >
+                                        Accept
+                                    </SquishyButton>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            markRead(n.id);
+                                        }}
+                                        style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '0.7rem' }}
+                                    >
+                                        Ignore
+                                    </button>
                                 </div>
                             )}
                         </div>
