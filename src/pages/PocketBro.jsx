@@ -7,6 +7,7 @@ import { DECOR_ITEMS } from '../config/DecorItems'; // Still needed for backgrou
 import { ADVENTURE_LOCATIONS } from '../config/AdventureLocations';
 import PetShopModal from '../components/PetShopModal';
 import PocketRoom from '../components/PocketRoom'; // NEW
+import BattleArenaModal from '../components/BattleArenaModal';
 import { triggerConfetti } from '../utils/confetti';
 
 // TASKS DEFINITION
@@ -14,6 +15,7 @@ const TASKS = [
     { id: 'feed', icon: '🍗', label: 'FEED' },
     { id: 'clean', icon: '🧹', label: 'CLEAN' },
     { id: 'play', icon: '🎾', label: 'PLAY' },
+    { id: 'battle', icon: '⚔️', label: 'BATTLE' },
     { id: 'shop', icon: '🛍️', label: 'SHOP' },
     { id: 'sleep', icon: '💤', label: 'SLEEP' },
 ];
@@ -34,6 +36,7 @@ const PocketBro = () => {
     const [message, setMessage] = useState("I'm here! 🥚");
     const [bounce, setBounce] = useState(false);
     const [showShop, setShowShop] = useState(false);
+    const [showBattle, setShowBattle] = useState(false);
     const [showMissionSelect, setShowMissionSelect] = useState(false);
 
     // EDIT MODE STATE
@@ -101,6 +104,8 @@ const PocketBro = () => {
             }
         } else if (task.id === 'shop') {
             setShowShop(true);
+        } else if (task.id === 'battle') {
+            setShowBattle(true);
         } else if (task.id === 'feed') {
             feed();
             setMessage("Yum! 😋");
@@ -623,6 +628,9 @@ const PocketBro = () => {
 
             {/* SHOP MODAL */}
             {showShop && <PetShopModal onClose={() => setShowShop(false)} />}
+
+            {/* BATTLE ARENA */}
+            {showBattle && <BattleArenaModal onClose={() => setShowBattle(false)} />}
 
             {/* FLASHLIGHT EFFECT FOR EVOLUTION */}
             {isEvolving && (
