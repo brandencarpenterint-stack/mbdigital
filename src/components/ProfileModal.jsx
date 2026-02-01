@@ -539,6 +539,12 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                         >
                                                             ⚔️ CHALLENGE
                                                         </SquishyButton>
+                                                        <SquishyButton
+                                                            onClick={() => setActiveTab('ROOM')}
+                                                            style={{ fontSize: '0.8rem', padding: '8px 15px', background: 'var(--neon-green)', marginLeft: '10px', color: 'black' }}
+                                                        >
+                                                            🏠 VISIT ROOM
+                                                        </SquishyButton>
                                                     </div>
                                                 )}
 
@@ -850,7 +856,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                             isEditing={isRoomEditing}
                                             selectedItem={selectedDecor}
                                             onPlace={handleRoomPlace}
-                                            customItems={isReadOnly ? (displayProfile.pocket_state?.room_data || []) : null}
+                                            customItems={isReadOnly ? (displayProfile.pocket_state?.placedItems || []) : null}
                                         />
 
                                         {/* EDIT TOGGLE */}
