@@ -125,19 +125,21 @@ const NeonBrickBreaker = () => {
                 }
             }
         }
-        else if (lvl === 3) { // THE JAIL (OPENED)
+        else if (lvl === 3) { // SPACE INVADER
             const map = [
-                "SSSSSSSSSS",
-                "S        S",
-                "S XXXXXX S",
-                "S X    X S",
-                "S X ^^ X S",
-                "S X    X S",
-                "S XXXXXX S",
-                "S        S",
-                "S        S" // OPEN BOTTOM!
+                "  XX   XX ",
+                "   X   X  ",
+                "  XXXXXXX ",
+                " XX XXX XX",
+                "XXXXXXXXXX",
+                "X SXXXXS X",
+                "X X     X X",
+                "   XX XX   "
             ];
-            drawMap(map, (char) => char === '^' ? { color: '#ff00aa', hp: 2 } : { color: '#00ccff', hp: 1 });
+            drawMap(map, (char) => {
+                if (char === 'S') return { color: '#aaa', hp: 999 }; // Steel Eyes
+                return { color: '#76ff03', hp: 2 };
+            });
         }
         else if (lvl === 4) { // ALIEN SWARM
             for (let r = 0; r < 16; r += 2) {
@@ -202,10 +204,8 @@ const NeonBrickBreaker = () => {
         const speedBase = 6 + (lvl * 0.8);
 
         const newBalls = [];
-        // Multiball Start? Or just Level 1?
-        // User said "start with a boost". 
-        // Let's give 3 balls on Level 1.
-        const ballCount = lvl === 1 ? 3 : 1;
+        // ALWAYS MULTIBALL START!
+        const ballCount = 3;
 
         for (let i = 0; i < ballCount; i++) {
             newBalls.push({
