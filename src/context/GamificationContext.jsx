@@ -236,6 +236,117 @@ export const GamificationProvider = ({ children }) => {
         // For now, we keep the data on screen but it won't save to the cloud ID anymore.
     };
 
+    // --- SHOP STATE (Moved Up to avoid TDZ) ---
+    const [shopState, setShopState] = useState(() => {
+        const defaults = {
+            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy', 'food_apple', 'bobber_red', 'ball_std', 'bullet_laser'],
+            equipped: {
+                snake: 'snake_default',
+                snake_food: 'food_apple',
+                fishing_rod: 'rod_default',
+                fishing_boat: 'boat_default',
+                fishing_bobber: 'bobber_red',
+                brick: 'paddle_default',
+                brick_ball: 'ball_std',
+                galaxy: 'ship_default',
+                galaxy_bullet: 'bullet_laser',
+                flappy: 'flappy_boy'
+            }
+        };
+
+        try {
+            const saved = JSON.parse(localStorage.getItem('merchboy_shop'));
+            if (saved) {
+                return {
+                    unlocked: [...new Set([...defaults.unlocked, ...(saved.unlocked || [])])],
+                    equipped: { ...defaults.equipped, ...(saved.equipped || {}) },
+                    inventory: saved.inventory || {} // Load Inventory
+                };
+            }
+            return { ...defaults, inventory: {} }; // Default Inventory
+        } catch (e) {
+            console.error("Shop State Corrupt:", e);
+            return defaults;
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
+    }, [shopState]);
+
+    const buyItem = (item) => {
+        if (coins < item.price) {
+            showToast("Not enough coins!", "error");
+            return false;
+        }
+
+        // CONSUMABLES (Stackable)
+        if (item.type === 'consumable') {
+            spendCoins(item.price);
+            setShopState(prev => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    [item.id]: (prev.inventory?.[item.id] || 0) + 1
+                }
+            }));
+            playWin();
+            showToast(`Bought ${item.name}!`, "success"); // Don't show count creates circular dep on state update? No it's fine.
+            return true;
+        }
+
+        // DURABLES (One-time)
+        if (!shopState.unlocked.includes(item.id)) {
+            spendCoins(item.price);
+            setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
+
+            // DECOR handled by component invocation of PocketBroContext
+
+
+            playWin();
+            showToast(`Purchased ${item.name}!`, "success");
+            return true;
+        }
+        return false;
+    };
+
+    const consumeItem = (itemId) => {
+        if ((shopState.inventory?.[itemId] || 0) > 0) {
+            setShopState(prev => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    [itemId]: prev.inventory[itemId] - 1
+                }
+            }));
+            return true;
+        }
+        return false;
+    };
+
+    const equipItem = (category, itemId) => {
+        if (shopState.unlocked.includes(itemId)) {
+            const itemDef = SHOP_ITEMS.find(i => i.id === itemId);
+            const slot = itemDef?.slot || category;
+
+            setShopState(prev => ({
+                ...prev,
+                equipped: { ...prev.equipped, [slot]: itemId }
+            }));
+        }
+    };
+
+    const unlockHiddenItem = (itemId) => {
+        setShopState(prev => {
+            if (prev.unlocked.includes(itemId)) return prev;
+            return {
+                ...prev,
+                unlocked: [...prev.unlocked, itemId]
+            };
+        });
+    };
+
+    // --- AUTH & CLOUD SYNC ---
     const syncCloud = async (userId) => {
         if (!supabase) return;
 
@@ -542,167 +653,7 @@ export const GamificationProvider = ({ children }) => {
         });
     };
 
-    // --- SHOP LOGIC ---
-    const [shopState, setShopState] = useState(() => {
-        const defaults = {
-            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy', 'food_apple', 'bobber_red', 'ball_std', 'bullet_laser'],
-            equipped: {
-                snake: 'snake_default',
-                snake_food: 'food_apple',
-                fishing_rod: 'rod_default',
-                fishing_boat: 'boat_default',
-                fishing_bobber: 'bobber_red',
-                brick: 'paddle_default',
-                brick_ball: 'ball_std',
-                galaxy: 'ship_default',
-                galaxy_bullet: 'bullet_laser',
-                flappy: 'flappy_boy'
-            }
-        };
 
-        try {
-            const saved = JSON.parse(localStorage.getItem('merchboy_shop'));
-            if (saved) {
-                return {
-                    unlocked: [...new Set([...defaults.unlocked, ...(saved.unlocked || [])])],
-                    equipped: { ...defaults.equipped, ...(saved.equipped || {}) },
-                    inventory: saved.inventory || {} // Load Inventory
-                };
-            }
-            return { ...defaults, inventory: {} }; // Default Inventory
-        } catch (e) {
-            console.error("Shop State Corrupt:", e);
-            return defaults;
-        }
-    });
-
-    useEffect(() => {
-        localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
-    }, [shopState]);
-
-    const buyItem = (item) => {
-        if (coins < item.price) {
-            showToast("Not enough coins!", "error");
-            return false;
-        }
-
-        // CONSUMABLES (Stackable)
-        if (item.type === 'consumable') {
-            spendCoins(item.price);
-            setShopState(prev => ({
-                ...prev,
-                inventory: {
-                    ...prev.inventory,
-                    [item.id]: (prev.inventory?.[item.id] || 0) + 1
-                }
-            }));
-            playWin();
-            showToast(`Bought ${item.name}!`, "success"); // Don't show count creates circular dep on state update? No it's fine.
-            return true;
-        }
-
-        // DURABLES (One-time)
-        if (!shopState.unlocked.includes(item.id)) {
-            spendCoins(item.price);
-            setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, item.id] }));
-
-            // DECOR handled by component invocation of PocketBroContext
-
-
-            playWin();
-            showToast(`Purchased ${item.name}!`, "success");
-            return true;
-        }
-        return false;
-    };
-
-    const consumeItem = (itemId) => {
-        if ((shopState.inventory?.[itemId] || 0) > 0) {
-            setShopState(prev => ({
-                ...prev,
-                inventory: {
-                    ...prev.inventory,
-                    [itemId]: prev.inventory[itemId] - 1
-                }
-            }));
-            return true;
-        }
-        return false;
-    };
-
-    const equipItem = (category, itemId) => {
-        if (shopState.unlocked.includes(itemId)) {
-            const itemDef = SHOP_ITEMS.find(i => i.id === itemId);
-            const slot = itemDef?.slot || category;
-
-            setShopState(prev => ({
-                ...prev,
-                equipped: { ...prev.equipped, [slot]: itemId }
-            }));
-        }
-    };
-
-    const addCoins = (amount) => {
-        // Apply Pet Multiplier (Check Local Storage to avoid direct dependency)
-        let multiplier = 1.0;
-        try {
-            const stored = localStorage.getItem('merchboy_multiplier');
-            if (stored) multiplier = parseFloat(stored);
-        } catch (e) { }
-
-        const finalAmount = Math.floor(amount * multiplier);
-
-        setCoins(prev => prev + finalAmount);
-
-        if (finalAmount > 0) {
-            if (multiplier > 1.0) showToast(`+${finalAmount} Coins (Pet Bonus!)`, 'coin');
-            else showToast(`+${finalAmount} Coins`, 'coin');
-        }
-    };
-
-    const spendCoins = (amount) => {
-        if (coins >= amount) {
-            setCoins(prev => prev - amount);
-            return true;
-        }
-        showToast("Not enough coins!", "error");
-        return false;
-    };
-
-    const incrementStat = (key, amount = 1) => {
-        setStats(prev => {
-            // Defensive: Don't increment arrays
-            if (Array.isArray(prev[key])) {
-                console.warn(`Attempted to increment array stat ${key}. Use updateStat instead.`);
-                return prev;
-            }
-
-            const newVal = (prev[key] || 0) + amount;
-
-            // DAILY QUEST TRACKING HOOK
-            setDailyState(dPrev => {
-                const updatedQuests = dPrev.quests.map(q => {
-                    if (!q.claimed && q.type === key && !q.condition) {
-                        return { ...q, progress: q.progress + amount };
-                    }
-                    return q;
-                });
-                return { ...dPrev, quests: updatedQuests };
-            });
-
-            return { ...prev, [key]: newVal };
-        });
-    };
-
-    const unlockHiddenItem = (itemId) => {
-        setShopState(prev => {
-            if (prev.unlocked.includes(itemId)) return prev;
-            return {
-                ...prev,
-                unlocked: [...prev.unlocked, itemId]
-            };
-        });
-    };
 
     const updateStat = (key, value) => {
         setStats(prev => {
