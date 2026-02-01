@@ -170,11 +170,12 @@ const BroCannon = () => {
         setDistance(Math.floor(p.x / 10));
 
         // CAMERA UPDATE
-        // Locked Vertical (User Request: "locked vertacly just moving in line horizontal")
-        // We keep Y fixed at 0 (looking at ground/cannon level)
-        // Adjust offset so cannon/player is somewhat centered or left
-        cameraRef.current.x = p.x - 100;
-        cameraRef.current.y = 0; // LOCKED VERTICAL
+        const targetX = p.x - 150; // Keep player to left
+        const targetY = Math.max(0, p.y - 300); // Keep player centered vertically/lower
+
+        // Smooth LERP
+        cameraRef.current.x += (targetX - cameraRef.current.x) * 0.1;
+        cameraRef.current.y += (targetY - cameraRef.current.y) * 0.1;
 
         raFrame.current = requestAnimationFrame(tick);
     };
@@ -386,7 +387,8 @@ const BroCannon = () => {
             <div style={{
                 position: 'absolute', inset: 0, // Fill screen
                 // IMPORTANT: transform moves the WORLD against the camera
-                transform: `translate3d(${-cameraRef.current.x + 100}px, ${-cameraRef.current.y + 300}px, 0) translate(${Math.random() * shakeRef.current}px, ${Math.random() * shakeRef.current}px)`,
+                // X is inverted (pan right = world left), Y is normal (pan up = push world down to see top)
+                transform: `translate3d(${-cameraRef.current.x}px, ${cameraRef.current.y}px, 0) translate(${Math.random() * shakeRef.current}px, ${Math.random() * shakeRef.current}px)`,
                 pointerEvents: 'none',
                 willChange: 'transform' // optimize
             }}>
