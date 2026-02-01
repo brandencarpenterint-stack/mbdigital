@@ -43,7 +43,10 @@ const MerchJump = () => {
         { id: 'none', name: 'NONE', price: 0, color: 'transparent' },
         { id: 'rainbow', name: 'RAINBOW', price: 500, gradient: ['red', 'orange', 'yellow', 'green', 'blue', 'violet'] },
         { id: 'black_death', name: 'BLACK DEATH', price: 1000, gradient: ['#000', '#220000', '#550000', '#ff0000'] },
-        { id: 'fire', name: 'INFERNO', price: 750, gradient: ['#fff', '#ffaa00', '#ff4500', '#550000'] }
+        { id: 'fire', name: 'INFERNO', price: 750, gradient: ['#fff', '#ffaa00', '#ff4500', '#550000'] },
+        { id: 'matrix', name: 'MATRIX', price: 2000, gradient: ['#0f0', '#003300', '#0f0'] },
+        { id: 'gold_rush', name: 'GOLD RUSH', price: 5000, gradient: ['#ffd700', '#fff', '#daa520'] },
+        { id: 'neon_pulse', name: 'NEON PULSE', price: 3000, gradient: ['#ff00ff', '#00ffff'] }
     ];
 
     // State
@@ -53,8 +56,10 @@ const MerchJump = () => {
     const [selectedSkin, setSelectedSkin] = useState(SKINS[0]);
 
     // Shop State
+    // Shop State
     const [selectedStreak, setSelectedStreak] = useState(STREAKS[0]);
     const [unlockedStreaks, setUnlockedStreaks] = useState(['none']);
+    const [isShopOpen, setIsShopOpen] = useState(window.innerWidth > 500); // Open by default on desktop
 
     // Sync Stats
     useEffect(() => {
@@ -485,34 +490,67 @@ const MerchJump = () => {
                         max-width: none !important;
                         max-height: none !important;
                         border-radius: 0 !important;
+                        margin: 0 !important; /* Ensure no margin */
                     }
                     .game-canvas {
                         border-radius: 0 !important;
                         border: none !important;
-                        object-fit: contain; /* Letterbox but visible */
-                        background: #87CEEB !important; 
+                        object-fit: contain; 
+                        background: #87CEEB !important;
+                        box-shadow: none !important; /* Remove shadow */
                     }
                     .boost-shop {
-                        display: flex !important; /* Always show shop */
+                        display: flex !important; 
                         width: 100% !important;
-                        height: auto !important;
-                        max-height: none !important; /* Allow scroll */
-                        margin-top: 20px;
-                        padding-bottom: 50px; /* Space for dock if needed */
-                        background: #111 !important;
+                        border-radius: 0 !important;
+                        border-left: none !important;
+                        border-right: none !important;
+                        border-bottom: none !important;
+                        margin-top: 0 !important;
+                        background: rgba(0,0,0,0.95) !important;
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        z-index: 200;
+                        transition: transform 0.3s ease-in-out;
+                        height: 50vh !important; /* Half screen */
+                        transform: translateY(100%); /* Hidden by default via transform if closed */
                     }
-                    /* Hide header text on mobile */
+                    .boost-shop.open {
+                        transform: translateY(0);
+                    }
+                    .shop-toggle {
+                        display: block !important;
+                    }
                     .game-header {
                         display: none;
                     }
-                    /* Adjust Overlay */
                     .game-overlay {
                         width: 100% !important;
                         height: 100% !important;
                         border-radius: 0 !important;
                     }
                 }
+                .shop-toggle {
+                    display: none;
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 300;
+                    background: #ff0055;
+                    color: white;
+                    border: none;
+                    border-radius: 50px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                    box-shadow: 0 0 10px #ff0055;
+                }
             `}</style>
+
+            <button className="shop-toggle" onClick={() => setIsShopOpen(!isShopOpen)}>
+                {isShopOpen ? 'CLOSE SHOP 🔽' : 'BOOST SHOP 🛒'}
+            </button>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                 <h1 className="game-header" style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>MERCH JUMP</h1>
@@ -547,7 +585,7 @@ const MerchJump = () => {
                 <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Reach 2500m for Next Biome</p>
             </div>
 
-            <div className="boost-shop" style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
+            <div className={`boost-shop ${isShopOpen ? 'open' : ''}`} style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>BOOST SHOP</h2>
                     <span style={{ color: 'gold' }}>${stats?.arcadeCoins || 0}</span>
