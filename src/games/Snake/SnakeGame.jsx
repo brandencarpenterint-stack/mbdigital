@@ -36,12 +36,33 @@ const SnakeGame = () => {
             setHighScore(stats.snakeHighScore);
         }
     }, [stats]);
-    const gameLoopRef = useRef();
+    // STABLE GAME LOOP PATTERN
+    const savedCallback = useRef();
+
+    // Remember the latest moveSnake callback
+    useEffect(() => {
+        savedCallback.current = moveSnake;
+    }, [moveSnake]);
+
+    // Set up the interval
+    useEffect(() => {
+        if (gameOver || isPaused) return;
+
+        const tick = () => {
+            if (savedCallback.current) savedCallback.current();
+            if (shake > 0) setShake(s => Math.max(0, s - 1));
+        };
+
+        // Calculate speed
+        const speed = Math.max(50, INITIAL_SPEED - Math.min(score * 2, 100));
+
+        const id = setInterval(tick, speed);
+        return () => clearInterval(id);
+    }, [gameOver, isPaused, score, shake]); // Only recreate when SPEED changes (score) or Pause toggles. Not every tick.
 
     // Swipe Refs
     const touchStart = useRef({ x: 0, y: 0 });
     const touchEnd = useRef({ x: 0, y: 0 });
-
 
     const getSegmentStyle = (index) => {
         const skin = shopState?.equipped?.snake || 'snake_default';
@@ -198,20 +219,7 @@ const SnakeGame = () => {
     }, [direction, isPaused, playJump]);
 
     // Game Loop
-    useEffect(() => {
-        if (gameOver || isPaused) return;
 
-        gameLoopRef.current = setInterval(() => {
-            moveSnake();
-            if (shake > 0) setShake(s => Math.max(0, s - 1));
-        }, INITIAL_SPEED - Math.min(score * 2, 100));
-
-        return () => clearInterval(gameLoopRef.current);
-    }, [snake, direction, gameOver, isPaused, score, shake]); // moveSnake is excluded from dep array here to avoid infinite re-creation loop but it relies on state.
-    // Better pattern: use functional updates or refs, but sticking to this style:
-    // We need moveSnake in the closure. 
-    // Actually, because moveSnake uses the *current* state (snake), it changes every render.
-    // So the interval is cleared and restarted every tick. That's fine for Snake.
 
     const restartGame = () => {
         setSnake([{ x: 10, y: 10 }]);

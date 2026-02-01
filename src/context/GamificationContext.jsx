@@ -196,6 +196,11 @@ export const GamificationProvider = ({ children }) => {
         localStorage.setItem('merchboy_stickers', JSON.stringify(unlockedStickers));
     }, [unlockedStickers]);
 
+    // MISSING PERSISTENCE FIX
+    useEffect(() => {
+        localStorage.setItem('merchboy_daily', JSON.stringify(dailyState));
+    }, [dailyState]);
+
     // --- AUTH & CLOUD SYNC ---
     const [session, setSession] = useState(null);
 
