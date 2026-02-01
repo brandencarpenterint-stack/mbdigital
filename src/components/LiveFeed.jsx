@@ -1,12 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { feedService } from '../utils/feed';
+import { useGamification } from '../context/GamificationContext';
 
 const LiveFeed = () => {
+    const { userProfile } = useGamification() || {};
     const [messages, setMessages] = useState([
         { id: 1, user: 'System', text: 'Connecting to Global Feed...', time: 'Now', color: '#ffaaaa' }
     ]);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [inputMsg, setInputMsg] = useState('');
+    const [isSending, setIsSending] = useState(false);
+
+    const sendMessage = async () => {
+        if (!inputMsg.trim()) return;
+        setIsSending(true);
+
+        const { error } = await supabase.from('feed_events').insert([{
+            player_name: userProfile?.name || 'ANON',
+            message: inputMsg.substring(0, 50), // Cap length
+            type: 'chat'
+        }]);
+
+        if (error) {
+            console.error('Failed to send:', error);
+            // Optimistic UI for error?
+        } else {
+            setInputMsg('');
+        }
+        setIsSending(false);
+    };
 
     useEffect(() => {
         // Initial Fetch
@@ -181,26 +204,59 @@ const LiveFeed = () => {
             </div>
 
             <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '8px', opacity: isCollapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
-                {messages.length === 0 ? (
-                    <div style={{
-                        marginTop: '10px', textAlign: 'center', opacity: 0.7,
-                        color: 'var(--neon-green)', fontFamily: 'monospace', letterSpacing: '1px',
-                        animation: 'blink 2s infinite', fontSize: '0.8rem'
-                    }}>
-                        // GLOBAL UPLINK ONLINE
-                        <br /><span style={{ fontSize: '0.7rem', color: '#666' }}>listening for signals...</span>
-                    </div>
-                ) :
-                    messages.map((msg, i) => (
-                        <div key={msg.id} style={{
-                            fontSize: '0.85rem',
-                            opacity: 1 - (i * 0.2), // Fade out older messages
-                            transform: `translateX(${i * 5}px)`,
-                            transition: 'all 0.3s'
+                {/* MESSAGE LIST */}
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                    {messages.length === 0 ? (
+                        <div style={{
+                            marginTop: '10px', textAlign: 'center', opacity: 0.7,
+                            color: 'var(--neon-green)', fontFamily: 'monospace', letterSpacing: '1px',
+                            animation: 'blink 2s infinite', fontSize: '0.8rem'
                         }}>
-                            <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>@{msg.user}</span>: <span style={{ color: msg.color }}>{msg.text}</span>
+                            // GLOBAL UPLINK ONLINE
+                            <br /><span style={{ fontSize: '0.7rem', color: '#666' }}>listening for signals...</span>
                         </div>
-                    ))}
+                    ) :
+                        messages.slice(0, 4).map((msg, i) => (
+                            <div key={msg.id} style={{
+                                fontSize: '0.85rem',
+                                opacity: 1 - (i * 0.15),
+                                transform: `translateX(${i * 2}px)`,
+                                transition: 'all 0.3s',
+                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                            }}>
+                                <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>@{msg.user}</span>: <span style={{ color: msg.color }}>{msg.text}</span>
+                            </div>
+                        ))}
+                </div>
+
+                {/* INPUT AREA */}
+                {!isCollapsed && (
+                    <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                        <input
+                            type="text"
+                            placeholder="Broadcast..."
+                            value={inputMsg}
+                            onChange={(e) => setInputMsg(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                            style={{
+                                flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none',
+                                color: 'white', padding: '2px 8px', fontSize: '0.8rem', borderRadius: '4px',
+                                fontFamily: 'monospace'
+                            }}
+                        />
+                        <button
+                            onClick={sendMessage}
+                            disabled={!inputMsg.trim() || isSending}
+                            style={{
+                                background: 'var(--neon-blue)', color: 'black', border: 'none',
+                                fontWeight: 'bold', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '4px',
+                                cursor: 'pointer', opacity: (!inputMsg.trim() || isSending) ? 0.5 : 1
+                            }}
+                        >
+                            TXT
+                        </button>
+                    </div>
+                )}
             </div>
 
             <style>{`
