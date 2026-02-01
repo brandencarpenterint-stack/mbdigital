@@ -23,9 +23,97 @@ import CursorTrail from './CursorTrail';
 import './Layout.css';
 
 const Layout = () => {
-    // ... (Hooks remain same, just rendering changes)
     const location = useLocation();
-    // ...
+    // const [showProfile, setShowProfile] = useState(false); // REPLACED BY GLOBAL CONTEXT
+    const [showDaily, setShowDaily] = useState(false);
+    const [showQuests, setShowQuests] = useState(false);
+    const [coins, setCoins] = useState(0);
+    const [isDailyReady, setIsDailyReady] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+
+    // Contexts
+    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile } = useGamification() || { dailyState: null, shopState: null, userProfile: null };
+    const { unreadCount } = useNotifications();
+    const { soundEnabled, toggleSound } = useSettings();
+    const { getMood, isCritical } = usePocketBro() || { getMood: () => '🥚', isCritical: false };
+    const { setThemeId } = useTheme();
+
+    // Glitch State
+    const [clickCount, setClickCount] = useState(0);
+    const [glitchMode, setGlitchMode] = useState(false);
+
+    // Header Face Cycle
+    const [faceIndex, setFaceIndex] = useState(0);
+    const { playClick } = useRetroSound();
+
+    const FACES = [
+        '/assets/merchboy_money.png', // Money Eyes
+        '/assets/merchboy_cat.png',   // Bear/Cat
+        '/assets/merchboy_bunny.png', // Bunny
+        '/assets/merchboy_face.png'   // Standard
+    ];
+
+    // Global Click Sound
+    useEffect(() => {
+        const handleClick = () => playClick();
+        window.addEventListener('mousedown', handleClick); // mousedown feels snappier than click
+        return () => window.removeEventListener('mousedown', handleClick);
+    }, [playClick]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFaceIndex(prev => (prev + 1) % FACES.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const isFullScreenGame = location.pathname.startsWith('/arcade/') && location.pathname !== '/arcade';
+
+    useEffect(() => {
+        const updateCoins = () => {
+            setCoins(parseInt(localStorage.getItem('arcadeCoins')) || 0);
+        };
+        const checkDaily = () => {
+            const lastClaim = localStorage.getItem('dailyStashClaim');
+            if (!lastClaim) {
+                setIsDailyReady(true);
+            } else {
+                const diff = Date.now() - parseInt(lastClaim);
+                setIsDailyReady(diff > 24 * 60 * 60 * 1000);
+            }
+        };
+
+        updateCoins();
+        checkDaily();
+        const interval = setInterval(() => {
+            updateCoins();
+            checkDaily();
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [showDaily]); // Re-check when modal closes
+
+    // Handle Glitch Class
+    useEffect(() => {
+        if (glitchMode) {
+            document.body.classList.add('glitch-active');
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50, 50, 200]);
+        } else {
+            document.body.classList.remove('glitch-active');
+        }
+    }, [glitchMode]);
+
+    // Theme Switcher - Sync from Shop State to Theme Context
+    useEffect(() => {
+        const equippedTheme = shopState?.equipped?.theme;
+        if (equippedTheme) {
+            setThemeId(equippedTheme);
+        }
+    }, [shopState?.equipped?.theme, setThemeId]);
+
+    // Red Dot Logic
+    const hasUnclaimedQuests = dailyState?.quests?.some(q => q.progress >= q.target && !q.claimed);
+    const hasUncheckedDaily = dailyState?.lastCheckIn !== new Date().toISOString().split('T')[0];
+    const showQuestDot = hasUnclaimedQuests || hasUncheckedDaily;
 
     return (
         <div className="layout-container" style={{ paddingBottom: isFullScreenGame ? 0 : '120px' }}>
