@@ -63,6 +63,10 @@ const GalaxyDefender = () => {
     }, []);
 
     const startGame = () => {
+        if (gameState.current.animationId) {
+            cancelAnimationFrame(gameState.current.animationId);
+        }
+
         setScore(0);
         setLives(MAX_LIVES);
         setGameOver(false);
@@ -98,7 +102,7 @@ const GalaxyDefender = () => {
                 speed: 0.5 + Math.random() * 2
             });
         }
-        requestAnimationFrame(gameLoop);
+        gameState.current.animationId = requestAnimationFrame(gameLoop);
     };
 
     const takeDamage = () => {

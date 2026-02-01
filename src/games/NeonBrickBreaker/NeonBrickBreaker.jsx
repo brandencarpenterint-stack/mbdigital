@@ -45,6 +45,7 @@ const NeonBrickBreaker = () => {
     const ballImages = useRef([]); // Array of Image objects
     const shakeTimeoutRef = useRef(null);
     const nextLevelTimeoutRef = useRef(null); // Fix for lingering timeouts
+    const levelRef = useRef(1); // FIX: Ref to track level avoiding stale closures
 
     const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
 
@@ -110,7 +111,6 @@ const NeonBrickBreaker = () => {
             });
         };
 
-        // PATTERNS
         // PATTERNS
         if (lvl === 1) { // Standard Warmup
             for (let r = 0; r < 5; r++) {
@@ -189,8 +189,6 @@ const NeonBrickBreaker = () => {
         if (gameState.current.shakeTime <= 0) {
             gameState.current.shakeTime = 10; // Frames to shake
         }
-        // Visual react state update for DOM shaking (optional/heavy) 
-        // OR just canvas offset. Let's do DOM for "JUICE".
         setShake({ x: (Math.random() - 0.5) * amount, y: (Math.random() - 0.5) * amount });
         if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
         shakeTimeoutRef.current = setTimeout(() => setShake({ x: 0, y: 0 }), 100);
@@ -198,6 +196,7 @@ const NeonBrickBreaker = () => {
 
     const startLevel = (lvl) => {
         setLevel(lvl);
+        levelRef.current = lvl; // Update Ref
 
         // Speed Up per level
         const speedBase = 4 + (lvl * 0.5);
@@ -403,7 +402,7 @@ const NeonBrickBreaker = () => {
             triggerConfetti();
             playWin();
             nextLevelTimeoutRef.current = setTimeout(() => {
-                startLevel(level + 1);
+                startLevel(levelRef.current + 1);
                 requestAnimationFrame(gameLoop);
             }, 1000);
             return;
