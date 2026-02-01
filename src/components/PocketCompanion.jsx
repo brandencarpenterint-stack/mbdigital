@@ -107,17 +107,21 @@ const PocketCompanion = () => {
             transition: { duration: 0.5 }
         },
         game: {
-            scale: 0.25, // 1/4th size (visually tiny)
-            // Wander around the screen relative to bottom-right anchor
-            x: [0, -screenSize.w * 0.4, -screenSize.w * 0.8, -screenSize.w * 0.2, 0],
-            y: [0, -screenSize.h * 0.5, -screenSize.h * 0.2, -screenSize.h * 0.7, 0],
-            rotate: [0, 15, -15, 10, 0],
-            opacity: 0.8,
+            scale: 0.8, // Reduced by 20% from normal (1.0)
+            // Wander around the edges mostly? 
+            // Relative to bottom-right fixed anchor.
+            // Let's make him float in a loop around the screen corners?
+            // x, y values are relative to original position (bottom-right: 20px, 100px).
+            // To go to Top-Left roughly: x: -screenW + 100, y: -screenH + 150
+            x: [0, -screenSize.w + 100, -screenSize.w + 100, 0, 0],
+            y: [0, 0, -screenSize.h + 200, -screenSize.h + 200, 0],
+            rotate: [0, 10, -10, 5, 0],
+            opacity: 0.6, // Transparent distraction
             transition: {
-                duration: 25, // Slow float
+                duration: 20,
                 repeat: Infinity,
                 ease: "linear",
-                repeatType: "mirror"
+                times: [0, 0.3, 0.5, 0.8, 1] // Keyframes
             }
         }
     };

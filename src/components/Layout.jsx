@@ -372,8 +372,8 @@ const Layout = () => {
                 <SocialSidebar />
             </React.Suspense>
 
-            {/* COMPANION MODE - Hide in games */}
-            {!isFullScreenGame && <PocketCompanion />}
+            {/* COMPANION MODE - Show everywhere but smaller in games (handled by component) */}
+            <PocketCompanion />
 
             {/* FLOATING EXIT BUTTON (For Full Screen Games) */}
             {isFullScreenGame && (
