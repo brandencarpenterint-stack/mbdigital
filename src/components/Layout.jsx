@@ -374,6 +374,20 @@ const Layout = () => {
 
             {/* COMPANION MODE - Hide in games */}
             {!isFullScreenGame && <PocketCompanion />}
+
+            {/* FLOATING EXIT BUTTON (For Full Screen Games) */}
+            {isFullScreenGame && (
+                <Link to="/arcade" style={{
+                    position: 'fixed', top: '20px', left: '20px', zIndex: 9999,
+                    background: 'rgba(0,0,0,0.5)', width: '50px', height: '50px',
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    textDecoration: 'none', border: '2px solid rgba(255,255,255,0.3)',
+                    backdropFilter: 'blur(5px)', transition: 'all 0.2s',
+                    boxShadow: '0 0 15px rgba(0,0,0,0.3)'
+                }} onClick={() => playClick()}>
+                    <span style={{ fontSize: '1.5rem', filter: 'drop-shadow(0 0 2px black)' }}>🏠</span>
+                </Link>
+            )}
         </div>
     );
 };

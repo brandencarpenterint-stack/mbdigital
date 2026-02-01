@@ -446,21 +446,82 @@ const MerchJump = () => {
     };
 
     return (
-        <div className="page-enter" style={{
-            minHeight: '100vh', background: '#222', display: 'flex', flexDirection: 'row',
+        <div className="merch-jump-container" style={{
+            minHeight: '100vh', background: '#222', display: 'flex',
             alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', touchAction: 'none', gap: '20px'
         }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h1 style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>MERCH JUMP</h1>
-                <div style={{ position: 'relative', width: '400px', height: '600px' }}>
+            <style>{`
+                .merch-jump-container {
+                    flex-direction: row;
+                }
+                .game-wrapper {
+                    width: 400px;
+                    height: 600px;
+                }
+                .boost-shop {
+                    display: flex;
+                }
+                @media (max-width: 800px) {
+                    .merch-jump-container {
+                        flex-direction: column;
+                        padding: 20px;
+                    }
+                    .boost-shop {
+                        width: 100% !important;
+                        height: auto !important;
+                        max-height: 200px;
+                    }
+                }
+                @media (max-width: 500px) {
+                    .merch-jump-container {
+                        padding: 0;
+                        align-items: flex-start;
+                        background: #000;
+                    }
+                    /* FORCE FULL SCREEN SNAP */
+                    .game-wrapper {
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        max-width: none !important;
+                        max-height: none !important;
+                        border-radius: 0 !important;
+                    }
+                    .game-canvas {
+                        border-radius: 0 !important;
+                        border: none !important;
+                        object-fit: contain; /* Letterbox but visible */
+                        background: #87CEEB !important; 
+                    }
+                    .boost-shop {
+                        display: none !important; /* Hide shop during play on mobile to focus */
+                    }
+                    /* Hide header text on mobile */
+                    .game-header {
+                        display: none;
+                    }
+                    /* Adjust Overlay */
+                    .game-overlay {
+                        width: 100% !important;
+                        height: 100% !important;
+                        border-radius: 0 !important;
+                    }
+                }
+            `}</style>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <h1 className="game-header" style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>MERCH JUMP</h1>
+                <div className="game-wrapper" style={{ position: 'relative' }}>
                     <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} onMouseMove={handleInput} onTouchMove={(e) => { e.preventDefault(); handleInput(e); }} onTouchStart={handleInput}
+                        className="game-canvas"
                         style={{ width: '100%', height: '100%', background: '#87CEEB', border: '4px solid white', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }} />
                     {gameState !== 'PLAYING' && (
                         <>
                             {gameState === 'GAMEOVER' ? (
-                                <GameOverCard score={Math.floor(scoreRef.current)} bestScore={highScore} gameId="merch_jump" onReplay={initGame} onHome={() => window.location.href = '/arcade'} />
+                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, borderRadius: '10px', overflow: 'hidden' }}>
+                                    <GameOverCard score={Math.floor(scoreRef.current)} bestScore={highScore} gameId="merch_jump" onReplay={initGame} onHome={() => window.location.href = '/arcade'} />
+                                </div>
                             ) : (
-                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
+                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
                                     <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>SKIN SELECT</h2>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
                                         {SKINS.map(skin => (
@@ -477,9 +538,10 @@ const MerchJump = () => {
                         </>
                     )}
                 </div>
-                <p style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Reach 2500m for Next Biome</p>
+                <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Reach 2500m for Next Biome</p>
             </div>
-            <div style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', display: 'flex', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
+
+            <div className="boost-shop" style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>BOOST SHOP</h2>
                     <span style={{ color: 'gold' }}>${stats?.arcadeCoins || 0}</span>
@@ -498,9 +560,13 @@ const MerchJump = () => {
                     );
                 })}
             </div>
-            <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
+
+            {/* FLOATING EXIT IS HANDLED BY LAYOUT, REMOVE LOCAL ONE IF DUPLICATE OR KEEP? */}
+            {/* Keeping it won't hurt, but Layout one is better. I'll remove the local one in favor of Layout's if desired, or keep it as backup. */}
+            <Link to="/arcade" className="mobile-hide" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
                 <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(5px)' }}>🏠 EXIT</SquishyButton>
             </Link>
+            <style>{`@media (max-width: 500px) { .mobile-hide { display: none !important; } }`}</style>
         </div>
     );
 };
