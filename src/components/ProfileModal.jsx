@@ -82,6 +82,109 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         placeItem(item.id, x, y);
     };
 
+    // --- RESTORED LOGIC ---
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState(myProfile?.name || '');
+    const [editAvatar, setEditAvatar] = useState(myProfile?.avatar || AVATARS[0]);
+
+    useEffect(() => {
+        if (myProfile) {
+            setEditName(myProfile.name);
+            setEditAvatar(myProfile.avatar);
+        }
+    }, [myProfile]);
+
+    const handleSave = () => {
+        updateProfile({ name: editName, avatar: editAvatar });
+        setIsEditing(false);
+        playClick();
+        showToast('Profile Updated!', 'success');
+        // Force sync theme if avatar implies a theme? No.
+    };
+
+    // Friend State
+    const [friendCode, setFriendCode] = useState('');
+    const [visitingFriend, setVisitingFriend] = useState(null);
+
+    const handleAddFriendClick = () => {
+        if (friendCode.trim()) {
+            addFriend(friendCode);
+            setFriendCode('');
+            playClick();
+        }
+    };
+
+    // Sticker Logic
+    const [isDecorating, setIsDecorating] = useState(false);
+    const [localStickers, setLocalStickers] = useState([]);
+
+    const flattenedStickers = useMemo(() => {
+        return STICKER_COLLECTIONS.flatMap(c => c.stickers);
+    }, []);
+
+    const getStickerUrl = (id) => flattenedStickers.find(s => s.id === id) || { icon: '❓' };
+
+    const handleAddSticker = (id) => {
+        setLocalStickers(prev => [...prev, {
+            id,
+            instanceId: Date.now() + Math.random(),
+            x: 100 + Math.random() * 200,
+            y: 100 + Math.random() * 200,
+            rotation: (Math.random() - 0.5) * 40
+        }]);
+        playClick();
+    };
+
+    const handleStickerDragEnd = (instanceId, info) => {
+        // We need to update x/y based on drag delta, but framer motion handles visual.
+        // For persistence we usually need to track state.
+        // Simplified: We accept where it lands? 
+        // Framer Motion's drag doesn't auto-update React state X/Y unless onDrag listener does.
+        // We'll skip precise coord update for now since it requires `info.point` math relative to container.
+        // Actually, let's just assume we save visually or provide a "Clear" button.
+        // For a robust implementation we need onDragEnd updating the specific sticker.
+        setLocalStickers(prev => prev.map(s => {
+            if (s.instanceId === instanceId) {
+                return { ...s, x: s.x + info.offset.x, y: s.y + info.offset.y };
+            }
+            return s;
+        }));
+    };
+
+    const saveDecoration = () => {
+        updateProfile({ placedStickers: localStickers });
+        setIsDecorating(false);
+        triggerConfetti();
+        playClick();
+        showToast('Sticker Journal Saved!', 'success');
+    };
+
+    const displayStats = useMemo(() => isReadOnly ? (readOnlyProfile.stats || {}) : myStats, [isReadOnly, readOnlyProfile, myStats]);
+    const displayAchievements = useMemo(() => isReadOnly ? (readOnlyProfile.achievements || []) : unlockedAchievements, [isReadOnly, readOnlyProfile, unlockedAchievements]);
+    const totalUnlocked = displayAchievements.length;
+    const levelInfo = useMemo(() => getLevelInfo(displayStats.xp || 0), [displayStats.xp, getLevelInfo]);
+
+    const displayStickers = isReadOnly ? (readOnlyProfile.placedStickers || []) : (myProfile?.placedStickers || []);
+
+    const handleVibe = () => {
+        feedService.publish(`vibed with ${displayProfile.name}! ✨`, 'love', userProfile?.name);
+        triggerConfetti();
+        playClick();
+    };
+
+    const handleChallenge = () => {
+        sendChallenge(displayProfile.id);
+        showToast(`Challenged ${displayProfile.name}!`, 'info');
+    };
+
+    const handleFlex = (targetName) => {
+        feedService.publish(`flexed on ${targetName} 💪`, 'flex', userProfile?.name);
+        playClick();
+    };
+
+    // --- END RESTORED LOGIC ---
+
 
 
     // Theme Syncing: Remember my theme
