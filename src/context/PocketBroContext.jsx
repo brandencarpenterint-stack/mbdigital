@@ -220,6 +220,62 @@ export const PocketBroProvider = ({ children }) => {
         }));
     };
 
+    // --- DEEP INTERACTIONS ---
+    const interactWithItem = (itemId) => {
+        if (!itemId) return;
+
+        // 1. Bed Interaction
+        if (itemId === 'furn_bed') {
+            if (stats.energy > 90) {
+                showToast("Not tired!", "info");
+            } else {
+                sleep(); // Toggle sleep
+                showToast(stats.isSleeping ? "Wakey wakey!" : "Nap time... zzz", "info");
+            }
+            return;
+        }
+
+        // 2. PC Interaction (Gaming)
+        if (itemId === 'furn_pc' || itemId === 'item_pc') {
+            play(10);
+            setStats(prev => ({ ...prev, energy: Math.max(0, prev.energy - 5) }));
+            triggerEffect('code_matrix', 2000); // Visual effect
+            showToast("Gamer moment! (+XP)", "success");
+            return;
+        }
+
+        // 3. Food Interaction (Pizza)
+        if (itemId === 'furn_pizza') {
+            feed(10);
+            showToast("Yum! Old pizza.", "success");
+            return;
+        }
+
+        // 4. Arcade Interaction
+        if (itemId === 'furn_arcade') {
+            play(20);
+            showToast("High Score! (+Happy)", "success");
+            return;
+        }
+
+        // 5. Duck Interaction
+        if (itemId === 'furn_duck') {
+            triggerEffect('bounce', 1000);
+            showToast("QUACK.", "info");
+            return;
+        }
+
+        // 6. Chest Interaction (Daily Bonus?)
+        if (itemId === 'furn_chest') {
+            showToast("It's locked securely.", "info");
+            return;
+        }
+
+        // Generic Interaction
+        triggerEffect('heart', 1000);
+        showToast("Nice furniture!", "info");
+    };
+
     const isCritical = stats.hunger < 20 || stats.happy < 20 || stats.poopCount > 0;
 
     const debugUpdate = (updates) => {
@@ -309,7 +365,7 @@ export const PocketBroProvider = ({ children }) => {
         <PocketBroContext.Provider value={{
             stats, feed, play, sleep, clean,
             triggerEffect, unlockDecor, equipDecor,
-            getMood, isCritical, placeItem, removeItem,
+            getMood, isCritical, placeItem, removeItem, interactWithItem,
             debugUpdate, explore, returnFromExplore
         }}>
             {children}

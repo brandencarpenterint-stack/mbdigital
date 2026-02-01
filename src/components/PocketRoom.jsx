@@ -5,7 +5,7 @@ import { DECOR_ITEMS } from '../config/DecorItems';
 const GRID_SIZE = 5;
 
 const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
-    const { stats, removeItem } = usePocketBro();
+    const { stats, removeItem, interactWithItem } = usePocketBro();
     // Use customItems if provided (Friend View), otherwise use context stats (My Room)
     const placedItems = customItems || stats.placedItems || [];
 
@@ -13,8 +13,16 @@ const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
     const getItemAt = (x, y) => placedItems.find(i => i.x === x && i.y === y);
 
     const handleCellClick = (x, y) => {
-        if (!isEditing) return;
+        // VIEW MODE: Interact
+        if (!isEditing) {
+            const existing = getItemAt(x, y);
+            if (existing) {
+                interactWithItem(existing.id);
+            }
+            return;
+        }
 
+        // EDIT MODE
         // Center Reserved for Bro
         if (x === 2 && y === 2) return;
 
@@ -53,7 +61,7 @@ const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
                         background: isEditing && isCenter ? 'rgba(255,0,0,0.1)' : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '1.5rem',
-                        cursor: isEditing ? 'pointer' : 'default',
+                        cursor: (isEditing || getItemAt(x, y)) ? 'pointer' : 'default',
                         position: 'relative'
                     }}
                 >
