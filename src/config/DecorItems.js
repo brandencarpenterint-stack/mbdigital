@@ -6,7 +6,8 @@ export const DECOR_ITEMS = [
         type: 'background',
         price: 500,
         icon: '🌃',
-        css: { background: 'linear-gradient(to bottom, #0f0c29, #302b63, #24243e)' },
+        css: { background: '#0f0c29' },
+        className: 'bg-cyber',
         desc: 'A view of the neon skyline.'
     },
     {
@@ -15,7 +16,8 @@ export const DECOR_ITEMS = [
         type: 'background',
         price: 800,
         icon: '⛩️',
-        css: { background: 'linear-gradient(to bottom, #d7d2cc 0%, #304352 100%)' },
+        css: { background: '#d7d2cc' },
+        className: 'bg-dojo',
         desc: 'Peace and tranquility.'
     },
     {

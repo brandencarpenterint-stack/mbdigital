@@ -637,27 +637,56 @@ const PocketBro = () => {
     z-index: 2;
 }
 
-.bg-city {
-    background: linear-gradient(180deg, #10002b 0%, #240046 60%, #ff0 60.5%, #3c096c 61%, #5a189a 100%);
-    position: relative;
-    overflow: hidden;
+/* --- CYBER CITY --- */
+.bg-cyber {
+    background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
 }
-.bg-city::before {
+.bg-cyber::before {
+    /* Grid */
     content: ''; position: absolute; inset: 0;
     background: 
-        linear-gradient(90deg, rgba(255,0,255,0.3) 1px, transparent 1px),
-        linear-gradient(rgba(255,0,255,0.3) 1px, transparent 1px);
+        linear-gradient(transparent 95%, rgba(0,255,255,0.3) 95%),
+        linear-gradient(90deg, transparent 95%, rgba(0,255,255,0.3) 95%);
     background-size: 40px 40px;
-    transform: perspective(300px) rotateX(60deg) translateY(100px) translateZ(-100px);
-    animation: gridMove 2s linear infinite;
+    transform: perspective(500px) rotateX(60deg) translateY(100px) scale(2);
+    opacity: 0.5;
     z-index: 1;
 }
-.bg-city::after {
-    content: ''; position: absolute; top: 20px; right: 40px;
-    width: 60px; height: 60px; border-radius: 50%;
-    background: linear-gradient(to bottom, #f0f, #00f);
-    box-shadow: 0 0 20px #f0f;
+.bg-cyber::after {
+    /* City Outline */
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 120px;
+    background-image: linear-gradient(to top, #000 80%, transparent 100%);
+    clip-path: polygon(
+        0% 100%, 10% 100%, 10% 60%, 15% 60%, 15% 80%, 20% 80%, 20% 40%, 30% 40%, 30% 70%, 40% 70%, 40% 30%, 50% 30%, 50% 80%, 60% 80%, 60% 50%, 70% 50%, 70% 90%, 80% 90%, 80% 40%, 90% 40%, 90% 100%, 100% 100%
+    );
+    z-index: 2;
+}
+
+/* --- ZEN DOJO --- */
+.bg-dojo {
+    background: linear-gradient(to bottom, #ff7e5f, #feb47b); /* Sunset */
+}
+.bg-dojo::before {
+    /* Sun */
+    content: ''; position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 150px;
+    background: linear-gradient(to bottom, #ff0000, #990000);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255,0,0,0.5);
     z-index: 1;
+}
+.bg-dojo::after {
+    /* Torii Gate Silhouette */
+    content: ''; position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 140px;
+    background: black;
+    clip-path: polygon(
+        10% 0%, 90% 0%, 100% 10%, 90% 15%, 85% 15%, 85% 30%, 80% 30%, 80% 15%, 
+        20% 15%, 20% 30%, 15% 30%, 15% 15%, 10% 15%, 0% 10%, 10% 0%,
+        /* Posts */
+        15% 15%, 15% 100%, 25% 100%, 25% 40%, 75% 40%, 75% 100%, 85% 100%, 85% 15%
+    );
+    z-index: 2;
 }
 
 .bg-abyss {
