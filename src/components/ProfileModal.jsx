@@ -58,6 +58,8 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         addFriend // Use the real function
     } = useGamification();
 
+    const [activeTab, setActiveTab] = useState('PROFILE');
+
     const { sendChallenge } = useNotifications();
     const { userSquad, squadScores, getSquadDetails } = useSquad();
     const { themeId, setThemeId } = useTheme();
