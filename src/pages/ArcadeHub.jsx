@@ -8,7 +8,94 @@ import { useGamification } from '../context/GamificationContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import PocketPet from '../components/pocket-pet/PocketPet';
 import useRetroSound from '../hooks/useRetroSound';
+import { supabase } from '../lib/supabaseClient';
 import './Home.css'; // Shared styles for dashboard grid
+
+const OnlinePlaza = () => {
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOnline = async () => {
+            if (!supabase) return;
+            // Fetch users active in last 15 mins
+            const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+            const { data } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url, xp, last_seen')
+                .gt('last_seen', fifteenMinsAgo)
+                .order('last_seen', { ascending: false })
+                .limit(20);
+
+            if (data) {
+                setOnlineUsers(data.map(u => ({
+                    ...u,
+                    level: Math.floor(Math.sqrt((u.xp || 0) / 250)) || 1
+                })));
+            }
+            setLoading(false);
+        };
+
+        fetchOnline();
+        const interval = setInterval(fetchOnline, 30000); // Refresh every 30s
+        return () => clearInterval(interval);
+    }, []);
+
+    if (loading) return null;
+
+    return (
+        <div style={{ maxWidth: '800px', margin: '0 auto 40px auto', textAlign: 'left' }}>
+            <h3 style={{ color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif', fontSize: '0.9rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-green)', boxShadow: '0 0 10px var(--neon-green)' }}></span>
+                ONLINE PLAZA ({onlineUsers.length})
+            </h3>
+
+            <div style={{
+                display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px',
+                scrollbarWidth: 'thin', scrollbarColor: '#333 transparent'
+            }}>
+                {onlineUsers.length === 0 && (
+                    <div style={{ color: '#666', fontStyle: 'italic', fontSize: '0.8rem' }}>No other signals detected...</div>
+                )}
+                {onlineUsers.map((user, idx) => (
+                    <motion.div
+                        key={idx}
+                        whileHover={{ y: -5 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.05 }}
+                        style={{
+                            minWidth: '100px',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '10px',
+                            padding: '10px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden',
+                            border: '2px solid var(--neon-blue)', marginBottom: '5px'
+                        }}>
+                            <img src={user.avatar_url || '/assets/merchboy_face.png'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'white', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {user.display_name}
+                        </div>
+                        <div style={{
+                            marginTop: '5px', background: '#333', padding: '2px 6px', borderRadius: '4px',
+                            fontSize: '0.6rem', color: 'gold', fontWeight: 'bold'
+                        }}>
+                            LVL {user.level}
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const games = [
     {
@@ -201,6 +288,9 @@ const ArcadeHub = () => {
             <div style={{ maxWidth: '800px', margin: '0 auto 40px auto' }}>
                 <LiveFeed />
             </div>
+
+            {/* ONLINE PLAZA */}
+            <OnlinePlaza />
 
             <div style={{ marginBottom: '40px' }}>
                 <Link to="/shop" style={{

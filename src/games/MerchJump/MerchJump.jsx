@@ -10,8 +10,13 @@ import { feedService } from '../../utils/feed';
 const BIOMES = [
     { name: 'STREETS', limit: 2500, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
     { name: 'SUNSET WAVE', limit: 5000, bgTop: '#ff7e5f', bgBot: '#feb47b', plat: '#554433', text: 'white', border: '#332211' },
-    { name: 'CYBER CITY', limit: 7500, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
-    { name: 'GLITCH REALM', limit: 10000, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
+    { name: 'TOXIC WASTE', limit: 7500, bgTop: '#4b1', bgBot: '#260', plat: '#3f3', text: '#cbff00', border: '#252' }, // New
+    { name: 'CYBER CITY', limit: 10000, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
+    { name: 'ICE AGE', limit: 12500, bgTop: '#00d2ff', bgBot: '#3a7bd5', plat: '#e0ffff', text: '#caf0f8', border: '#90e0ef' }, // New
+    { name: 'VOLCANO', limit: 15000, bgTop: '#800000', bgBot: '#ff0000', plat: '#300', text: '#ff4500', border: '#ffaa00' }, // New
+    { name: 'GLITCH REALM', limit: 17500, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
+    { name: 'MIDNIGHT TOKYO', limit: 20000, bgTop: '#0f0c29', bgBot: '#302b63', plat: '#ff00cc', text: '#00d4ff', border: '#ff00cc' }, // New
+    { name: 'STRATOSPHERE', limit: 22500, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' }, // New
     { name: 'ASCENSION', limit: 999999, bgTop: '#FFD700', bgBot: '#FFFFFF', plat: '#FFFFFF', text: '#B8860B', border: '#FFD700' }
 ];
 
@@ -281,8 +286,12 @@ const MerchJump = () => {
         }
 
         // Decor (Clouds or Grid based on Biome)
-        if (currentBiome.name === 'STREETS' || currentBiome.name === 'SUNSET WAVE') {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        const cloudBiomes = ['STREETS', 'SUNSET WAVE', 'TOXIC WASTE', 'ICE AGE', 'STRATOSPHERE', 'ASCENSION'];
+        if (cloudBiomes.includes(currentBiome.name)) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            if (currentBiome.name === 'TOXIC WASTE') ctx.fillStyle = 'rgba(100, 255, 0, 0.2)'; // Green clouds
+            if (currentBiome.name === 'ASCENSION') ctx.fillStyle = 'rgba(255, 215, 0, 0.2)'; // Golden clouds
+
             for (let i = 0; i < 5; i++) {
                 const cx = ((i * 100) + cameraYRef.current * 0.2) % (WIDTH + 200) - 100;
                 const cy = (i * 150) % HEIGHT;
@@ -291,9 +300,13 @@ const MerchJump = () => {
                 ctx.arc(cx + 40, cy + 10, 50, 0, Math.PI * 2);
                 ctx.fill();
             }
-        } else if (currentBiome.name === 'CYBER CITY' || currentBiome.name === 'GLITCH REALM') {
-            // Digital Grid
+        }
+        else {
+            // Digital Grid (Cyber, Glitch, Volcano, Tokyo)
             ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            if (currentBiome.name === 'VOLCANO') ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+            if (currentBiome.name === 'MIDNIGHT TOKYO') ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
+
             ctx.lineWidth = 2;
             const gridY = (cameraYRef.current * 0.5) % 100;
             for (let y = gridY; y < HEIGHT; y += 100) {
