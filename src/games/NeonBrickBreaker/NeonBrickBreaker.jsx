@@ -239,7 +239,7 @@ const NeonBrickBreaker = () => {
 
     const startGame = () => {
         setScore(0);
-        setLives(1); // SURVIVAL: 1 Life (But Multiball buffer)
+        setLives(3); // Start with 3 Lives
         setGameOver(false);
         startLevel(1);
         requestAnimationFrame(gameLoop);
@@ -336,6 +336,13 @@ const NeonBrickBreaker = () => {
                     ball.dy = -Math.abs(ball.dy); // Force up
                     playBeep();
                     if (navigator.vibrate) navigator.vibrate(15);
+
+                    // Gradual Speed Increase (Cap at max speed)
+                    const MAX_SPEED_Y = 18; // Cap
+                    if (Math.abs(ball.dy) < MAX_SPEED_Y) {
+                        ball.dy *= 1.02; // +2% speed per hit
+                        ball.dx *= 1.02;
+                    }
                 }
 
                 // Death
