@@ -869,7 +869,8 @@ export const GamificationProvider = ({ children }) => {
             unlockedAchievements, getLevelInfo,
             unlockedStickers, buyCapsule, triggerConfetti,
             session, loginWithProvider, logout,
-            addFriend, viewedProfile, setViewedProfile
+            addFriend, viewedProfile, setViewedProfile,
+            updateStat, incrementStat
         }}>
             {children}
         </GamificationContext.Provider>

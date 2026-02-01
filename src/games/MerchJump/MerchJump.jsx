@@ -83,7 +83,8 @@ const MerchJump = () => {
         scoreRef.current = 0;
         cameraYRef.current = 0;
         biomeRef.current = BIOMES[0];
-        playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: 0, width: 40, height: 60 };
+        // Rocket Start 🚀
+        playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: -50, width: 40, height: 60 };
 
         platformsRef.current = [];
         platformsRef.current.push({ x: WIDTH / 2 - 50, y: HEIGHT - 50, w: 100, h: 20, type: 'normal', color: BIOMES[0].plat, border: BIOMES[0].border });

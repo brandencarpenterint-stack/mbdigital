@@ -196,30 +196,42 @@ const NeonBrickBreaker = () => {
 
     const startLevel = (lvl) => {
         setLevel(lvl);
-        levelRef.current = lvl; // Update Ref
+        levelRef.current = lvl;
 
-        // Speed Up per level
-        const speedBase = 4 + (lvl * 0.5);
+        // SURVIVAL MODE: FASTER SCALING
+        const speedBase = 6 + (lvl * 0.8);
 
-        gameState.current.balls = [{
-            x: GAME_WIDTH / 2,
-            y: GAME_HEIGHT - 40,
-            dx: speedBase * (Math.random() > 0.5 ? 1 : -1),
-            dy: -speedBase,
-            rot: 0,
-            imgIndex: Math.floor(Math.random() * 4)
-        }];
+        const newBalls = [];
+        // Multiball Start? Or just Level 1?
+        // User said "start with a boost". 
+        // Let's give 3 balls on Level 1.
+        const ballCount = lvl === 1 ? 3 : 1;
+
+        for (let i = 0; i < ballCount; i++) {
+            newBalls.push({
+                x: GAME_WIDTH / 2,
+                y: GAME_HEIGHT - 60,
+                dx: speedBase * (Math.random() > 0.5 ? 1 : -1) * (1 + i * 0.2), // Slight variation
+                dy: -speedBase,
+                rot: 0,
+                imgIndex: Math.floor(Math.random() * 4)
+            });
+        }
+        gameState.current.balls = newBalls;
+
         gameState.current.bricks = generateLevel(lvl);
         gameState.current.paddleX = GAME_WIDTH / 2 - PADDLE_WIDTH / 2;
         gameState.current.powerups = [];
-        gameState.current.particles = []; // Keep old particles? Nah, clear em.
+        gameState.current.particles = [];
+        // Reset Transition Flag
+        gameState.current.transitioning = false;
 
         setGameActive(true);
         gameActiveRef.current = true;
 
         // Gamification
         if (lvl === 5) {
-            incrementStat('brickMaxLevel', 5); // Trigger achievement
+            incrementStat('brickMaxLevel', 5);
         } else if (lvl > 1) {
             updateStat('brickMaxLevel', (prev) => Math.max(prev, lvl));
         }
@@ -227,9 +239,9 @@ const NeonBrickBreaker = () => {
 
     const startGame = () => {
         setScore(0);
-        setLives(3);
+        setLives(1); // SURVIVAL: 1 Life (But Multiball buffer)
         setGameOver(false);
-        startLevel(1); // Start at Level 1
+        startLevel(1);
         requestAnimationFrame(gameLoop);
     };
 
