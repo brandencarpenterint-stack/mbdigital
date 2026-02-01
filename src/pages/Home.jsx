@@ -50,6 +50,29 @@ const Home = () => {
                 </div>
             </header>
 
+            {/* DAILY EVENT BANNER */}
+            {/* Using inline optional check for currentEvent, or destructure safely above */}
+            {(() => {
+                const { currentEvent } = useGamification();
+                if (!currentEvent || currentEvent.id === 'VOID_CALM') return null;
+                return (
+                    <div style={{
+                        background: `linear-gradient(90deg, ${currentEvent.color}44, transparent)`,
+                        borderLeft: `5px solid ${currentEvent.color}`,
+                        padding: '15px', marginBottom: '30px', borderRadius: '4px',
+                        display: 'flex', alignItems: 'center', gap: '15px'
+                    }}>
+                        <div style={{ fontSize: '2rem' }}>⚠️</div>
+                        <div>
+                            <h3 style={{ margin: 0, color: currentEvent.color, textTransform: 'uppercase' }}>
+                                GLOBAL ALERT: {currentEvent.name}
+                            </h3>
+                            <div style={{ fontSize: '0.9rem', color: '#ddd' }}>{currentEvent.description}</div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* DASHBOARD GRID */}
             {/* DASHBOARD GRID */}
             <div className="dashboard-grid">

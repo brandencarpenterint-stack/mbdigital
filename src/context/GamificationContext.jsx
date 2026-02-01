@@ -3,6 +3,7 @@ import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import { DAILY_TEMPLATES, WEEKLY_TEMPLATES } from '../config/DailyQuests';
 import { SHOP_ITEMS } from '../config/ShopItems';
 import { STICKER_COLLECTIONS, RARITY_WEIGHTS } from '../config/StickerDefinitions';
+import { getDailyEvent } from '../config/GlobalEvents';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
 import { triggerConfetti } from '../utils/confetti';
@@ -61,6 +62,9 @@ export const GamificationProvider = ({ children }) => {
             friends: stored.friends || []
         };
     });
+
+    // --- GLOBAL EVENT ---
+    const [currentEvent] = useState(getDailyEvent());
 
     const updateProfile = async (updates) => {
         // Special Handling for Name Updates
@@ -869,8 +873,8 @@ export const GamificationProvider = ({ children }) => {
             unlockedAchievements, getLevelInfo,
             unlockedStickers, buyCapsule, triggerConfetti,
             session, loginWithProvider, logout,
-            addFriend, viewedProfile, setViewedProfile,
-            updateStat, incrementStat
+            addFriend, viewedProfile,
+            currentEvent
         }}>
             {children}
         </GamificationContext.Provider>
