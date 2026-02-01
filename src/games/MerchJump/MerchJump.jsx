@@ -428,7 +428,7 @@ const MerchJump = () => {
     const handleGameOver = () => {
         setGameState('GAMEOVER'); playCrash();
         const finalScore = Math.floor(scoreRef.current);
-        if (addCoins) addCoins(Math.floor(finalScore / 100));
+        if (addCoins) addCoins(Math.floor(finalScore / 200));
         if (updateStat) updateStat('gamesPlayed', 'merch_jump');
         if (finalScore > highScore) {
             setHighScore(finalScore);
