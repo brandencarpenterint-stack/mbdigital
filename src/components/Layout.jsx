@@ -368,7 +368,7 @@ const Layout = () => {
                 {showQuests && <DailyQuestModal onClose={() => setShowQuests(false)} />}
                 <SquadSelector />
                 <OnboardingModal />
-                <SocialSidebar />
+                {!isFullScreenGame && <SocialSidebar />}
             </React.Suspense>
 
             {/* COMPANION MODE - Show everywhere but smaller in games (handled by component) */}

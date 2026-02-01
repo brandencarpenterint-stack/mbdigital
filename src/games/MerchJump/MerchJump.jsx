@@ -496,7 +496,7 @@ const MerchJump = () => {
                         border-radius: 0 !important;
                         border: none !important;
                         object-fit: contain; 
-                        background: #87CEEB !important;
+                        background: #000 !important; /* Black bars instead of blue */
                         box-shadow: none !important; /* Remove shadow */
                     }
                     .boost-shop {
