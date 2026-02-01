@@ -19,7 +19,7 @@ const TASKS = [
 ];
 
 const PocketBro = () => {
-    const { stats, feed, play, sleep, clean, getMood, placeItem, removeItem, debugUpdate, equipDecor, explore, returnFromExplore } = usePocketBro();
+    const { stats, feed, play, sleep, clean, getMood, placeItem, removeItem, debugUpdate, equipDecor, explore, returnFromExplore, speedUpAdventure } = usePocketBro();
     const { shopState } = useGamification() || {};
     const equippedSkin = shopState?.equipped?.pocketbro || null;
 
@@ -244,30 +244,87 @@ const PocketBro = () => {
                         {/* GAME/CHARACTER AREA (Grid Stack) */}
                         <div style={{ flex: 1, position: 'relative' }}>
 
-                            {/* ADVENTURE MODE OVERLAY */}
+                            {/* ADVENTURE MODE OVERLAY 2.0 */}
                             {stats.adventure?.active ? (
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    background: 'rgba(0,0,0,0.8)',
-                                    zIndex: 60,
-                                    display: 'flex', flexDirection: 'column',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    color: 'lime', fontFamily: 'monospace'
-                                }}>
-                                    <div style={{ fontSize: '3rem', animation: 'spin 2s infinite linear' }}>🌍</div>
-                                    <div style={{ marginTop: '20px', letterSpacing: '2px' }}>SCAVENGING...</div>
-                                    <div style={{
-                                        marginTop: '10px', width: '80%', height: '4px', background: '#333',
-                                        overflow: 'hidden', borderRadius: '2px'
+                                <div
+                                    onClick={() => {
+                                        // HUSTLE MECHANIC: Tapping reduces time by 10s (limit spam?)
+                                        // We basically cheat the startTime back in time.
+                                        // This requires a context function update, effectively "time travel".
+                                        // For now, let's just do visual "HUSTLE!" feedback and maybe add coins?
+                                        // Or better: Let's just make it purely visual fun + small coin chance?
+                                        // User asked for "Active". Let's try to reduce time.
+                                        // We need 'speedUpAdventure' in context. I'll simulate it visually for now or add it later.
+                                        // For this step, Visuals first.
+                                        triggerBounce();
+                                        triggerConfetti();
+                                        speedUpAdventure(10); // Reduce time by 10s
+                                    }}
+                                    style={{
+                                        position: 'absolute', inset: 0,
+                                        zIndex: 60,
+                                        display: 'flex', flexDirection: 'column',
+                                        alignItems: 'center', justifyContent: 'flex-end',
+                                        overflow: 'hidden',
+                                        cursor: 'pointer'
                                     }}>
-                                        <div style={{
-                                            width: '50%', height: '100%', background: 'lime',
-                                            animation: 'scan 2s infinite ease-in-out'
-                                        }}></div>
+                                    {/* DYNAMIC BACKGROUND (Parallax) */}
+                                    <div className={stats.adventure.locationId === 'space_port' ? 'bg-space' : 'bg-cyber'} style={{
+                                        position: 'absolute', inset: 0,
+                                        animation: 'gridMove 2s linear infinite', // Scroll effect
+                                        opacity: 0.5
+                                    }}></div>
+
+                                    {/* EVENT LOG */}
+                                    <div style={{
+                                        position: 'absolute', top: '20px', left: '10px', right: '10px',
+                                        height: '60px', overflow: 'hidden',
+                                        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                                        fontSize: '0.6rem', color: 'lime', fontFamily: 'monospace',
+                                        textShadow: '1px 1px 0 black', pointerEvents: 'none'
+                                    }}>
+                                        <div style={{ opacity: 0.5 }}>Checking radar...</div>
+                                        <div style={{ opacity: 0.8 }}>Path looks clear.</div>
+                                        <div style={{ color: 'white', fontWeight: 'bold' }}>&gt; Exploring {stats.adventure.name}...</div>
                                     </div>
+
+                                    {/* WALKING BRO */}
+                                    <div style={{
+                                        marginBottom: '60px',
+                                        animation: 'walkBob 0.6s infinite alternate',
+                                        transform: 'scale(0.8)',
+                                        filter: 'drop-shadow(0 10px 5px rgba(0,0,0,0.5))'
+                                    }}>
+                                        <PocketPet
+                                            type={stats.type || 'SOOT'}
+                                            mood={'happy'}
+                                            isSleeping={false}
+                                            stage={stats.stage}
+                                            skin={equippedSkin}
+                                        />
+                                    </div>
+
+                                    {/* HUD */}
+                                    <div style={{
+                                        width: '100%', padding: '10px', background: 'rgba(0,0,0,0.8)',
+                                        borderTop: '2px solid #555', color: 'white', textAlign: 'center',
+                                        zIndex: 70
+                                    }}>
+                                        <div style={{ fontSize: '0.8rem', marginBottom: '5px' }}>{stats.adventure.name}</div>
+                                        <div style={{
+                                            fontSize: '1.2rem', fontWeight: 'bold',
+                                            color: (stats.adventure.finishTime - Date.now()) < 0 ? 'lime' : 'gold'
+                                        }}>
+                                            {Math.max(0, Math.ceil((stats.adventure.finishTime - Date.now()) / 1000))}s
+                                        </div>
+                                        <div style={{ fontSize: '0.6rem', color: '#aaa' }}>TAP TO HUSTLE! 👟</div>
+                                    </div>
+
                                     <style>{`
-                                        @keyframes spin { 100% { transform: rotate(360deg); } }
-                                        @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+                                        @keyframes walkBob {
+                                            0% { transform: translateY(0) scale(0.8); }
+                                            100% { transform: translateY(-10px) scale(0.8); }
+                                        }
                                     `}</style>
                                 </div>
                             ) : (

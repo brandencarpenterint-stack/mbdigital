@@ -403,12 +403,23 @@ export const PocketBroProvider = ({ children }) => {
         return loot;
     };
 
+    const speedUpAdventure = (seconds = 10) => {
+        if (!stats.adventure || !stats.adventure.active) return;
+        setStats(prev => ({
+            ...prev,
+            adventure: {
+                ...prev.adventure,
+                finishTime: prev.adventure.finishTime - (seconds * 1000)
+            }
+        }));
+    };
+
     return (
         <PocketBroContext.Provider value={{
             stats, feed, play, sleep, clean,
             triggerEffect, unlockDecor, equipDecor,
             getMood, isCritical, placeItem, removeItem, interactWithItem,
-            debugUpdate, explore, returnFromExplore
+            debugUpdate, explore, returnFromExplore, speedUpAdventure
         }}>
             {children}
         </PocketBroContext.Provider>
