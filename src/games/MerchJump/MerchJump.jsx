@@ -87,6 +87,14 @@ const MerchJump = () => {
         return () => cancelAnimationFrame(requestRef.current);
     }, [selectedSkin]);
 
+    // Load Merch Balloon
+    const merchBalloonImgRef = useRef(null);
+    useEffect(() => {
+        const img = new Image();
+        img.src = '/assets/merch_balloon.png';
+        merchBalloonImgRef.current = img;
+    }, []);
+
     const getCurrentBiome = (s) => {
         for (let b of BIOMES) {
             if (s < b.limit) return b;
@@ -143,8 +151,14 @@ const MerchJump = () => {
     const generatePlatform = (y, biome) => {
         const score = scoreRef.current;
 
-        // RED BALLOON
-        if (Math.abs(score - 4800) < 400 && Math.random() < 0.05 && itemsRef.current.length === 0) {
+        // MERCH BALLOON (Rainbow Glow) - Around 5000m
+        if (Math.abs(score - 5000) < 500 && Math.random() < 0.1 && itemsRef.current.length === 0) {
+            itemsRef.current.push({
+                x: Math.random() * (WIDTH - 60), y: y - 100, type: 'merch_balloon', w: 50, h: 50
+            });
+        }
+        // Standard Balloon - Around 2500m (optional, or kept as random rare spawn elsewhere)
+        if (Math.abs(score - 2500) < 400 && Math.random() < 0.05 && itemsRef.current.length === 0) {
             itemsRef.current.push({
                 x: Math.random() * (WIDTH - 40), y: y - 100, type: 'balloon', w: 30, h: 40
             });
@@ -295,6 +309,11 @@ const MerchJump = () => {
             if (player.x > item.x - 30 && player.x < item.x + item.w + 30 && player.y > item.y - 30 && player.y < item.y + item.h + 30) {
                 if (item.type === 'balloon') {
                     player.vy = -35; playCollect(); itemsRef.current.splice(idx, 1);
+                } else if (item.type === 'merch_balloon') {
+                    player.vy = -60; // SUPER BOOST
+                    playCollect();
+                    itemsRef.current.splice(idx, 1);
+                    feedService.publish(`found the Legendary Merch Balloon! 🌈`, 'win', userProfile?.name);
                 }
             }
         });
@@ -386,6 +405,20 @@ const MerchJump = () => {
                 ctx.lineTo(item.x + 15 + Math.sin(performance.now() * 0.01) * 5, item.y + 80); ctx.stroke();
                 ctx.fillStyle = 'red'; ctx.beginPath(); ctx.ellipse(item.x + 15, item.y + 20, 15, 20, 0, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(item.x + 10, item.y + 10, 4, 0, Math.PI * 2); ctx.fill();
+            } else if (item.type === 'merch_balloon') {
+                // RAINBOW GLOW
+                if (merchBalloonImgRef.current) {
+                    ctx.save();
+                    const glowColor = `hsl(${performance.now() * 0.1}, 100%, 50%)`;
+                    ctx.shadowColor = glowColor;
+                    ctx.shadowBlur = 20;
+                    // Float animation
+                    const floatY = Math.sin(performance.now() * 0.005) * 10;
+                    ctx.drawImage(merchBalloonImgRef.current, item.x, item.y + floatY, item.w, item.h);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = 'purple'; ctx.fillRect(item.x, item.y, item.w, item.h);
+                }
             }
         });
 
