@@ -4,7 +4,7 @@ import { DECOR_ITEMS } from '../config/DecorItems';
 
 const GRID_SIZE = 5;
 
-const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
+const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems, petComponent }) => {
     const { stats, removeItem, interactWithItem } = usePocketBro();
     // Use customItems if provided (Friend View), otherwise use context stats (My Room)
     const placedItems = customItems || stats.placedItems || [];
@@ -43,9 +43,9 @@ const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
     const cells = [];
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
-            const itemData = getItemAt(x, y);
-            // Safety check: Ensure item definition exists AND is a furniture item (not background)
             const itemDef = itemData ? DECOR_ITEMS.find(d => d.id === itemData.id) : null;
+            // Allow decorating with any item that isn't strictly 'background' type in config
+            // The logic: If it HAS an icon/render, it's renderable.
             const isValidFurniture = itemDef && itemDef.type !== 'background';
 
             const isCenter = x === 2 && y === 2;
@@ -70,6 +70,13 @@ const PocketRoom = ({ isEditing, selectedItem, onPlace, customItems }) => {
                             {itemDef.render || itemDef.icon}
                         </div>
                     ) : null}
+
+                    {/* Render Pet in Center */}
+                    {isCenter && petComponent && (
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}>
+                            {petComponent}
+                        </div>
+                    )}
 
                     {/* Highlight for Center */}
                     {isCenter && isEditing && <div style={{ fontSize: '0.5rem', color: 'red' }}>BRO</div>}

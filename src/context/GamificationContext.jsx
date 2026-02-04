@@ -3,7 +3,7 @@ import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import { DAILY_TEMPLATES, WEEKLY_TEMPLATES } from '../config/DailyQuests';
 import { SHOP_ITEMS } from '../config/ShopItems';
 import { STICKER_COLLECTIONS, RARITY_WEIGHTS } from '../config/StickerDefinitions';
-import { getDailyEvent } from '../config/GlobalEvents';
+import { GLOBAL_EVENTS, getDailyEvent } from '../config/GlobalEvents';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
 import { triggerConfetti } from '../utils/confetti';
@@ -13,11 +13,23 @@ const GamificationContext = createContext();
 
 export const GamificationProvider = ({ children }) => {
     const { showToast } = useToast();
+
+    // --- GLOBAL EVENT (SUPER HOISTED) ---
+    // Lazy init to prevent any race conditions
+    const [currentEvent, setCurrentEvent] = useState(() => getDailyEvent());
+
+    // Debug Trigger
+    const triggerEvent = (eventId) => {
+        const evt = GLOBAL_EVENTS.find(e => e.id === eventId) || GLOBAL_EVENTS[0];
+        setCurrentEvent(evt);
+        showToast(`Global Event Override: ${evt.name}`, "info");
+    };
     const [stats, setStats] = useState(() => {
         return JSON.parse(localStorage.getItem('merchboy_stats')) || {
             fishCaught: 0,
             legendariesCaught: 0,
             bossKills: 0,
+            arenaWins: 0,
             galaxyHighScore: 0,
             brickHighScore: 0,
             crazyFishingHighScore: 0,
@@ -25,10 +37,134 @@ export const GamificationProvider = ({ children }) => {
         };
     });
 
+    // --- SHOP STATE (Super Hoisted) ---
+    const [shopState, setShopState] = useState(() => {
+        const defaults = {
+            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy', 'food_apple', 'bobber_red', 'ball_std', 'bullet_laser'],
+            equipped: {
+                snake: 'snake_default',
+                snake_food: 'food_apple',
+                fishing_rod: 'rod_default',
+                fishing_boat: 'boat_default',
+                fishing_bobber: 'bobber_red',
+                brick: 'paddle_default',
+                brick_ball: 'ball_std',
+                galaxy: 'ship_default',
+                galaxy_bullet: 'bullet_laser',
+                flappy: 'flappy_boy'
+            }
+        };
+
+        try {
+            const saved = JSON.parse(localStorage.getItem('merchboy_shop'));
+            if (saved) {
+                return {
+                    unlocked: [...new Set([...defaults.unlocked, ...(saved.unlocked || [])])],
+                    equipped: { ...defaults.equipped, ...(saved.equipped || {}) },
+                    inventory: saved.inventory || {} // Load Inventory
+                };
+            }
+            return { ...defaults, inventory: {} }; // Default Inventory
+        } catch (e) {
+            console.error("Shop State Corrupt:", e);
+            return defaults;
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
+    }, [shopState]);
+
 
 
     // --- ECONOMY STATE ---
     const [coins, setCoins] = useState(() => parseInt(localStorage.getItem('arcadeCoins')) || 0);
+
+    // --- CRYPTO MARKET (GLOBAL) ---
+    const [cryptoMarket, setCryptoMarket] = useState(() => {
+        const defaultTokens = [
+            { id: 'MCH', name: 'MERCHCOIN', emoji: '🪙', color: '#00ffcc', volatility: 0.05, price: 100, trend: 0, history: Array(20).fill(100) },
+            { id: 'DOG', name: 'DOGE_V2', emoji: '🐕', color: '#ffff00', volatility: 0.1, price: 0.5, trend: 0, history: Array(20).fill(0.5) },
+            { id: 'VOD', name: 'VOID', emoji: '🌑', color: '#ff0055', volatility: 0.2, price: 666, trend: 0, history: Array(20).fill(666) },
+            { id: 'GLT', name: 'GLITCH', emoji: '👾', color: '#ffffff', volatility: 0.3, price: 50, trend: 0, history: Array(20).fill(50) },
+        ];
+        return defaultTokens;
+    });
+
+    const [cryptoPortfolio, setCryptoPortfolio] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_portfolio')) || { MCH: 0, DOG: 0, VOD: 0, GLT: 0 };
+        } catch (e) { return { MCH: 0, DOG: 0, VOD: 0, GLT: 0 }; }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_portfolio', JSON.stringify(cryptoPortfolio));
+    }, [cryptoPortfolio]);
+
+    // Crypto Simulation Loop (Global)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCryptoMarket(prev => prev.map(token => {
+                let trend = (token.trend || 0) + (Math.random() - 0.5) * 0.1;
+
+                // EVENT MODIFIERS
+                if (currentEvent?.id === 'GLITCH_STORM') {
+                    trend = (Math.random() - 0.5) * 2.0; // Chaos
+                } else if (currentEvent?.id === 'GOLD_RUSH') {
+                    trend += 0.05; // Bull Market
+                } else if (currentEvent?.id === 'VOID_CALM') {
+                    trend *= 0.1; // Stagnation
+                }
+
+                trend *= 0.95; // Decay
+
+                // Crash/Pump Probabilities
+                const crashChance = currentEvent?.id === 'GLITCH_STORM' ? 0.3 : 0.01;
+                if (Math.random() < crashChance) trend -= 0.5; // Crash
+
+                if (Math.random() < 0.01) trend += 0.5; // Pump
+
+                const changePercent = trend * token.volatility;
+                let newPrice = token.price * (1 + changePercent);
+                if (newPrice < 0.01) newPrice = 0.01;
+
+                return {
+                    ...token,
+                    price: newPrice,
+                    trend: trend,
+                    history: [...token.history.slice(1), newPrice]
+                };
+            }));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [currentEvent]);
+
+    const buyCrypto = (tokenId, amount = 1) => {
+        const token = cryptoMarket.find(t => t.id === tokenId);
+        if (!token) return;
+        const cost = token.price * amount;
+
+        if (coins >= cost) {
+            setCoins(c => c - cost);
+            setCryptoPortfolio(p => ({ ...p, [tokenId]: (p[tokenId] || 0) + amount }));
+            showToast(`BOUGHT ${amount} ${tokenId}`, 'success');
+        } else {
+            showToast("INSUFFICIENT FUNDS", 'error');
+        }
+    };
+
+    const sellCrypto = (tokenId, amount = 1) => {
+        const token = cryptoMarket.find(t => t.id === tokenId);
+        if (!token) return;
+
+        if ((cryptoPortfolio[tokenId] || 0) >= amount) {
+            setCoins(c => c + (token.price * amount));
+            setCryptoPortfolio(p => ({ ...p, [tokenId]: p[tokenId] - amount }));
+            showToast(`SOLD ${amount} ${tokenId}`, 'success');
+        } else {
+            showToast("INSUFFICIENT ASSETS", 'error');
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem('arcadeCoins', coins);
@@ -63,8 +199,82 @@ export const GamificationProvider = ({ children }) => {
         };
     });
 
-    // --- GLOBAL EVENT ---
-    const [currentEvent] = useState(getDailyEvent());
+
+
+
+    // --- FACTION ZONE CONTROL ---
+    const [zoneControl, setZoneControl] = useState({
+        'snake': { owner: 'CYBER', points: 5000 },
+        'flappy': { owner: 'SOLAR', points: 3200 },
+        'brick': { owner: 'VOID', points: 4100 },
+        'galaxy': { owner: 'CYBER', points: 8000 },
+        'fishing': { owner: 'SOLAR', points: 2000 },
+        'whack': { owner: 'VOID', points: 1500 },
+        'memory': { owner: 'CYBER', points: 1200 },
+        'slots': { owner: 'SOLAR', points: 9000 },
+        'face-runner': { owner: 'VOID', points: 6000 },
+        'merch-jump': { owner: 'CYBER', points: 4500 },
+        'bro-cannon': { owner: 'SOLAR', points: 7000 },
+        'sub-hunter': { owner: 'VOID', points: 5500 }
+    });
+
+    // Simulate Zone Battles
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setZoneControl(prev => {
+                const next = { ...prev };
+                const zones = Object.keys(next);
+                const randomZone = zones[Math.floor(Math.random() * zones.length)];
+
+                // Random flux
+                next[randomZone] = {
+                    ...next[randomZone],
+                    points: next[randomZone].points + Math.floor((Math.random() - 0.4) * 100)
+                };
+
+                // Occasional Takeover
+                if (Math.random() < 0.05) {
+                    const factions = ['CYBER', 'SOLAR', 'VOID'];
+                    const newOwner = factions[Math.floor(Math.random() * factions.length)];
+                    if (newOwner !== next[randomZone].owner) {
+                        next[randomZone].owner = newOwner;
+                        next[randomZone].points = 1000; // Reset points on takeover
+                        // We could toast here but it might be spammy
+                    }
+                }
+                return next;
+            });
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const addZonePoints = (gameId, points, faction = 'CYBER') => {
+        setZoneControl(prev => {
+            if (!prev[gameId]) return prev;
+
+            // Simplified logic: If faction matches owner, add points.
+            // If different, subtract points. If < 0, takeover.
+            const current = prev[gameId];
+            let newPoints = current.points;
+            let newOwner = current.owner;
+
+            if (faction === current.owner) {
+                newPoints += points;
+            } else {
+                newPoints -= points;
+                if (newPoints <= 0) {
+                    newOwner = faction;
+                    newPoints = Math.abs(newPoints) + 500; // Capture bonus
+                    showToast(`ZONE CAPTURED: ${gameId.toUpperCase()} by ${faction}!`, 'win');
+                }
+            }
+
+            return {
+                ...prev,
+                [gameId]: { owner: newOwner, points: newPoints }
+            };
+        });
+    };
 
     const updateProfile = async (updates) => {
         // Special Handling for Name Updates
@@ -192,6 +402,28 @@ export const GamificationProvider = ({ children }) => {
         localStorage.setItem('merchboy_stats', JSON.stringify(stats));
     }, [stats]);
 
+    const [unlockedLore, setUnlockedLore] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_lore')) || [];
+        } catch (e) { return []; }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_lore', JSON.stringify(unlockedLore));
+    }, [unlockedLore]);
+
+    const unlockLore = (id) => {
+        setUnlockedLore(prev => {
+            if (!prev.includes(id)) {
+                showToast("NEW CODEX ENTRY DECRYPTED", "success");
+                triggerConfetti();
+                // Also could play a cool distinct sound
+                return [...prev, id];
+            }
+            return prev;
+        });
+    };
+
     useEffect(() => {
         localStorage.setItem('merchboy_achievements', JSON.stringify(unlockedAchievements));
     }, [unlockedAchievements]);
@@ -248,6 +480,99 @@ export const GamificationProvider = ({ children }) => {
     // --- SOCIAL STATE ---
     const [viewedProfile, setViewedProfile] = useState(null);
 
+    // --- SOCIAL METRICS (FAKE USERS) ---
+    const [followers, setFollowers] = useState(() => parseInt(localStorage.getItem('merchboy_followers')) || 0);
+
+    // --- MERCH DROPS (PASSIVE INCOME) ---
+    const [activeDrops, setActiveDrops] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('merchboy_drops')) || [];
+        } catch (e) { return []; }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_followers', followers);
+    }, [followers]);
+
+    useEffect(() => {
+        localStorage.setItem('merchboy_drops', JSON.stringify(activeDrops));
+    }, [activeDrops]);
+
+    const addFollowers = (amount) => {
+        setFollowers(prev => prev + amount);
+        if (amount > 0) showToast(`+${amount} New Users!`, 'info');
+    };
+
+    const launchDrop = (design) => {
+        const newDrop = {
+            id: Date.now(),
+            name: design.name || "Mystery Drop",
+            price: 25 + Math.floor((followers / 1000)), // Price scales with Hype
+            stock: 100 + Math.floor(followers * 0.1), // Stock scales with Hype
+            sold: 0,
+            revenue: 0,
+            active: true,
+            timestamp: Date.now()
+        };
+        setActiveDrops(prev => [...prev, newDrop]);
+        showToast(`DROPPED: ${newDrop.name}`, "success");
+        triggerConfetti();
+    };
+
+    // DROP SALES LOOP
+    useEffect(() => {
+        if (activeDrops.length === 0) return;
+
+        const interval = setInterval(() => {
+            setActiveDrops(prev => {
+                let coinsGained = 0;
+                const updated = prev.map(drop => {
+                    if (!drop.active) return drop;
+
+                    // Sales Logic: More followers = faster sales
+                    // Base rate + Fan Bonus
+                    const demand = Math.ceil(Math.max(1, followers / 100));
+                    const sale = Math.min(demand, drop.stock - drop.sold);
+
+                    // TAX EVASION BONUS (Black Market)
+                    const taxBonus = shopState.unlocked.includes('hack_tax') ? 1.5 : 1.0;
+
+                    if (sale > 0) {
+                        coinsGained += sale * drop.price * taxBonus;
+                        const newSold = drop.sold + sale;
+                        return {
+                            ...drop,
+                            sold: newSold,
+                            revenue: drop.revenue + (sale * drop.price * taxBonus),
+                            active: newSold < drop.stock
+                        };
+                    }
+                    return drop;
+                });
+
+                if (coinsGained > 0) {
+                    setCoins(c => c + coinsGained); // Silent add to avoid toast spam
+                }
+
+                return updated;
+            });
+        }, 3000); // Process sales every 3s
+
+        return () => clearInterval(interval);
+    }, [activeDrops.length, followers, shopState.unlocked]);
+
+    // BOTNET LOOP (Passive Followers)
+    useEffect(() => {
+        if (!shopState.unlocked.includes('hack_botnet_v1')) return;
+
+        const interval = setInterval(() => {
+            // +1 Follower per second (Passive)
+            setFollowers(prev => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [shopState.unlocked]);
+
     // --- ECONOMY HELPERS ---
     const addCoins = (amount) => {
         // Apply Pet Multiplier (Check Local Storage to avoid direct dependency)
@@ -257,12 +582,31 @@ export const GamificationProvider = ({ children }) => {
             if (stored) multiplier = parseFloat(stored);
         } catch (e) { }
 
+        // ARCADE OVERCLOCK (Underground Upgrade)
+        if (shopState.unlocked.includes('arcade_overclock')) {
+            multiplier += 0.2;
+        }
+
+        // GLOBAL EVENT: GOLD RUSH
+        if (currentEvent?.id === 'GOLD_RUSH') {
+            multiplier *= 2.0;
+        }
+
         const finalAmount = Math.floor(amount * multiplier);
 
         setCoins(prev => prev + finalAmount);
 
+        // COIN GAIN ALWAYS BRINGS USERS (The Hype machine)
+        if (amount > 0) {
+            const newUsers = Math.floor(Math.random() * 5) + 1; // 1-5 random users per coin gain action
+            addFollowers(newUsers);
+        }
+
         if (finalAmount > 0) {
-            if (multiplier > 1.0) showToast(`+${finalAmount} Coins (Pet Bonus!)`, 'coin');
+            if (multiplier > 1.0) {
+                const reason = currentEvent?.id === 'GOLD_RUSH' ? ' (Gold Rush!)' : ' (Bonus!)';
+                showToast(`+${finalAmount} Coins${reason}`, 'coin');
+            }
             else showToast(`+${finalAmount} Coins`, 'coin');
         }
     };
@@ -301,39 +645,7 @@ export const GamificationProvider = ({ children }) => {
         });
     };
 
-    // --- SHOP STATE (Moved Up to avoid TDZ) ---
-    const [shopState, setShopState] = useState(() => {
-        const defaults = {
-            unlocked: ['snake_default', 'rod_default', 'boat_default', 'paddle_default', 'ship_default', 'flappy_boy', 'food_apple', 'bobber_red', 'ball_std', 'bullet_laser'],
-            equipped: {
-                snake: 'snake_default',
-                snake_food: 'food_apple',
-                fishing_rod: 'rod_default',
-                fishing_boat: 'boat_default',
-                fishing_bobber: 'bobber_red',
-                brick: 'paddle_default',
-                brick_ball: 'ball_std',
-                galaxy: 'ship_default',
-                galaxy_bullet: 'bullet_laser',
-                flappy: 'flappy_boy'
-            }
-        };
 
-        try {
-            const saved = JSON.parse(localStorage.getItem('merchboy_shop'));
-            if (saved) {
-                return {
-                    unlocked: [...new Set([...defaults.unlocked, ...(saved.unlocked || [])])],
-                    equipped: { ...defaults.equipped, ...(saved.equipped || {}) },
-                    inventory: saved.inventory || {} // Load Inventory
-                };
-            }
-            return { ...defaults, inventory: {} }; // Default Inventory
-        } catch (e) {
-            console.error("Shop State Corrupt:", e);
-            return defaults;
-        }
-    });
 
     useEffect(() => {
         localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
@@ -543,7 +855,8 @@ export const GamificationProvider = ({ children }) => {
                             memory_match: stats.memoryHighScore || 0,
                             face_runner: stats.faceRunnerHighScore || 0,
                             cosmic_slots: stats.slotsBiggestWin || 0,
-                            bro_cannon: stats.broCannonHighScore || 0
+                            bro_cannon: stats.broCannonHighScore || 0,
+                            arena_wins: stats.arenaWins || 0
                         },
                         stats: stats,
                         room_data: pocketData.placedItems || [],
@@ -591,6 +904,19 @@ export const GamificationProvider = ({ children }) => {
             description: achievement.description,
             reward: achievement.reward || '100 Coins'
         });
+
+        // AWARD ITEM IF APPLICABLE (e.g. "Diamond Rod")
+        // Check if reward matches a SHOP_ITEM name or ID
+        // Simple fuzzy check or look for specific achievement-to-item mapping
+        // ideally we should add 'rewardId' to AchievementDefinition, but for now we rely on user manually buying or we auto-unlock if we find match.
+        // Actually, let's auto-unlock if we find an item with matching name? Or specific ID.
+        // For V1, we just give the badge. The "Reward" text is flavor unless we implement direct unlocking.
+        // Let's implement direct unlock if we can match it.
+        const rewardItem = SHOP_ITEMS.find(i => i.name === achievement.reward);
+        if (rewardItem && !shopState.unlocked.includes(rewardItem.id)) {
+            setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, rewardItem.id] }));
+            showToast(`Unlocked Item: ${rewardItem.name}!`, "max");
+        }
 
         // Push to Global Feed
         import('../utils/feed').then(({ feedService }) => {
@@ -874,7 +1200,12 @@ export const GamificationProvider = ({ children }) => {
             unlockedStickers, buyCapsule, triggerConfetti,
             session, loginWithProvider, logout,
             addFriend, viewedProfile,
-            currentEvent
+            currentEvent, triggerEvent, followers, addFollowers,
+            activeDrops, launchDrop,
+            cryptoMarket, cryptoPortfolio, buyCrypto, sellCrypto,
+            hasUpgrade: (id) => shopState.unlocked.includes(id),
+            zoneControl, addZonePoints,
+            unlockedLore, unlockLore
         }}>
             {children}
         </GamificationContext.Provider>

@@ -1,252 +1,252 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
+import ChatMessage from './ChatMessage';
+
+const MOCK_BOTS = [
+    { name: 'NullPtr', squad: 'CYBER', avatar: '/assets/avatar_robot.png' },
+    { name: 'SunGazer', squad: 'SOLAR', avatar: '/assets/avatar_alien.png' },
+    { name: 'GhostInShell', squad: 'VOID', avatar: '/assets/avatar_ghost.png' },
+    { name: 'BitWise', squad: 'CYBER', avatar: '/assets/merchboy_face.png' },
+    { name: 'GlitchKing', squad: 'CYBER', avatar: '/assets/merchboy_face.png' }
+];
+
+const BOT_MESSAGES = [
+    "Just hit a new high score in Snake! 🐍",
+    "Buying Golden Koi 500c PM me",
+    "Anyone up for Arena PvP? My squad needs XP.",
+    "The new shop skins are fire 🔥",
+    "Void squad is taking over the leaderboard...",
+    "System update detected...",
+    "GGs everyone",
+    "Where is the secret level?",
+    "Need one more friend for the quest!",
+    "LFG Arena",
+    "lol saw that",
+    "Solar squad superior confirmed ☀️",
+    "Cyber squad rise up 🤖"
+];
 
 const SocialSidebar = () => {
-    const { userProfile, setViewedProfile } = useGamification();
+    const { userProfile, setViewedProfile, coins, updateStat } = useGamification();
     const { showToast } = useToast();
-    const [isOpen, setIsOpen] = useState(false); // Default collapsed
+    const [isOpen, setIsOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('CHAT'); // CHAT | RADAR
+
+    // --- RADAR STATE ---
     const [onlineUsers, setOnlineUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loadingRadar, setLoadingRadar] = useState(false);
 
-    // Poll for Online Users
+    // --- CHAT STATE ---
+    const [messages, setMessages] = useState([
+        { id: 1, user: 'SYSTEM', text: 'CONNECTION ESTABLISHED TO THE VOID.', type: 'system', timestamp: Date.now() }
+    ]);
+    const [inputText, setInputText] = useState("");
+    const chatEndRef = useRef(null);
+
+    // --- CHAT EFFECT: SCROLL TO BOTTOM ---
     useEffect(() => {
-        const fetchOnlineUsers = async () => {
-            if (!supabase || !isOpen) return;
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, isOpen, activeTab]);
 
-            setLoading(true);
-            try {
-                // "Online" = Active in last 5 minutes
-                const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('id, display_name, avatar_url, last_seen, coins, achievements, stats, placedStickers')
-                    .gt('last_seen', fiveMinutesAgo)
-                    .neq('display_name', userProfile?.name) // Don't show self
-                    .order('last_seen', { ascending: false })
-                    .limit(20);
-
-                if (data) {
-                    setOnlineUsers(data);
-                }
-            } catch (err) {
-                console.error("Error fetching users:", err);
-            } finally {
-                setLoading(false);
+    // --- CHAT EFFECT: SIMULATE BOTS ---
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (Math.random() > 0.3) { // 70% chance to skip tick
+                return;
             }
+
+            const bot = MOCK_BOTS[Math.floor(Math.random() * MOCK_BOTS.length)];
+            const msg = BOT_MESSAGES[Math.floor(Math.random() * BOT_MESSAGES.length)];
+
+            addMessage({
+                user: bot.name,
+                squad: bot.squad,
+                avatar: bot.avatar,
+                text: msg,
+                type: 'chat'
+            });
+        }, 5000); // Check every 5s
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const addMessage = (msg) => {
+        setMessages(prev => {
+            const next = [...prev, { ...msg, id: Date.now() + Math.random(), timestamp: Date.now() }];
+            if (next.length > 50) next.shift(); // Keep last 50
+            return next;
+        });
+    };
+
+    const handleSendMessage = (e) => {
+        e.preventDefault();
+        if (!inputText.trim()) return;
+
+        addMessage({
+            user: userProfile.name || 'GUEST',
+            squad: userProfile.squad,
+            avatar: userProfile.avatar,
+            text: inputText.trim(),
+            type: 'chat',
+            isMe: true
+        });
+
+        setInputText("");
+    };
+
+    // --- POLL ONLINE USERS ---
+    useEffect(() => {
+        if (!isOpen || activeTab !== 'RADAR') return;
+
+        const fetchOnlineUsers = async () => {
+            // ... existing polling logic ...
+            // For brevity, using mock/real hybrid in single block
+            setLoadingRadar(true);
+            try {
+                let realUsers = [];
+                if (supabase) {
+                    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+                    const { data } = await supabase.from('profiles')
+                        .select('id, display_name, avatar_url, squad, coins')
+                        .gt('last_seen', fiveMinsAgo)
+                        .neq('display_name', userProfile?.name)
+                        .limit(20);
+                    if (data) realUsers = data;
+                }
+
+                // Merge with Bots if empty to make world feel alive
+                if (realUsers.length < 5) {
+                    realUsers = [...realUsers, ...MOCK_BOTS.map((b, i) => ({
+                        id: `bot-${i}`,
+                        display_name: b.name,
+                        avatar_url: b.avatar,
+                        squad: b.squad,
+                        coins: Math.floor(Math.random() * 50000),
+                        isBot: true
+                    }))];
+                }
+
+                setOnlineUsers(realUsers);
+            } catch (e) { console.error(e); }
+            setLoadingRadar(false);
         };
 
         fetchOnlineUsers();
-        const interval = setInterval(fetchOnlineUsers, 30000); // Poll every 30s
-        return () => clearInterval(interval);
-    }, [isOpen, userProfile]);
-
-    const handleChallenge = (user) => {
-        showToast(`Challenge sent to ${user.display_name}! ⚔️`, 'success');
-        // Future: Insert into 'challenges' table
-    };
-
-    const handleProfileClick = (user) => {
-        // Construct a partial profile object from the Supabase data
-        const profileData = {
-            name: user.display_name,
-            avatar: user.avatar_url,
-            code: 'UNKNOWN', // Friend code might not be public in this query
-            stats: user.stats || {},
-            achievements: user.achievements || [],
-            placedStickers: user.placedStickers || []
-        };
-        setViewedProfile(profileData);
-    };
+        // No interval needed for this demo, just refresh on tab switch
+    }, [isOpen, activeTab]);
 
     return (
         <>
-            {/* TOGGLE BUTTON (Visible when collapsed) */}
+            {/* TOGGLE BUTTON */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
                     style={{
-                        position: 'fixed',
-                        top: '80px', // Below header
-                        right: '0',
-                        zIndex: 998,
-                        background: 'rgba(0,0,0,0.6)',
-                        border: '1px solid var(--neon-blue)',
-                        borderRight: 'none',
-                        borderTopLeftRadius: '10px',
-                        borderBottomLeftRadius: '10px',
-                        padding: '10px 15px',
-                        color: 'var(--neon-blue)',
-                        cursor: 'pointer',
-                        backdropFilter: 'blur(5px)',
-                        boxShadow: '-5px 0 15px rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        transition: 'transform 0.2s'
+                        position: 'fixed', top: '80px', right: '0', zIndex: 998,
+                        background: 'rgba(0,0,0,0.8)', border: '1px solid var(--neon-blue)', borderRight: 'none',
+                        borderTopLeftRadius: '10px', borderBottomLeftRadius: '10px',
+                        padding: '10px 15px', color: 'var(--neon-blue)', cursor: 'pointer',
+                        backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', gap: '10px',
+                        boxShadow: '-5px 0 15px rgba(0,0,0,0.5)'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-5px)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
                 >
-                    <div style={{
-                        width: '10px', height: '10px',
-                        background: '#00ff00', borderRadius: '50%',
-                        boxShadow: '0 0 5px #00ff00'
-                    }}></div>
-                    <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>SQUAD</span>
+                    <div style={{ width: '10px', height: '10px', background: '#00ff00', borderRadius: '50%', boxShadow: '0 0 5px #00ff00' }} />
+                    <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>THE VOID</span>
                 </button>
             )}
 
-            {/* SIDEBAR PANEL */}
+            {/* SIDEBAR */}
             <div style={{
-                position: 'fixed',
-                top: '60px', // Header height
-                right: isOpen ? '0' : '-300px',
-                width: '280px',
-                height: 'calc(100vh - 60px - 70px)', // Minus header & dock
-                background: 'rgba(10, 10, 20, 0.85)',
-                backdropFilter: 'blur(15px)',
-                borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
-                zIndex: 999,
+                position: 'fixed', top: '60px', right: isOpen ? '0' : '-350px',
+                width: '320px', height: 'calc(100vh - 60px - 70px)',
+                background: 'rgba(5, 5, 10, 0.95)', backdropFilter: 'blur(20px)',
+                borderLeft: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 999,
                 transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: isOpen ? '-10px 0 30px rgba(0,0,0,0.5)' : 'none'
+                display: 'flex', flexDirection: 'column',
+                boxShadow: isOpen ? '-10px 0 50px rgba(0,0,0,0.8)' : 'none'
             }}>
-                {/* HEADER */}
-                <div style={{
-                    padding: '15px',
-                    borderBottom: '1px solid rgba(255,255,255,0.1)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '1.2rem' }}>🌍</span>
-                        <h3 style={{ margin: 0, fontSize: '1rem', color: 'white', letterSpacing: '1px' }}>ONLINE PLAZA</h3>
-                    </div>
+                {/* HEAD TABS */}
+                <div style={{ display: 'flex', borderBottom: '1px solid #333' }}>
                     <button
-                        onClick={() => setIsOpen(false)}
-                        style={{
-                            background: 'transparent', border: 'none', color: '#666',
-                            cursor: 'pointer', fontSize: '1.2rem', padding: '5px'
-                        }}
+                        onClick={() => setActiveTab('CHAT')}
+                        style={{ flex: 1, padding: '15px', background: activeTab === 'CHAT' ? 'rgba(255,255,255,0.05)' : 'transparent', border: 'none', color: activeTab === 'CHAT' ? '#fff' : '#666', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                        ✖
+                        💬 CHAT
                     </button>
+                    <button
+                        onClick={() => setActiveTab('RADAR')}
+                        style={{ flex: 1, padding: '15px', background: activeTab === 'RADAR' ? 'rgba(255,255,255,0.05)' : 'transparent', border: 'none', color: activeTab === 'RADAR' ? '#fff' : '#666', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                        📡 RADAR ({onlineUsers.length})
+                    </button>
+                    <button onClick={() => setIsOpen(false)} style={{ padding: '0 15px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
                 </div>
 
-                {/* USER LIST */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {loading && onlineUsers.length === 0 && (
-                        <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>Scanning frequency...</div>
-                    )}
+                {/* CONTENT AREA */}
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
-                    {!loading && onlineUsers.length === 0 && (
-                        <div style={{ textAlign: 'center', opacity: 0.5, marginTop: '20px' }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📡</div>
-                            <div>No other operators online.</div>
-                            <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>It's quiet... too quiet.</div>
+                    {/* --- CHAT TAB --- */}
+                    {activeTab === 'CHAT' && (
+                        <div style={{ flex: 1, padding: '15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {messages.map(msg => (
+                                <ChatMessage key={msg.id} msg={msg} />
+                            ))}
+                            <div ref={chatEndRef} />
                         </div>
                     )}
 
-                    {onlineUsers.map(user => (
-                        <div key={user.id} className="glass-panel" style={{
-                            padding: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer' // Indicate clickable
-                        }}
-                            onClick={() => handleProfileClick(user)} // CLICK TO VIEW PROFILE
-                        >
-                            {/* AVATAR */}
-                            <div style={{ position: 'relative' }}>
-                                <div style={{
-                                    width: '40px', height: '40px',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    border: '2px solid var(--neon-blue)'
+                    {/* --- RADAR TAB --- */}
+                    {activeTab === 'RADAR' && (
+                        <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {onlineUsers.map(user => (
+                                <div key={user.id} onClick={() => {
+                                    if (user.isBot && window.confirm(`Challenge ${user.display_name} to a duel?`)) {
+                                        if (Math.random() > 0.5) {
+                                            showToast(`VICTORY! You defeated ${user.display_name}!`, 'win');
+                                            if (updateStat) updateStat('rivalsDefeated', (prev) => (prev || 0) + 1);
+                                        } else {
+                                            showToast("DEFEAT! They were too fast.", 'error');
+                                        }
+                                    } else {
+                                        setViewedProfile({ name: user.display_name, avatar: user.avatar_url, squad: user.squad });
+                                    }
+                                }} style={{
+                                    display: 'flex', gap: '10px', alignItems: 'center', padding: '10px',
+                                    background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer'
                                 }}>
-                                    <img src={user.avatar_url || '/assets/merchboy_face.png'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.src = '/assets/merchboy_face.png'} />
+                                    <div style={{ position: 'relative' }}>
+                                        <img src={user.avatar_url || '/assets/merchboy_face.png'} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                                        {user.isBot && <div style={{ position: 'absolute', bottom: -2, right: -2, width: '8px', height: '8px', background: 'red', borderRadius: '50%', border: '1px solid black' }} title="Hostile" />}
+                                    </div>
+                                    <div>
+                                        <div style={{ color: '#fff', fontSize: '0.9rem' }}>{user.display_name}</div>
+                                        <div style={{ color: '#666', fontSize: '0.7rem' }}>{user.squad || 'FREELANCER'}</div>
+                                    </div>
+                                    <div style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>⚔️</div>
                                 </div>
-                                <div style={{
-                                    position: 'absolute', bottom: 0, right: 0,
-                                    width: '8px', height: '8px',
-                                    background: '#00ff00', borderRadius: '50%',
-                                    border: '1px solid black'
-                                }}></div>
-                            </div>
-
-                            {/* INFO */}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {user.display_name}
-                                </div>
-                                <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
-                                    💰 {user.coins?.toLocaleString() || 0}
-                                </div>
-                            </div>
-
-                            {/* ACTIONS */}
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation(); // Don't trigger profile view
-                                        handleChallenge(user);
-                                    }}
-                                    title="Challenge"
-                                    style={{
-                                        background: 'var(--neon-pink)',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        width: '24px', height: '24px',
-                                        cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '0.8rem',
-                                        color: 'white'
-                                    }}
-                                >
-                                    ⚔️
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Dummy User for Demo if empty (User Feedback: "Visualizing community is huge") */}
-                    {onlineUsers.length === 0 && !loading && (
-                        <div style={{ marginTop: '20px', borderTop: '1px dashed #333', paddingTop: '10px' }}>
-                            <div style={{ fontSize: '0.7rem', color: '#444', textAlign: 'center', marginBottom: '10px' }}>OFFLINE SIMULATION</div>
-                            <div
-                                className="glass-panel"
-                                style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8, cursor: 'pointer' }}
-                                onClick={() => handleProfileClick({ display_name: 'Bot_Alpha', avatar_url: null, coins: 99999 })}
-                            >
-                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#333' }}></div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '0.9rem', color: '#666' }}>Bot_Alpha</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#444' }}>AFK</div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* FOOTER */}
-                <div style={{ padding: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                    <Link to="/profile" style={{
-                        color: 'var(--neon-blue)', textDecoration: 'none', fontSize: '0.8rem',
-                        fontWeight: 'bold', letterSpacing: '1px'
-                    }}>
-                        MY BRO CARD 🆔
-                    </Link>
-                </div>
+                {/* INPUT AREA (CHAT ONLY) */}
+                {activeTab === 'CHAT' && (
+                    <form onSubmit={handleSendMessage} style={{ padding: '15px', borderTop: '1px solid #333', display: 'flex', gap: '10px' }}>
+                        <input
+                            value={inputText}
+                            onChange={e => setInputText(e.target.value)}
+                            placeholder="Broadcast to void..."
+                            style={{
+                                flex: 1, background: '#111', border: '1px solid #333', borderRadius: '4px',
+                                padding: '10px', color: 'white', fontFamily: 'inherit'
+                            }}
+                        />
+                        <button type="submit" style={{ background: 'var(--neon-blue)', border: 'none', borderRadius: '4px', color: 'black', fontWeight: 'bold', cursor: 'pointer', padding: '0 15px' }}>SEND</button>
+                    </form>
+                )}
             </div>
         </>
     );

@@ -6,9 +6,13 @@ const SquadContext = createContext();
 export const useSquad = () => useContext(SquadContext);
 
 export const SquadProvider = ({ children }) => {
-    // Persistent User Squad
-    const [userSquad, setUserSquad] = useState(() => {
-        return localStorage.getItem('userSquad') || null;
+    // Persistent User Squad (Team)
+    const [userSquad, setUserSquad] = useState(() => localStorage.getItem('userSquad') || null);
+
+    // Persistent Recruits (BroFinder Matches)
+    const [recruits, setRecruits] = useState(() => {
+        const saved = localStorage.getItem('squadRecruits');
+        return saved ? JSON.parse(saved) : [];
     });
 
     // Global State
@@ -18,12 +22,23 @@ export const SquadProvider = ({ children }) => {
         VOID: 432000
     });
 
-    // Save Squad selection
+    // Save persistence
     useEffect(() => {
-        if (userSquad) {
-            localStorage.setItem('userSquad', userSquad);
-        }
+        if (userSquad) localStorage.setItem('userSquad', userSquad);
     }, [userSquad]);
+
+    useEffect(() => {
+        localStorage.setItem('squadRecruits', JSON.stringify(recruits));
+    }, [recruits]);
+
+
+    const recruitMember = (member) => {
+        setRecruits(prev => [...prev, { ...member, joinedAt: Date.now(), xp: 0, level: 1 }]);
+    };
+
+    const fireMember = (id) => {
+        setRecruits(prev => prev.filter(m => m.id !== id));
+    };
 
     // LIVE Global Warfare (Aggregation)
     useEffect(() => {
@@ -73,7 +88,7 @@ export const SquadProvider = ({ children }) => {
     };
 
     return (
-        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad, getSquadDetails }}>
+        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad, getSquadDetails, recruits, recruitMember, fireMember }}>
             {children}
         </SquadContext.Provider>
     );

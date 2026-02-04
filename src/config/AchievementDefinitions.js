@@ -95,7 +95,9 @@ export const ACHIEVEMENTS = [ // Updated 2026-01-29
     { id: 'secret_leet', title: '1337', description: 'Have exactly 1337 coins.', reward: 'Hacker Mask', game: 'Hidden', condition: () => getCoins() === 1337 },
     { id: 'secret_love', title: 'Self Love', description: 'Click your own profile.', reward: 'Heart', game: 'Hidden', condition: (s) => s.viewedProfile === true },
     { id: 'secret_konami', title: 'The Code', description: 'Enter Konami Code.', reward: 'Contra Gun', game: 'Hidden', condition: (s) => s.konamiActivated === true },
-    { id: 'secret_404', title: 'Lost', description: 'Visit a 404 page.', reward: 'Map', game: 'Hidden', condition: () => false }
+    { id: 'secret_404', title: 'Lost', description: 'Visit a 404 page.', reward: 'Map', game: 'Hidden', condition: () => false },
+    { id: 'ghost_badge', title: 'The Signal', description: 'Decoded the Ghost Frequency.', reward: 'Spectral Badge', game: 'Hidden', condition: () => getShop().unlocked.includes('ghost_badge') },
+    { id: 'radio_dev', title: 'Root Access', description: 'Override System Security.', reward: 'Dev Tuner', game: 'Hidden', condition: () => getShop().unlocked.includes('radio_dev') }
 
     // TOTAL: ~66-67 Achievements
 ];

@@ -25,5 +25,23 @@ export const BLACK_MARKET_ITEMS = [
         icon: '💾',
         type: 'decor',
         effect: 'mine_coins'
+    },
+    {
+        id: 'warp_drive',
+        name: 'WARP CORE',
+        description: 'Finish current Adventure INSTANTLY.',
+        price: 2000,
+        icon: '🌀',
+        type: 'consumable',
+        effect: 'warp_speed'
+    },
+    {
+        id: 'dev_key',
+        name: 'ROOT ACCESS',
+        description: 'Unlocks Debug Mode... don\'t tell Mom.',
+        price: 99999,
+        icon: '🗝️',
+        type: 'consumable',
+        effect: 'unlock_debug'
     }
 ];

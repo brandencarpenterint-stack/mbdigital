@@ -8,6 +8,7 @@
   --neon-blue: #00f3ff;
   --neon-pink: #bc13fe;
   --neon-gold: #ffd700;
+  --neon-green: #00ff00;
 
   --glass-surface: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
@@ -52,6 +53,106 @@ body {
 
   100% {
     background-position: 0% 50%;
+  }
+}
+
+/* NEW ANIMATIONS */
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-2px, 2px);
+  }
+
+  40% {
+    transform: translate(-2px, -2px);
+  }
+
+  60% {
+    transform: translate(2px, 2px);
+  }
+
+  80% {
+    transform: translate(2px, -2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
   }
 }
 
@@ -145,4 +246,43 @@ h4 {
   100% {
     transform: translateY(100%);
   }
+}
+
+/* --- THEME ENGINE --- */
+
+body.theme_matrix {
+  --bg-deep: #020502;
+  --neon-blue: #00ff41;
+  --neon-pink: #008f11;
+  --neon-gold: #0d0208;
+  --text-primary: #00ff41;
+  --text-secondary: #003b00;
+  --glass-surface: rgba(0, 20, 0, 0.7);
+  --glass-border: #003b00;
+  --font-display: 'Courier New', monospace;
+  --font-main: 'Courier New', monospace;
+}
+
+body.theme_sunset {
+  --bg-deep: #2d1b2e;
+  --neon-blue: #ff0055;
+  --neon-pink: #ffcc00;
+  --text-primary: #ffeb3b;
+  --glass-surface: rgba(255, 0, 85, 0.1);
+}
+
+body.theme_space {
+  --bg-deep: #000000;
+  --neon-blue: #ffffff;
+  --neon-pink: #505050;
+  --glass-surface: rgba(255, 255, 255, 0.05);
+}
+
+body.theme_gold {
+  --bg-deep: #1a1a00;
+  --neon-blue: #DAA520;
+  --neon-pink: #FFD700;
+  --text-primary: #FFD700;
+  --glass-surface: rgba(255, 215, 0, 0.1);
+  --glass-border: #FFD700;
 }

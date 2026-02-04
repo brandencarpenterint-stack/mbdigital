@@ -138,4 +138,5 @@ export const DECOR_ITEMS = [
     { id: 'furn_ufo', name: 'Model UFO', type: 'furniture', price: 1500, icon: '🛸', desc: 'I want to believe.', style: { fontSize: '2rem', animation: 'float 2s infinite' } },
     { id: 'furn_duck', name: 'Giant Duck', type: 'furniture', price: 400, icon: '🦆', desc: 'Mega quack.', style: { fontSize: '2rem' } },
     { id: 'furn_robot', name: 'Toy Robot', type: 'furniture', price: 700, icon: '🤖', desc: 'Beep boop.', style: { fontSize: '2rem' } },
+    { id: 'furn_konami', name: 'Retro Controller', type: 'furniture', price: 0, icon: '🎮', desc: 'The Classic.', style: { fontSize: '2rem', filter: 'drop-shadow(0 0 5px red)' }, hidden: true },
 ];

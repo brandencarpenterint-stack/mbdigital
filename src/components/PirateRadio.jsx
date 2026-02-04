@@ -6,6 +6,7 @@ const TRACKS = [
     { title: "Lofi Study", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Elipsis.mp3", duration: "Stream" },
     { title: "CPU Talk", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/BoxCat_Games/Nameless_the_Hackers_RPG_Soundtrack/BoxCat_Games_-_10_-_CPU_Talk.mp3", duration: "Stream" },
     { title: "Night Float", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3", duration: "Stream" },
+    { title: "THE SIGNAL", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ketsa/Raising_Frequency/Ketsa_-_10_-_Raising_Frequency.mp3", duration: "Encrypted" },
 ];
 
 const PirateRadio = () => {

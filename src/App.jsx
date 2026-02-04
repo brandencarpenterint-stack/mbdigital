@@ -11,6 +11,12 @@ const SubSlayer = lazy(() => import('./pages/SubSlayer'));
 const HustleMode = lazy(() => import('./pages/HustleMode'));
 const BroCard = lazy(() => import('./pages/BroCard'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const MerchLab = lazy(() => import('./pages/MerchLab'));
+const Terminal = lazy(() => import('./pages/Terminal'));
+const CryptoExchange = lazy(() => import('./pages/CryptoExchange'));
+const BroFinder = lazy(() => import('./pages/BroFinder'));
+const TheArena = lazy(() => import('./pages/TheArena'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 
 // GAMES
 const SnakeGame = lazy(() => import('./games/Snake/SnakeGame'));
@@ -27,11 +33,18 @@ const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
 const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
 
 import CosmicBackground from './components/CosmicBackground';
+import PageTransition from './components/PageTransition';
+
+import GlobalEventOverlay from './components/GlobalEventOverlay';
+import { useTime } from './context/TimeContext';
 
 function App() {
+  const { isNight } = useTime() || { isNight: false };
   return (
     <>
+      <PageTransition />
       <CosmicBackground />
+      <GlobalEventOverlay />
       <div style={{
         position: 'fixed',
         top: 0,
@@ -44,6 +57,16 @@ function App() {
         zIndex: 9999,
         opacity: 0.4
       }} />
+
+      {/* TIME OVERLAY */}
+      {isNight && (
+        <div style={{
+          position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1,
+          background: 'rgba(0, 5, 20, 0.4)', // Dark blue tint
+          mixBlendMode: 'multiply'
+        }} />
+      )}
+
       <Suspense fallback={<div style={{ color: 'white', textAlign: 'center', marginTop: '100px' }}>LOADING GAME...</div>}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -57,6 +80,12 @@ function App() {
             <Route path="profile" element={<BroCard />} />
             <Route path="arcade" element={<ArcadeHub />} />
             <Route path="shop" element={<ShopPage />} />
+            <Route path="merch-lab" element={<MerchLab />} />
+            <Route path="terminal" element={<Terminal />} />
+            <Route path="exchange" element={<CryptoExchange />} />
+            <Route path="bro-finder" element={<BroFinder />} />
+            <Route path="arena" element={<TheArena />} />
+            <Route path="leaderboard" element={<Leaderboard />} />
 
             {/* Game Routes Placeholders */}
             <Route path="arcade/snake" element={<SnakeGame />} />

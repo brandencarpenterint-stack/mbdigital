@@ -10,6 +10,7 @@ const SocialSidebar = React.lazy(() => import('./SocialSidebar'));
 
 import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
+import PirateRadioWidget from './PirateRadioWidget';
 import { useSettings } from '../context/SettingsContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import { useTheme } from '../context/ThemeContext';
@@ -22,6 +23,12 @@ import useRetroSound from '../hooks/useRetroSound';
 import CursorTrail from './CursorTrail';
 import './Layout.css';
 
+const FACES = [
+    '/assets/merchboy_face.png',
+    '/assets/boy_face.png',
+    '/assets/hustle_boy.png'
+];
+
 const Layout = () => {
     const location = useLocation();
     // const [showProfile, setShowProfile] = useState(false); // REPLACED BY GLOBAL CONTEXT
@@ -32,10 +39,12 @@ const Layout = () => {
     const [showNotifications, setShowNotifications] = useState(false);
 
     // Contexts
-    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile } = useGamification() || { dailyState: null, shopState: null, userProfile: null };
+    // Consolidated useGamification call - extracting all needed values once
+    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile, addCoins, unlockAchievement, setShopState } = useGamification() || { dailyState: null, shopState: null, userProfile: null, addCoins: () => { }, unlockAchievement: () => { }, setShopState: () => { }, viewedProfile: null, setViewedProfile: () => { } };
+
     const { unreadCount } = useNotifications();
     const { soundEnabled, toggleSound } = useSettings();
-    const { getMood, isCritical } = usePocketBro() || { getMood: () => '🥚', isCritical: false };
+    const { getMood, isCritical, unlockDecor } = usePocketBro() || { getMood: () => '🥚', isCritical: false, unlockDecor: () => { } };
     const { setThemeId } = useTheme();
 
     // Glitch State
@@ -44,28 +53,55 @@ const Layout = () => {
 
     // Header Face Cycle
     const [faceIndex, setFaceIndex] = useState(0);
-    const { playClick } = useRetroSound();
 
-    const FACES = [
-        '/assets/merchboy_money.png', // Money Eyes
-        '/assets/merchboy_cat.png',   // Bear/Cat
-        '/assets/merchboy_bunny.png', // Bunny
-        '/assets/merchboy_face.png'   // Standard
-    ];
-
-    // Global Click Sound
-    useEffect(() => {
-        const handleClick = () => playClick();
-        window.addEventListener('mousedown', handleClick); // mousedown feels snappier than click
-        return () => window.removeEventListener('mousedown', handleClick);
-    }, [playClick]);
+    // AUDIO
+    const { playClick, playWin, playPowerUp } = useRetroSound();
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setFaceIndex(prev => (prev + 1) % FACES.length);
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        const merchboyCode = ['m', 'e', 'r', 'c', 'h', 'b', 'o', 'y'];
+
+        let konamiIndex = 0;
+        let merchIndex = 0;
+
+        const handleKeyDown = (e) => {
+            // KONAMI
+            if (e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    playWin();
+                    alert("COMMANDO MODE! +1337 COINS & CONTROLLER UNLOCKED 🎮");
+                    addCoins(1337);
+                    if (setShopState && !shopState?.unlocked?.includes('furn_konami')) {
+                        setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, 'furn_konami'] }));
+                    }
+                    if (unlockDecor) unlockDecor('furn_konami'); // Unlock in pocket bro
+
+                    import('../utils/confetti').then(module => module.triggerConfetti());
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+
+            // MERCHBOY
+            if (e.key.toLowerCase() === merchboyCode[merchIndex]) {
+                merchIndex++;
+                if (merchIndex === merchboyCode.length) {
+                    playPowerUp();
+                    alert("CREATOR MODE ACTIVATED. ⚡");
+                    addCoins(5000);
+                    // Could also max out Pocket Bro here if we exposed the setter
+                    merchIndex = 0;
+                }
+            } else {
+                merchIndex = 0;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [addCoins, playWin, playPowerUp, shopState?.unlocked, unlockDecor]);
 
     const isFullScreenGame = location.pathname.startsWith('/arcade/') && location.pathname !== '/arcade';
 
@@ -118,6 +154,7 @@ const Layout = () => {
     return (
         <div className="layout-container" style={{ paddingBottom: isFullScreenGame ? 0 : '120px' }}>
             <CursorTrail />
+            <PirateRadioWidget />
             {!isFullScreenGame && <HypeTicker />}
 
             {!isFullScreenGame && (

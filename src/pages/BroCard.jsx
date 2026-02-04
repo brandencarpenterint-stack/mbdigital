@@ -4,7 +4,7 @@ import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import html2canvas from 'html2canvas';
 
 const BroCard = () => {
-    const { userProfile, getLevelTitle } = useGamification() || {};
+    const { userProfile, getLevelTitle, unlockedAchievements } = useGamification() || {};
     const cardRef = useRef(null);
 
     // MOUSE TILT STATE
@@ -209,6 +209,21 @@ const BroCard = () => {
                                 <div style={labelStyle}>ID VERIFIED</div>
                                 <div style={{ ...valStyle, fontSize: '0.8rem', paddingTop: '4px' }}>{joinDate}</div>
                             </div>
+                        </div>
+
+                        {/* BADGES */}
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {unlockedAchievements?.slice(0, 10).map(achId => {
+                                // Simple visual for badge, ideally we look up the ACHIEVEMENT def for icon?
+                                // We need to import ACHIEVEMENTS in this file to look up icon/color?
+                                // Or just a placeholder for now.
+                                return (
+                                    <div key={achId} style={{ width: '24px', height: '24px', background: 'gold', borderRadius: '50%', border: '2px solid #fff', boxShadow: '0 0 5px gold' }} title={achId} />
+                                );
+                            })}
+                            {(!unlockedAchievements || unlockedAchievements.length === 0) && (
+                                <div style={{ fontSize: '0.7rem', color: '#444' }}>NO BADGES YET</div>
+                            )}
                         </div>
 
                         <div style={{ marginTop: '30px', height: '2px', background: '#333', position: 'relative' }}>

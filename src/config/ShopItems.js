@@ -107,6 +107,7 @@ export const SHOP_ITEMS = [
     { id: 'furn_cat_tree', type: 'decor', name: 'Cat Tower', price: 600, category: 'homedecor', slot: 'decor', description: 'For the cat.', icon: '🐈' },
     { id: 'furn_ufo', type: 'decor', name: 'Model UFO', price: 1500, category: 'homedecor', slot: 'decor', description: 'I want to believe.', icon: '🛸' },
     { id: 'rug_dance', type: 'decor', name: 'Dance Floor', price: 500, category: 'homedecor', slot: 'decor', description: 'Disco lights.', icon: '🕺' },
+    { id: 'furn_konami', type: 'decor', name: 'Retro Controller', price: 0, category: 'homedecor', slot: 'decor', description: 'Up Up Down Down...', icon: '🎮', hidden: true },
 
     // --- DASHBOARD THEMES ---
     { id: 'theme_default', type: 'theme', name: 'Neon Dark', price: 0, category: 'themes', slot: 'theme', description: 'Standard OS.', icon: '🌑' },
@@ -115,12 +116,25 @@ export const SHOP_ITEMS = [
     { id: 'theme_space', type: 'theme', name: 'Deep Space', price: 2000, category: 'themes', slot: 'theme', description: 'Among the stars.', icon: '🌌' },
     { id: 'theme_gold', type: 'theme', name: 'Midas OS', price: 10000, category: 'themes', slot: 'theme', description: 'Pure luxury.', icon: '🥇' },
 
+    // --- RADIO SKINS ---
+    { id: 'radio_default', type: 'radio_skin', name: 'Standard Issue', price: 0, category: 'radio', slot: 'radio_skin', description: 'Reliable receiver.', icon: '📻' },
+    { id: 'radio_wood', type: 'radio_skin', name: 'Vintage Wood', price: 1500, category: 'radio', slot: 'radio_skin', description: 'Grandpa\'s radio.', icon: '🪵' },
+    { id: 'radio_gold', type: 'radio_skin', name: 'Bling Box', price: 5000, category: 'radio', slot: 'radio_skin', description: 'Sound of money.', icon: '🏆' },
+    { id: 'radio_cyber', type: 'radio_skin', name: 'Netrunner', price: 2500, category: 'radio', slot: 'radio_skin', description: 'Translucent tech.', icon: '💾' },
+    { id: 'radio_dev', type: 'radio_skin', name: 'Dev Tuner', price: 99999, category: 'radio', slot: 'radio_skin', description: 'Debug Mode Enabled.', icon: '📟', hidden: true }, // Reward for finding freq
+
     // --- POWER UPS (CONSUMABLES) ---
     { id: 'snake_life', type: 'consumable', name: 'Extra Life', price: 200, category: 'powerups', description: 'Resurrect once in Snake.', icon: '❤️' },
     { id: 'snake_slow', type: 'consumable', name: 'Slo-Mo Pill', price: 150, category: 'powerups', description: 'Slow down time in Snake.', icon: '⏱️' },
     { id: 'fish_bait', type: 'consumable', name: 'Master Bait', price: 100, category: 'powerups', description: 'Guaranteed Rare bite.', icon: '🪱' },
     { id: 'flappy_shield', type: 'consumable', name: 'Energy Shield', price: 250, category: 'powerups', description: 'Crash protection (1 hit).', icon: '🛡️' },
     { id: 'brick_magnet', type: 'consumable', name: 'Magno-Paddle', price: 300, category: 'powerups', description: 'Catch the ball.', icon: '🧲' },
+
+    // --- BLACK MARKET (HIDDEN) ---
+    { id: 'hack_botnet_v1', type: 'upgrade', name: 'Botnet Mainframe', price: 5000, category: 'blackmarket', description: 'Passive +1 Fan/sec.', icon: '🤖', hidden: true },
+    { id: 'hack_insider', type: 'upgrade', name: 'Insider Chip', price: 2500, category: 'blackmarket', description: 'Market Analyze Accuracy.', icon: '👁️', hidden: true },
+    { id: 'hack_arena', type: 'upgrade', name: 'Crimson Code', price: 10000, category: 'blackmarket', description: 'Squad DMG +20%.', icon: '🩸', hidden: true },
+    { id: 'hack_tax', type: 'upgrade', name: 'Offshore Account', price: 7500, category: 'blackmarket', description: 'Merch Income +50%.', icon: '🏝️', hidden: true },
 ];
 
 export const CATEGORIES = [
@@ -132,5 +146,6 @@ export const CATEGORIES = [
     { id: 'pocketbro', name: 'Pocket Skins', icon: '🥚' },
     { id: 'homedecor', name: 'Home Decor', icon: '🛋️' },
     { id: 'themes', name: 'OS Themes', icon: '🎨' },
+    { id: 'radio', name: 'Radio Skins', icon: '📻' },
     { id: 'powerups', name: 'Power Ups', icon: '⚡' },
 ];

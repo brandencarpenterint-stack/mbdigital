@@ -38,5 +38,37 @@ export const UNDERGROUND_ITEMS = [
         icon: '🛢️',
         desc: 'Max Energy, but creates a mess.',
         effect: { energy: 100, hygiene: -100 }
+    },
+    {
+        id: 'arcade_overclock',
+        name: 'CPU Overclock',
+        price: 1500,
+        icon: '⚡',
+        desc: 'Boosts coin earnings in Arcade games by 20% (Permanent).',
+        effect: { passive: 'coin_boost_20' }
+    },
+    {
+        id: 'radio_scrambler',
+        name: 'Signal Scrambler',
+        price: 750,
+        icon: '📡',
+        desc: 'Increases chance to find Secret Frequencies.',
+        effect: { passive: 'signal_boost' }
+    },
+    {
+        id: 'hack_root',
+        name: 'Root Kit',
+        price: 5000,
+        icon: '💻',
+        desc: 'Bypass system time checks. Access Underground 24/7.',
+        effect: { passive: 'root_access' }
+    },
+    {
+        id: 'legacy_drive',
+        name: 'Legacy Drive',
+        price: 1000,
+        icon: '📼',
+        desc: 'Contains data from the Before Times.',
+        effect: { unlockLore: 'origin_story' }
     }
 ];

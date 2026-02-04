@@ -5,10 +5,11 @@ import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
 import useRetroSound from '../hooks/useRetroSound';
 import SquishyButton from '../components/SquishyButton';
+import { SHOP_ITEMS } from '../config/ShopItems';
 
 const SettingsPage = () => {
     const { soundEnabled, toggleSound } = useSettings();
-    const { getLevelInfo, userProfile, updateProfile, session, loginWithProvider, logout } = useGamification();
+    const { getLevelInfo, userProfile, updateProfile, session, loginWithProvider, logout, shopState, equipItem } = useGamification();
     const { showToast } = useToast();
     const { playBeep, playBoop } = useRetroSound();
 
@@ -151,6 +152,48 @@ const SettingsPage = () => {
                             ))}
                         </div>
                     )}
+                </section>
+
+                {/* 2. OS THEME (VISUALS) */}
+                <section className="glass-panel" style={{ padding: '25px', border: '1px solid var(--neon-blue)' }}>
+                    <h2 style={{ marginTop: 0, color: 'var(--neon-blue)', fontSize: '1.2rem', borderBottom: '1px solid rgba(0,255,255,0.1)', paddingBottom: '15px' }}>
+                        VISUAL SYSTEM
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '15px' }}>
+                        {SHOP_ITEMS.filter(item => item.category === 'themes').map(item => {
+                            const isOwned = item.price === 0 || shopState?.unlocked?.includes(item.id);
+                            const isActive = shopState?.equipped?.theme === item.id;
+
+                            return (
+                                <div
+                                    key={item.id}
+                                    onClick={() => {
+                                        if (isOwned) {
+                                            equipItem('themes', item.id);
+                                            playBoop();
+                                        } else {
+                                            showToast("LOCKED! Purchase in Shop.", "error");
+                                            playBeep(); // Error sound
+                                        }
+                                    }}
+                                    style={{
+                                        background: isActive ? 'var(--neon-blue)' : (isOwned ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.5)'),
+                                        color: isActive ? 'black' : (isOwned ? 'white' : '#555'),
+                                        padding: '10px', borderRadius: '10px',
+                                        cursor: isOwned ? 'pointer' : 'not-allowed',
+                                        border: isActive ? '2px solid white' : '1px solid #333',
+                                        textAlign: 'center', opacity: isOwned ? 1 : 0.6,
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>{item.icon}</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{item.name}</div>
+                                    {!isOwned && <div style={{ fontSize: '0.6rem', color: 'gold' }}>🔒 {item.price} CP</div>}
+                                    {isActive && <div style={{ fontSize: '0.6rem', fontWeight: '900', marginTop: '2px' }}>ACTIVE</div>}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </section>
 
                 {/* 2. AUDIO */}

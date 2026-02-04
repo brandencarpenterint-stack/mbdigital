@@ -18,7 +18,7 @@ const BOSS_HP_MAX = 50;
 const MAX_LIVES = 3; // INCREASED LIVES for fun
 
 const GalaxyDefender = () => {
-    const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
+    const { updateStat, incrementStat, shopState, addCoins, userProfile, stats, addZonePoints } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
     const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(MAX_LIVES);
@@ -55,11 +55,12 @@ const GalaxyDefender = () => {
         animationId: null
     });
 
+    const sheetRef = useRef(null);
     useEffect(() => {
         const img = new Image();
-        img.src = '/assets/merchboy_face.png'; // Head Logo
-        bossImgRef.current = img;
-        return () => cancelAnimationFrame(gameState.current.animationId); // Cleanup on unmount
+        img.src = '/assets/galaxy_sheet.png';
+        sheetRef.current = img;
+        return () => cancelAnimationFrame(gameState.current.animationId);
     }, []);
 
     const startGame = () => {
@@ -87,7 +88,7 @@ const GalaxyDefender = () => {
             shake: 0,
             stars: [],
             powerups: [],
-            powerups: [],
+            particles: [],
             weapon: 'NORMAL',     // NORMAL, SPREAD, RAPID, LASER
             weaponTimer: 0,
             hasShield: false,
@@ -159,6 +160,13 @@ const GalaxyDefender = () => {
         // Gamification
         if (incrementStat) incrementStat('gamesPlayed', 'galaxy');
         if (addCoins) addCoins(Math.floor(finalScore / 10)); // 1 coin per 10 points
+
+        // ZONE CONTROL
+        if (addZonePoints && finalScore > 200) {
+            const points = Math.floor(finalScore / 20); // 500 score = 25 zone points (harder than cannon)
+            const squad = userProfile?.squad || 'CYBER';
+            addZonePoints('galaxy', points, squad);
+        }
     };
 
     const spawnEnemy = (timestamp) => {
@@ -363,6 +371,20 @@ const GalaxyDefender = () => {
             const playerY = GAME_HEIGHT - 80;
             const pRect = { x: playerX, y: playerY, w: PLAYER_SIZE, h: PLAYER_SIZE };
 
+            // Helper: Spawn Explosion
+            const spawnExplosion = (x, y) => {
+                for (let k = 0; k < 10; k++) {
+                    state.particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 1.0,
+                        color: Math.random() > 0.5 ? 'orange' : 'yellow',
+                        size: Math.random() * 4 + 2
+                    });
+                }
+            };
+
             // Hit by Enemy
             for (let i = state.enemies.length - 1; i >= 0; i--) {
                 const e = state.enemies[i];
@@ -370,6 +392,7 @@ const GalaxyDefender = () => {
                 if (e.x < pRect.x + pRect.w && e.x + ENEMY_SIZE > pRect.x &&
                     e.y < pRect.y + pRect.h && e.y + ENEMY_SIZE > pRect.y) {
                     takeDamage();
+                    spawnExplosion(e.x + ENEMY_SIZE / 2, e.y + ENEMY_SIZE / 2);
                     state.enemies.splice(i, 1);
                 }
                 // Enemy reached bottom
@@ -377,6 +400,10 @@ const GalaxyDefender = () => {
                     state.enemies.splice(i, 1); // Despawn
                 }
             }
+
+            // Update Particles
+            state.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.05; });
+            state.particles = state.particles.filter(p => p.life > 0);
 
             // Hit by Boss Laser
             for (let i = state.enemyLasers.length - 1; i >= 0; i--) {
@@ -414,186 +441,93 @@ const GalaxyDefender = () => {
 
         // --- DRAW ---
 
+        // --- DRAW ---
+
         // Player
         const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
         const playerYDraw = GAME_HEIGHT - 80;
 
-        if (state.invincible % 10 < 5) { // Flash if invincible
-            ctx.save();
-            ctx.translate(playerXDraw + PLAYER_SIZE / 2, playerYDraw + PLAYER_SIZE / 2);
+        // Sprite Sheet geometry
+        // Assuming 3x3 grid or similar based on prompt.
+        // Row 0: Player (Left, Idle, Right)
+        // Row 1: Enemy 1, Enemy 2, Bullet/Explosion?
+        // Let's assume standardized 64x64 or similar cells.
+        // Prompt said "Grid arrangement".
+        // Let's try dynamic sizing or fixed.
+        // Let's assume 3 Cols, 3 Rows.
 
-            // Flames
-            ctx.fillStyle = `rgba(0, 200, 255, ${0.5 + Math.random() * 0.5})`;
-            ctx.beginPath();
-            ctx.moveTo(-15, 20);
-            ctx.lineTo(0, 40 + Math.random() * 10);
-            ctx.lineTo(15, 20);
-            ctx.fill();
-
-            // Ship
-            const currentSkin = shopState?.equipped?.galaxy || 'ship_default';
-
-            if (currentSkin === 'ship_ufo') {
-                // UFO Skin
-                ctx.fillStyle = '#00ff88';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 25, 10, 0, 0, Math.PI * 2); // Saucer
-                ctx.fill();
-
-                // Dome
-                ctx.fillStyle = 'rgba(200, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.arc(0, -5, 12, Math.PI, 0);
-                ctx.fill();
-
-                // Lights
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(-15, 0, 3, 0, Math.PI * 2);
-                ctx.arc(15, 0, 3, 0, Math.PI * 2);
-                ctx.fill();
-
-            } else if (currentSkin === 'ship_dragon') {
-                // DRAGON
-                ctx.fillStyle = '#00aa00';
-                // Head
-                ctx.beginPath();
-                ctx.moveTo(0, -30);
-                ctx.lineTo(10, -10);
-                ctx.lineTo(-10, -10);
-                ctx.fill();
-                // Wings
-                ctx.fillStyle = '#008800';
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(30, 20);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(0, 40); // Tail
-                ctx.lineTo(-10, 20);
-                ctx.lineTo(-30, 20);
-                ctx.fill();
-                // Eyes
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(-5, -20, 2, 0, Math.PI * 2);
-                ctx.arc(5, -20, 2, 0, Math.PI * 2);
-                ctx.fill();
-
+        const drawSprite = (row, col, x, y, w, h) => {
+            if (sheetRef.current && sheetRef.current.complete) {
+                const sw = sheetRef.current.width / 3;
+                const sh = sheetRef.current.height / 3;
+                ctx.drawImage(sheetRef.current, col * sw, row * sh, sw, sh, x, y, w, h);
             } else {
-                // Default Ship
-                ctx.fillStyle = '#ccc';
-                ctx.beginPath();
-                ctx.moveTo(0, -30);
-                ctx.lineTo(20, 10);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(-10, 20);
-                ctx.lineTo(-20, 10);
-                ctx.closePath();
-                ctx.fill();
-
-                // Cockpit
-                ctx.fillStyle = '#00ccff';
-                ctx.beginPath();
-                ctx.ellipse(0, -5, 5, 10, 0, 0, Math.PI * 2);
-                ctx.fill();
+                // Fallback
+                ctx.fillStyle = 'magenta';
+                ctx.fillRect(x, y, w, h);
             }
+        };
 
-            ctx.restore();
-            // Shield Visual
+        if (state.invincible % 10 < 5) {
+            ctx.save();
+            // Determine Player Frame: 
+            // We only have strict lanes, but let's animate banking slightly if moving?
+            // Since lane jump is instant, we can just use Idle (Row 0, Col 1).
+            // Or use Left/Right based on recent movement? Too complex for now.
+            // IDLE: Row 0, Col 1.
+            drawSprite(0, 1, playerXDraw, playerYDraw, PLAYER_SIZE, PLAYER_SIZE);
+
+            // Shield
             if (state.hasShield) {
-                ctx.strokeStyle = '#00ffff';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(0, 0, 40 + Math.sin(Date.now() / 100) * 2, 0, Math.PI * 2);
-                ctx.stroke();
+                ctx.strokeStyle = 'cyan';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(playerXDraw + PLAYER_SIZE / 2, playerYDraw + PLAYER_SIZE / 2, 35, 0, Math.PI * 2); ctx.stroke();
             }
-
             ctx.restore();
         }
 
-        // Bullets
-        const currentBullet = shopState?.equipped?.galaxy_bullet || 'bullet_laser';
+        // Enemies
+        state.enemies.forEach(e => {
+            // Row 1. Col 0 (Bug) or 1 (Saucer).
+            // Alternate based on spawn or random?
+            const type = (e.x + e.y) % 20 > 10 ? 0 : 1;
+            drawSprite(1, type, e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
+        });
 
+        // Bullets
         ctx.fillStyle = '#ffcc00';
         state.bullets.forEach(b => {
-            if (currentBullet === 'bullet_donut') {
-                ctx.font = '20px serif';
-                ctx.fillText('🍩', b.x - 5, b.y + 10);
-            } else if (currentBullet === 'bullet_cat') {
-                ctx.font = '20px serif';
-                ctx.fillText('🐱', b.x - 5, b.y + 10);
-            } else {
-                ctx.fillRect(b.x, b.y, BULLET_SIZE, 20);
-            }
+            // Row 1, Col 2? Or draw rect.
+            // Let's stick to glow rect for bullets, cleaner.
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(b.x, b.y, b.w || BULLET_SIZE, b.h || 20);
+            ctx.shadowBlur = 10; ctx.shadowColor = 'red';
         });
-
-        // Enemies
-        ctx.fillStyle = '#ff0055';
-        ctx.font = '40px serif';
-        state.enemies.forEach(e => {
-            ctx.fillText('👾', e.x, e.y + 40);
-        });
-
-        // Boss Lasers
-        ctx.fillStyle = '#ff0000';
-        state.enemyLasers.forEach(l => {
-            ctx.fillRect(l.x, l.y, l.width, l.height);
-        });
-
-        // Powerups
-        // Powerups
-        state.powerups.forEach(p => {
-            ctx.fillStyle = p.type === 'SHIELD' ? '#00ffff' : 'gold';
-            ctx.beginPath();
-            ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'black';
-            ctx.font = 'bold 12px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            let icon = 'P';
-            if (p.type === 'SPREAD') icon = '⚡';
-            if (p.type === 'RAPID') icon = '🚀';
-            if (p.type === 'SHIELD') icon = '🛡️';
-            ctx.fillText(icon, p.x + 15, p.y + 15);
-        });
+        ctx.shadowBlur = 0; // Reset
 
         // Boss
         if (state.boss) {
-            if (state.boss.flash > 0) {
-                ctx.globalCompositeOperation = 'source-atop';
-                ctx.fillStyle = 'white';
-                state.boss.flash--;
-            }
+            // Row 2, Col 0 (Skull)
+            // Shake/Flash
+            if (state.boss.flash > 0) ctx.globalAlpha = 0.5;
+            drawSprite(2, 0, state.boss.x, state.boss.y, BOSS_SIZE, BOSS_SIZE);
+            ctx.globalAlpha = 1;
 
-            if (bossImgRef.current && bossImgRef.current.complete) {
-                // Silly Boss Animations based on state.boss.type
-                ctx.save();
-                ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
-
-                // Bobbing effect
-                const bob = Math.sin(Date.now() / 200) * 10;
-                ctx.translate(0, bob);
-
-                // Rotate slightly
-                ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
-
-                ctx.drawImage(bossImgRef.current, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
-                ctx.restore();
-            } else {
-                // Fallback Emoji Boss
-                ctx.font = '80px Arial';
-                ctx.fillText('👹', state.boss.x + 10, state.boss.y + 80);
-            }
-
-            // Boss HP
-            const percent = state.boss.hp / BOSS_HP_MAX;
-            ctx.fillStyle = '#333';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
-            ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
+            // HP Bar
+            const pct = state.boss.hp / (BOSS_HP_MAX * state.level);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(state.boss.x, state.boss.y - 10, BOSS_SIZE, 5);
+            ctx.fillStyle = 'lime';
+            ctx.fillRect(state.boss.x, state.boss.y - 10, BOSS_SIZE * pct, 5);
         }
+
+        // Particles
+        state.particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
 
         ctx.restore(); // Undo shake
 

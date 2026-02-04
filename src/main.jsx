@@ -11,6 +11,7 @@ import { SquadProvider } from './context/SquadContext'
 import { InventoryProvider } from './context/InventoryContext'
 import { ToastProvider } from './context/ToastContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { TimeProvider } from './context/TimeContext'
 import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
@@ -18,21 +19,23 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <ThemeProvider>
         <SettingsProvider>
-          <ToastProvider>
-            <GamificationProvider>
-              <NotificationProvider>
-                <PocketBroProvider>
-                  <SquadProvider>
-                    <InventoryProvider>
-                      <BrowserRouter>
-                        <App />
-                      </BrowserRouter>
-                    </InventoryProvider>
-                  </SquadProvider>
-                </PocketBroProvider>
-              </NotificationProvider>
-            </GamificationProvider>
-          </ToastProvider>
+          <TimeProvider>
+            <ToastProvider>
+              <GamificationProvider>
+                <NotificationProvider>
+                  <PocketBroProvider>
+                    <SquadProvider>
+                      <InventoryProvider>
+                        <BrowserRouter>
+                          <App />
+                        </BrowserRouter>
+                      </InventoryProvider>
+                    </SquadProvider>
+                  </PocketBroProvider>
+                </NotificationProvider>
+              </GamificationProvider>
+            </ToastProvider>
+          </TimeProvider>
         </SettingsProvider>
       </ThemeProvider>
     </ErrorBoundary>

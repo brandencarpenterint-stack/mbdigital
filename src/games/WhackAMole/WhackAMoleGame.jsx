@@ -5,244 +5,387 @@ import { feedService } from '../../utils/feed';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
-import GameOverCard from '../../components/GameOverCard';
 
-const MOLE_COUNT = 16;
-const GAME_DURATION = 30;
+// CONSTANTS
+const GRID_ROWS = 4;
+const GRID_COLS = 4;
+const CELL_SIZE = 100; // px
+const GAP = 10;
+const GAME_WIDTH = (CELL_SIZE * GRID_COLS) + (GAP * (GRID_COLS - 1)) + 40; // + Padding
+const GAME_HEIGHT = (CELL_SIZE * GRID_ROWS) + (GAP * (GRID_ROWS - 1)) + 40;
+
+const SPRITE_SHEET_SRC = '/assets/whack_sheet.png';
+
+const MOLE_TYPES = {
+    normal: { row: 1, score: 10, hp: 1 },
+    cyber: { row: 2, score: 50, hp: 2 }, // Tougher
+    gold: { row: 3, score: 100, hp: 1, speed: 2.0 } // Fast
+};
 
 const WhackAMoleGame = () => {
+    // Contexts
     const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
-    const [moles, setMoles] = useState(new Array(MOLE_COUNT).fill(false));
+    const { playJump, playWin, playCrash, playCollect, playBeep } = useRetroSound();
+
+    // State
+    const canvasRef = useRef(null);
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('whackHighScore')) || 0);
-    const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
-
-    // Sync local high score with global stat on mount
-    useEffect(() => {
-        if (stats?.whackHighScore > highScore) {
-            setHighScore(stats.whackHighScore);
-        }
-    }, [stats]);
+    const [timeLeft, setTimeLeft] = useState(30);
     const [gameActive, setGameActive] = useState(false);
-    const [gameOver, setGameOver] = useState(false);
+    const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('whackHighScore')) || 0);
 
-    const { playJump, playWin } = useRetroSound();
+    // Refs
+    const gameState = useRef({
+        moles: [], // { row, col, type, state: 'UP'|'DOWN'|'HIT', animTimer, yOffset }
+        particles: [], // { x, y, dx, dy, life, color, size }
+        hammer: { x: 0, y: 0, state: 'IDLE', timer: 0 },
+        shake: 0,
+        nextSpawn: 0,
+        sheet: null
+    });
+    const animId = useRef(null);
 
-    // Timer Ref to clear intervals
-    const popTimerRef = useRef(null);
-    const gameTimerRef = useRef(null);
+    // Load High Score
+    useEffect(() => {
+        if (stats?.whackHighScore > highScore) setHighScore(stats.whackHighScore);
+    }, [stats]);
 
-    const [moleTypes, setMoleTypes] = useState(new Array(MOLE_COUNT).fill('default'));
+    // Load Sprites
+    useEffect(() => {
+        const img = new Image();
+        img.src = SPRITE_SHEET_SRC;
+        gameState.current.sheet = img;
+    }, []);
 
-    const endGame = () => {
-        clearInterval(gameTimerRef.current);
-        clearTimeout(popTimerRef.current);
-        setGameActive(false);
-        setGameOver(true);
-        setMoles(new Array(MOLE_COUNT).fill(false));
-        playWin(); // Fanfare
-
-        if (updateStat) updateStat('gamesPlayed', 'whack');
-
-        if (score > highScore) {
-            setHighScore(score);
-            if (updateStat) updateStat('whackHighScore', score);
-            triggerConfetti();
-
-            if (score > 100) {
-                const playerName = userProfile?.name || 'Player';
-                feedService.publish(`is a Whack-a-Mole Champion! Score: ${score} 🔨`, 'win', playerName);
-            }
-        }
-
-        // Award Coins (1 coin per 10 points)
-        if (addCoins) addCoins(Math.floor(score / 10));
-    };
-
-    const popMoles = () => {
-        const popTime = Math.random() * 800 + 400; // Random time
-        popTimerRef.current = setTimeout(() => {
-            if (!gameActive && timeLeft <= 0) return;
-
-            const newMoles = [...moles]; // Copy current state to avoid overwriting others if we want multi-mole (though currently it clears others? No, line 48 was creating new Array)
-            // Wait, previous logic was `new Array(MOLE_COUNT).fill(false)`. This meant only ONE mole at a time.
-            // Do we want only one? The user didn't specify multi-mole. Sticking to one for now but randomizing types.
-            const resetMoles = new Array(MOLE_COUNT).fill(false);
-
-            const randomIdx = Math.floor(Math.random() * MOLE_COUNT);
-            resetMoles[randomIdx] = true;
-            setMoles(resetMoles);
-
-            // Random Face
-            const types = ['default', 'cat', 'bunny', 'money'];
-            const newTypes = [...moleTypes];
-            newTypes[randomIdx] = types[Math.floor(Math.random() * types.length)];
-            setMoleTypes(newTypes);
-
-            popMoles();
-        }, popTime);
-    };
-
+    // --- GAME ENGINE ---
     const startGame = () => {
         setScore(0);
-        setTimeLeft(GAME_DURATION);
+        setTimeLeft(30);
         setGameActive(true);
-        setGameOver(false);
+        gameState.current.moles = [];
+        gameState.current.particles = [];
+        gameState.current.shake = 0;
 
-        // Start Game Timer
-        gameTimerRef.current = setInterval(() => {
+        let lastTime = performance.now();
+        const loop = (time) => {
+            const dt = time - lastTime;
+            lastTime = time;
+
+            update(dt);
+            draw();
+
+            if (gameActive) animId.current = requestAnimationFrame(loop);
+        };
+        animId.current = requestAnimationFrame(loop);
+
+        // Timer
+        const timerInterval = setInterval(() => {
             setTimeLeft(prev => {
                 if (prev <= 1) {
                     endGame();
+                    clearInterval(timerInterval);
                     return 0;
                 }
                 return prev - 1;
             });
         }, 1000);
 
-        // Start Pop Timer
-        popMoles();
+        return () => clearInterval(timerInterval);
     };
 
-    const handleWhack = (index) => {
-        if (!gameActive || !moles[index]) return;
+    const endGame = () => {
+        setGameActive(false);
+        cancelAnimationFrame(animId.current);
+        playWin();
 
-        setScore(prev => prev + 10);
-        playJump(); // Bonk
-        if (navigator.vibrate) navigator.vibrate(100); // Strongbonk
+        if (score > highScore) {
+            setHighScore(score);
+            if (updateStat) updateStat('whackHighScore', score);
+            triggerConfetti();
+        }
 
-        const newMoles = [...moles];
-        newMoles[index] = false;
-        setMoles(newMoles);
+        if (addCoins) addCoins(Math.floor(score / 10));
+        if (updateStat) updateStat('gamesPlayed', 'whack');
     };
 
-    useEffect(() => {
-        return () => {
-            clearInterval(gameTimerRef.current);
-            clearTimeout(popTimerRef.current);
-        };
-    }, []);
+    const spawnMole = () => {
+        // Find empty spots
+        const occupied = new Set(gameState.current.moles.map(m => `${m.col},${m.row}`));
+        const available = [];
+        for (let r = 0; r < GRID_ROWS; r++) {
+            for (let c = 0; c < GRID_COLS; c++) {
+                if (!occupied.has(`${c},${r}`)) available.push({ c, r });
+            }
+        }
 
-    const IMAGES = {
-        default: '/assets/merchboy_face.png',
-        cat: '/assets/merchboy_cat.png',
-        bunny: '/assets/merchboy_bunny.png',
-        money: '/assets/merchboy_money.png'
+        if (available.length === 0) return;
+
+        const spot = available[Math.floor(Math.random() * available.length)];
+
+        // Determine Type
+        const rand = Math.random();
+        let type = 'normal';
+        if (rand > 0.9) type = 'gold';
+        else if (rand > 0.7) type = 'cyber';
+
+        gameState.current.moles.push({
+            col: spot.c,
+            row: spot.r,
+            type: type,
+            state: 'UP', // Rising
+            yOffset: CELL_SIZE, // Starts below
+            timer: 0,
+            maxTime: type === 'gold' ? 60 : 120, // Frames to stay up
+            hp: MOLE_TYPES[type].hp
+        });
+    };
+
+    const update = (dt) => {
+        const state = gameState.current;
+
+        // Shake Decay
+        if (state.shake > 0) state.shake *= 0.9;
+        if (state.shake < 0.5) state.shake = 0;
+
+        // Spawning
+        state.nextSpawn--;
+        if (state.nextSpawn <= 0) {
+            spawnMole();
+            state.nextSpawn = Math.max(20, 60 - (score * 0.1)); // Get faster
+        }
+
+        // Update Moles
+        for (let i = state.moles.length - 1; i >= 0; i--) {
+            const m = state.moles[i];
+
+            if (m.state === 'UP') {
+                m.yOffset *= 0.8; // Easing up
+                m.timer++;
+                if (m.timer > m.maxTime) {
+                    m.state = 'DOWN'; // Time up
+                }
+            } else if (m.state === 'DOWN') {
+                m.yOffset += (CELL_SIZE - m.yOffset) * 0.1;
+                if (m.yOffset > CELL_SIZE * 0.9) {
+                    state.moles.splice(i, 1);
+                    continue;
+                }
+            } else if (m.state === 'HIT') {
+                m.timer++;
+                if (m.timer > 20) { // Show hit frame for 20 frames
+                    state.moles.splice(i, 1);
+                    continue;
+                }
+            }
+        }
+
+        // Update Hammer
+        if (state.hammer.state === 'SMASH') {
+            state.hammer.timer--;
+            if (state.hammer.timer <= 0) state.hammer.state = 'IDLE';
+        }
+
+        // Particles
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+            const p = state.particles[i];
+            p.x += p.dx;
+            p.y += p.dy;
+            p.dy += 0.5; // Gravity
+            p.life -= 0.05;
+            if (p.life <= 0) state.particles.splice(i, 1);
+        }
+    };
+
+    const draw = () => {
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
+        const state = gameState.current;
+        const sheet = state.sheet;
+
+        // Clear & Background
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // Shake
+        ctx.save();
+        if (state.shake > 0) {
+            ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
+        }
+
+        const OFFSET_X = 20;
+        const OFFSET_Y = 20;
+
+        // Draw Grid / Holes
+        for (let r = 0; r < GRID_ROWS; r++) {
+            for (let c = 0; c < GRID_COLS; c++) {
+                const x = OFFSET_X + c * (CELL_SIZE + GAP);
+                const y = OFFSET_Y + r * (CELL_SIZE + GAP);
+
+                // Portal Hole (Row 0 of sheet)
+                // Use timer to animate portal?
+                if (sheet && sheet.complete) {
+                    const frame = Math.floor(Date.now() / 200) % 3;
+                    // Assuming sheet is roughly grid based.
+                    // Let's guess dimensions based on 3x5 grid described in prompt.
+                    // 3 columns, 5 rows.
+                    const sw = sheet.width / 3;
+                    const sh = sheet.height / 5;
+                    ctx.drawImage(sheet, frame * sw, 0, sw, sh, x, y, CELL_SIZE, CELL_SIZE);
+                } else {
+                    ctx.fillStyle = '#222';
+                    ctx.beginPath(); ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE / 2, CELL_SIZE / 2 - 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'cyan'; ctx.lineWidth = 2; ctx.stroke();
+                }
+            }
+        }
+
+        // Draw Moles (Masked by holes)
+        state.moles.forEach(m => {
+            const x = OFFSET_X + m.col * (CELL_SIZE + GAP);
+            const y = OFFSET_Y + m.row * (CELL_SIZE + GAP);
+
+            ctx.save();
+            // Clip to hole area
+            ctx.beginPath();
+            ctx.rect(x, y, CELL_SIZE, CELL_SIZE);
+            ctx.clip();
+
+            if (sheet && sheet.complete) {
+                const sw = sheet.width / 3;
+                const sh = sheet.height / 5;
+
+                // Row Mapping
+                const row = MOLE_TYPES[m.type].row;
+                const col = m.state === 'HIT' ? 1 : 0; // Col 0 Idle, Col 1 Hit
+
+                // Bounce UP
+                const drawY = y + m.yOffset;
+
+                ctx.drawImage(sheet, col * sw, row * sh, sw, sh, x, drawY, CELL_SIZE, CELL_SIZE);
+            } else {
+                // Fallback
+                ctx.fillStyle = m.type === 'normal' ? 'brown' : m.type === 'cyber' ? 'purple' : 'gold';
+                ctx.fillRect(x + 20, y + m.yOffset + 20, CELL_SIZE - 40, CELL_SIZE - 40);
+            }
+
+            ctx.restore();
+        });
+
+        // Particles
+        state.particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1.0;
+
+        // Hammer
+        const h = state.hammer;
+        if (h.state === 'SMASH') {
+            // Draw smash effect
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath(); ctx.arc(h.x, h.y, 40, 0, Math.PI * 2); ctx.fill();
+        }
+
+        ctx.restore();
+    };
+
+    // --- INPUT ---
+    const handleInput = (clientX, clientY) => {
+        if (!gameActive) return;
+
+        const rect = canvasRef.current.getBoundingClientRect();
+        const scaleX = GAME_WIDTH / rect.width;
+        const scaleY = GAME_HEIGHT / rect.height;
+
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+
+        // Check Hit
+        const OFFSET_X = 20;
+        const OFFSET_Y = 20;
+
+        // Find cell
+        const col = Math.floor((x - OFFSET_X) / (CELL_SIZE + GAP));
+        const row = Math.floor((y - OFFSET_Y) / (CELL_SIZE + GAP));
+
+        if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
+            // Check Collision
+            const idx = gameState.current.moles.findIndex(m => m.col === col && m.row === row && m.state === 'UP');
+
+            if (idx !== -1) {
+                const mole = gameState.current.moles[idx];
+                // HIT!
+                mole.hp--;
+                if (mole.hp <= 0) {
+                    mole.state = 'HIT';
+                    mole.timer = 0;
+
+                    const scoreVal = MOLE_TYPES[mole.type].score;
+                    setScore(s => s + scoreVal);
+                    playCrash(); // Smash sound
+
+                    // FX
+                    gameState.current.shake = 10;
+                    // Particles
+                    for (let i = 0; i < 10; i++) {
+                        gameState.current.particles.push({
+                            x: x, y: y,
+                            dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10,
+                            life: 1.0, color: mole.type === 'cyber' ? 'cyan' : 'orange', size: Math.random() * 5
+                        });
+                    }
+                } else {
+                    playBeep(); // Armor hit
+                }
+            } else {
+                playJump(); // Miss sound
+            }
+        }
+
+        gameState.current.hammer = { x, y, state: 'SMASH', timer: 5 };
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', color: '#ff0055', width: '100%', minHeight: '100vh', touchAction: 'manipulation' }}>
-            <style>{`
-                @keyframes spinMole {
-                    0% { transform: rotate(0deg); }
-                    25% { transform: rotate(-10deg); }
-                    75% { transform: rotate(10deg); }
-                    100% { transform: rotate(0deg); }
-                }
-                @keyframes fullSpin {
-                    0% { transform: rotate(0deg) scale(1); }
-                    50% { transform: rotate(180deg) scale(1.2); }
-                    100% { transform: rotate(360deg) scale(1); }
-                }
-            `}</style>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>WHACK-A-MOLE</h1>
+        <div style={{
+            minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            background: 'radial-gradient(circle, #222 0%, #000 100%)',
+            fontFamily: '"Orbitron", sans-serif', color: 'white'
+        }}>
+            <h1 style={{ fontSize: '3rem', color: 'cyan', textShadow: '0 0 20px cyan', marginBottom: '20px' }}>CYBER MOLE</h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '500px', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                <span>SCORE: {score}</span>
-                <span>TIME: {timeLeft}s</span>
-                <span>HIGH: {highScore}</span>
+            <div style={{ display: 'flex', gap: '40px', fontSize: '1.5rem', marginBottom: '20px', fontWeight: 'bold' }}>
+                <span style={{ color: 'gold' }}>SCORE: {score}</span>
+                <span style={{ color: timeLeft < 10 ? 'red' : 'white' }}>TIME: {timeLeft}</span>
+                <span style={{ color: '#aaa' }}>HIGH: {highScore}</span>
             </div>
 
-            {!gameActive && !gameOver && (
-                <SquishyButton onClick={startGame} style={{
-                    padding: '15px 40px',
-                    fontSize: '1.5rem',
-                    backgroundColor: '#ff0055',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    boxShadow: '0 5px 0 #990033',
-                    marginBottom: '20px'
-                }}>
-                    START GAME
-                </SquishyButton>
-            )}
-
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '10px',
-                padding: '10px',
-                width: '100%',
-                maxWidth: '600px',
-                aspectRatio: '1/1', // Keep square aspect ratio for the whole board
-                backgroundColor: '#2a2a40',
-                borderRadius: '20px',
-                border: '4px solid #ff0055',
-                boxShadow: '0 0 20px #ff005540'
-            }}>
-                {moles.map((isUp, index) => (
-                    <div
-                        key={index}
-                        onMouseDown={() => handleWhack(index)}
-                        onTouchStart={(e) => { e.preventDefault(); handleWhack(index); }}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            backgroundColor: '#151525', // Darker cell background (Ground)
-                            borderRadius: '15px', // Rounded square
-                            position: 'relative',
-                            cursor: 'pointer',
-                            overflow: 'hidden', // Clip the mole when down
-                            border: '2px solid #333',
-                            touchAction: 'none',
-                            boxShadow: 'inset 0 0 10px #000'
-                        }}
-                    >
-                        {/* Hole Visual (Shadow) */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '10%',
-                            left: '10%',
-                            width: '80%',
-                            height: '25%',
-                            backgroundColor: '#000',
-                            borderRadius: '50%',
-                            opacity: 0.6
-                        }} />
-
-                        {/* Mole */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: isUp ? '15%' : '-100%', // Pop up position
-                            left: '0',
-                            width: '100%', // Full width of cell to maximize size
-                            height: '90%',
-                            backgroundImage: `url(${IMAGES[moleTypes[index]] || IMAGES.default})`,
-                            backgroundSize: 'contain',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'bottom center',
-                            transition: 'bottom 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            animation: isUp ? 'fullSpin 2s linear infinite' : 'none',
-                            zIndex: 10
-                        }} />
-                    </div>
-                ))}
-            </div>
-
-            {gameOver && (
-                <GameOverCard
-                    score={score}
-                    bestScore={highScore}
-                    gameId="whack"
-                    onReplay={startGame}
-                    onHome={() => window.location.href = '/arcade'}
+            <div style={{ position: 'relative', border: '4px solid #ff0055', borderRadius: '10px', boxShadow: '0 0 30px #ff0055' }}>
+                <canvas
+                    ref={canvasRef}
+                    width={GAME_WIDTH}
+                    height={GAME_HEIGHT}
+                    onMouseDown={(e) => handleInput(e.clientX, e.clientY)}
+                    onTouchStart={(e) => { e.preventDefault(); handleInput(e.touches[0].clientX, e.touches[0].clientY); }}
+                    style={{ width: '90vw', maxWidth: '600px', height: 'auto', display: 'block', cursor: 'cell' }}
                 />
-            )}
 
-            <div style={{ marginTop: '20px' }}>
-                <img src="/assets/brokid-logo.png" alt="Brokid" style={{ width: '100px', opacity: 0.6 }} />
+                {!gameActive && (
+                    <div style={{
+                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                        <SquishyButton onClick={startGame} style={{
+                            padding: '20px 50px', fontSize: '2rem', background: 'cyan', color: 'black',
+                            fontWeight: 'bold', boxShadow: '0 0 20px cyan'
+                        }}>
+                            {timeLeft === 0 ? 'RETRY' : 'START'}
+                        </SquishyButton>
+                    </div>
+                )}
             </div>
+
+            <div style={{ marginTop: '20px', color: '#666' }}>Tap to Smash</div>
         </div>
     );
 };

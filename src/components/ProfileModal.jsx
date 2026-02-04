@@ -15,6 +15,9 @@ import StickerSprite from './StickerSprite';
 
 import { useToast } from '../context/ToastContext';
 import PocketRoom from './PocketRoom';
+import PocketPet from './pocket-pet/PocketPet';
+import SystemCodex from './SystemCodex';
+import { POCKET_BRO_STAGES } from '../context/PocketBroContext';
 import { DECOR_ITEMS } from '../config/DecorItems';
 import { supabase } from '../lib/supabaseClient';
 
@@ -56,8 +59,9 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         session,
         loginWithProvider,
         logout,
-        addFriend // Use the real function
-    } = useGamification();
+        addFriend, // Use the real function
+        unlockedLore
+    } = useGamification() || { unlockedLore: [] };
 
     const [activeTab, setActiveTab] = useState('PROFILE');
 
@@ -95,7 +99,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const [remoteProfile, setRemoteProfile] = useState(null);
     const [loadingRemote, setLoadingRemote] = useState(false);
 
-    // Initial Display: Use what we have (partial or full)
+    // Voidtial Display: Use what we have (partial or full)
     // If we successfully fetched a remote profile, use that. 
     // Otherwise fall back to the prop (partial), or myProfile (if not readOnly).
     const displayProfile = remoteProfile || readOnlyProfile || myProfile;
@@ -178,6 +182,20 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const [friendCode, setFriendCode] = useState('');
     const [visitingFriend, setVisitingFriend] = useState(null);
 
+    // --- DYNAMIC THEME HACKING ---
+    useEffect(() => {
+        // Apply the OS theme of the user we are viewing (Friend or Remote)
+        const effectiveTarget = visitingFriend || (isReadOnly ? displayProfile : null);
+
+        if (effectiveTarget?.pocket_state?.theme) {
+            setThemeId(effectiveTarget.pocket_state.theme);
+        } else {
+            setThemeId(originalTheme);
+        }
+
+        return () => setThemeId(originalTheme);
+    }, [visitingFriend, isReadOnly, displayProfile, originalTheme, setThemeId]);
+
     const handleAddFriendClick = () => {
         if (friendCode.trim()) {
             addFriend(friendCode);
@@ -237,6 +255,9 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const levelInfo = useMemo(() => getLevelInfo(displayStats.xp || 0), [displayStats.xp, getLevelInfo]);
 
     const displayStickers = isReadOnly ? (readOnlyProfile.placedStickers || []) : (myProfile?.placedStickers || []);
+
+    // Unified Pet Stats Accessor
+    const petStatsToDisplay = isReadOnly ? (remoteProfile?.pocket_state || readOnlyProfile?.pocket_state) : pocketStats;
 
     const handleVibe = () => {
         feedService.publish(`vibed with ${displayProfile.name}! ✨`, 'love', userProfile?.name);
@@ -395,12 +416,31 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                         >
                             ROOM
                         </h2>
+                        {unlockedLore?.length > 0 && (
+                            <h2
+                                onClick={() => handleTabClick('SECRETS')}
+                                style={{
+                                    margin: 0, fontSize: '1.5rem', cursor: 'pointer',
+                                    color: activeTab === 'SECRETS' ? 'var(--neon-green)' : '#718096',
+                                    paddingBottom: '5px',
+                                    borderBottom: activeTab === 'SECRETS' ? '2px solid var(--neon-green)' : '2px solid transparent',
+                                    animation: 'pulse 2s infinite'
+                                }}
+                            >
+                                👁️
+                            </h2>
+                        )}
                     </div>
                     <SquishyButton onClick={onClose} style={{ padding: '5px 15px', background: '#e53e3e' }}>X</SquishyButton>
                 </div>
 
                 <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
                     <AnimatePresence mode="wait">
+                        {activeTab === 'SECRETS' && (
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+                                <SystemCodex onClose={() => setActiveTab('PROFILE')} />
+                            </div>
+                        )}
                         {activeTab === 'PROFILE' && (
                             <motion.div
                                 key="PROFILE"
@@ -525,6 +565,37 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                         </div>
                                                     </>
                                                 )}
+
+                                                {/* PET EVOLUTION BAR */}
+                                                {(petStatsToDisplay) && (() => {
+                                                    const currentStageKey = petStatsToDisplay.stage || 'EGG';
+                                                    const nextStageIndex = Object.keys(POCKET_BRO_STAGES).indexOf(currentStageKey) + 1;
+                                                    const nextStageKey = Object.keys(POCKET_BRO_STAGES)[nextStageIndex];
+
+                                                    // Max level check
+                                                    if (!nextStageKey) return (
+                                                        <div style={{ marginTop: '10px', fontSize: '0.7rem', color: 'gold', textAlign: 'center' }}>
+                                                            MAX LEVEL EVOLUTION REACHED 🌟
+                                                        </div>
+                                                    );
+
+                                                    const threshold = POCKET_BRO_STAGES[nextStageKey].threshold;
+                                                    const currentXP = petStatsToDisplay.xp || 0;
+                                                    const pct = Math.min(100, Math.max(0, (currentXP / threshold) * 100));
+
+                                                    return (
+                                                        <div style={{ marginTop: '10px', background: 'rgba(0,0,0,0.2)', padding: '5px', borderRadius: '5px' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#aaa', marginBottom: '2px' }}>
+                                                                <span>{POCKET_BRO_STAGES[currentStageKey]?.name || 'Unknown'}</span>
+                                                                <span>Next: {POCKET_BRO_STAGES[nextStageKey]?.name}</span>
+                                                            </div>
+                                                            <div style={{ height: '4px', background: '#333', borderRadius: '2px', overflow: 'hidden' }}>
+                                                                <div style={{ width: `${pct}%`, height: '100%', background: 'var(--neon-blue)', boxShadow: '0 0 5px var(--neon-blue)' }} />
+                                                            </div>
+                                                            <div style={{ textAlign: 'right', fontSize: '0.6rem', color: '#666' }}>{Math.floor(currentXP)} / {threshold} XP</div>
+                                                        </div>
+                                                    );
+                                                })()}
 
                                                 {isReadOnly && (
                                                     <div style={{ marginTop: '10px' }}>
@@ -715,6 +786,15 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                     <PocketRoom
                                                         isEditing={false}
                                                         customItems={visitingFriend.pocket_state?.placedItems || []}
+                                                        petComponent={
+                                                            <PocketPet
+                                                                type={visitingFriend.pocket_state?.type || 'SOOT'}
+                                                                stage={visitingFriend.pocket_state?.stage || 'EGG'}
+                                                                mood={(visitingFriend.pocket_state?.happy || 50) < 40 ? 'sad' : 'happy'}
+                                                                color={visitingFriend.pocket_state?.color}
+                                                                effect={visitingFriend.pocket_state?.tempStatus}
+                                                            />
+                                                        }
                                                     />
 
                                                     {/* REMOTE PET (If we had visual components for it, currently PocketRoom is just furniture) */}
@@ -862,6 +942,15 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                             selectedItem={selectedDecor}
                                             onPlace={handleRoomPlace}
                                             customItems={isReadOnly ? (displayProfile.pocket_state?.placedItems || []) : null}
+                                            petComponent={
+                                                <PocketPet
+                                                    type={petStatsToDisplay?.type || 'SOOT'}
+                                                    stage={petStatsToDisplay?.stage || 'EGG'}
+                                                    mood={(petStatsToDisplay?.happy || 50) < 40 ? 'sad' : 'happy'}
+                                                    color={petStatsToDisplay?.color}
+                                                    effect={petStatsToDisplay?.tempStatus}
+                                                />
+                                            }
                                         />
 
                                         {/* EDIT TOGGLE */}

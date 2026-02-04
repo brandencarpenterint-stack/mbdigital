@@ -28,7 +28,10 @@ export const DAILY_TEMPLATES = [
     // GENERAL
     { id: 'play_3', desc: 'Play 3 Games', target: 3, reward: 40, type: 'gamesPlayedCount', game: 'general' },
     { id: 'coins_50', desc: 'Earn 50 Coins', target: 50, reward: 50, type: 'coinsEarnedToday', game: 'general' },
-    { id: 'coins_100', desc: 'Earn 100 Coins', target: 100, reward: 100, type: 'coinsEarnedToday', game: 'general' }
+    { id: 'coins_100', desc: 'Earn 100 Coins', target: 100, reward: 100, type: 'coinsEarnedToday', game: 'general' },
+
+    // SOCIAL / RIVALS
+    { id: 'rival_1', desc: 'Defeat a Rival', target: 1, reward: 150, type: 'rivalsDefeated', game: 'social' }
 ];
 
 export const WEEKLY_TEMPLATES = [

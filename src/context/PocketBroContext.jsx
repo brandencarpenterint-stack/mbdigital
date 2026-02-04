@@ -427,6 +427,24 @@ export const PocketBroProvider = ({ children }) => {
             }));
             return "REALITY DEBUGS ITSELF.";
         }
+        if (itemId === 'warp_drive') {
+            if (stats.adventure?.active) {
+                setStats(prev => ({
+                    ...prev,
+                    adventure: {
+                        ...prev.adventure,
+                        finishTime: Date.now()
+                    }
+                }));
+                return "HYPERDRIVE ENGAGED. ARRIVAL IMMINENT.";
+            }
+            return "NO DESTINATION SET (Use during Adventure).";
+        }
+        if (itemId === 'dev_key') {
+            setStats(prev => ({ ...prev, debugMode: true }));
+            // Dispatch event for other components? actually stats is global per hook.
+            return "ROOT ACCESS GRANTED. WELCOME ADMIN.";
+        }
         return "Nothing happened.";
     };
 

@@ -3,437 +3,298 @@ import { Link } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
-import { triggerConfetti, triggerWinConfetti } from '../../utils/confetti';
+import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import GameOverCard from '../../components/GameOverCard';
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 150;
-const FACE_ASSETS = [
-    '/assets/snake/face1.png',
-    '/assets/snake/face2.png',
-    '/assets/snake/face3.png',
-    '/assets/snake/face4.png'
-];
 
 const SnakeGame = () => {
-    const [snake, setSnake] = useState([{ x: 10, y: 10 }]);
-    const [food, setFood] = useState({ x: 15, y: 15 });
-    const [direction, setDirection] = useState('RIGHT');
-    const [gameOver, setGameOver] = useState(false);
+    const canvasRef = useRef(null);
+    const { shopState, addCoins, updateStat, userProfile, stats, consumeItem } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('snakeHighScore')) || 0);
-    const [isPaused, setIsPaused] = useState(false);
-    const [shake, setShake] = useState(0);
+    const [gameOver, setGameOver] = useState(false);
 
-    // Hooks
-    const { playJump, playCrash, playCollect, playWin } = useRetroSound();
-    const { shopState, addCoins, updateStat, userProfile, stats, consumeItem } = useGamification() || {};
+    // Game State Ref
+    const gameState = useRef({
+        snake: [{ x: 10, y: 10 }],
+        food: { x: 15, y: 15, type: 0 },
+        direction: 'RIGHT',
+        nextDirection: 'RIGHT',
+        speed: INITIAL_SPEED,
+        lastMove: 0,
+        shake: 0,
+        particles: [],
+        animId: null
+    });
 
-    // Sync local high score with global stat on mount
+    const { playCollect, playCrash, playWin } = useRetroSound();
+    const sheetRef = useRef(null);
+
     useEffect(() => {
-        if (stats?.snakeHighScore > highScore) {
-            setHighScore(stats.snakeHighScore);
-        }
+        const img = new Image();
+        img.src = '/assets/snake_sheet.png';
+        sheetRef.current = img;
+
+        if (stats?.snakeHighScore > highScore) setHighScore(stats.snakeHighScore);
     }, [stats]);
 
-
-    // Swipe Refs
-    const touchStart = useRef({ x: 0, y: 0 });
-    const touchEnd = useRef({ x: 0, y: 0 });
-
-    const getSegmentStyle = (index) => {
-        const skin = shopState?.equipped?.snake || 'snake_default';
-
-        // Base Style
-        let style = {
-            position: 'absolute',
-            left: `${snake[index].x * 5}%`,
-            top: `${snake[index].y * 5}%`,
-            width: '5%',
-            height: '5%',
-            borderRadius: index === 0 ? '4px' : '2px',
-            zIndex: 2,
-            boxShadow: '0 0 5px rgba(0,0,0,0.5)'
+    const initGame = () => {
+        setScore(0);
+        setGameOver(false);
+        gameState.current = {
+            snake: [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }],
+            food: spawnFood(),
+            direction: 'RIGHT',
+            nextDirection: 'RIGHT',
+            speed: INITIAL_SPEED,
+            lastMove: 0,
+            shake: 0,
+            particles: [],
+            animId: null
         };
-
-        if (skin === 'snake_gold') {
-            style.backgroundColor = index === 0 ? '#fff' : '#FFD700';
-            style.boxShadow = '0 0 10px #FFD700';
-        } else if (skin === 'snake_rainbow') {
-            style.backgroundColor = `hsl(${(index * 20) % 360}, 100%, 50%)`;
-            style.boxShadow = '0 0 5px white';
-        } else if (skin === 'snake_ghost') {
-            style.backgroundColor = index === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)';
-            style.border = '1px solid white';
-        } else if (skin === 'snake_tron') {
-            style.backgroundColor = '#00f3ff';
-            style.boxShadow = '0 0 10px #00f3ff, 0 0 20px #00f3ff';
-            style.borderRadius = '0px'; // Square for Tron feeling
-        } else {
-            // Default
-            style.backgroundColor = index === 0 ? '#ccffdd' : '#00ffaa';
-            style.boxShadow = '0 0 5px #00ffaa';
-        }
-        return style;
+        requestAnimationFrame(gameLoop);
     };
 
-    // Define moveSnake BEFORE using it in useEffect (to avoid hoisting issues with const)
-    // Actually, good practice is to wrap it in useEffect or useCallback, 
-    // but for simplicity in this file structure, we can verify order or use a ref for the function if needed.
-    // However, defining it before the useEffect that calls it is the simplest fix.
+    const spawnFood = () => {
+        let x, y;
+        while (true) {
+            x = Math.floor(Math.random() * GRID_SIZE);
+            y = Math.floor(Math.random() * GRID_SIZE);
+            // Check collision with snake
+            // eslint-disable-next-line
+            const safe = !gameState.current.snake.some(s => s.x === x && s.y === y);
+            if (safe) break;
+        }
+        return { x, y, type: Math.floor(Math.random() * 4) }; // 0: Apple, 1: Burger, 2: Mouse, 3: Sushi
+    };
+
+    const spawnParticles = (x, y, color) => {
+        for (let i = 0; i < 10; i++) {
+            gameState.current.particles.push({
+                x: x * (canvasRef.current.width / GRID_SIZE) + (canvasRef.current.width / GRID_SIZE) / 2,
+                y: y * (canvasRef.current.height / GRID_SIZE) + (canvasRef.current.height / GRID_SIZE) / 2,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                life: 1.0,
+                color
+            });
+        }
+    };
 
     const endGame = () => {
         setGameOver(true);
         playCrash();
-        if (updateStat) updateStat('gamesPlayed', 'snake'); // Track game played
+        gameState.current.shake = 20;
+        cancelAnimationFrame(gameState.current.animId);
 
         if (score > highScore) {
             setHighScore(score);
             if (updateStat) updateStat('snakeHighScore', score);
             triggerConfetti();
-
-            // Feed
-            if (score > 50) {
-                const playerName = userProfile?.name || 'Player';
-                feedService.publish(`slithered to a new High Score: ${score} in Neon Snake 🐍`, 'win', playerName);
-            }
-        } else {
-            triggerWinConfetti();
         }
-
-        // Award Coins (1 coin per 10 points)
         if (addCoins) addCoins(Math.floor(score / 10));
     };
 
-    const spawnFood = () => {
-        let newFood;
-        // Simple loop protection
-        let attempts = 0;
-        while (attempts < 100) {
-            newFood = {
-                x: Math.floor(Math.random() * GRID_SIZE),
-                y: Math.floor(Math.random() * GRID_SIZE)
-            };
-            // Ensure food doesn't spawn on snake
-            // eslint-disable-next-line no-loop-func
-            const onSnake = snake.some(s => s.x === newFood.x && s.y === newFood.y);
-            if (!onSnake) break;
-            attempts++;
-        }
-        setFood(newFood);
-    };
+    const gameLoop = (time) => {
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
 
-    const moveSnake = () => {
-        if (gameOver || isPaused) return;
+        const state = gameState.current;
+        const CELL = canvasRef.current.width / GRID_SIZE;
 
-        const newSnake = [...snake];
-        const head = { ...newSnake[0] };
+        // --- UPDATE ---
+        if (!gameOver && time - state.lastMove > state.speed) {
+            state.lastMove = time;
 
-        switch (direction) {
-            case 'UP': head.y -= 1; break;
-            case 'DOWN': head.y += 1; break;
-            case 'LEFT': head.x -= 1; break;
-            case 'RIGHT': head.x += 1; break;
-            default: break;
-        }
+            // Move Snake
+            state.direction = state.nextDirection;
+            const head = { ...state.snake[0] };
 
-        // Check Wall Collision
-        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
-            endGame();
-            return;
-        }
+            if (state.direction === 'UP') head.y--;
+            if (state.direction === 'DOWN') head.y++;
+            if (state.direction === 'LEFT') head.x--;
+            if (state.direction === 'RIGHT') head.x++;
 
-        // Check Self Collision
-        if (newSnake.some(segment => segment.x === head.x && segment.y === head.y)) {
-            endGame();
-            return;
-        }
-
-        newSnake.unshift(head);
-
-        // Check Food Collision
-        if (head.x === food.x && head.y === food.y) {
-            setScore(prev => prev + 10);
-            setShake(5); // Shake on eat
-            playCollect();
-            spawnFood();
-            // Snake grows, so we don't pop tail
-        } else {
-            newSnake.pop();
-        }
-
-        setSnake(newSnake);
-    };
-
-    // Handle Input
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            // Prevent scrolling
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-
-            if (isPaused) {
-                if (e.key === ' ' || e.key === 'Enter') setIsPaused(prev => !prev);
+            // Walls
+            if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
+                endGame();
                 return;
             }
 
-            switch (e.key) {
-                case 'ArrowUp': case 'w': case 'W':
-                    if (direction !== 'DOWN') { setDirection('UP'); playJump(); } break;
-                case 'ArrowDown': case 's': case 'S':
-                    if (direction !== 'UP') { setDirection('DOWN'); playJump(); } break;
-                case 'ArrowLeft': case 'a': case 'A':
-                    if (direction !== 'RIGHT') { setDirection('LEFT'); playJump(); } break;
-                case 'ArrowRight': case 'd': case 'D':
-                    if (direction !== 'LEFT') { setDirection('RIGHT'); playJump(); } break;
-                case ' ': setIsPaused(prev => !prev); break;
-                default: break;
+            // Self
+            if (state.snake.some(s => s.x === head.x && s.y === head.y)) {
+                endGame();
+                return;
             }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [direction, isPaused, playJump]);
 
-    // Game Loop
-    // STABLE GAME LOOP PATTERN
-    const savedCallback = useRef();
+            state.snake.unshift(head);
 
-    // Remember the latest moveSnake callback
-    useEffect(() => {
-        savedCallback.current = moveSnake;
-    }, [moveSnake]);
-
-    // Set up the interval
-    useEffect(() => {
-        if (gameOver || isPaused) return;
-
-        const tick = () => {
-            if (savedCallback.current) savedCallback.current();
-            if (shake > 0) setShake(s => Math.max(0, s - 1));
-        };
-
-        // Calculate speed
-        const speed = Math.max(50, INITIAL_SPEED - Math.min(score * 2, 100));
-
-        const id = setInterval(tick, speed);
-        return () => clearInterval(id);
-    }, [gameOver, isPaused, score, shake]);
-
-
-    const restartGame = () => {
-        setSnake([{ x: 10, y: 10 }]);
-        setFood({ x: 15, y: 15 });
-        setDirection('RIGHT');
-        setScore(0);
-        setGameOver(false);
-        setIsPaused(false);
-    };
-
-    // D-Pad Helper
-    const handleDir = (d) => {
-        if (direction === 'UP' && d === 'DOWN') return;
-        if (direction === 'DOWN' && d === 'UP') return;
-        if (direction === 'LEFT' && d === 'RIGHT') return;
-        if (direction === 'RIGHT' && d === 'LEFT') return;
-        setDirection(d);
-        playJump();
-    };
-
-    // Swipe Handlers
-    const handleTouchStart = (e) => {
-        touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    };
-
-    const handleTouchEnd = (e) => {
-        touchEnd.current = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-        handleSwipe();
-    };
-
-    const handleSwipe = () => {
-        const dx = touchEnd.current.x - touchStart.current.x;
-        const dy = touchEnd.current.y - touchStart.current.y;
-
-        if (Math.abs(dx) > Math.abs(dy)) {
-            // Horizontal
-            if (Math.abs(dx) > 30) { // Threshold
-                if (dx > 0) handleDir('RIGHT');
-                else handleDir('LEFT');
+            // Food
+            if (head.x === state.food.x && head.y === state.food.y) {
+                setScore(s => s + 10);
+                playCollect();
+                state.shake = 5;
+                spawnParticles(head.x, head.y, 'gold');
+                state.food = spawnFood();
+                state.speed = Math.max(50, INITIAL_SPEED - (score / 10) * 2);
+            } else {
+                state.snake.pop();
             }
+        }
+
+        // Particles
+        state.particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+        });
+        state.particles = state.particles.filter(p => p.life > 0);
+
+        // Shake dampening
+        if (state.shake > 0) state.shake *= 0.9;
+        if (state.shake < 0.5) state.shake = 0;
+
+
+        // --- DRAW ---
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+        ctx.save();
+        if (state.shake > 0) {
+            ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
+        }
+
+        // Grid
+        ctx.strokeStyle = '#113';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= GRID_SIZE; i++) {
+            const p = i * CELL;
+            ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, canvasRef.current.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(canvasRef.current.width, p); ctx.stroke();
+        }
+
+        // Food
+        if (sheetRef.current && sheetRef.current.complete) {
+            // Food Row 2 (Index 8-11)
+            // Sheet assumes 4x4 grid. 
+            // W/H per cell
+            const sw = sheetRef.current.width / 4;
+            const sh = sheetRef.current.height / 4;
+            // Row 2, Col 0-3 based on food type
+            const sx = state.food.type * sw;
+            const sy = 2 * sh;
+            ctx.drawImage(sheetRef.current, sx, sy, sw, sh, state.food.x * CELL, state.food.y * CELL, CELL, CELL);
         } else {
-            // Vertical
-            if (Math.abs(dy) > 30) {
-                if (dy > 0) handleDir('DOWN');
-                else handleDir('UP');
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(state.food.x * CELL + CELL / 2, state.food.y * CELL + CELL / 2, CELL / 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Snake
+        state.snake.forEach((s, i) => {
+            const isHead = i === 0;
+            if (sheetRef.current && sheetRef.current.complete) {
+                const sw = sheetRef.current.width / 4;
+                const sh = sheetRef.current.height / 4;
+
+                if (isHead) {
+                    // Head Row 0. Cols based on Dir? 
+                    // Let's assume: 0: Up, 1: Down, 2: Left, 3: Right
+                    let col = 3;
+                    if (state.direction === 'UP') col = 0;
+                    if (state.direction === 'DOWN') col = 1;
+                    if (state.direction === 'LEFT') col = 2;
+
+                    ctx.drawImage(sheetRef.current, col * sw, 0, sw, sh, s.x * CELL, s.y * CELL, CELL, CELL);
+                } else {
+                    // Body Row 1. Col 0.
+                    ctx.drawImage(sheetRef.current, 0, sh, sw, sh, s.x * CELL, s.y * CELL, CELL, CELL);
+                }
+            } else {
+                ctx.fillStyle = isHead ? '#0f0' : '#0a0';
+                ctx.fillRect(s.x * CELL, s.y * CELL, CELL, CELL);
+                ctx.strokeStyle = '#000';
+                ctx.strokeRect(s.x * CELL, s.y * CELL, CELL, CELL);
             }
+        });
+
+        // Particles
+        state.particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+
+        state.animId = requestAnimationFrame(gameLoop);
+    };
+
+    const handleInput = (key) => {
+        const state = gameState.current;
+        if (key === 'ArrowUp' && state.direction !== 'DOWN') state.nextDirection = 'UP';
+        if (key === 'ArrowDown' && state.direction !== 'UP') state.nextDirection = 'DOWN';
+        if (key === 'ArrowLeft' && state.direction !== 'RIGHT') state.nextDirection = 'LEFT';
+        if (key === 'ArrowRight' && state.direction !== 'LEFT') state.nextDirection = 'RIGHT';
+    };
+
+    useEffect(() => {
+        const kd = (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+            handleInput(e.key);
+        };
+        window.addEventListener('keydown', kd);
+        return () => window.removeEventListener('keydown', kd);
+    }, []);
+
+    // Touch controls
+    const touchStart = useRef(null);
+    const handleTouchStart = (e) => touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    const handleTouchEnd = (e) => {
+        if (!touchStart.current) return;
+        const dx = e.changedTouches[0].clientX - touchStart.current.x;
+        const dy = e.changedTouches[0].clientY - touchStart.current.y;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (Math.abs(dx) > 30) handleInput(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+        } else {
+            if (Math.abs(dy) > 30) handleInput(dy > 0 ? 'ArrowDown' : 'ArrowUp');
         }
     };
 
     return (
-        <div className="page-enter" style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            minHeight: '100vh', padding: '20px', paddingBottom: '120px',
-            color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif'
-        }}>
-            <h1 style={{
-                fontSize: '2.5rem', margin: '0 0 20px 0', textAlign: 'center',
-                textShadow: '0 0 20px var(--neon-green)', letterSpacing: '2px'
-            }}>NEON SNAKE</h1>
-
-            {/* HOME BUTTON */}
-            <Link to="/arcade" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
-                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)' }}>
-                    🏠 EXIT
-                </SquishyButton>
-            </Link>
-
-            <div className="glass-panel" style={{
-                display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px',
-                marginBottom: '20px', padding: '15px 25px', fontSize: '1.2rem',
-                border: '1px solid var(--neon-green)', background: 'rgba(0, 20, 0, 0.6)'
-            }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.7rem', color: '#888' }}>SCORE</span>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{score}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.7rem', color: '#888' }}>HIGH SCORE</span>
-                    <div style={{ fontSize: '1.5rem', color: 'var(--neon-gold)', textShadow: '0 0 10px var(--neon-gold)' }}>{highScore}</div>
-                </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', background: '#000' }}>
+            <h1 style={{ color: '#0f0', fontFamily: '"Orbitron", monospace', textShadow: '0 0 10px #0f0' }}>NEON SNAKE</h1>
+            <div style={{ display: 'flex', gap: '20px', color: 'white', marginBottom: '10px', fontSize: '1.2rem' }}>
+                <span>SCORE: {score}</span>
+                <span>HIGH: {highScore}</span>
             </div>
 
-            <div style={{
-                position: 'relative',
-                width: '100%',
-                maxWidth: '400px',
-                aspectRatio: '1/1',
-                backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                border: '2px solid var(--neon-green)',
-                borderRadius: '10px',
-                boxShadow: '0 0 30px rgba(0, 255, 170, 0.3), inset 0 0 50px rgba(0, 255, 170, 0.1)',
-                touchAction: 'none', // Prevent scroll while swiping
-                backgroundImage: 'linear-gradient(rgba(0, 255, 170, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 170, 0.1) 1px, transparent 1px)',
-                backgroundSize: '20px 20px',
-                overflow: 'hidden',
-                transform: `translate(${(Math.random() - 0.5) * shake}px, ${(Math.random() - 0.5) * shake}px)`
-            }}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-            >
-                {/* Snake */}
-                {snake.map((segment, index) => (
-                    <div key={`${segment.x}-${segment.y}`} style={getSegmentStyle(index)} />
-                ))}
+            <div style={{ position: 'relative', border: '2px solid #0f0', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 0 20px #0f0' }}>
+                <canvas
+                    ref={canvasRef}
+                    width={400} height={400}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    style={{ background: '#111', width: '100%', maxWidth: '400px', height: 'auto' }}
+                />
 
-                {/* Food */}
-                <div style={{
-                    position: 'absolute',
-                    left: `${food.x * 5}%`,
-                    top: `${food.y * 5}%`,
-                    width: '5%',
-                    height: '5%',
-                    zIndex: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1em' // Scale emoji
-                }}>
-                    {(!shopState?.equipped?.snake_food) ? (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <img
-                                src={FACE_ASSETS[(score / 10) % FACE_ASSETS.length]}
-                                alt="food"
-                                style={{
-                                    width: '120%', height: '120%',
-                                    objectFit: 'contain',
-                                    filter: 'drop-shadow(0 0 5px white)',
-                                    animation: 'pulse 0.5s infinite alternate'
-                                }}
-                            />
-                        </div>
-                    ) : (
-                        <div style={{ fontSize: '1.2rem', animation: 'pulse 1s infinite alternate', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>
-                            {shopState.equipped.snake_food === 'food_apple' ? '🍎' :
-                                shopState.equipped.snake_food === 'food_burger' ? '🍔' : '🍣'}
-                        </div>
-                    )}
-                </div>
+                {!gameOver && !gameState.current.animId && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
+                        <SquishyButton onClick={initGame} style={{ fontSize: '1.5rem', background: '#0f0', color: 'black' }}>START</SquishyButton>
+                    </div>
+                )}
 
-                {/* Game Over */}
                 {gameOver && (
-                    <GameOverCard
-                        score={score}
-                        bestScore={highScore}
-                        gameId="snake"
-                        onReplay={restartGame}
-                        onHome={() => window.location.href = '/arcade'}
-                    >
-                        {(shopState?.inventory?.['snake_life'] > 0) && (
-                            <button
-                                onClick={() => {
-                                    if (consumeItem('snake_life')) {
-                                        setGameOver(false);
-                                        setSnake([{ x: 10, y: 10 }]);
-                                        setDirection('RIGHT');
-                                    }
-                                }}
-                                className="squishy-btn"
-                                style={{
-                                    padding: '15px 30px', fontSize: '1.2rem',
-                                    background: '#ff0055', color: 'white',
-                                    border: 'none', borderRadius: '30px', fontWeight: '900',
-                                    boxShadow: '0 0 20px #ff0055',
-                                    display: 'flex', alignItems: 'center', gap: '5px'
-                                }}
-                            >
-                                ❤️ REVIVE ({shopState.inventory['snake_life']})
-                            </button>
-                        )}
-                    </GameOverCard>
+                    <div style={{ position: 'absolute', inset: 0 }}>
+                        <GameOverCard score={score} bestScore={highScore} gameId="snake" onReplay={initGame} onHome={() => window.location.href = '/arcade'} />
+                    </div>
                 )}
             </div>
 
-            {/* Mobile Controls (D-Pad) */}
-            <div style={{
-                marginTop: '30px', display: 'grid', gridTemplateColumns: 'repeat(3, 70px)', gap: '10px',
-                justifyContent: 'center'
-            }}>
-                <div />
-                <button
-                    onPointerDown={() => handleDir('UP')}
-                    className="glass-panel"
-                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
-                >⬆️</button>
-                <div />
-
-                <button
-                    onPointerDown={() => handleDir('LEFT')}
-                    className="glass-panel"
-                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
-                >⬅️</button>
-                <button
-                    onPointerDown={() => handleDir('DOWN')}
-                    className="glass-panel"
-                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
-                >⬇️</button>
-                <button
-                    onPointerDown={() => handleDir('RIGHT')}
-                    className="glass-panel"
-                    style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', borderRadius: '15px', background: 'rgba(255,255,255,0.05)' }}
-                >➡️</button>
-            </div>
-
-            <div style={{ marginTop: '30px', textAlign: 'center', color: '#555', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>SWIPE or TAP CONTROLS</span>
-                <span style={{ width: '1px', height: '10px', background: '#333' }}></span>
-                <span>SPACE TO PAUSE</span>
-            </div>
-
-            <style>{`
-                @keyframes pulse {
-                    0% { transform: scale(0.8); opacity: 0.8; }
-                    100% { transform: scale(1.2); opacity: 1; }
-                }
-            `}</style>
+            <p style={{ color: '#555', marginTop: '10px' }}>Swipe or Arrow Keys</p>
         </div>
     );
 };

@@ -24,7 +24,7 @@ const LeaderboardTable = ({ gameId }) => {
             // Generate a consistent avatar if we don't have one, or use a default
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`,
             code: 'UNKNOWN',
-            squad: null,
+            squad: entry.squad || 'UNKNOWN',
             stats: {
                 gameHighScore: entry.score // Just show what we know
             },

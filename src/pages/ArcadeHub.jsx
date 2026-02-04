@@ -10,6 +10,8 @@ import PocketPet from '../components/pocket-pet/PocketPet';
 import useRetroSound from '../hooks/useRetroSound';
 import { supabase } from '../lib/supabaseClient';
 import './Home.css'; // Shared styles for dashboard grid
+import ArcadeCabinet from '../components/ArcadeCabinet';
+import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
     const [onlineUsers, setOnlineUsers] = useState([]);
@@ -240,7 +242,7 @@ const itemVariants = {
 };
 
 const ArcadeHub = () => {
-    const { stats, shopState, userProfile } = useGamification() || {};
+    const { stats, shopState, userProfile, zoneControl } = useGamification() || {};
     const { stats: broStats, getMood } = usePocketBro() || {};
     const { playBoop } = useRetroSound();
 
@@ -253,7 +255,33 @@ const ArcadeHub = () => {
         if (hour < 12) setGreeting('Good Morning');
         else if (hour < 18) setGreeting('Good Afternoon');
         else setGreeting('Good Evening');
-    }, []);
+
+        // LOOT SPAWN LOGIC (Cassettes)
+        const checkForLoot = () => {
+            const chance = Math.random();
+            if (chance > 0.7) { // 30% Chance
+                // Determine what to drop
+                if (!shopState?.unlocked?.includes('bank_lofi')) {
+                    setLoot({ id: 'bank_lofi', icon: '📼', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+                } else if (!shopState?.unlocked?.includes('bank_cyber') && Math.random() > 0.5) {
+                    setLoot({ id: 'bank_cyber', icon: '💾', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+                }
+            }
+        };
+        checkForLoot();
+    }, [shopState?.unlocked]);
+
+    const [loot, setLoot] = useState(null);
+    const { setShopState } = useGamification() || {};
+    const { showToast } = useToast();
+
+    const handleCollectLoot = () => {
+        if (!loot) return;
+        playBoop();
+        setShopState(prev => ({ ...prev, unlocked: [...prev.unlocked, loot.id] }));
+        showToast(`FOUND: ${loot.id === 'bank_lofi' ? 'Lo-Fi Tape' : 'Cyber Deck'}!`, 'win');
+        setLoot(null);
+    };
 
     const displayName = userProfile?.name || 'OPERATOR';
 
@@ -263,8 +291,32 @@ const ArcadeHub = () => {
             padding: '20px',
             width: '100%',
             boxSizing: 'border-box',
-            paddingBottom: '120px'
+            paddingBottom: '120px',
+            position: 'relative' // relative for loot absolute pos
         }}>
+            {/* LOOT ITEM */}
+            <AnimatePresence>
+                {loot && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0, y: -50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0, rotate: [0, 10, -10, 0] }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        transition={{ rotate: { repeat: Infinity, duration: 2 } }}
+                        onClick={handleCollectLoot}
+                        style={{
+                            position: 'absolute',
+                            top: `${loot.y}%`, left: `${loot.x}%`,
+                            zIndex: 100,
+                            cursor: 'pointer',
+                            fontSize: '3rem',
+                            filter: 'drop-shadow(0 0 10px gold)'
+                        }}
+                    >
+                        {loot.icon}
+                        <div style={{ fontSize: '0.6rem', background: 'black', padding: '2px', borderRadius: '4px' }}>CLICK ME</div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* HERO HEADER */}
             <div style={{ marginBottom: '40px', marginTop: '20px' }}>
@@ -346,6 +398,8 @@ const ArcadeHub = () => {
                 }}></div>
             </motion.div>
 
+
+
             {/* STAGGERED GRID */}
             <motion.div
                 className="dashboard-grid"
@@ -354,124 +408,26 @@ const ArcadeHub = () => {
                 animate="show"
                 style={{
                     padding: '10px',
-                    maxWidth: '1200px', margin: '0 auto', width: '100%'
+                    maxWidth: '1200px', margin: '0 auto', width: '100%',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // Wider for cabinets
+                    rowGap: '40px' // More vertical space
                 }}
             >
                 {games.map(game => (
                     <motion.div
                         key={game.id}
                         variants={itemVariants}
-                        style={{ gridColumn: game.colSpan === 2 ? 'span 2' : 'span 1' }}
+                        style={{
+                            gridColumn: 'span 1', // Force single column for cabinets to look uniform
+                            display: 'flex', justifyContent: 'center'
+                        }}
                     >
-                        <Link
-                            to={`/arcade/${game.id}`}
-                            className="bento-card game-card-hover"
-                            onMouseEnter={() => playBoop()}
-                            style={{
-                                background: game.gradient,
-                                padding: '25px', textDecoration: 'none', color: 'white',
-                                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                                minHeight: '220px', height: '100%',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-                                position: 'relative', overflow: 'hidden'
-                            }}
-                        >
-                            {/* BADGES */}
-                            {(game.id === 'slots') && (
-                                <div style={{
-                                    position: 'absolute', top: 15, right: 15,
-                                    background: 'white', color: 'black',
-                                    padding: '4px 10px', borderRadius: '20px',
-                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
-                                    boxShadow: '0 0 10px rgba(255,255,255,0.5)'
-                                }}>HOT 🔥</div>
-                            )}
-                            {(game.id === 'fishing') && (
-                                <div style={{
-                                    position: 'absolute', top: 15, right: 15,
-                                    background: 'rgba(0,0,0,0.6)', color: '#00C6FF',
-                                    padding: '4px 10px', borderRadius: '20px',
-                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
-                                    border: '1px solid #00C6FF'
-                                }}>DAILY 🎣</div>
-                            )}
-                            {(game.id === 'merch-jump') && (
-                                <div style={{
-                                    position: 'absolute', top: 15, right: 15,
-                                    background: 'var(--neon-pink)', color: 'white',
-                                    padding: '4px 10px', borderRadius: '20px',
-                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
-                                    boxShadow: '0 0 15px var(--neon-pink)'
-                                }}>UPDATED 🎈</div>
-                            )}
-                            {(game.id === 'neon-bricks') && (
-                                <div style={{
-                                    position: 'absolute', top: 15, right: 15,
-                                    background: '#da22ff', color: 'white',
-                                    padding: '4px 10px', borderRadius: '20px',
-                                    fontSize: '0.7rem', fontWeight: '900', zIndex: 5,
-                                    boxShadow: '0 0 10px #da22ff'
-                                }}>FIXED 🔧</div>
-                            )}
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2 }}>
-                                <div style={{ flex: 1, textAlign: 'left' }}>
-                                    <h2 style={{
-                                        margin: 0, fontSize: '1.8rem', fontWeight: '900',
-                                        textShadow: '0 2px 4px rgba(0,0,0,0.3)', lineHeight: 1,
-                                        fontFamily: '"Orbitron", sans-serif', letterSpacing: '1px'
-                                    }}>
-                                        {game.title}
-                                    </h2>
-                                    <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '1rem', fontWeight: '500' }}>{game.desc}</p>
-
-                                    {/* FACTION CONTROL MOCK */}
-                                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.7rem', opacity: 0.8 }}>
-                                        {(() => {
-                                            const factions = ['CYBER', 'SOLAR', 'VOID'];
-                                            const owner = factions[game.id.charCodeAt(0) % 3];
-                                            const color = owner === 'CYBER' ? '#00f260' : owner === 'SOLAR' ? '#FFD700' : '#b026ff';
-                                            return (
-                                                <span style={{ border: `1px solid ${color}`, color: color, padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.5)' }}>
-                                                    {owner} ZONE
-                                                </span>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Overlay Decor (Giant Icon) */}
-                            <div style={{
-                                position: 'absolute', bottom: -10, right: -10,
-                                fontSize: '8rem', opacity: 0.15, transform: 'rotate(-15deg)', pointerEvents: 'none'
-                            }}>
-                                {game.icon}
-                            </div>
-
-                            <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 2 }}>
-                                <div style={{
-                                    background: 'rgba(0, 0, 0, 0.4)', padding: '5px 12px', borderRadius: '12px',
-                                    fontSize: '0.9rem', fontWeight: 'bold',
-                                    display: 'flex', alignItems: 'center', gap: '5px', backdropFilter: 'blur(5px)'
-                                }}>
-                                    🏆 <span style={{ color: 'var(--neon-gold)' }}>{getHighScore(game.id, stats)}</span>
-                                </div>
-
-                                <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    style={{
-                                        background: 'white', color: 'black',
-                                        width: '40px', height: '40px', borderRadius: '50%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '1.2rem', boxShadow: '0 0 15px rgba(255,255,255,0.4)'
-                                    }}
-                                >
-                                    ▶
-                                </motion.div>
-                            </div>
+                        <Link to={`/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                            <ArcadeCabinet
+                                game={game}
+                                highScore={getHighScore(game.id, stats)}
+                                zoneControl={zoneControl?.[game.id]}
+                            />
                         </Link>
                     </motion.div>
                 ))}

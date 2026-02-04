@@ -4,11 +4,13 @@ import { usePocketBro } from '../context/PocketBroContext';
 import { useToast } from '../context/ToastContext';
 import { UNDERGROUND_ITEMS } from '../config/UndergroundItems';
 import { triggerConfetti } from '../utils/confetti';
+import useRetroSound from '../hooks/useRetroSound';
 
 const UndergroundModal = ({ onClose }) => {
-    const { coins, spendCoins, unlockHiddenItem } = useGamification();
+    const { coins, spendCoins, unlockHiddenItem, addCoins, unlockLore } = useGamification();
     const { feed, play, clean, triggerEffect, stats } = usePocketBro();
     const { showToast } = useToast();
+    const { playWin } = useRetroSound(); // Added playWin logic access
 
     // Glitch Text Effect
     const [glitchTitle, setGlitchTitle] = useState('THE VOID');
@@ -29,10 +31,12 @@ const UndergroundModal = ({ onClose }) => {
             if (item.id === 'void_essence') {
                 triggerEffect('ghost', 30000); // Ghost mode
                 showToast("You feel... transparent.", "magic");
+                if (unlockLore) unlockLore('void_beast'); // Unlock Lore
             }
             else if (item.id === 'glitch_pill') {
                 triggerEffect('jitter', 5000);
                 triggerEffect('zoom', 5000); // Chaos
+                if (unlockLore) unlockLore('glitch_origins'); // Unlock Lore
                 // Randomize Stats via side effects or just visual chaos?
                 // Real stats randomization might kill Bro. Let's just do visual chaos + random mood swing.
                 if (Math.random() > 0.5) {
@@ -57,16 +61,38 @@ const UndergroundModal = ({ onClose }) => {
                 showToast("The Idol stares into your soul...", "error");
                 triggerEffect('shine', 20000);
             }
+            else if (item.id === 'arcade_overclock') {
+                if (unlockHiddenItem) {
+                    unlockHiddenItem('arcade_overclock');
+                    showToast("CPU OVERCLOCK: +20% COINS ENGAGED", "success");
+                    triggerConfetti();
+                } else {
+                    showToast("KERNEL ERROR: Cannot unlock.", "error");
+                }
+            }
+            else if (item.id === 'hack_root') {
+                if (unlockHiddenItem) {
+                    unlockHiddenItem('hack_root');
+                    unlockLore('signal_dev'); // Bonus intel
+                    showToast("ROOT ACCESS GRANTED. TIME GATE REMOVED.", "max");
+                    triggerConfetti();
+                }
+            }
+            else if (item.id === 'legacy_drive') {
+                if (unlockLore) {
+                    unlockLore('origin_story');
+                    showToast("DRIVE DECRYPTED. NEW LORE ADDED.", "success");
+                }
+            }
+            else if (item.id === 'radio_scrambler') {
+                if (unlockHiddenItem) {
+                    unlockHiddenItem('radio_scrambler');
+                    showToast("SIGNAL SCRAMBLER INSTALLED", "success");
+                }
+            }
             else if (item.id === 'midnight_oil') {
                 // Max Energy, Min Hygiene
-                // We need direct stat manipulation. 
-                // feed/play handle basic stats. Energy is 'sleep'.
-                // We might need a custom 'modifyStats' in context, or just trigger effects.
-                // Let's create a dirty effect.
                 triggerEffect('jitter');
-                clean(); // wait, this cleans. We want to MAKE dirty.
-                // PocketBroContext doesn't expose "makeDirty".
-                // We'll skip the negative logic for now and just say "Boosted".
                 showToast("Burning the midnight oil!", "success");
             }
 
@@ -142,8 +168,52 @@ const UndergroundModal = ({ onClose }) => {
                     ))}
                 </div>
 
-                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.6rem', color: '#333' }}>
-                    NO REFUNDS. NO WITNESSES.
+                <div style={{ marginTop: '20px', fontSize: '0.6rem', color: '#333', textAlign: 'center' }}>
+                    <hr style={{ borderColor: '#333', margin: '20px 0' }} />
+                    <div style={{ fontSize: '1rem', color: 'red', marginBottom: '10px' }}>/// HIGH STAKES ///</div>
+
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                        <button onClick={() => {
+                            if (spendCoins(100)) {
+                                if (Math.random() > 0.5) {
+                                    setTimeout(() => { showToast("+200 COINS", "win"); addCoins(200); playWin(); }, 500);
+                                } else {
+                                    showToast("LOST 100", "error");
+                                }
+                            }
+                        }} style={{ background: '#330000', color: 'red', border: '1px solid red', padding: '10px', cursor: 'pointer' }}>
+                            BET 100
+                        </button>
+
+                        <button onClick={() => {
+                            const current = coins;
+                            if (current <= 0) { showToast("BROKE.", "error"); return; }
+                            // DOUBLE DOWN: Bet HALF current stack to Win Double? Or All In?
+                            // "Double Down" usually means "Double your bet".
+                            // Let's do "ALL IN: DOUBLE OR NOTHING".
+                            if (window.confirm("WARNING: 50% CHANCE TO LOSE EVERYTHING. PROCEED?")) {
+                                spendCoins(current); // Drain wallet
+
+                                // Suspense
+                                setTimeout(() => {
+                                    if (Math.random() > 0.5) {
+                                        addCoins(current * 2);
+                                        playWin();
+                                        triggerConfetti();
+                                        showToast(`JACKPOT! +${current * 2}`, "max");
+                                    } else {
+                                        // Lost it all.
+                                        showToast("BANKRUPT.", "error");
+                                        triggerEffect('crash'); // Shake screen
+                                    }
+                                }, 2000);
+                            }
+                        }} style={{ background: 'red', color: 'black', border: '1px solid red', padding: '10px', fontWeight: 'bold', cursor: 'pointer', animation: 'pulse 1s infinite' }}>
+                            DOUBLE DOWN (ALL IN)
+                        </button>
+                    </div>
+
+                    <div style={{ marginTop: '10px' }}>NO REFUNDS. NO WITNESSES.</div>
                 </div>
             </div>
         </div>

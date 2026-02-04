@@ -4,11 +4,23 @@ import { Link } from 'react-router-dom';
 import BeatVisualizer from '../components/BeatVisualizer';
 import { motion } from 'framer-motion';
 
+import { useGamification } from '../context/GamificationContext';
+
 const BeatLab = () => {
+    const { shopState } = useGamification() || { shopState: { unlocked: [] } };
     const [isPlaying, setIsPlaying] = useState(false);
     const [bpm, setBpm] = useState(128);
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedBank, setSelectedBank] = useState('retro'); // retro, 8bit, trap
+
+    // CASSETTES (Sound Banks)
+    const BANKS = [
+        { id: 'retro', name: 'RETRO SYNTH', emoji: '🎹', locked: false },
+        { id: '8bit', name: 'CHIPTUNE', emoji: '👾', locked: false },
+        { id: 'trap', name: 'TRAP CITY', emoji: '🔥', locked: false },
+        { id: 'lofi', name: 'LO-FI STUDY', emoji: '☕', locked: !shopState.unlocked.includes('bank_lofi') },
+        { id: 'cyber', name: 'CYBERPUNK', emoji: '🤖', locked: !shopState.unlocked.includes('bank_cyber') }
+    ];
     const [activeTracks, setActiveTracks] = useState({
         kick: Array(16).fill(false),
         snare: Array(16).fill(false),
@@ -300,8 +312,23 @@ const BeatLab = () => {
                 padding: '20px', marginBottom: '20px',
                 background: 'rgba(20, 20, 30, 0.6)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                position: 'relative'
             }}>
+                <div style={{ position: 'absolute', top: 10, right: 10 }}>
+                    <button onClick={() => {
+                        const trackName = prompt("Name your masterpiece:");
+                        if (trackName) {
+                            const uploads = JSON.parse(localStorage.getItem('beatlab_uploads') || '[]');
+                            uploads.push({ name: trackName, data: activeTracks, date: new Date().toISOString() });
+                            localStorage.setItem('beatlab_uploads', JSON.stringify(uploads));
+                            alert("UPLOADED TO PIRATE RADIO 🏴‍☠️");
+                        }
+                    }} style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', cursor: 'pointer', fontSize: '0.6rem', padding: '5px' }}>
+                        📡 UPLOAD
+                    </button>
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                     {/* Play Button */}
                     <SquishyButton
@@ -332,9 +359,11 @@ const BeatLab = () => {
                                 boxShadow: '0 0 5px var(--neon-blue)'
                             }}
                         >
-                            <option value="retro">RETRO WAVE</option>
-                            <option value="8bit">8-BIT CHIP</option>
-                            <option value="trap">DEEP TRAP</option>
+                            {BANKS.map(b => (
+                                <option key={b.id} value={b.id} disabled={b.locked}>
+                                    {b.locked ? '🔒 ' : ''}{b.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -421,7 +450,7 @@ const BeatLab = () => {
             <p style={{ marginTop: '20px', color: '#555', fontSize: '0.6rem', letterSpacing: '2px' }}>
                 AUDIO ENGINE CONNECTED // 44.1KHZ
             </p>
-        </div>
+        </div >
     );
 };
 

@@ -18,6 +18,7 @@ const HypeTicker = () => {
             "🛍️ SHOP: New 'Neon' skins just dropped.",
             "🌊 LEGEND: A Golden Koi was spotted in the lake...",
             "🎹 BEAT LAB: Trap presets now available.",
+            "📻 PIRATE RADIO: Now broadcasting Community Beats! 🏴‍☠️",
         ];
 
         // 1. Squad Leader News

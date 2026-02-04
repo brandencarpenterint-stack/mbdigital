@@ -16,7 +16,7 @@ export const LeaderboardService = {
 
             const { data, error } = await supabase
                 .from('profiles')
-                .select('display_name, high_scores, coins, friend_code, xp')
+                .select('display_name, high_scores, coins, friend_code, xp, squad')
                 .order('coins', { ascending: false }) // Initial heuristic: rich players play more
                 .limit(50);
 
@@ -25,11 +25,13 @@ export const LeaderboardService = {
                     let score = 0;
                     if (gameId === 'xp') score = p.xp || 0;
                     else if (gameId === 'coins') score = p.coins || 0;
+                    else if (gameId === 'arena_wins') score = (p.high_scores && p.high_scores.arena_wins) ? parseInt(p.high_scores.arena_wins) : 0;
                     else score = (p.high_scores && p.high_scores[gameId]) ? parseInt(p.high_scores[gameId]) : 0;
 
                     return {
                         player: p.display_name,
                         code: p.friend_code,
+                        squad: p.squad,
                         score: score
                     };
                 });
