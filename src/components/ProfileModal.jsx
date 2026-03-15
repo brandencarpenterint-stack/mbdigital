@@ -20,6 +20,8 @@ import SystemCodex from './SystemCodex';
 import { POCKET_BRO_STAGES } from '../context/PocketBroContext';
 import { DECOR_ITEMS } from '../config/DecorItems';
 import { supabase } from '../lib/supabaseClient';
+import ViralShareCard from './ViralShareCard';
+import RoastModal from './RoastModal';
 
 const AVATARS = [
     '/assets/skins/face_default.png',
@@ -64,6 +66,8 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     } = useGamification() || { unlockedLore: [] };
 
     const [activeTab, setActiveTab] = useState('PROFILE');
+    const [showShareCard, setShowShareCard] = useState(false);
+    const [showRoastModal, setShowRoastModal] = useState(false);
 
     const { sendChallenge } = useNotifications();
     const { userSquad, squadScores, getSquadDetails } = useSquad();
@@ -621,6 +625,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                 )}
 
                                                 {/* Controls: Only for owner */}
+                                                {/* Controls: Only for owner */}
                                                 {!isReadOnly && (
                                                     <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                                         <button onClick={() => setIsEditing(true)} style={{ background: 'transparent', border: 'none', color: 'var(--neon-blue)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
@@ -628,6 +633,12 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                         </button>
                                                         <button onClick={() => { setIsDecorating(true); setLocalStickers(displayProfile.placedStickers || []); }} style={{ background: 'transparent', border: 'none', color: 'var(--neon-pink)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
                                                             DECORATE 🎨
+                                                        </button>
+                                                        <button onClick={() => setShowShareCard(true)} style={{ background: 'transparent', border: 'none', color: 'var(--neon-gold)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
+                                                            SHARE STATS 📤
+                                                        </button>
+                                                        <button onClick={() => setShowRoastModal(true)} style={{ background: 'transparent', border: 'none', color: '#ff0055', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
+                                                            ROAST ME 🔥
                                                         </button>
                                                     </div>
                                                 )}
@@ -717,27 +728,109 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                         </div>
 
                                         {/* BADGES */}
-                                        <h3 style={{ color: 'white', paddingBottom: '10px', fontSize: '1.2rem', borderBottom: '1px solid #333', letterSpacing: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            TROPHY ROOM <span style={{ fontSize: '0.8rem', background: '#333', padding: '2px 8px', borderRadius: '10px' }}>{totalUnlocked}</span>
-                                        </h3>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px', marginTop: '15px', paddingBottom: '20px' }}>
-                                            {ACHIEVEMENTS.map(ach => {
-                                                const isUnlocked = displayAchievements.includes(ach.id);
+                                        {/* BADGES & TROPHY ROOM */}
+                                        <div style={{ marginTop: '30px', marginBottom: '50px' }}>
+                                            <h3 style={{
+                                                color: 'var(--neon-gold)',
+                                                fontSize: '1.5rem',
+                                                borderBottom: '2px solid var(--neon-gold)',
+                                                paddingBottom: '15px',
+                                                marginBottom: '30px',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
+                                                fontFamily: '"Press Start 2P", cursive',
+                                                letterSpacing: '2px'
+                                            }}>
+                                                <span>🏆 TROPHY HALL</span>
+                                                <div style={{
+                                                    fontSize: '0.8rem', background: 'rgba(255, 215, 0, 0.1)',
+                                                    border: '1px solid var(--neon-gold)',
+                                                    padding: '8px 15px', borderRadius: '8px', color: 'var(--neon-gold)'
+                                                }}>
+                                                    {totalUnlocked} / {ACHIEVEMENTS.length}
+                                                </div>
+                                            </h3>
+
+                                            {/* CATEGORY GROUPING */}
+                                            {Object.entries(ACHIEVEMENTS.reduce((acc, ach) => {
+                                                const cat = ach.game || 'General';
+                                                if (!acc[cat]) acc[cat] = [];
+                                                acc[cat].push(ach);
+                                                return acc;
+                                            }, {})).map(([category, items]) => {
+                                                const unlockedInCat = items.filter(i => displayAchievements.includes(i.id)).length;
+                                                const isComplete = unlockedInCat === items.length;
+
                                                 return (
-                                                    <div key={ach.id} style={{
-                                                        background: isUnlocked ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0,0,0,0))' : 'rgba(0,0,0,0.3)',
-                                                        border: isUnlocked ? '1px solid gold' : '1px solid #333',
-                                                        borderRadius: '15px', padding: '15px',
-                                                        opacity: isUnlocked ? 1 : 0.4,
-                                                        boxShadow: isUnlocked ? '0 0 15px rgba(255, 215, 0, 0.2)' : 'none',
-                                                        transform: isUnlocked ? 'translateY(-2px)' : 'none',
-                                                        transition: 'all 0.3s'
-                                                    }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                            <h4 style={{ margin: '0', color: isUnlocked ? 'gold' : '#888', fontSize: '0.8rem', fontWeight: 'bold' }}>{ach.title.toUpperCase()}</h4>
-                                                            {isUnlocked && <span style={{ fontSize: '1.2rem', filter: 'drop-shadow(0 0 5px gold)' }}>🏆</span>}
+                                                    <div key={category} style={{ marginBottom: '30px', background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px' }}>
+                                                        <div style={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                            marginBottom: '15px', padding: '0 10px',
+                                                            borderLeft: isComplete ? '4px solid var(--neon-green)' : '4px solid #555',
+                                                            paddingLeft: '15px'
+                                                        }}>
+                                                            <div style={{ fontWeight: 'bold', color: isComplete ? 'var(--neon-green)' : '#ddd', fontSize: '1rem', letterSpacing: '1px' }}>
+                                                                {category.toUpperCase()}
+                                                                {isComplete && <span style={{ marginLeft: '10px', fontSize: '0.8rem', background: 'var(--neon-green)', color: 'black', padding: '2px 6px', borderRadius: '4px' }}>COMPLETE</span>}
+                                                            </div>
+                                                            <div style={{ fontSize: '0.8rem', color: '#888', fontFamily: 'monospace' }}>
+                                                                [{unlockedInCat.toString().padStart(2, '0')} / {items.length.toString().padStart(2, '0')}]
+                                                            </div>
                                                         </div>
-                                                        <p style={{ margin: 0, fontSize: '0.7rem', color: isUnlocked ? '#ddd' : '#666', lineHeight: '1.3' }}>{ach.description}</p>
+
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+                                                            {items.map(ach => {
+                                                                const isUnlocked = displayAchievements.includes(ach.id);
+                                                                return (
+                                                                    <motion.div
+                                                                        key={ach.id}
+                                                                        whileHover={{ scale: 1.05, y: -5 }}
+                                                                        style={{
+                                                                            position: 'relative',
+                                                                            background: isUnlocked ? 'linear-gradient(135deg, rgba(40,40,50,0.9), rgba(10,10,10,0.9))' : 'rgba(0,0,0,0.5)',
+                                                                            border: isUnlocked ? '1px solid rgba(255, 215, 0, 0.5)' : '1px solid #333',
+                                                                            borderRadius: '12px', padding: '15px 10px',
+                                                                            opacity: isUnlocked ? 1 : 0.6,
+                                                                            boxShadow: isUnlocked ? '0 0 15px rgba(255, 215, 0, 0.1)' : 'none',
+                                                                            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                                                                            filter: isUnlocked ? 'none' : 'grayscale(100%)',
+                                                                            height: '100%',
+                                                                            justifyContent: 'space-between'
+                                                                        }}
+                                                                    >
+                                                                        <div style={{ marginBottom: '10px' }}>
+                                                                            <div style={{
+                                                                                fontSize: '2rem', marginBottom: '5px',
+                                                                                filter: isUnlocked ? 'drop-shadow(0 0 8px gold)' : 'none'
+                                                                            }}>
+                                                                                {isUnlocked ? '🏆' : '🔒'}
+                                                                            </div>
+                                                                            <div style={{
+                                                                                fontWeight: 'bold', fontSize: '0.65rem',
+                                                                                color: isUnlocked ? 'var(--neon-gold)' : '#666',
+                                                                                textTransform: 'uppercase',
+                                                                                marginBottom: '5px'
+                                                                            }}>
+                                                                                {ach.title}
+                                                                            </div>
+                                                                            <div style={{ fontSize: '0.55rem', color: '#999', lineHeight: '1.2' }}>
+                                                                                {ach.description}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {isUnlocked && ach.reward && (
+                                                                            <div style={{
+                                                                                marginTop: '10px', fontSize: '0.5rem',
+                                                                                color: 'var(--neon-blue)', background: 'rgba(0, 200, 255, 0.1)',
+                                                                                padding: '3px 8px', borderRadius: '10px', border: '1px solid rgba(0, 200, 255, 0.3)'
+                                                                            }}>
+                                                                                🎁 {ach.reward}
+                                                                            </div>
+                                                                        )}
+                                                                    </motion.div>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -1047,6 +1140,16 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                     </AnimatePresence>
                 </div>
             </div>
+            {showShareCard && <ViralShareCard onClose={() => setShowShareCard(false)} />}
+            {showRoastModal && (
+                <RoastModal 
+                    onClose={() => setShowRoastModal(false)} 
+                    profile={displayProfile} 
+                    stats={displayStats} 
+                    achievements={displayAchievements} 
+                    pocketStats={petStatsToDisplay} 
+                />
+            )}
         </div>
     );
 };

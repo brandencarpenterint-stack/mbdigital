@@ -3,17 +3,9 @@ export const GLOBAL_EVENTS = [
         id: 'VOID_CALM',
         name: 'Void Calm',
         description: 'The universe is quiet today. No special effects.',
-        chance: 0.4,
+        chance: 0.6,
         color: '#000000',
         effect: null
-    },
-    {
-        id: 'METEOR_SHOWER',
-        name: 'Meteor Shower',
-        description: 'Cosmic debris detected! Increased chance of rare loot.',
-        chance: 0.2,
-        color: '#ffaa00',
-        effect: 'meteors' // Visual tag
     },
     {
         id: 'GLITCH_STORM',

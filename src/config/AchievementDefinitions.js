@@ -97,7 +97,8 @@ export const ACHIEVEMENTS = [ // Updated 2026-01-29
     { id: 'secret_konami', title: 'The Code', description: 'Enter Konami Code.', reward: 'Contra Gun', game: 'Hidden', condition: (s) => s.konamiActivated === true },
     { id: 'secret_404', title: 'Lost', description: 'Visit a 404 page.', reward: 'Map', game: 'Hidden', condition: () => false },
     { id: 'ghost_badge', title: 'The Signal', description: 'Decoded the Ghost Frequency.', reward: 'Spectral Badge', game: 'Hidden', condition: () => getShop().unlocked.includes('ghost_badge') },
-    { id: 'radio_dev', title: 'Root Access', description: 'Override System Security.', reward: 'Dev Tuner', game: 'Hidden', condition: () => getShop().unlocked.includes('radio_dev') }
+    { id: 'radio_dev', title: 'Root Access', description: 'Override System Security.', reward: 'Dev Tuner', game: 'Hidden', condition: () => getShop().unlocked.includes('radio_dev') },
+    { id: 'sucker_award', title: 'Absolute Sucker', description: 'Buy the Pet Rock for 50k.', reward: 'Rock Trophy', game: 'Hidden', condition: () => getShop().unlocked.includes('furn_pet_rock') }
 
     // TOTAL: ~66-67 Achievements
 ];

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useGamification } from '../context/GamificationContext';
+import { useToast } from '../context/ToastContext';
 import ColoringCanvas from '../components/ColoringCanvas';
 import SquishyButton from '../components/SquishyButton';
 import { triggerConfetti } from '../utils/confetti';
@@ -9,7 +11,23 @@ const TEMPLATES = [
     { id: 1, src: '/assets/skins/face_money.png', title: 'Money Face', cost: 0 },
     { id: 2, src: '/assets/skins/face_bear.png', title: 'Bear Face', cost: 0 },
     { id: 3, src: '/assets/skins/face_bunny.png', title: 'Bunny Face', cost: 0 },
-    { id: 4, src: '/assets/skins/face_default.png', title: 'Standard', cost: 0 },
+    { id: 4, src: '/assets/skins/face_hoodie.png', title: 'Hoodie Kid', cost: 0 },
+    { id: 5, src: '/assets/skins/logo_main.png', title: 'Main Logo', cost: 0 },
+    { id: 6, src: '/assets/skins/face_default.png', title: 'Standard', cost: 0 },
+    { id: 7, src: '/assets/skins/logo_typography.png', title: 'Merchboy Typo', cost: 0 },
+    { id: 8, src: '/assets/skins/face_hoodie_brown.png', title: 'Cat Hoodie', cost: 0 },
+    { id: 9, src: '/assets/skins/face_bunny_blue.png', title: 'Blue Bunny', cost: 0 },
+    { id: 10, src: '/assets/skins/face_standard_bw.png', title: 'Standard BW', cost: 0 },
+    { id: 11, src: '/assets/coloring/scene_1.jpg', title: 'Hike Adventures', type: 'time', unlockTime: 5 },
+    { id: 12, src: '/assets/coloring/scene_2.jpg', title: 'Merch Market', type: 'time', unlockTime: 10 },
+    { id: 13, src: '/assets/coloring/scene_3.png', title: 'Campfire', type: 'time', unlockTime: 15 },
+    { id: 14, src: '/assets/coloring/scene_4.png', title: 'Live Concert', type: 'time', unlockTime: 20 },
+    { id: 15, src: '/assets/coloring/scene_5.jpg', title: 'Surf Session', type: 'time', unlockTime: 25 },
+    { id: 16, src: '/assets/coloring/scene_6.png', title: 'Noodle Shop', type: 'time', unlockTime: 30 },
+    { id: 17, src: '/assets/coloring/scene_7.png', title: 'Space Exploration', type: 'time', unlockTime: 35 },
+    { id: 18, src: '/assets/coloring/scene_8.png', title: 'Skatepark', type: 'time', unlockTime: 40 },
+    { id: 19, src: '/assets/coloring/scene_9.jpg', title: 'Farm Harvest', type: 'time', unlockTime: 45 },
+    { id: 20, src: '/assets/coloring/scene_10.jpg', title: 'Aquarium', type: 'time', unlockTime: 50 },
 ];
 
 const Coloring = () => {
@@ -17,6 +35,10 @@ const Coloring = () => {
     const [purchased, setPurchased] = useState(JSON.parse(localStorage.getItem('unlockedColoringPages')) || [1]);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [previewTemplate, setPreviewTemplate] = useState(null);
+
+    const { stats } = useGamification();
+    const { showToast } = useToast();
+    const playTimeMins = Math.floor((stats?.playTimeSeconds || 0) / 60);
 
     const { playCollect, playWin, playBeep } = useRetroSound();
 
@@ -35,12 +57,22 @@ const Coloring = () => {
     }, []);
 
     const handleSelect = (template) => {
-        if (purchased.includes(template.id)) {
+        let isOwned = purchased.includes(template.id);
+        if (template.type === 'time' && playTimeMins >= template.unlockTime) {
+            isOwned = true;
+        }
+
+        if (isOwned) {
             setSelectedTemplate(template);
             playBeep();
         } else {
-            setPreviewTemplate(template);
-            playBeep();
+            if (template.type === 'time') {
+                showToast(`Play ${template.unlockTime - playTimeMins} more mins to unlock!`, "info");
+                playBeep(); // Maybe play error sound instead, but beep is fine
+            } else {
+                setPreviewTemplate(template);
+                playBeep();
+            }
         }
     };
 
@@ -76,9 +108,14 @@ const Coloring = () => {
             {/* Header */}
             <div style={{ padding: '20px', marginBottom: '20px' }}>
                 <h2 style={{ fontSize: '2rem', color: 'var(--neon-pink)', textShadow: '0 0 10px var(--neon-pink)', margin: 0 }}>COLORING STUDIO</h2>
-                <p style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '5px' }}>
-                    WALLET: <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold' }}>{coins.toLocaleString()} 🪙</span>
-                </p>
+                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '10px' }}>
+                    <p style={{ color: '#aaa', fontSize: '0.9rem', margin: 0 }}>
+                        WALLET: <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold' }}>{coins.toLocaleString()} 🪙</span>
+                    </p>
+                    <p style={{ color: '#aaa', fontSize: '0.9rem', margin: 0 }}>
+                        PLAY TIME: <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>{playTimeMins} MINS ⏱️</span>
+                    </p>
+                </div>
             </div>
 
             {!selectedTemplate ? (
@@ -92,7 +129,11 @@ const Coloring = () => {
                         margin: '0 auto'
                     }}>
                         {TEMPLATES.map(template => {
-                            const isOwned = purchased.includes(template.id);
+                            let isOwned = purchased.includes(template.id);
+                            if (template.type === 'time' && playTimeMins >= template.unlockTime) {
+                                isOwned = true;
+                            }
+                            
                             return (
                                 <div
                                     key={template.id}
@@ -140,10 +181,10 @@ const Coloring = () => {
                                         {template.title.toUpperCase()}
                                     </div>
                                     <div style={{
-                                        color: isOwned ? 'var(--neon-green)' : 'var(--neon-gold)',
+                                        color: isOwned ? 'var(--neon-green)' : (template.type === 'time' ? 'var(--neon-blue)' : 'var(--neon-gold)'),
                                         marginTop: '5px', fontSize: '0.8rem', fontWeight: 'bold'
                                     }}>
-                                        {isOwned ? 'OWNED' : `🪙 ${template.cost}`}
+                                        {isOwned ? 'OWNED' : (template.type === 'time' ? `⏱️ ${template.unlockTime} MINS` : `🪙 ${template.cost}`)}
                                     </div>
                                 </div>
                             );

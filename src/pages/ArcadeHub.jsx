@@ -101,12 +101,21 @@ const OnlinePlaza = () => {
 
 const games = [
     {
+        id: 'wheel',
+        title: 'WHEEL OF DEGEN',
+        desc: 'Spin. Win. Lose it all.',
+        gradient: 'linear-gradient(135deg, #ff0055 0%, #aa00ff 100%)',
+        icon: '🎡',
+        colSpan: 2, 
+        leaderboardId: 'dopamine_wheel'
+    },
+    {
         id: 'slots',
         title: 'COSMIC SLOTS',
         desc: 'Spin to WIN BIG!',
         gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', // Gold
         icon: '🎰',
-        colSpan: 2, // Highlight it!
+        colSpan: 2,
         leaderboardId: 'cosmic_slots'
     },
     {
@@ -221,6 +230,7 @@ const getHighScore = (id, stats) => {
     if (id === 'fishing') return stats.crazyFishingHighScore || 0;
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
+    if (id === 'wheel') return 'DEGEN';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
     if (id === 'bro-cannon') return stats.broCannonHighScore || 0;
     return 0;

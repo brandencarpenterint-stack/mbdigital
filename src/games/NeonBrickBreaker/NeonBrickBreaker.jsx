@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
@@ -22,19 +22,80 @@ const BALL_ASSETS = [
 ];
 
 const NeonBrickBreaker = () => {
-    const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
+    const { updateStat, incrementStat, shopState, addCoins, coins, spendCoins, buyItem, equipItem, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: { unlocked: [], equipped: {} } };
     const canvasRef = useRef(null);
+    const [searchParams] = useSearchParams();
+    const isCustomMode = searchParams.get('mode') === 'custom';
+
+    // Shop UI State
+    const [isShopOpen, setIsShopOpen] = useState(false);
+
+    // Definitions
+    const BRICK_SHOP_ITEMS = [
+        { id: 'paddle_default', name: 'NEON GREEN', type: 'paddle', price: 0, category: 'brick' },
+        { id: 'paddle_flame', name: 'INFERNO', type: 'paddle', price: 500, category: 'brick', color: '#ff4500' },
+        { id: 'paddle_ice', name: 'FROSTBITE', type: 'paddle', price: 800, category: 'brick', color: '#00bfff' },
+        { id: 'paddle_laser', name: 'CYBER PUNK', type: 'paddle', price: 1500, category: 'brick', color: '#00ff00' },
+        { id: 'paddle_shadow', name: 'VOID WALKER', type: 'paddle', price: 3000, category: 'brick', color: '#4b0082' },
+        { id: 'ball_std', name: 'STANDARD', type: 'ball', price: 0, category: 'brick_ball' },
+        { id: 'ball_fire', name: 'METEOR', type: 'ball', price: 2000, category: 'brick_ball' },
+        { id: 'ball_eye', name: 'ALL-SEEING', type: 'ball', price: 5000, category: 'brick_ball' },
+    ];
+
+    const handleBuyOrEquip = (item) => {
+        if (shopState.unlocked.includes(item.id)) {
+            equipItem(item.category, item.id);
+            playCollect();
+        } else {
+            // Construct item object for context buyItem helper
+            const success = buyItem({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                type: 'permanent' // or whatever context expects, actually context just checks id presence
+            });
+            if (success) {
+                // Auto equip on buy?
+                equipItem(item.category, item.id);
+            } else {
+                playCrash();
+            }
+        }
+    };
 
     // Game State
     const [score, setScore] = useState(0);
+
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('brickHighScore')) || 0);
 
-    // Sync local high score with global stat on mount
-    useEffect(() => {
-        if (stats?.brickHighScore > highScore) {
-            setHighScore(stats.brickHighScore);
-        }
-    }, [stats]);
+    // ... (rest of sync effect)
+
+    // ... (rest of logic up to draw) 
+
+    // DRAW FUNCTION UPDATE FOR PADDLE SHADOW
+    // inside gameLoop...
+    // Paddle
+    const currentSkin = shopState?.equipped?.brick || 'paddle_default';
+    let paddleColor = '#00ffaa';
+    let paddleGlow = '#00ffaa';
+
+    if (currentSkin === 'paddle_flame') {
+        paddleColor = '#ff4500'; // OrangeRed
+        paddleGlow = '#ff8c00';  // DarkOrange
+    } else if (currentSkin === 'paddle_ice') {
+        paddleColor = '#00bfff'; // DeepSkyBlue
+        paddleGlow = '#e0ffff';  // LightCyan
+    } else if (currentSkin === 'paddle_laser') {
+        paddleColor = '#00ff00'; // Lime
+        paddleGlow = '#00ffff';  // Cyan
+    } else if (currentSkin === 'paddle_shadow') {
+        paddleColor = '#220033';
+        paddleGlow = '#8800ff';
+    }
+
+    // ... (rest of logic) ...
+
+
     const [level, setLevel] = useState(1);
     const [lives, setLives] = useState(3);
     const [gameOver, setGameOver] = useState(false);
@@ -56,8 +117,7 @@ const NeonBrickBreaker = () => {
         powerups: [],
         particles: [],
         animationId: null,
-        shakeTime: 0,
-        hitStop: 0 // New Hitstop Timer
+        shakeTime: 0
     });
 
     // Lifecycle & Cleanup
@@ -111,6 +171,24 @@ const NeonBrickBreaker = () => {
                 });
             });
         };
+
+        if (lvl === 'custom') {
+            const customData = JSON.parse(localStorage.getItem('merchboy_custom_brick'));
+            if (customData) {
+                customData.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        if (cell) { // { type, color }
+                            if (cell.type === 'steel') addBrick(c, r, '#aaa', 999, 'steel');
+                            else addBrick(c, r, cell.color || '#fff', 1);
+                        }
+                    });
+                });
+            } else {
+                // Fallback if empty
+                for (let r = 0; r < 5; r++) for (let c = 0; c < BRICK_COLS; c++) addBrick(c, r, null, 1);
+            }
+            return bricks;
+        }
 
         // PATTERNS
         if (lvl === 1) { // Standard Warmup
@@ -238,11 +316,11 @@ const NeonBrickBreaker = () => {
         }
     };
 
-    const startGame = () => {
+    const startGame = (mode = 1) => {
         setScore(0);
         setLives(3); // Start with 3 Lives
         setGameOver(false);
-        startLevel(1);
+        startLevel(mode);
         requestAnimationFrame(gameLoop);
     };
 
@@ -306,15 +384,6 @@ const NeonBrickBreaker = () => {
         const state = gameState.current;
 
         // --- UPDATE ---
-        // HITSTOP LOGIC
-        if (state.hitStop > 0) {
-            state.hitStop--;
-            // Draw frozen frame (skip update, just draw)
-            draw(ctx, state);
-            state.animationId = requestAnimationFrame(gameLoop);
-            return;
-        }
-
         if (!state.transitioning) {
 
             // 1. Balls
@@ -346,9 +415,6 @@ const NeonBrickBreaker = () => {
                     ball.dy = -Math.abs(ball.dy); // Force up
                     playBeep();
                     if (navigator.vibrate) navigator.vibrate(15);
-
-                    // HITSTOP (Paddle)
-                    state.hitStop = 3;
 
                     // Gradual Speed Increase (Cap at max speed)
                     const MAX_SPEED_Y = 18; // Cap
@@ -412,13 +478,8 @@ const NeonBrickBreaker = () => {
                             brick.active = false;
                             setScore(prev => prev + brick.value);
                             playCollect();
-                            // EXPLOSION PARTICLES
                             spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                            spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, 'white'); // Spark core
                             triggerShake(3);
-
-                            // HITSTOP (Brick Destroy)
-                            state.hitStop = 2;
 
                             if (Math.random() < 0.15) {
                                 state.powerups.push({ x: brick.x + brick.width / 2, y: brick.y, type: 'multiball' });
@@ -483,84 +544,124 @@ const NeonBrickBreaker = () => {
         } // End Update
 
         // --- DRAW ---
-        draw(ctx, state);
-        state.animationId = requestAnimationFrame(gameLoop);
-    };
-
-    // SEPARATED DRAW FUNCTION for Hitstop Reuse
-    const draw = (ctx, state) => {
-        // Clear
+        // Clear with slight trail effect? No, clean clear.
         ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Particles
+        // Shake Canvas (Software Shake) - Optional addition to DOM shake
         ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
+        // If we wanted canvas shake: ctx.translate(Math.random()*2, Math.random()*2);
+
+        // Draw Particles
         state.particles.forEach(p => {
             ctx.globalAlpha = p.life;
             ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color; ctx.shadowBlur = 5;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.fillRect(p.x, p.y, 5, 5);
         });
-        ctx.restore();
+        ctx.globalAlpha = 1;
 
-        // Bricks
+        // Draw Bricks
         state.bricks.forEach(brick => {
             if (brick.active) {
+                // Dim color based on HP
                 if (brick.type === 'steel') ctx.fillStyle = '#888';
                 else {
                     ctx.fillStyle = brick.color;
                     if (brick.hp < brick.maxHp) ctx.globalAlpha = 0.5 + (0.5 * (brick.hp / brick.maxHp));
                 }
-                ctx.shadowBlur = 10; ctx.shadowColor = brick.color;
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = brick.color;
                 ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-                ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // HP Indicator
+                if (brick.hp > 1 && brick.type !== 'steel') {
+                    ctx.fillStyle = 'white';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(brick.hp, brick.x + brick.width / 2, brick.y + brick.height / 2 + 3);
+                }
             }
         });
 
-        // Paddle
-        const currentSkin = shopState?.equipped?.brick || 'paddle_default';
-        let paddleColor = '#00ffaa'; let paddleGlow = '#00ffaa';
-        if (currentSkin === 'paddle_flame') { paddleColor = '#ff4500'; paddleGlow = '#ff8c00'; }
-        else if (currentSkin === 'paddle_ice') { paddleColor = '#00bfff'; paddleGlow = '#e0ffff'; }
-        else if (currentSkin === 'paddle_laser') { paddleColor = '#00ff00'; paddleGlow = '#00ffff'; }
-
-        ctx.fillStyle = paddleColor; ctx.shadowBlur = 20; ctx.shadowColor = paddleGlow;
-        ctx.fillRect(state.paddleX, GAME_HEIGHT - PADDLE_HEIGHT - 10, PADDLE_WIDTH, PADDLE_HEIGHT);
-        ctx.shadowBlur = 0;
-
-        // POWERUPS
-        ctx.font = '24px serif'; ctx.textAlign = 'center';
+        // Powerups
+        ctx.font = '24px serif';
+        ctx.textAlign = 'center';
         state.powerups.forEach(p => ctx.fillText('⚡', p.x, p.y));
 
-        // Balls (Glow)
+        // Paddle
+        const currentSkin = shopState?.equipped?.brick || 'paddle_default';
+        let paddleColor = '#00ffaa';
+        let paddleGlow = '#00ffaa';
+
+        if (currentSkin === 'paddle_flame') {
+            paddleColor = '#ff4500'; // OrangeRed
+            paddleGlow = '#ff8c00';  // DarkOrange
+        } else if (currentSkin === 'paddle_ice') {
+            paddleColor = '#00bfff'; // DeepSkyBlue
+            paddleGlow = '#e0ffff';  // LightCyan
+        } else if (currentSkin === 'paddle_laser') {
+            paddleColor = '#00ff00'; // Lime
+            paddleGlow = '#00ffff';  // Cyan
+        }
+
+        ctx.fillStyle = paddleColor;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = paddleGlow;
+        ctx.fillRect(state.paddleX, GAME_HEIGHT - PADDLE_HEIGHT - 10, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+        // Skin Details
+        if (currentSkin === 'paddle_flame') {
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(state.paddleX + 10, GAME_HEIGHT - PADDLE_HEIGHT - 5, PADDLE_WIDTH - 20, 2);
+        }
+        ctx.shadowBlur = 0;
+
+        // Balls
+        const currentBall = shopState?.equipped?.brick_ball || 'ball_std';
+
         state.balls.forEach(ball => {
             ctx.save();
             ctx.translate(ball.x + BALL_SIZE / 2, ball.y + BALL_SIZE / 2);
             ctx.rotate(ball.rot);
-            ctx.shadowColor = 'cyan'; ctx.shadowBlur = 10;
-            ctx.fillStyle = 'white';
-            ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+
+            if (currentBall === 'ball_eye') {
+                // Eyeball
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                // Iris
+                ctx.fillStyle = '#00aaff';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 4, 0, Math.PI * 2); ctx.fill();
+                // Pupil
+                ctx.fillStyle = 'black';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 8, 0, Math.PI * 2); ctx.fill();
+            } else if (currentBall === 'ball_fire') {
+                // Fireball
+                ctx.fillStyle = '#ff4500';
+                ctx.shadowBlur = 10; ctx.shadowColor = 'orange';
+                ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                // Trail
+                if (Math.random() > 0.5) spawnParticles(ball.x, ball.y + 10, 'orange');
+            } else {
+                // Default: Face Balls
+                const img = ballImages.current[ball.imgIndex % ballImages.current.length];
+                if (img && img.complete) {
+                    ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(255,255,255,0.5)';
+                    ctx.drawImage(img, -BALL_SIZE / 2, -BALL_SIZE / 2, BALL_SIZE, BALL_SIZE);
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Fallback
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath(); ctx.arc(0, 0, BALL_SIZE / 2, 0, Math.PI * 2); ctx.fill();
+                }
+            }
             ctx.restore();
         });
+
+        ctx.restore();
+        state.animationId = requestAnimationFrame(gameLoop);
     };
-
-    // ... wait, I need to prevent the original huge inline draw code from running if I extracted it?
-    // The previous chunks updated inline draw code. This chunk replaces the end of the function.
-    // I should check if I should just update the inline code or extract.
-    // Simplifying: I will Just return execution to requestAnimationFrame at end of Loop.
-
-    /* 
-       Actually, re-reading chunk strategies: I replaced the inline draw code in previous chunks with updated logic.
-       So I don't need to extract `draw` separately unless I want to call it from Hitstop block.
-       In chunk 4 ("HITSTOP LOGIC"), I call `draw(ctx, state)`.
-       This means I MUST define `draw`.
-       
-       Solution: I will rename the existing inline draw section (lines 467-583) into a `draw` function.
-    */
-
-    // Changing the plan: I will replace the ENTIRE gameLoop to separate Update and Draw logic cleanly.
-
 
     // --- CONTROLS ---
     useEffect(() => {
@@ -627,11 +728,148 @@ const NeonBrickBreaker = () => {
                 }
             }}
         >
+            <style>{`
+                .shop-panel {
+                    position: fixed;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 300px;
+                    background: rgba(10, 10, 15, 0.95);
+                    border-left: 2px solid var(--neon-blue);
+                    transform: translateX(100%);
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 100;
+                    padding: 20px;
+                    color: white;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .shop-panel.open {
+                    transform: translateX(0);
+                }
+                .shop-item {
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    margin-bottom: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-radius: 8px;
+                    transition: all 0.2s;
+                }
+                .shop-item:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                }
+                .shop-item.equipped {
+                    border-color: var(--neon-green);
+                    background: rgba(0, 255, 0, 0.05);
+                }
+                .shop-toggle-btn {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 90;
+                    background: var(--neon-pink);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    font-size: 24px;
+                    box-shadow: 0 0 20px var(--neon-pink);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: transform 0.2s;
+                }
+                .shop-toggle-btn:hover {
+                    transform: scale(1.1);
+                }
+                @media(max-width: 600px) {
+                    .shop-panel {
+                        top: auto;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        width: 100%;
+                        height: 50vh;
+                        border-left: none;
+                        border-top: 2px solid var(--neon-blue);
+                        transform: translateY(100%);
+                    }
+                    .shop-panel.open {
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
+
             <div style={{
                 position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                 backgroundImage: 'radial-gradient(circle at 50% 50%, #1a0b2e 0%, #000 100%)',
                 zIndex: -1
             }} />
+
+            {/* SHOP TOGGLE */}
+            {!gameActive && (
+                <button className="shop-toggle-btn" onClick={() => setIsShopOpen(!isShopOpen)}>
+                    🛒
+                </button>
+            )}
+
+            {/* SHOP PANEL */}
+            <div className={`shop-panel ${isShopOpen ? 'open' : ''}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2 style={{ margin: 0, color: 'var(--neon-blue)' }}>ARMORY</h2>
+                    <button onClick={() => setIsShopOpen(false)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                </div>
+
+                <div style={{ marginBottom: '20px', padding: '10px', background: '#000', borderRadius: '8px', textAlign: 'center', color: 'gold', fontWeight: 'bold' }}>
+                    BALANCE: ${coins}
+                </div>
+
+                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '5px', color: '#888' }}>PADDLES</h3>
+                {BRICK_SHOP_ITEMS.filter(i => i.type === 'paddle').map(item => {
+                    const isUnlocked = shopState.unlocked.includes(item.id);
+                    const isEquipped = shopState.equipped.brick === item.id;
+                    return (
+                        <div key={item.id} className={`shop-item ${isEquipped ? 'equipped' : ''}`} onClick={() => handleBuyOrEquip(item)}>
+                            <div>
+                                <div style={{ fontWeight: 'bold', color: item.color || 'white' }}>{item.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#888' }}>{isUnlocked ? (isEquipped ? 'EQUIPPED' : 'OWNED') : `${item.price}`}</div>
+                            </div>
+                            {isUnlocked ? (
+                                <div style={{ fontSize: '1.2rem' }}>{isEquipped ? '✅' : '🛡️'}</div>
+                            ) : (
+                                <div style={{ fontSize: '1.2rem' }}>🔒</div>
+                            )}
+                        </div>
+                    );
+                })}
+
+                <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '5px', color: '#888', marginTop: '20px' }}>BALLS</h3>
+                {BRICK_SHOP_ITEMS.filter(i => i.type === 'ball').map(item => {
+                    const isUnlocked = shopState.unlocked.includes(item.id);
+                    const isEquipped = shopState.equipped.brick_ball === item.id;
+                    return (
+                        <div key={item.id} className={`shop-item ${isEquipped ? 'equipped' : ''}`} onClick={() => handleBuyOrEquip(item)}>
+                            <div>
+                                <div style={{ fontWeight: 'bold' }}>{item.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#888' }}>{isUnlocked ? (isEquipped ? 'EQUIPPED' : 'OWNED') : `${item.price}`}</div>
+                            </div>
+                            {isUnlocked ? (
+                                <div style={{ fontSize: '1.2rem' }}>{isEquipped ? '✅' : '🔮'}</div>
+                            ) : (
+                                <div style={{ fontSize: '1.2rem' }}>🔒</div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
 
             {/* HUD */}
             <div style={{
@@ -692,7 +930,7 @@ const NeonBrickBreaker = () => {
                             }}>
                                 NEON<br />BRICKS
                             </h1>
-                            <SquishyButton onClick={startGame} style={{
+                            <SquishyButton onClick={() => startGame(1)} style={{
                                 padding: '15px 50px',
                                 fontSize: '1.5rem',
                                 background: 'var(--neon-green)',
@@ -701,8 +939,27 @@ const NeonBrickBreaker = () => {
                                 fontWeight: '900',
                                 boxShadow: '0 0 20px var(--neon-green)'
                             }}>
-                                PLAY NOW
+                                PLAY ARCADE
                             </SquishyButton>
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                <Link to="/arcade/brick-maker">
+                                    <button style={{ padding: '10px', background: '#333', color: 'white', border: '1px solid #555', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                        🛠️ LEVEL EDITOR
+                                    </button>
+                                </Link>
+                                {localStorage.getItem('merchboy_custom_brick') && (
+                                    <button onClick={() => startGame('custom')} style={{ padding: '10px', background: 'var(--neon-blue)', color: 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'inherit' }}>
+                                        ▶️ PLAY CUSTOM
+                                    </button>
+                                )}
+                            </div>
+
+                            {isCustomMode && (
+                                <div style={{ marginTop: '10px', color: 'var(--neon-blue)', fontSize: '0.8rem' }}>
+                                    TESTING CUSTOM LEVEL
+                                </div>
+                            )}
                             <p style={{ marginTop: '20px', color: '#888', fontSize: '0.8rem', letterSpacing: '2px' }}>MOUSE / TOUCH TO MOVE</p>
                         </div>
                     )}
@@ -718,7 +975,7 @@ const NeonBrickBreaker = () => {
                             <h2 style={{ fontSize: '3.5rem', color: '#ff0055', textShadow: '0 0 20px red', marginBottom: '10px' }}>GAME OVER</h2>
                             <p style={{ fontSize: '1.5rem', color: 'white', marginBottom: '30px' }}>FINAL SCORE: <span style={{ color: 'var(--neon-green)' }}>{score}</span></p>
                             <div style={{ display: 'flex', gap: '20px' }}>
-                                <SquishyButton onClick={startGame} style={{ background: 'var(--neon-blue)', color: 'black', fontWeight: 'bold' }}>RETRY</SquishyButton>
+                                <SquishyButton onClick={() => startGame(String(levelRef.current) === 'custom' ? 'custom' : 1)} style={{ background: 'var(--neon-blue)', color: 'black', fontWeight: 'bold' }}>RETRY</SquishyButton>
                                 <Link to="/arcade">
                                     <SquishyButton style={{ background: '#333', color: '#fff' }}>EXIT</SquishyButton>
                                 </Link>

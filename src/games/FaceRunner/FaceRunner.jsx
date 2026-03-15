@@ -1,255 +1,341 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
+import { feedService } from '../../utils/feed';
 
 const BIOMES = [
-    { name: 'NEON CITY', bg: '#050011', grid: '#ff00ff', obsType: 0 },
-    { name: 'CYBER VOID', bg: '#000000', grid: '#00ffff', obsType: 1 },
-    { name: 'PLASMA ZONE', bg: '#220022', grid: '#ff0055', obsType: 2 }
+    { name: 'NEON CITY', bg: '#0d0221', grid: '#ff00ff', obs: ['#00ffaa', '#ff00ff'] },
+    { name: 'MAGMA CORE', bg: '#220000', grid: '#ff4400', obs: ['#ffaa00', '#ff4400'] },
+    { name: 'ICE CAVERN', bg: '#001133', grid: '#00ffff', obs: ['#ffffff', '#88ccff'] },
+    { name: 'TOXIC JUNGLE', bg: '#002200', grid: '#00ff00', obs: ['#ccff00', '#009900'] },
+    { name: 'THE VOID', bg: '#ffffff', grid: '#000000', obs: ['#000000', '#333333'] }
 ];
 
 const FaceRunner = () => {
-    const { updateStat, addCoins, stats } = useGamification() || {};
+    const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
     const canvasRef = useRef(null);
+    const { soundEnabled } = useSettings();
     const { playCrash, playCollect, playWin } = useRetroSound();
 
-    // Canvas
-    const WIDTH = 800;
-    const HEIGHT = 600;
+    // Game Constants
+    const CANVAS_WIDTH = 800;
+    const CANVAS_HEIGHT = 600;
+    const TUNNEL_DEPTH = 2000;
 
     // State
-    const [gameState, setGameState] = useState('START');
+    const [gameState, setGameState] = useState('START'); // START, PLAYING, GAME_OVER
+    const [canRestart, setCanRestart] = useState(false);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('faceRunnerHighScore')) || 0);
 
-    // Refs
-    const stateRef = useRef({
-        player: { x: 0, y: 0, bank: 0 },
-        obstacles: [],
-        items: [],
-        speed: 30,
-        distance: 0,
-        frame: 0
-    });
-    const sheetRef = useRef(null);
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.faceRunnerHighScore > highScore) {
+            setHighScore(stats.faceRunnerHighScore);
+        }
+    }, [stats]);
+    const [selectedFace, setSelectedFace] = useState('face_money');
+
+    // Refs for Loop
+    const playingRef = useRef(false);
+    const speedRef = useRef(30); // Start faster
+    const scoreRef = useRef(0);
+    const biomeIndexRef = useRef(0);
+
+    // Entities
+    const playerRef = useRef({ x: 0, y: 0, squash: 1 });
+    const obstaclesRef = useRef([]); // {x, y, z, color, rot}
     const requestRef = useRef(null);
 
+    // Assets
+    const faceImgs = useRef({});
+
     useEffect(() => {
-        const img = new Image();
-        img.src = '/assets/runner_sheet.png';
-        sheetRef.current = img;
-        if (stats?.faceRunnerHighScore > highScore) setHighScore(stats.faceRunnerHighScore);
+        // Preload Faces
+        const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default'];
+        faces.forEach(f => {
+            const img = new Image();
+            img.src = `/assets/skins/${f}.png`;
+            faceImgs.current[f] = img;
+        });
         return () => cancelAnimationFrame(requestRef.current);
-    }, [stats]);
+    }, []);
 
     const startGame = () => {
-        stateRef.current = {
-            player: { x: 0, y: 0, bank: 0 },
-            obstacles: [],
-            items: [],
-            speed: 30,
-            distance: 0,
-            frame: 0
-        };
-        setScore(0);
         setGameState('PLAYING');
-        requestAnimationFrame(gameLoop);
+        setCanRestart(false);
+        playingRef.current = true;
+        setScore(0);
+        speedRef.current = 30; // Faster start speed
+        scoreRef.current = 0;
+        biomeIndexRef.current = 0;
+        playerRef.current = { x: 0, y: 0, squash: 1 };
+        obstaclesRef.current = [];
+
+        requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const spawnObstacle = (type) => {
+    const spawnObstacle = (currentBiome) => {
         const spread = 800;
-        stateRef.current.obstacles.push({
-            x: (Math.random() - 0.5) * spread * 2,
-            y: (Math.random() - 0.5) * spread * 2,
-            z: 2000,
-            type: Math.floor(Math.random() * 3), // 0: Cube, 1: Spike, 2: Gate
+        const color = currentBiome.obs[Math.floor(Math.random() * currentBiome.obs.length)];
+        obstaclesRef.current.push({
+            x: (Math.random() - 0.5) * spread * 1.5,
+            y: (Math.random() - 0.5) * spread * 1.5,
+            z: TUNNEL_DEPTH,
+            color: color,
             rot: Math.random() * Math.PI,
-            size: 150 + Math.random() * 50
+            size: 100 + Math.random() * 100 // Varied sizes
         });
     };
 
-    // Draw Sprite helper because sheets can vary
-    const drawSprite = (ctx, row, col, x, y, size, rot) => {
-        if (!sheetRef.current || !sheetRef.current.complete) return;
-        const sw = sheetRef.current.width / 3;
-        const sh = sheetRef.current.height / 3;
-
-        ctx.save();
-        ctx.translate(x, y);
-        if (rot) ctx.rotate(rot);
-        ctx.drawImage(sheetRef.current, col * sw, row * sh, sw, sh, -size / 2, -size / 2, size, size);
-        ctx.restore();
-    };
-
     const gameLoop = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const cx = WIDTH / 2;
-        const cy = HEIGHT / 2;
-        const state = stateRef.current;
+        if (!canvasRef.current) return;
+        const ctx = canvasRef.current.getContext('2d');
+        const width = CANVAS_WIDTH;
+        const height = CANVAS_HEIGHT;
+        const cx = width / 2;
+        const cy = height / 2;
 
-        // Biome
-        const dist = Math.floor(state.distance);
-        const biomeConfig = BIOMES[Math.floor(dist / 3000) % BIOMES.length];
+        // Biome Logic
+        const distance = Math.floor(scoreRef.current);
+        const biomeStage = Math.floor(distance / 2500) % BIOMES.length;
+        biomeIndexRef.current = biomeStage;
+        const currentBiome = BIOMES[biomeStage];
 
         // --- UPDATE ---
-        if (gameState === 'PLAYING') {
-            state.speed = Math.min(30 + (dist * 0.01), 100);
-            state.distance += state.speed * 0.1;
-            setScore(Math.floor(state.distance));
+        if (playingRef.current) {
+            // Speed up over time (faster scaling)
+            speedRef.current = Math.min(30 + (scoreRef.current * 0.015), 120);
 
-            // Spawn
-            if (Math.random() < 0.1) spawnObstacle(biomeConfig.obsType);
+            // Spawn Rate
+            if (Math.random() < 0.08) {
+                spawnObstacle(currentBiome);
+            }
 
-            // Move Obs
-            for (let i = state.obstacles.length - 1; i >= 0; i--) {
-                const obs = state.obstacles[i];
-                obs.z -= state.speed;
+            // Move Obstacles
+            for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
+                const obs = obstaclesRef.current[i];
+                obs.z -= speedRef.current;
+
                 if (obs.z <= 0) {
-                    state.obstacles.splice(i, 1);
+                    obstaclesRef.current.splice(i, 1);
+                    scoreRef.current += 5; // 5m per obstacle passed
+                    setScore(Math.floor(scoreRef.current));
                 }
             }
         }
 
         // --- DRAW ---
-        ctx.fillStyle = biomeConfig.bg;
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = currentBiome.bg;
+        ctx.fillRect(0, 0, width, height);
 
-        // Tunnel Lines
-        ctx.strokeStyle = biomeConfig.grid;
+        // Tunnel Effect
+        ctx.strokeStyle = currentBiome.grid;
         ctx.lineWidth = 2;
         ctx.beginPath();
+        // Radial Lines
         for (let i = 0; i < 8; i++) {
-            const a = (i / 8) * Math.PI * 2;
+            const angle = (i / 8) * Math.PI * 2;
             ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + Math.cos(a) * WIDTH, cy + Math.sin(a) * HEIGHT);
+            ctx.lineTo(cx + Math.cos(angle) * width, cy + Math.sin(angle) * height);
         }
-        // Moving rings
-        const offset = (performance.now() * state.speed * 0.05) % 500;
-        for (let z = 500; z > 0; z -= 100) {
-            const d = (z - offset + 500) % 500;
+        // Moving Rings
+        const offset = (performance.now() * speedRef.current * 0.05) % 500;
+        for (let z = 500; z > 0; z -= 500 / 5) { // Fewer rings for mobile performance
+            const d = (z - offset + 500) % 500; // 0 to 500
             if (d < 10) continue;
-            const s = (500 / d) * 50;
-            if (s < WIDTH * 2) {
-                // ctx.rect(cx-s, cy-s, s*2, s*2); // Square tunnel
-                // Circle tunnel? Let's do rect.
-                ctx.rect(cx - s, cy - s, s * 2, s * 2);
+            const scale = 500 / d; // Fake perspective
+            // Just draw a rect for speed instead of complex path
+            const size = 50 * scale;
+            if (size < width * 2) {
+                ctx.rect(cx - size, cy - size, size * 2, size * 2);
             }
         }
         ctx.stroke();
 
-        // Obstacles (Painter's Alg)
-        state.obstacles.sort((a, b) => b.z - a.z);
-
-        state.obstacles.forEach(obs => {
+        // Obstacles
+        obstaclesRef.current.sort((a, b) => b.z - a.z);
+        obstaclesRef.current.forEach(obs => {
             if (obs.z < 10) return;
-            const scale = 500 / obs.z;
+            const fov = 600;
+            const scale = fov / obs.z;
             const sx = cx + obs.x * scale;
             const sy = cy + obs.y * scale;
-            const s = obs.size * scale;
+            const size = obs.size * scale;
 
-            // Sprite?
-            // Row 1: Cube, Spike, Gate
-            // Row 1 -> Index 1.
-            // Cols 0, 1, 2.
-            drawSprite(ctx, 1, obs.type, sx, sy, s, obs.rot + state.distance * 0.01);
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(obs.rot + (performance.now() * 0.002));
 
-            // Collision
-            if (obs.z < 100 && gameState === 'PLAYING') {
-                const dx = sx - (cx + state.player.x);
-                const dy = sy - (cy + state.player.y);
-                if (Math.sqrt(dx * dx + dy * dy) < s / 2 + 20) {
-                    endGame();
+            // Hitbox Check
+            if (obs.z < 100 && playingRef.current) {
+                const dx = sx - (cx + playerRef.current.x);
+                const dy = sy - (cy + playerRef.current.y);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < (size / 2 + 30)) { // 30 is player radius approx
+                    handleCrash();
                 }
             }
+
+            ctx.fillStyle = obs.color;
+            ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
+            ctx.fillRect(-size / 2, -size / 2, size, size);
+            // Detail
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(-size / 4, -size / 4, size / 2, size / 2);
+            ctx.restore();
         });
 
         // Player
-        if (gameState === 'PLAYING') {
-            const bank = state.player.bank;
-            // Row 0. Col 0 (Center), 1 (Left), 2 (Right)?
-            // Actually typical is Center, Left, Right.
-            // Let's use Bank to pick calc.
-            let col = 0;
-            if (bank < -50) col = 1;
-            if (bank > 50) col = 2;
+        if (playingRef.current) {
+            const p = playerRef.current;
+            p.squash = 1 + Math.sin(performance.now() * 0.02) * 0.05;
 
-            // Draw
-            // Position based on mouse/touch.
-            // Use translation
-            drawSprite(ctx, 0, col, cx + state.player.x, cy + state.player.y, 100, 0);
+            ctx.save();
+            ctx.translate(cx + p.x, cy + p.y);
+            ctx.scale(p.squash, 1 / p.squash);
+
+            const img = faceImgs.current[selectedFace];
+            const size = 100;
+
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.shadowBlur = 20; ctx.shadowColor = 'white';
+                ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.restore();
         }
+
+        // HUD - Biome Name (Cinematic)
+        ctx.fillStyle = 'white';
+        ctx.font = '20px "Orbitron", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(currentBiome.name, cx, 40);
+        ctx.font = '14px monospace';
+        ctx.fillText(`DISTANCE: ${Math.floor(scoreRef.current)}m`, cx, 65);
 
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
-    const endGame = () => {
-        setGameState('GAMEOVER');
-        playCrash();
-        if (score > highScore) {
-            setHighScore(score);
-            if (updateStat) updateStat('faceRunnerHighScore', score);
+    const handleCrash = () => {
+        const finalScore = Math.floor(scoreRef.current);
+
+        if (updateStat) updateStat('gamesPlayed', 'face_runner');
+        if (addCoins) addCoins(Math.floor(finalScore / 10)); // 1 coin per 10m
+
+        if (finalScore > highScore) {
+            setHighScore(finalScore);
+            if (updateStat) updateStat('faceRunnerHighScore', finalScore);
+
+            const playerName = userProfile?.name || 'Runner';
+            feedService.publish(`reached ${finalScore}m in Face Runner!`, 'win', playerName);
         }
-        if (addCoins) addCoins(Math.floor(score / 10));
+        setGameState('GAME_OVER');
+        playingRef.current = false;
+        playCrash();
+
+        // Delay restart capability
+        setCanRestart(false);
+        setTimeout(() => setCanRestart(true), 1500);
     };
 
-    const handleInput = (x, y) => {
+    const handleInput = (clientX, clientY) => {
         if (!canvasRef.current) return;
         const rect = canvasRef.current.getBoundingClientRect();
-        // Normalize -0.5 to 0.5
-        const nx = ((x - rect.left) / rect.width) - 0.5;
-        const ny = ((y - rect.top) / rect.height) - 0.5;
+        const scaleX = CANVAS_WIDTH / rect.width;
+        const scaleY = CANVAS_HEIGHT / rect.height;
 
-        // Map to Tunnel space
-        // Range approx -400 to 400
-        const targetX = nx * WIDTH * 1.5;
-        const targetY = ny * HEIGHT * 1.5;
+        // Map input to canvas coordinates relative to center
+        // Limit x/y to bounds
+        let x = (clientX - rect.left) * scaleX - (CANVAS_WIDTH / 2);
+        let y = (clientY - rect.top) * scaleY - (CANVAS_HEIGHT / 2);
 
-        stateRef.current.player.x += (targetX - stateRef.current.player.x) * 0.2;
-        stateRef.current.player.y += (targetY - stateRef.current.player.y) * 0.2;
-        stateRef.current.player.bank = targetX - stateRef.current.player.x;
+        // Clamp
+        x = Math.max(-CANVAS_WIDTH / 2 + 50, Math.min(CANVAS_WIDTH / 2 - 50, x));
+        y = Math.max(-CANVAS_HEIGHT / 2 + 50, Math.min(CANVAS_HEIGHT / 2 - 50, y));
+
+        playerRef.current.x = x;
+        playerRef.current.y = y;
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', background: 'black', overflow: 'hidden' }}>
-            {/* Canvas */}
-            <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
-                <canvas
-                    ref={canvasRef}
-                    width={WIDTH} height={HEIGHT}
-                    onMouseMove={e => handleInput(e.clientX, e.clientY)}
-                    onTouchMove={e => { e.preventDefault(); handleInput(e.touches[0].clientX, e.touches[0].clientY); }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+        <div className="page-enter" style={{
+            position: 'fixed', inset: 0,
+            background: 'black',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            touchAction: 'none' // DISALLOW SCROLLING
+        }}>
+            <canvas
+                ref={canvasRef}
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                onMouseMove={(e) => handleInput(e.clientX, e.clientY)}
+                onTouchMove={(e) => {
+                    e.preventDefault(); // Stop scroll
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }}
+                onTouchStart={(e) => {
+                    // Initial jump to finger
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }}
+                style={{
+                    width: '100%', height: '100%',
+                    objectFit: 'contain',
+                    maxWidth: '800px', maxHeight: '600px',
+                    // Border changes color with Biome
+                    border: `4px solid ${BIOMES[Math.floor(Math.floor(score) / 2500) % BIOMES.length]?.obs[0] || 'white'}`
+                }}
+            />
 
-                {/* HUD */}
-                <div style={{ position: 'absolute', top: 20, left: 20, color: 'cyan', fontFamily: '"Orbitron"', fontSize: '2rem', textShadow: '0 0 10px blue' }}>
-                    {score}m
+            {gameState === 'START' && (
+                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '2px solid cyan' }}>
+                    <h1 style={{ color: 'cyan', fontSize: '3rem', margin: 0 }}>FACE WARP</h1>
+                    <p style={{ color: 'white', marginBottom: '20px' }}>Avoid the Void.</p>
+                    <SquishyButton onClick={startGame} style={{ background: 'cyan', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>RUN</SquishyButton>
                 </div>
+            )}
 
-                <Link to="/arcade" style={{ position: 'absolute', top: 20, right: 20 }}>
-                    <SquishyButton style={{ background: '#ff0055' }}>EXIT</SquishyButton>
-                </Link>
+            {gameState === 'GAME_OVER' && (
+                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '2px solid red' }}>
+                    <h1 style={{ color: 'red', fontSize: '3rem', margin: 0 }}>CRASHED!</h1>
+                    <p style={{ color: 'white', fontSize: '2rem', fontWeight: 'bold' }}>{Math.floor(score)}m</p>
+                    <p style={{ color: '#aaa', marginBottom: '20px' }}>BEST: {highScore}m</p>
+                    <SquishyButton
+                        onClick={() => canRestart && startGame()}
+                        style={{
+                            background: canRestart ? 'white' : '#555',
+                            color: canRestart ? 'black' : '#888',
+                            fontSize: '1.5rem',
+                            padding: '15px 40px',
+                            cursor: canRestart ? 'pointer' : 'wait'
+                        }}
+                    >
+                        {canRestart ? 'AGAIN' : 'WAIT...'}
+                    </SquishyButton>
+                </div>
+            )}
 
-                {/* MENU */}
-                {gameState === 'START' && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
-                        <h1 style={{ fontSize: '4rem', color: 'cyan', textShadow: '0 0 20px cyan' }}>FACE WARP</h1>
-                        <SquishyButton onClick={startGame} style={{ fontSize: '2rem', padding: '20px 50px', background: 'cyan', color: 'black' }}>WAR_P</SquishyButton>
-                    </div>
-                )}
-
-                {gameState === 'GAMEOVER' && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
-                        <h1 style={{ color: 'red', fontSize: '4rem' }}>CRITICAL FAILURE</h1>
-                        <h2>SCORE: {score}</h2>
-                        <SquishyButton onClick={startGame} style={{ fontSize: '1.5rem', background: 'white', color: 'black' }}>RETRY</SquishyButton>
-                    </div>
-                )}
-            </div>
+            {/* HOME BUTTON - Top Left (High Z-Index) */}
+            <Link to="/arcade" style={{
+                position: 'absolute', top: '20px', left: '20px', zIndex: 9999,
+                textDecoration: 'none'
+            }}>
+                <div style={{
+                    background: '#ff0055', color: 'white',
+                    padding: '10px 20px', borderRadius: '30px',
+                    fontWeight: 'bold', boxShadow: '0 5px 15px rgba(255, 0, 85, 0.4)',
+                    boxSizing: 'border-box',
+                    fontSize: '1rem',
+                    display: 'flex', alignItems: 'center', gap: '5px'
+                }}>
+                    🏠 EXIT
+                </div>
+            </Link>
         </div>
     );
 };

@@ -24,6 +24,7 @@ const WhackAMoleGame = lazy(() => import('./games/WhackAMole/WhackAMoleGame'));
 const MemoryMatchGame = lazy(() => import('./games/MemoryMatch/MemoryMatchGame'));
 const GalaxyDefender = lazy(() => import('./games/GalaxyDefender/GalaxyDefender'));
 const NeonBrickBreaker = lazy(() => import('./games/NeonBrickBreaker/NeonBrickBreaker'));
+const BrickMaker = lazy(() => import('./games/NeonBrickBreaker/BrickMaker'));
 const FlappyMascot = lazy(() => import('./games/FlappyMascot/FlappyMascot'));
 const CrazyFishing = lazy(() => import('./games/CrazyFishing/CrazyFishing'));
 const FaceRunner = lazy(() => import('./games/FaceRunner/FaceRunner'));
@@ -31,6 +32,7 @@ const MerchJump = lazy(() => import('./games/MerchJump/MerchJump'));
 const CosmicSlots = lazy(() => import('./games/CosmicSlots/CosmicSlots'));
 const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
 const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
+const DopamineWheel = lazy(() => import('./games/DopamineWheel/DopamineWheel'));
 
 import CosmicBackground from './components/CosmicBackground';
 import PageTransition from './components/PageTransition';
@@ -93,6 +95,7 @@ function App() {
             <Route path="arcade/memory" element={<MemoryMatchGame />} />
             <Route path="arcade/galaxy" element={<GalaxyDefender />} />
             <Route path="arcade/brick" element={<NeonBrickBreaker />} />
+            <Route path="arcade/brick-maker" element={<BrickMaker />} />
             <Route path="arcade/flappy" element={<FlappyMascot />} />
             <Route path="arcade/fishing" element={<CrazyFishing />} />
             <Route path="arcade/face-runner" element={<FaceRunner />} />
@@ -100,6 +103,7 @@ function App() {
             <Route path="arcade/slots" element={<CosmicSlots />} />
             <Route path="arcade/sub-hunter" element={<SubHunterGame />} />
             <Route path="arcade/bro-cannon" element={<BroCannon />} />
+            <Route path="arcade/wheel" element={<DopamineWheel />} />
           </Route>
         </Routes>
       </Suspense>

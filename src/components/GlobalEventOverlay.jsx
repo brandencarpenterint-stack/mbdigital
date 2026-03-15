@@ -33,18 +33,7 @@ const GlobalEventOverlay = () => {
             const w = canvas.width;
             const h = canvas.height;
 
-            if (currentEvent.id === 'METEOR_SHOWER') {
-                return {
-                    x: Math.random() * w + (w * 0.5), // Start mostly right/top
-                    y: Math.random() * -h, // Start above
-                    vx: -5 - Math.random() * 5,
-                    vy: 5 + Math.random() * 5,
-                    size: 1 + Math.random() * 2,
-                    length: 20 + Math.random() * 50,
-                    alpha: 1,
-                    color: '#ffaa00'
-                };
-            }
+
             if (currentEvent.id === 'NEON_RAIN') {
                 return {
                     x: Math.random() * w,
@@ -113,50 +102,39 @@ const GlobalEventOverlay = () => {
                 p.y += p.vy;
 
                 // WRAP / KILL logic
-                if (activeMode === 'METEOR_SHOWER') {
-                    // Draw Tail
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(255, 170, 0, ${p.alpha})`;
-                    ctx.lineWidth = p.size;
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.vx * 5, p.y - p.vy * 5); // Trail opposite to velocity? Wait. 
-                    // Velocity is (-x, +y). Trail should be (+x, -y).
-                    // Actually simple line:
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.length, p.y - p.length); // Diagonal hack
-                    ctx.stroke();
-
-                    // Kill
-                    if (p.x < -100 || p.y > canvas.height + 100) {
-                        particles[i] = createParticle();
-                    }
-                }
-                else if (activeMode === 'NEON_RAIN') {
-                    ctx.fillStyle = `rgba(255, 0, 255, ${p.alpha})`;
-                    ctx.fillRect(p.x, p.y, p.size, p.length);
+                // WRAP / KILL logic
+                if (activeMode === 'NEON_RAIN') {
+                    ctx.fillStyle = `rgba(220, 0, 255, ${p.alpha * 0.6})`;
+                    ctx.fillRect(p.x, p.y, 1, p.length); // Super thin
 
                     if (p.y > canvas.height) particles[i] = createParticle();
                 }
                 else if (activeMode === 'GOLD_RUSH') {
                     ctx.beginPath();
-                    ctx.fillStyle = `rgba(255, 215, 0, ${p.alpha})`;
+                    ctx.fillStyle = `rgba(255, 215, 0, ${p.alpha * 0.8})`;
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                     ctx.fill();
-                    p.alpha -= 0.01;
+
+                    // Shiny cross sparkle occasionally
+                    if (Math.random() < 0.05) {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(p.x - 2, p.y, 4, 1);
+                        ctx.fillRect(p.x, p.y - 2, 1, 4);
+                    }
+
+                    p.alpha -= 0.005;
+                    p.y += p.vy; // Float up
                     if (p.alpha <= 0) particles[i] = createParticle();
                 }
                 else if (activeMode === 'NIGHT_MODE') {
                     ctx.beginPath();
                     // Pulse
-                    const pulse = (Math.sin(Date.now() / 500 + i) + 1) / 2;
-                    const curAlpha = p.alpha * pulse;
+                    const pulse = (Math.sin(Date.now() / 1000 + i) + 1) / 2;
+                    const curAlpha = p.alpha * pulse * 0.6;
 
-                    ctx.fillStyle = `rgba(0, 255, 255, ${curAlpha})`;
+                    ctx.fillStyle = `rgba(180, 255, 255, ${curAlpha})`;
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = 'cyan';
                     ctx.fill();
-                    ctx.shadowBlur = 0;
 
                     if (p.x < 0) p.x = canvas.width;
                     if (p.x > canvas.width) p.x = 0;

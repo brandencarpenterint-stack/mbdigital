@@ -20,13 +20,31 @@ export const LeaderboardService = {
                 .order('coins', { ascending: false }) // Initial heuristic: rich players play more
                 .limit(50);
 
+            const STAT_MAP = {
+                'crazy_fishing': 'crazyFishingHighScore',
+                'neon_snake': 'snakeHighScore',
+                'flappy_mascot': 'flappyHighScore',
+                'galaxy_defender': 'galaxyHighScore',
+                'neon_bricks': 'brickHighScore',
+                'whack_a_mole': 'whackHighScore',
+                'memory_match': 'memoryHighScore',
+                'face_runner': 'faceRunnerHighScore',
+                'merch_jump': 'merchJumpHighScore',
+                'bro_cannon': 'broCannonHighScore',
+                'sub_hunter': 'subHunterHighScore',
+                'cosmic_slots': 'slotsHighScore' // Assuming this key exists if tracked, or handled specially
+            };
+
             if (data) {
                 const standardized = data.map(p => {
                     let score = 0;
                     if (gameId === 'xp') score = p.xp || 0;
                     else if (gameId === 'coins') score = p.coins || 0;
                     else if (gameId === 'arena_wins') score = (p.high_scores && p.high_scores.arena_wins) ? parseInt(p.high_scores.arena_wins) : 0;
-                    else score = (p.high_scores && p.high_scores[gameId]) ? parseInt(p.high_scores[gameId]) : 0;
+                    else {
+                        const key = STAT_MAP[gameId] || gameId;
+                        score = (p.high_scores && p.high_scores[key]) ? parseInt(p.high_scores[key]) : 0;
+                    }
 
                     return {
                         player: p.display_name,

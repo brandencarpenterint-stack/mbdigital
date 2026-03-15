@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useGamification } from '../context/GamificationContext';
+import { ACHIEVEMENTS } from '../config/AchievementDefinitions';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import html2canvas from 'html2canvas';
 
@@ -211,19 +212,44 @@ const BroCard = () => {
                             </div>
                         </div>
 
-                        {/* BADGES */}
-                        <div style={{ marginTop: '20px', display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                            {unlockedAchievements?.slice(0, 10).map(achId => {
-                                // Simple visual for badge, ideally we look up the ACHIEVEMENT def for icon?
-                                // We need to import ACHIEVEMENTS in this file to look up icon/color?
-                                // Or just a placeholder for now.
-                                return (
-                                    <div key={achId} style={{ width: '24px', height: '24px', background: 'gold', borderRadius: '50%', border: '2px solid #fff', boxShadow: '0 0 5px gold' }} title={achId} />
-                                );
-                            })}
-                            {(!unlockedAchievements || unlockedAchievements.length === 0) && (
-                                <div style={{ fontSize: '0.7rem', color: '#444' }}>NO BADGES YET</div>
-                            )}
+                        {/* ACHIEVEMENTS GRID */}
+                        <div style={{ marginTop: '20px', textAlign: 'left' }}>
+                            <div style={labelStyle}>ACHIEVEMENTS & BADGES</div>
+                            <div style={{
+                                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '8px',
+                                maxHeight: '200px', overflowY: 'auto', padding: '5px',
+                                background: 'rgba(0,0,0,0.2)', borderRadius: '8px'
+                            }}>
+                                {ACHIEVEMENTS.sort((a, b) => {
+                                    const aUnlocked = unlockedAchievements?.includes(a.id);
+                                    const bUnlocked = unlockedAchievements?.includes(b.id);
+                                    if (aUnlocked === bUnlocked) return 0;
+                                    return aUnlocked ? -1 : 1;
+                                }).map(ach => {
+                                    const isUnlocked = unlockedAchievements?.includes(ach.id);
+                                    return (
+                                        <div key={ach.id} title={`${ach.title}: ${ach.description} (Reward: ${ach.reward})`} style={{
+                                            aspectRatio: '1/1',
+                                            background: isUnlocked ? 'linear-gradient(135deg, #222, #333)' : '#111',
+                                            border: isUnlocked ? `1px solid gold` : '1px solid #333',
+                                            borderRadius: '8px',
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                            opacity: isUnlocked ? 1 : 0.5,
+                                            position: 'relative',
+                                            cursor: 'help'
+                                        }}>
+                                            <div style={{ fontSize: '1.2rem', filter: isUnlocked ? 'none' : 'grayscale(100%) blur(1px)' }}>
+                                                {isUnlocked ? '🏆' : '🔒'}
+                                            </div>
+                                            {isUnlocked && (
+                                                <div style={{ fontSize: '0.4rem', color: 'gold', marginTop: '2px', fontWeight: 'bold' }}>
+                                                    500 XP
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         <div style={{ marginTop: '30px', height: '2px', background: '#333', position: 'relative' }}>

@@ -33,9 +33,21 @@ export const GamificationProvider = ({ children }) => {
             galaxyHighScore: 0,
             brickHighScore: 0,
             crazyFishingHighScore: 0,
-            gamesPlayed: []
+            gamesPlayed: [],
+            playTimeSeconds: 0
         };
     });
+
+    // --- PLAY TIME TRACKER ---
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setStats(prev => ({
+                ...prev,
+                playTimeSeconds: (prev.playTimeSeconds || 0) + 1
+            }));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // --- SHOP STATE (Super Hoisted) ---
     const [shopState, setShopState] = useState(() => {
@@ -436,6 +448,29 @@ export const GamificationProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('merchboy_daily', JSON.stringify(dailyState));
     }, [dailyState]);
+
+    // DAILY QUEST GENERATION
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        if (dailyState.questDate !== today) {
+            // Generate New Quests
+            const shuffled = [...DAILY_TEMPLATES].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 3).map(t => ({
+                ...t,
+                id: `${t.id}_${today}`,
+                progress: 0,
+                claimed: false,
+                isWeekly: false
+            }));
+
+            setDailyState(prev => ({
+                ...prev,
+                questDate: today,
+                quests: selected,
+                skipsAvailable: 1
+            }));
+        }
+    }, [dailyState.questDate]);
 
     // --- AUTH & CLOUD SYNC ---
     const [session, setSession] = useState(null);
@@ -1195,7 +1230,7 @@ export const GamificationProvider = ({ children }) => {
     return (
         <GamificationContext.Provider value={{
             stats, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
-            claimQuest, skipQuest, checkHighscoreQuest, shopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
+            claimQuest, skipQuest, checkHighscoreQuest, shopState, setShopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,
             unlockedStickers, buyCapsule, triggerConfetti,
             session, loginWithProvider, logout,

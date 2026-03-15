@@ -8,6 +8,7 @@ import { usePocketBro } from '../context/PocketBroContext';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
 import useRetroSound from '../hooks/useRetroSound';
+import TheButton from '../components/TheButton';
 
 // Helper for Staggered Animation
 const container = {
@@ -40,7 +41,7 @@ const Home = () => {
     const totalRevenue = activeDrops?.reduce((a, b) => a + (b.revenue || 0), 0) || 0;
 
     // Crypto Ticker State
-    const [ticker, setTicker] = useState("MCH: $102.30 ▲ | DOG: $0.44 ▼ | VOD: $666.00 ▲ | GLT: $49.20 ▲");
+    const [ticker, setTicker] = useState("MCH: $102 ▲ | GLT: $49 ▲");
 
     // Live Clock
     const [time, setTime] = useState(new Date());
@@ -51,12 +52,7 @@ const Home = () => {
         return () => clearInterval(timer);
     }, []);
 
-    useEffect(() => {
-        // Announce Update
-        setTimeout(() => {
-            showToast("SYSTEM UPDATE: MBX EXCHANGE v2.0 INSTALLED", "info");
-        }, 1000);
-    }, []);
+
 
     return (
         <div className="home-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
@@ -71,12 +67,8 @@ const Home = () => {
                     {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
 
-                {/* TICKER */}
-                <div className="glass-panel" style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', position: 'relative' }}>
-                    <div style={{ whiteSpace: 'nowrap', animation: 'ticker 20s linear infinite', position: 'absolute', width: '100%', color: '#aaa', fontSize: '0.9rem', fontFamily: 'monospace' }}>
-                        SYSTEM_STATUS: ONLINE // {ticker} // NEW MERCH DROPPED // ACTIVE USERS: {(followers || 0).toLocaleString()} // PASSIVE REVENUE: {totalRevenue} COINS //
-                    </div>
-                </div>
+                {/* SPACER */}
+                <div style={{ flex: 1 }}></div>
 
                 {/* SHOP BTN */}
                 <a href="https://merchboy.shop" target="_blank" className="squishy-btn" style={{
@@ -153,9 +145,30 @@ const Home = () => {
                                     }}>
                                         {q.claimed && '✓'}
                                     </div>
-                                    <div style={{ flex: 1, textDecoration: q.claimed ? 'line-through' : 'none', color: '#ddd' }}>
-                                        {q.text}
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ textDecoration: q.claimed ? 'line-through' : 'none', color: '#ddd' }}>
+                                            {q.desc || q.text} {/* Use desc if available */}
+                                        </div>
+                                        {!q.claimed && (
+                                            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '2px' }}>
+                                                Progress: {q.progress || 0} / {q.target}
+                                                <div style={{ width: '100%', height: '4px', background: '#333', marginTop: '2px', borderRadius: '2px' }}>
+                                                    <div style={{
+                                                        width: `${Math.min(100, ((q.progress || 0) / q.target) * 100)}%`,
+                                                        height: '100%', background: 'var(--neon-green)', borderRadius: '2px'
+                                                    }} />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
+                                    {!q.claimed && (q.progress || 0) >= q.target && (
+                                        <button style={{
+                                            background: 'gold', color: 'black', border: 'none', borderRadius: '4px',
+                                            padding: '5px 10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer'
+                                        }}>
+                                            CLAIM
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -179,60 +192,8 @@ const Home = () => {
                     </motion.div>
                 </Link>
 
-                {/* 4. FEATURED APP: BRO FINDER */}
-                <Link to="/bro-finder" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #ff0055 0%, #7700ff 100%)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', padding: '20px'
-                        }} glowColor="rgba(255,0,255,0.4)">
-                            <div style={{ textAlign: 'center', transform: 'translateZ(30px)' }}>
-                                <div style={{ fontSize: '4rem', marginBottom: '10px' }}>🔥</div>
-                                <h2 style={{ margin: 0, fontSize: '2rem', fontStyle: 'italic' }}>BroFinder</h2>
-                                <div style={{ opacity: 0.8, fontSize: '0.8rem' }}>RECRUIT SQUAD MEMBERS</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
 
-                {/* 4. FEATURED GAME: THE ARENA */}
-                <Link to="/arena" style={{ textDecoration: 'none', color: 'inherit', gridColumn: 'span 2', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(to right, #9d00ff 0%, #ff0055 100%)',
-                            display: 'flex', alignItems: 'center', padding: '40px', position: 'relative'
-                        }} glowColor="rgba(255,0,0,0.5)">
-                            <div style={{ zIndex: 10, maxWidth: '50%', transform: 'translateZ(30px)' }}>
-                                <span style={{ background: 'white', color: '#ff0055', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.8rem' }}>NEW RELEASE</span>
-                                <h2 style={{ fontSize: '3rem', margin: '15px 0', textShadow: '0 5px 10px rgba(0,0,0,0.2)' }}>GLITCH ARENA</h2>
-                                <p style={{ margin: 0, fontWeight: 'bold', opacity: 0.9 }}>IDLE SQUAD BATTLER</p>
-                                <button style={{
-                                    marginTop: '20px',
-                                    background: 'white', color: '#333', padding: '15px 30px',
-                                    border: 'none', borderRadius: '50px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer',
-                                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                }}>
-                                    ENTER COMBAT ▶
-                                </button>
-                            </div>
-                            <div style={{ position: 'absolute', right: '50px', top: '50%', transform: 'translateY(-50%) translateZ(50px)' }}>
-                                {/* 3D-ish Element */}
-                                <div style={{ fontSize: '8rem', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))', transform: 'rotate(15deg)' }}>⚔️</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
 
-                {/* 5. APP ROW */}
-                <Link to="/hustle" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{ background: '#222', color: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>⏱️</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>HUSTLE MODE <div style={{ fontSize: '0.7rem', color: '#888' }}>FOCUS TIMER</div></div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
 
                 <Link to="/merch-lab" style={{ textDecoration: 'none', display: 'block' }}>
                     <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
@@ -243,35 +204,39 @@ const Home = () => {
                     </motion.div>
                 </Link>
 
-                <Link to="/exchange" style={{ textDecoration: 'none', display: 'block' }}>
+                <Link to="/coloring" style={{ textDecoration: 'none', display: 'block' }}>
                     <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{ background: '#0a0a12', color: '#00ffcc', border: '1px solid #00ffcc', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>📉</div>
+                        <TiltCard className="bento-card" style={{
+                            background: '#fff', color: '#333',
+                            padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                            border: '2px solid #ff0055'
+                        }}>
+                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🎨</div>
                             <div style={{ transform: 'translateZ(10px)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    MBX EXCHANGE
-                                    <span style={{ fontSize: '0.6rem', background: '#00ffcc', color: 'black', padding: '2px 4px', borderRadius: '4px', fontWeight: 'bold' }}>v2.0</span>
-                                </div>
-                                <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>CRYPTO</div>
+                                COLORING BOOK
+                                <div style={{ fontSize: '0.7rem', color: '#888' }}>RELAX & CREATE</div>
                             </div>
                         </TiltCard>
                     </motion.div>
                 </Link>
 
-                <Link to="/terminal" style={{ textDecoration: 'none', display: 'block' }}>
+                {/* OFFICIAL STORE (External) */}
+                <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
                     <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{ background: '#000', color: '#00ff00', border: '1px solid #00ff00', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>💻</div>
+                        <TiltCard className="bento-card" style={{
+                            background: 'linear-gradient(135deg, #FFD700 0%, #FFAA00 100%)', // Gold
+                            color: 'black',
+                            padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                            border: '1px solid #ffcc00'
+                        }}>
+                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🛍️</div>
                             <div style={{ transform: 'translateZ(10px)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    TERMINAL
-                                    <span style={{ fontSize: '0.6rem', background: '#00ff00', color: 'black', padding: '2px 4px', borderRadius: '4px', fontWeight: 'bold' }}>ROOT</span>
-                                </div>
-                                <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>ACCESS GRANTED</div>
+                                <div style={{ fontWeight: '900', letterSpacing: '-1px' }}>MERCHBOY.SHOP</div>
+                                <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: 'bold' }}>OFFICIAL STORE</div>
                             </div>
                         </TiltCard>
                     </motion.div>
-                </Link>
+                </a>
 
                 <Link to="/beatlab" style={{ textDecoration: 'none', display: 'block' }}>
                     <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
@@ -308,6 +273,11 @@ const Home = () => {
                         </TiltCard>
                     </motion.div>
                 </Link>
+
+                {/* THE BUTTON (Viral Stunt) */}
+                <motion.div variants={item} style={{ height: '100%' }}>
+                    <TheButton />
+                </motion.div>
 
             </motion.div>
         </div>

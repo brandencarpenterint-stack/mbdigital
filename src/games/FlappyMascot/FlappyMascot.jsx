@@ -8,392 +8,488 @@ import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
-const GRAVITY = 0.5;
-const JUMP_STRENGTH = -8;
+const GRAVITY = 0.6;
+const JUMP_STRENGTH = -10;
 const PIPE_SPEED = 3;
 const PIPE_SPACING = 200;
 const BIRD_SIZE = 40;
 
+const CHARACTERS = [
+    { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'Classic' },
+    { id: 'flappy_money', type: 'image', content: '/assets/merchboy_money.png', name: 'Money' },
+    { id: 'flappy_cat', type: 'image', content: '/assets/merchboy_cat.png', name: 'Bear' },
+    { id: 'flappy_bunny', type: 'image', content: '/assets/merchboy_bunny.png', name: 'Bunny' }, ,
+    { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
+    { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
+    { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
+    { id: 'flappy_frog', type: 'emoji', content: '🐸', name: 'Froggo' },
+    { id: 'flappy_unicorn', type: 'emoji', content: '🦄', name: 'Uni' },
+    { id: 'flappy_rainbow', type: 'emoji', content: '🌈', name: 'Pride' },
+    { id: 'flappy_ghost', type: 'emoji', content: '👻', name: 'Spooky' },
+    { id: 'flappy_zombie', type: 'emoji', content: '🧟', name: 'Walker' }, // Missing in Shop? Add it there later if needed
+    { id: 'flappy_vampire', type: 'emoji', content: '🧛', name: 'Drac' }, // Missing in Shop
+    { id: 'flappy_clown', type: 'emoji', content: '🤡', name: 'Bozo' }, // Missing in Shop
+    { id: 'flappy_poop', type: 'emoji', content: '💩', name: 'Stinky' },
+    { id: 'flappy_hotdog', type: 'emoji', content: '🌭', name: 'Glizzy' }, // Missing
+    { id: 'flappy_taco', type: 'emoji', content: '🌮', name: 'Crunch' }, // Missing
+    { id: 'flappy_burger', type: 'emoji', content: '🍔', name: 'Beefy' }, // Missing
+    { id: 'flappy_alien', type: 'emoji', content: '👽', name: 'Paul' },
+    { id: 'flappy_robot', type: 'emoji', content: '🤖', name: 'Bot' },
+    { id: 'flappy_cowboy', type: 'emoji', content: '🤠', name: 'Sheriff' },
+    { id: 'flappy_monster', type: 'emoji', content: '👾', name: '8-Bit' },
+    { id: 'flappy_diamond', type: 'emoji', content: '💎', name: 'Richie' },
+    { id: 'flappy_crown', type: 'emoji', content: '👑', name: 'King' }, // Missing
+    { id: 'flappy_catdog', type: 'emoji', content: '😺', name: 'CatDog' },
+    { id: 'flappy_face_money', type: 'image', content: '/assets/skins/face_money.png', name: 'Money' },
+    { id: 'flappy_face_bear', type: 'image', content: '/assets/skins/face_bear.png', name: 'Bear' },
+    { id: 'flappy_face_bunny', type: 'image', content: '/assets/skins/face_bunny.png', name: 'Bunny' },
+];
+
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
-    const { shopState, updateStat, addCoins, userProfile, stats, consumeItem } = useGamification() || {};
+    // Global Shop State
+    const { shopState, updateStat, incrementStat, equipItem, addCoins, userProfile, stats, coins, consumeItem } = useGamification() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
     const [gameActive, setGameActive] = useState(false);
 
+    // Sync local high score with global stat on mount
+    useEffect(() => {
+        if (stats?.flappyHighScore > highScore) {
+            setHighScore(stats.flappyHighScore);
+        }
+    }, [stats]);
+
+    // Character Logic
+    // Default to 'flappy_boy' if nothing equipped, but strip prefix for internal lookup if needed
+    // OR just update lookups to match global IDs.
+    // Global IDs are 'flappy_boy', 'flappy_cat', etc.
+    // Local IDs were 'boy', 'cat'.
+    // I need to update the CHARACTERS array or mapping.
+    // Let's update CHARACTERS array to match Global IDs.
+
     // Initial Sync
     const selectedId = shopState?.equipped?.flappy || 'flappy_boy';
-    const { playJump, playCrash, playCollect, playWin } = useRetroSound();
 
-    const spriteSheetRef = useRef(null);
+    // Sync Ref
+    const gameActiveRef = useRef(false);
+
+    const { playJump, playCrash, playCollect, playWin, playBeep } = useRetroSound();
+
+    const birdImgRef = useRef(null);
+    const brokidImgRef = useRef(null);
+    const moneyImgRef = useRef(null);
+    const bearImgRef = useRef(null);
+    const bunnyImgRef = useRef(null);
 
     // Game State
     const gameState = useRef({
         birdY: GAME_HEIGHT / 2,
         velocity: 0,
-        pipes: [],
-        coins: [],
-        particles: [],
-        bgOffset: 0,
-        rotation: 0,
-        animationId: null,
-        frame: 0
+        pipes: [], // {x, topHeight}
+        lastPipeTime: 0,
+        animationId: null
     });
 
     useEffect(() => {
-        // Load Sprite Sheet
-        const img = new Image();
-        img.src = '/assets/flappy_sheet.png';
-        spriteSheetRef.current = img;
+        // Preload images
+        const img1 = new Image();
+        img1.src = '/assets/merchboy_face.png';
+        birdImgRef.current = img1;
 
-        if (stats?.flappyHighScore > highScore) setHighScore(stats.flappyHighScore);
-    }, [stats]);
+        const img2 = new Image();
+        img2.src = '/assets/brokid-logo.png';
+        brokidImgRef.current = img2;
 
-    const initGame = () => {
+        const img3 = new Image(); img3.src = '/assets/skins/face_money.png'; moneyImgRef.current = img3;
+        const img4 = new Image(); img4.src = '/assets/skins/face_bear.png'; bearImgRef.current = img4;
+        const img5 = new Image(); img5.src = '/assets/skins/face_bunny.png'; bunnyImgRef.current = img5;
+
+        // Preload User Faces
+        const faces = ['merchboy_face.png', 'merchboy_money.png', 'merchboy_cat.png', 'merchboy_bunny.png'];
+        faces.forEach(f => {
+            const img = new Image();
+            img.src = '/assets/' + f;
+        });
+
+        // Listen for coin updates
+        const handleStorage = () => {
+            setCoins(parseInt(localStorage.getItem('arcadeCoins')) || 0);
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+
+    }, []);
+
+    const startGame = () => {
         setScore(0);
         setGameOver(false);
         setGameActive(true);
+        gameActiveRef.current = true;
+
         gameState.current = {
             birdY: GAME_HEIGHT / 2,
             velocity: 0,
-            pipes: [{ x: GAME_WIDTH + 100, topHeight: 200, passed: false }],
-            coins: [],
-            particles: [],
-            bgOffset: 0,
-            rotation: 0,
-            animationId: null,
-            frame: 0
+            pipes: [{ x: GAME_WIDTH, topHeight: 200 }],
+            lastPipeTime: 0,
+            animationId: null
         };
         requestAnimationFrame(gameLoop);
     };
 
-    const spawnParticles = (x, y, color) => {
-        for (let i = 0; i < 10; i++) {
-            gameState.current.particles.push({
-                x, y,
-                vx: (Math.random() - 0.5) * 10,
-                vy: (Math.random() - 0.5) * 10,
-                life: 1.0,
-                color: color || 'white'
-            });
-        }
-    };
-
     const endGame = () => {
         setGameActive(false);
+        gameActiveRef.current = false;
         setGameOver(true);
         cancelAnimationFrame(gameState.current.animationId);
         playCrash();
-
-        // Spawn Death Particles
-        spawnParticles(50 + BIRD_SIZE / 2, gameState.current.birdY + BIRD_SIZE / 2, 'orange');
 
         if (score > highScore) {
             setHighScore(score);
             if (updateStat) updateStat('flappyHighScore', score);
             triggerConfetti();
-        }
-        if (addCoins) addCoins(Math.floor(score));
-        if (updateStat) updateStat('gamesPlayed', 'flappy_mascot');
-    };
 
-    const useShield = () => {
-        if (consumeItem && consumeItem('flappy_shield')) {
-            setGameOver(false);
-            setGameActive(true);
-
-            // Safe Respawn
-            gameState.current.birdY = GAME_HEIGHT / 2;
-            gameState.current.velocity = 0;
-            // Clear nearby pipes
-            gameState.current.pipes = gameState.current.pipes.filter(p => p.x > 200);
-            if (gameState.current.pipes.length === 0) {
-                gameState.current.pipes.push({ x: GAME_WIDTH + 100, topHeight: 200, passed: false });
+            if (score > 10) {
+                const playerName = userProfile?.name || 'Player';
+                feedService.publish(`is flying high! Score: ${score} in Flappy Mascot 🦅`, 'win', playerName);
             }
+        }
 
-            requestAnimationFrame(gameLoop);
+        if (addCoins) addCoins(Math.floor(score));
+
+        // Gamification Stats
+        if (updateStat) {
+            updateStat('gamesPlayed', 'flappy_mascot');
         }
     };
+
+
 
     const gameLoop = () => {
-        if (!gameActive) return;
-        const ctx = canvasRef.current?.getContext('2d');
-        if (!ctx) return;
+        if (!gameActiveRef.current) return;
 
+        const ctx = canvasRef.current.getContext('2d');
         const state = gameState.current;
-        state.frame++;
 
-        // --- UPDATE ---
+        // Clear
+        ctx.fillStyle = '#70c5ce'; // Sky blue
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // Update Bird
         state.velocity += GRAVITY;
         state.birdY += state.velocity;
-        state.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (state.velocity * 0.1)));
 
-        // BG Scroll
-        state.bgOffset = (state.bgOffset + 1) % GAME_WIDTH;
-
-        // Pipes
-        state.pipes.forEach(p => p.x -= PIPE_SPEED);
-
-        // Spawn Pipe
-        const lastPipe = state.pipes[state.pipes.length - 1];
-        if (lastPipe && GAME_WIDTH - lastPipe.x >= PIPE_SPACING) {
-            const minH = 50;
-            const maxH = GAME_HEIGHT - 150 - minH;
-            const h = Math.floor(Math.random() * (maxH - minH)) + minH;
-            state.pipes.push({ x: GAME_WIDTH, topHeight: h, passed: false });
-
-            // Spawn Coin Chance
-            if (Math.random() > 0.5) {
-                state.coins.push({
-                    x: GAME_WIDTH + 50,
-                    y: h + (150 / 2) + (Math.random() * 40 - 20), // Center of gap
-                    collected: false
-                });
-            }
-        }
-
-        // Cleanup Pipes
-        if (state.pipes[0].x < -60) state.pipes.shift();
-
-        // Collect Coins
-        state.coins.forEach(c => {
-            c.x -= PIPE_SPEED;
-            if (!c.collected &&
-                50 + BIRD_SIZE > c.x && 50 < c.x + 30 &&
-                state.birdY + BIRD_SIZE > c.y && state.birdY < c.y + 30) {
-                c.collected = true;
-                playCollect();
-                setScore(s => s + 5); // Bonus score
-                spawnParticles(c.x, c.y, 'gold');
-            }
-        });
-        state.coins = state.coins.filter(c => c.x > -50 && !c.collected);
-
-        // Check Collisions
-        // Floor/Ceil
-        if (state.birdY > GAME_HEIGHT - 20 || state.birdY < 0) {
+        // Floor/Ceiling Collision
+        if (state.birdY > GAME_HEIGHT - BIRD_SIZE || state.birdY < 0) {
             endGame();
             return;
         }
 
-        state.pipes.forEach(p => {
-            // AABB
-            if (50 + BIRD_SIZE - 5 > p.x && 50 + 5 < p.x + 60) {
-                if (state.birdY + 5 < p.topHeight || state.birdY + BIRD_SIZE - 5 > p.topHeight + 150) {
+        // Update Pipes
+        state.pipes.forEach(pipe => {
+            pipe.x -= PIPE_SPEED;
+        });
+
+        // Add Pipe
+        if (state.pipes[state.pipes.length - 1].x < GAME_WIDTH - PIPE_SPACING) {
+            const minHeight = 50;
+            const maxHeight = GAME_HEIGHT - 150 - minHeight;
+            const height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            state.pipes.push({ x: GAME_WIDTH, topHeight: height });
+        }
+
+        // Remove off-screen pipes
+        if (state.pipes[0].x < -60) {
+            state.pipes.shift();
+            setScore(prev => prev + 1);
+            playCollect(); // Point sound
+        }
+
+        // Check Collisions
+        state.pipes.forEach(pipe => {
+            // Horizontal Hit?
+            if (50 + BIRD_SIZE > pipe.x && 50 < pipe.x + 60) {
+                // Vertical Hit?
+                if (state.birdY < pipe.topHeight || state.birdY + BIRD_SIZE > pipe.topHeight + 150) {
                     endGame();
                 }
             }
-            // Score
-            if (!p.passed && p.x + 60 < 50) {
-                p.passed = true;
-                setScore(s => s + 1);
-                // playCollect(); // Too noisy if coin also pings? Maybe just light ping
-            }
         });
 
-        if (!gameActive) return; // Exit if died during update
-
-        // Particles
-        state.particles.forEach(p => {
-            p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-        });
-        state.particles = state.particles.filter(p => p.life > 0);
-
-
-        // --- DRAW ---
-        // Sky
-        ctx.fillStyle = '#70c5ce';
-        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        // Parallax BG (Cyber City from sprite sheet?)
-        // Let's assume sprite sheet structure:
-        // [Bird][Pipes][BG] ... we'll infer positions or use colors if sheet fails.
-        // Mockup from prompt: 
-        // Bird: Row 0, Cols 0-2 (3 frames)
-        // Coin: Row 0, Cols 3-4 (2 frames? Prompt said 4)
-        // Pipe: Row 1, Col 0 (Green) ...
-        // We need to guess or assume the generated sprite sheet layout.
-        // Prompt said "Arrange in a grid."
-        // Let's verify with code or just assume safe fallbacks.
-        // Drawing BG as solid colors + parallax clouds for now to be safe.
-
-        // Clouds
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        for (let i = 0; i < 5; i++) {
-            const x = ((i * 150) - state.bgOffset * 0.5 + 1000) % (GAME_WIDTH + 200) - 100;
-            const y = 100 + Math.sin(i + performance.now() * 0.001) * 20;
-            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(x + 30, y - 10, 50, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(x + 60, y, 40, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // Cityscape Silhouette (Far)
-        ctx.fillStyle = '#3a8';
-        for (let i = 0; i < 10; i++) {
-            const x = ((i * 60) - state.bgOffset * 0.2 + 1000) % (GAME_WIDTH + 100) - 50;
-            const h = 50 + (i % 3) * 40;
-            ctx.fillRect(x, GAME_HEIGHT - h, 60, h);
-        }
 
         // Draw Pipes
-        state.pipes.forEach(p => {
-            // Pipe Body
-            ctx.fillStyle = '#73bf2e';
-            ctx.strokeStyle = '#333';
+        ctx.fillStyle = '#73bf2e';
+        ctx.strokeStyle = '#558c22';
+        ctx.lineWidth = 4;
+        state.pipes.forEach(pipe => {
+            // Top Pipe
+            ctx.fillRect(pipe.x, 0, 60, pipe.topHeight);
+            ctx.strokeRect(pipe.x, 0, 60, pipe.topHeight);
+            // Cap
+            ctx.fillRect(pipe.x - 4, pipe.topHeight - 20, 68, 20);
+            ctx.strokeRect(pipe.x - 4, pipe.topHeight - 20, 68, 20);
+
+            // Bottom Pipe
+            const bottomY = pipe.topHeight + 150;
+            ctx.fillRect(pipe.x, bottomY, 60, GAME_HEIGHT - bottomY);
+            ctx.strokeRect(pipe.x, bottomY, 60, GAME_HEIGHT - bottomY);
+            // Cap
+            ctx.fillRect(pipe.x - 4, bottomY, 68, 20);
+            ctx.strokeRect(pipe.x - 4, bottomY, 68, 20);
+        });
+
+        // --- DRAW CHARACTER ---
+        const birdX = 50;
+        const birdY = state.birdY;
+        const charData = CHARACTERS.find(c => c.id === selectedId) || CHARACTERS[0];
+
+        ctx.save();
+        ctx.translate(birdX + BIRD_SIZE / 2, birdY + BIRD_SIZE / 2);
+
+        // Rotation
+        const rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (state.velocity * 0.1)));
+        ctx.rotate(rotation);
+
+        // 1. Draw Wing (BACK) - Pixel Style
+        // Flutter effect: Fast sine wave
+        const flutter = Math.sin(Date.now() / 50) * 0.5; // Fast flutter
+        // WING DRAWING FUNCTION (Classic Cartoon Bird Style)
+        // WING DRAWING FUNCTION (Angry Bird Style: Small White Oval)
+        const drawWing = (side = 'front') => {
+            const wingOffset = (state.velocity * 0.15) + flutter;
+            // Flap harder when going up
+            const flap = side === 'back' ? wingOffset * 0.8 : wingOffset;
+
+            ctx.save();
+            ctx.translate(-25, 5); // Wing Root Position (Further back)
+            ctx.rotate(flap);
+
+            ctx.fillStyle = '#fff'; // White Wings
+            ctx.strokeStyle = '#000';
             ctx.lineWidth = 3;
 
-            // Top
-            ctx.fillRect(p.x, 0, 60, p.topHeight);
-            ctx.strokeRect(p.x, -5, 60, p.topHeight + 5);
-            // Cap
-            ctx.fillStyle = '#558c22';
-            ctx.fillRect(p.x - 4, p.topHeight - 20, 68, 20);
-            ctx.strokeRect(p.x - 4, p.topHeight - 20, 68, 20);
+            ctx.beginPath();
+            // Simple Teardrop / Oval Shape
+            ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
 
-            // Bottom
-            const by = p.topHeight + 150;
-            ctx.fillStyle = '#73bf2e';
-            ctx.fillRect(p.x, by, 60, GAME_HEIGHT - by);
-            ctx.strokeRect(p.x, by, 60, GAME_HEIGHT - by);
-            // Cap
-            ctx.fillStyle = '#558c22';
-            ctx.fillRect(p.x - 4, by, 68, 20);
-            ctx.strokeRect(p.x - 4, by, 68, 20);
+            // Detail Line (Simple curve)
+            ctx.beginPath();
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 2;
+            ctx.moveTo(-5, 0);
+            ctx.lineTo(5, 0);
+            ctx.stroke();
 
-            // Highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.fillRect(p.x + 10, 0, 5, p.topHeight);
-            ctx.fillRect(p.x + 10, by, 5, GAME_HEIGHT - by);
-        });
-
-        // Coins
-        state.coins.forEach(c => {
-            ctx.save();
-            ctx.translate(c.x + 15, c.y + 15);
-            ctx.rotate(state.frame * 0.1);
-            ctx.fillStyle = 'gold';
-            ctx.shadowColor = 'yellow'; ctx.shadowBlur = 10;
-            ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = 'orange';
-            ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
-        });
+        };
 
-        // Player (Bird)
-        ctx.save();
-        ctx.translate(50 + BIRD_SIZE / 2, state.birdY + BIRD_SIZE / 2);
-        ctx.rotate(state.rotation);
+        // 1. Draw Wing (BACK)
+        drawWing('back');
 
-        if (spriteSheetRef.current && spriteSheetRef.current.complete) {
-            // Assuming Row 0, Col 0-2 are bird frames
-            // 3 frames loop
-            const frame = Math.floor(state.frame / 5) % 3;
-            // Let's guess cell size? Standard 32x32 maybe? Or just slice.
-            // Prompt was grid.
-            // Let's draw fallback if sprite logic complex, but try slicing.
-            // Assume 100x100 for safety or look at aspect ratio?
-            // Actually, let's keep it simple: Draw Image directly if it's the custom sheet, 
-            // BUT we generated a whole sheet.
-            // Use clipping.
-            try {
-                // Approximate: Sheet has ~4 cols, 2 rows.
-                // Bird is top left.
-                const cellW = spriteSheetRef.current.width / 4;
-                const cellH = spriteSheetRef.current.height / 2;
-                ctx.drawImage(spriteSheetRef.current, frame * cellW, 0, cellW, cellH, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
-            } catch (e) {
-                // Fallback
-                ctx.fillStyle = 'yellow';
+        // 2. Draw Legs (BACK)
+        ctx.strokeStyle = 'orange';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-5, 15);
+        ctx.lineTo(-10, 25);
+        ctx.moveTo(5, 15);
+        ctx.lineTo(10, 25);
+        ctx.stroke();
+
+        // 3. Draw Body
+        if (charData.type === 'image') {
+            let img = null;
+            if (charData.id === 'flappy_boy') img = birdImgRef.current;
+            else if (charData.id === 'flappy_brokid') img = brokidImgRef.current;
+            else if (charData.id === 'flappy_face_money') img = moneyImgRef.current;
+            else if (charData.id === 'flappy_face_bear') img = bearImgRef.current;
+            else if (charData.id === 'flappy_face_bunny') img = bunnyImgRef.current;
+
+            if (img && img.complete) {
+                // Draw Image centered
+                ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
+            } else if (charData.content.includes('/assets/')) {
+                // Generic Loader for new assets
+                // We should really strictly preload these but for now, rely on cache
+                const img = new Image();
+                img.src = charData.content;
+                ctx.drawImage(img, -BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
+            } else {
+                ctx.fillStyle = 'white';
                 ctx.fillRect(-BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
             }
         } else {
-            // Fallback Box
-            ctx.fillStyle = 'yellow';
-            ctx.fillRect(-BIRD_SIZE / 2, -BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
+            // Emoji
+            ctx.font = '35px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(charData.content, 0, 2);
         }
 
-        ctx.restore();
+        // 4. Draw Wing (FRONT)
+        drawWing('front');
 
-        // Particles
-        state.particles.forEach(p => {
-            ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
-        });
-        ctx.globalAlpha = 1;
+        ctx.restore();
 
         // Ground
         ctx.fillStyle = '#ded895';
         ctx.fillRect(0, GAME_HEIGHT - 20, GAME_WIDTH, 20);
-        // Scrolling Ground Stripe
-        const gOff = (state.frame * PIPE_SPEED) % 20;
-        ctx.strokeStyle = '#cbb968';
-        ctx.lineWidth = 2;
-        for (let i = -20; i < GAME_WIDTH; i += 20) {
-            ctx.beginPath(); ctx.moveTo(i - gOff, GAME_HEIGHT - 20); ctx.lineTo(i - gOff - 10, GAME_HEIGHT); ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.moveTo(0, GAME_HEIGHT - 20);
+        ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - 20);
+        ctx.strokeStyle = '#73bf2e';
+        ctx.stroke();
 
-        gameState.current.animationId = requestAnimationFrame(gameLoop);
+        state.animationId = requestAnimationFrame(gameLoop);
     };
 
-    const handleInput = (e) => {
-        if (e) e.preventDefault();
-        if (!gameActive) return;
+    const lastJumpRef = useRef(0);
+    const handleInput = () => {
+        if (!gameActiveRef.current) return;
+
+        // Debounce (Mobile double-tap fix)
+        const now = Date.now();
+        if (now - lastJumpRef.current < 150) return;
+        lastJumpRef.current = now;
 
         gameState.current.velocity = JUMP_STRENGTH;
         playJump();
-
-        // Spawn Jump Particles
-        spawnParticles(50, gameState.current.birdY + BIRD_SIZE, 'white');
     };
 
     useEffect(() => {
-        const kd = (e) => { if (e.code === 'Space') handleInput(e); };
-        window.addEventListener('keydown', kd);
-        return () => window.removeEventListener('keydown', kd);
-    }, [gameActive]);
+        const handleKeyDown = (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleInput();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#222', fontFamily: '"Orbitron", monospace' }}>
-            <h1 style={{ color: 'cyan', textShadow: '0 0 10px cyan', marginBottom: '10px' }}>FLAPPY MASCOT</h1>
-            <div style={{ display: 'flex', gap: '20px', color: 'white', marginBottom: '10px', fontWeight: 'bold' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#70c5ce' }}>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>FLAPPY MASCOT</h1>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '400px', marginBottom: '10px', fontSize: '1.2rem', color: '#fff', fontWeight: 'bold' }}>
                 <span>SCORE: {score}</span>
-                <span style={{ color: '#aaa' }}>HIGH: {highScore}</span>
+                <span>COINS: {coins}</span>
             </div>
 
-            <div style={{ position: 'relative', border: '4px solid #fff', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 0 30px rgba(0,255,255,0.2)' }}>
+            <div style={{ position: 'relative' }}>
                 <canvas
                     ref={canvasRef}
                     width={GAME_WIDTH}
                     height={GAME_HEIGHT}
                     onMouseDown={handleInput}
-                    onTouchStart={handleInput}
-                    style={{ display: 'block', maxWidth: '100%', height: 'auto', cursor: 'pointer' }}
+                    onTouchStart={(e) => {
+                        // Prevent default to avoid scroll or ghost clicks
+                        if (e.cancelable) e.preventDefault();
+                        handleInput();
+                    }}
+                    style={{ border: '4px solid #fff', borderRadius: '10px', boxShadow: '0 0 20px rgba(0,0,0,0.2)', cursor: 'pointer', touchAction: 'none' }}
                 />
 
                 {!gameActive && !gameOver && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
-                        <SquishyButton onClick={initGame} style={{ fontSize: '2rem', padding: '20px 40px', background: 'cyan', color: 'black', fontWeight: 'bold' }}>FLY!</SquishyButton>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#ff9900', border: 'none', borderRadius: '10px', color: 'white' }}>
+                            FLY!
+                        </SquishyButton>
                     </div>
                 )}
 
                 {gameOver && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
-                        <h2 style={{ fontSize: '3rem', color: 'red', marginBottom: '20px' }}>CRASHED</h2>
-                        <p style={{ color: 'white', fontSize: '1.5rem', marginBottom: '20px' }}>Score: {score}</p>
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <h2 style={{ fontSize: '3rem', color: '#ff9900' }}>GAME OVER</h2>
+                        <p style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'white' }}>Score: {score}</p>
 
+                        {/* REVIVE OPTION */}
                         {(shopState?.inventory?.['flappy_shield'] > 0) && (
-                            <SquishyButton onClick={useShield} style={{ marginBottom: '10px', background: 'gold', color: 'black' }}>
-                                🛡️ REVIVE ({shopState.inventory['flappy_shield']})
+                            <SquishyButton
+                                onClick={() => {
+                                    if (consumeItem('flappy_shield')) {
+                                        setGameOver(false);
+                                        setGameActive(true);
+                                        gameActiveRef.current = true;
+                                        // Reset Position Safe
+                                        gameState.current.birdY = GAME_HEIGHT / 2;
+                                        gameState.current.velocity = 0;
+                                        // Push pipes away to give breathing room
+                                        gameState.current.pipes.forEach(p => p.x += 300);
+                                        requestAnimationFrame(gameLoop);
+                                    }
+                                }}
+                                style={{ marginBottom: '15px', padding: '10px 30px', background: 'var(--neon-blue)', border: 'none', borderRadius: '5px', color: 'black', fontWeight: 'bold' }}
+                            >
+                                🛡️ USE SHIELD ({shopState.inventory['flappy_shield']})
                             </SquishyButton>
                         )}
 
-                        <SquishyButton onClick={initGame} style={{ marginBottom: '10px', background: 'cyan', color: 'black' }}>RETRY</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white' }}>EXIT</Link>
+                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#ff9900', border: 'none', borderRadius: '5px', color: 'white' }}>Try Again</SquishyButton>
+                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Back to Base</Link>
                     </div>
                 )}
             </div>
+
+            {/* PILOT SELECTOR */}
+            {/* PILOT SELECTOR */}
+            <div style={{ marginTop: '20px', width: '100%', maxWidth: '400px', overflowX: 'auto', paddingBottom: '10px' }}>
+                <p style={{ color: '#fff', textAlign: 'center', marginBottom: '5px' }}>SELECT PILOT</p>
+                <div style={{ display: 'flex', gap: '10px', padding: '0 10px' }}>
+                    {CHARACTERS.map(char => {
+                        // Unlocked if in Shop OR one of the default faces
+                        const isDefault = ['flappy_boy', 'flappy_money', 'flappy_cat', 'flappy_bunny'].includes(char.id);
+                        const isUnlocked = isDefault || shopState?.unlocked?.includes(char.id);
+                        const isSelected = selectedId === char.id;
+
+                        if (!isUnlocked) return null; // Hide locked
+
+                        return (
+                            <button
+                                key={char.id}
+                                onClick={() => {
+                                    if (equipItem) {
+                                        equipItem('flappy', char.id);
+                                        if (navigator.vibrate) navigator.vibrate(20);
+                                    }
+                                }}
+                                style={{
+                                    background: isSelected ? '#ff9900' : 'rgba(255,255,255,0.2)',
+                                    border: isSelected ? '2px solid white' : '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '10px',
+                                    padding: '10px',
+                                    minWidth: '60px',
+                                    cursor: 'pointer',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center'
+                                }}
+                            >
+                                <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>
+                                    {char.type === 'emoji' ? char.content : (char.id === 'flappy_boy' ? '👦' : '🅱️')}
+                                </div>
+                                <span style={{ fontSize: '0.7rem', color: 'white', whiteSpace: 'nowrap' }}>{char.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <Link to="/shop" style={{ color: 'gold', textDecoration: 'none', fontSize: '0.9rem' }}>
+                    🛍️ Get More Pilots
+                </Link>
+            </div>
+
+            <p style={{ marginTop: '10px', color: '#666' }}>Space or Click to Flap</p>
+
+            {/* HOME BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 100 }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)' }}>
+                    🏠 EXIT
+                </SquishyButton>
+            </Link>
         </div>
     );
 };

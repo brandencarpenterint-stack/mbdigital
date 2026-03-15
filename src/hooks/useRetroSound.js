@@ -296,9 +296,88 @@ const useRetroSound = () => {
         lfo.stop(ctx.currentTime + 1);
     };
 
+    const playAirhorn = () => {
+        if (!shouldPlay()) return;
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        // Airhorn is a complex sawtooth with heavy distortion and pitch bending
+        const playBlast = (startTime) => {
+            const osc = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const osc3 = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sawtooth';
+            osc2.type = 'square';
+            osc3.type = 'sawtooth';
+
+            // Dissonant frequencies for that harsh MLG sound
+            const freq = 300;
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc2.frequency.setValueAtTime(freq * 1.5, startTime);
+            osc3.frequency.setValueAtTime(freq * 2.1, startTime);
+
+            // Pitch bend down
+            osc.frequency.exponentialRampToValueAtTime(100, startTime + 0.3);
+            osc2.frequency.exponentialRampToValueAtTime(150, startTime + 0.3);
+            osc3.frequency.exponentialRampToValueAtTime(210, startTime + 0.3);
+
+            // Volume envelope
+            gain.gain.setValueAtTime(0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+
+            osc.connect(gain);
+            osc2.connect(gain);
+            osc3.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(startTime);
+            osc2.start(startTime);
+            osc3.start(startTime);
+            
+            osc.stop(startTime + 0.3);
+            osc2.stop(startTime + 0.3);
+            osc3.stop(startTime + 0.3);
+        };
+
+        const now = ctx.currentTime;
+        // Typical MLG stutter pattern
+        playBlast(now);
+        playBlast(now + 0.1);
+        playBlast(now + 0.2);
+    };
+
+    const playBoing = () => {
+        if (!shouldPlay()) return;
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        const now = ctx.currentTime;
+
+        // Start low, jump high, settle medium
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.4);
+
+        // Volume
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.4);
+    };
+
     return {
         playBeep, playBoop, playJump, playCollect, playCrash, playWin, playClick,
-        playFire, playWater, playZap, playGlitch, playGhost
+        playFire, playWater, playZap, playGlitch, playGhost, playAirhorn, playBoing
     };
 };
 

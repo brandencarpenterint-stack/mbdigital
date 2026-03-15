@@ -172,122 +172,6 @@ const SHOP_ITEMS = [
     { id: 'hats', name: 'Fish Fashion', type: 'upgrade', price: 3000, desc: 'Fish wear hats!', icon: '🎩' },
 ];
 
-/* --- SPRITE CONFIG --- */
-const SPRITE_SHEETS = {
-    surface: '/assets/fishing/fishing_surface.png',
-    seagrass: '/assets/fishing/fishing_seagrass.png',
-    coral: '/assets/fishing/fishing_coral.png',
-    twilight: '/assets/fishing/fishing_twilight.png',
-    abyss: '/assets/fishing/fishing_abyss.png',
-    neon: '/assets/fishing/fishing_neon.png',
-    boneyard: '/assets/fishing/fishing_boneyard.png',
-    magma: '/assets/fishing/fishing_magma.png',
-    frozen: '/assets/fishing/fishing_frozen.png',
-    ether: '/assets/fishing/fishing_ether.png',
-    void: '/assets/fishing/fishing_void.png',
-};
-
-const FISH_SPRITES = {
-    // SURFACE (3x2)
-    'boot': { sheet: 'surface', index: 0, grid: [3, 2] },
-    'can': { sheet: 'surface', index: 1, grid: [3, 2] },
-    'goldy': { sheet: 'surface', index: 2, grid: [3, 2] },
-    'shrimp': { sheet: 'surface', index: 3, grid: [3, 2] },
-    'bottle': { sheet: 'surface', index: 4, grid: [3, 2] },
-    'wood': { sheet: 'surface', index: 5, grid: [3, 2] },
-    'ducky': { sheet: 'surface', index: 0, grid: [3, 2] }, // Reuse boot/misc if missing, or use unique if gen allowed
-    'sushi': { sheet: 'surface', index: 2, grid: [3, 2] }, // Reuse goldy temporarily
-
-    // SEAGRASS (3x3)
-    'crab': { sheet: 'seagrass', index: 0, grid: [3, 3] },
-    'turtle': { sheet: 'seagrass', index: 1, grid: [3, 3] },
-    'seahorse': { sheet: 'seagrass', index: 2, grid: [3, 3] },
-    'snake': { sheet: 'seagrass', index: 3, grid: [3, 3] },
-    'eel': { sheet: 'seagrass', index: 4, grid: [3, 3] },
-    'snail': { sheet: 'seagrass', index: 5, grid: [3, 3] },
-    'cuke': { sheet: 'seagrass', index: 6, grid: [3, 3] },
-
-    // CORAL (4x2 likely based on gen image shape, let's assume 4x2)
-    'guppy': { sheet: 'coral', index: 0, grid: [4, 2] },
-    'clown': { sheet: 'coral', index: 1, grid: [4, 2] },
-    'squid': { sheet: 'coral', index: 2, grid: [4, 2] },
-    'lobster': { sheet: 'coral', index: 3, grid: [4, 2] },
-    'puffer': { sheet: 'coral', index: 4, grid: [4, 2] },
-    'star': { sheet: 'coral', index: 5, grid: [4, 2] },
-    'box': { sheet: 'coral', index: 6, grid: [4, 2] },
-    'conch': { sheet: 'coral', index: 7, grid: [4, 2] },
-
-    // TWILIGHT (3x2)
-    'jelly': { sheet: 'twilight', index: 0, grid: [3, 2] },
-    'stingray': { sheet: 'twilight', index: 1, grid: [3, 2] }, // 1?
-    // Wait, generated image showed Jelly, Ray, Ray... let's check index
-    // Top row: Jelly, Ray1, Ray2? No, Ray1, Ray2, Angler?
-    // Let's assume standard left-to-right reading of prompt items.
-    // 1. Jelly, 2. Stingray, 3. Angler?
-    // But gen usually does 3x2.
-    // Let's map safely:
-    // 'stingray': { sheet: 'twilight', index: 1, grid: [3, 2] },
-    'angler': { sheet: 'twilight', index: 3, grid: [3, 2] }, // Row 2 Item 1? Or Row 1 Item 3?
-    // Let's guess: Top: Jelly, Ray, Angler. Bot: Sword, Flash, Vamp.
-    // 'stingray': { sheet: 'twilight', index: 1, grid: [3, 2] },
-    // 'angler': { sheet: 'twilight', index: 2, grid: [3, 2] },
-    'sword': { sheet: 'twilight', index: 3, grid: [3, 2] },
-    'flash': { sheet: 'twilight', index: 4, grid: [3, 2] },
-    'vamp': { sheet: 'twilight', index: 5, grid: [3, 2] },
-
-    // ABYSS (3x3) - Midnight + Trench
-    'shark': { sheet: 'abyss', index: 0, grid: [3, 3] }, // Great White
-    'whale': { sheet: 'abyss', index: 1, grid: [3, 3] },
-    'moon': { sheet: 'abyss', index: 2, grid: [3, 3] },
-    'wolf': { sheet: 'abyss', index: 3, grid: [3, 3] },
-    'sleep': { sheet: 'abyss', index: 4, grid: [3, 3] },
-    'blob': { sheet: 'abyss', index: 5, grid: [3, 3] },
-    'worm': { sheet: 'abyss', index: 6, grid: [3, 3] },
-    'viper': { sheet: 'abyss', index: 7, grid: [3, 3] },
-    'iso': { sheet: 'abyss', index: 8, grid: [3, 3] },
-
-    // NEON (3x2)
-    'cyber': { sheet: 'neon', index: 0, grid: [3, 2] },
-    'robot': { sheet: 'neon', index: 1, grid: [3, 2] },
-    'floppy': { sheet: 'neon', index: 2, grid: [3, 2] },
-    'batt': { sheet: 'neon', index: 3, grid: [3, 2] },
-    'glitch_neon': { sheet: 'neon', index: 4, grid: [3, 2] },
-
-    // BONEYARD (3x2)
-    'skull': { sheet: 'boneyard', index: 0, grid: [3, 2] }, // Bone Fish
-    'fossil': { sheet: 'boneyard', index: 1, grid: [3, 2] },
-    'dino': { sheet: 'boneyard', index: 2, grid: [3, 2] }, // T-Rex
-    'key': { sheet: 'boneyard', index: 3, grid: [3, 2] },
-    'pirate_skull': { sheet: 'boneyard', index: 4, grid: [3, 2] },
-
-    // MAGMA (2x2)
-    'ember': { sheet: 'magma', index: 0, grid: [2, 2] },
-    'dragon': { sheet: 'magma', index: 1, grid: [2, 2] },
-    'rock': { sheet: 'magma', index: 2, grid: [2, 2] },
-    'cooked': { sheet: 'magma', index: 3, grid: [2, 2] },
-
-    // FROZEN (2x2)
-    'ice': { sheet: 'frozen', index: 0, grid: [2, 2] },
-    'penguin': { sheet: 'frozen', index: 1, grid: [2, 2] },
-    'yeti': { sheet: 'frozen', index: 2, grid: [2, 2] },
-    'pizza': { sheet: 'frozen', index: 3, grid: [2, 2] },
-
-    // ETHER (3x2?)
-    'spirit': { sheet: 'ether', index: 0, grid: [3, 2] }, // Wisp
-    'angel': { sheet: 'ether', index: 1, grid: [3, 2] }, // Seraphim
-    'cloud': { sheet: 'ether', index: 2, grid: [3, 2] }, // Nimbus
-    'harp': { sheet: 'ether', index: 3, grid: [3, 2] },
-    'blackhole': { sheet: 'ether', index: 4, grid: [3, 2] }, // Singularity
-
-    // VOID (3x2)
-    'glitch': { sheet: 'void', index: 0, grid: [3, 2] }, // MissingNo
-    'eye': { sheet: 'void', index: 1, grid: [3, 2] }, // Watcher
-    'alien': { sheet: 'void', index: 2, grid: [3, 2] }, // Invader
-    'dna': { sheet: 'void', index: 3, grid: [3, 2] },
-    'null': { sheet: 'void', index: 4, grid: [3, 2] },
-    'undef': { sheet: 'void', index: 5, grid: [3, 2] },
-};
-
 const GAME_WIDTH = 1280; // Widescreen
 const GAME_HEIGHT = 720;
 const MAX_DEPTH = 4000;
@@ -306,7 +190,18 @@ const CrazyFishing = () => {
     // Orientation Check
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     // FIX: Provide default shopState to prevent crash if context is missing
-    const { shopState = { unlocked: [], equipped: {} }, playSound, incrementStat, updateStat, addCoins, userProfile } = useGamification() || {};
+    const {
+        shopState = { unlocked: [], equipped: {} },
+        coins,
+        spendCoins,
+        buyItem: contextBuyItem,
+        equipItem,
+        playSound,
+        incrementStat,
+        updateStat,
+        addCoins,
+        userProfile
+    } = useGamification() || {};
 
     useEffect(() => {
         const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -325,34 +220,10 @@ const CrazyFishing = () => {
     const [zoneNotification, setZoneNotification] = useState(null);
 
     // USE GLOBAL SHOP STATE for skin and rod
-    // USE GLOBAL SHOP STATE for skin and rod
     // (Syncing handled in useEffect below)
-    // Wait, shopState.equipped.fishing only holds ONE item.
-    // If user equips a rod, they lose their boat skin?
-    // FIX: CrazyFishing probably needs separate slots in global shop or just support one active "fishing item".
-    // For now, let's assume 'fishing' slot is for the BOAT, and we check 'unlocked' for PASSIVE upgrades like Rods?
-    // No, standard is equipped.
-    // Let's check ShopItems.js categories. 
-    // 'fishing' category contains BOTH rods and boats.
-    // If I equip a rod, `shopState.equipped.fishing` becomes 'rod_gold'.
-    // If I equip a boat, it becomes 'boat_duck'.
-    // This is a conflict!
-    // I should probably split them in the CONTEXT or just handle it here.
-    // Hack for now: check if the equipped item string starts with 'rod_' or 'boat_'.
-    // Ideally, we want to allow BOTH.
-    // But GamificationContext `equipItem` over-writes the category key.
 
-    // TEMPORARY FIX:
-    // We will trust `shopState.equipped.fishing` for the VISUAL (Boat/Rod).
-    // If it's a rod, we show default boat + special rod.
-    // If it's a boat, we show special boat + default rod?
-    // That's annoying.
-    // Let's stick to the requested "Boat Skins".
-
-    const [coins, setCoins] = useState(0);
-    const [inventory, setInventory] = useState([]); // Restore local inventory for compatibility
     const [equippedSkin, setEquippedSkin] = useState('boat_default');
-    const [equippedBobber, setEquippedBobber] = useState('bobber_red');
+    const [equippedBobber, setEquippedBobber] = useState('lure_neon');
     const [hasGoldenRod, setHasGoldenRod] = useState(false);
 
     // Refs
@@ -365,26 +236,18 @@ const CrazyFishing = () => {
     const skinRef = useRef('boat_default');
     const invRef = useRef([]); // Unlocked items for upgrades
     const comboRef = useRef(0);
-    const spritesRef = useRef({});
-
-    // Load Sprites
-    useEffect(() => {
-        Object.entries(SPRITE_SHEETS).forEach(([key, src]) => {
-            const img = new Image();
-            img.src = src;
-            spritesRef.current[key] = img;
-        });
-    }, []);
 
     // Sync Refs on Every Render
     useEffect(() => {
         // --- SYNC SKINS & RODS ---
         let skin = 'boat_default';
+        let bobber = 'lure_neon';
         let useGoldRod = false;
 
         if (shopState?.equipped) {
             // New Granular Slots
             if (shopState.equipped.fishing_boat) skin = shopState.equipped.fishing_boat;
+            if (shopState.equipped.fishing_bobber) bobber = shopState.equipped.fishing_bobber;
             if (shopState.equipped.fishing_rod === 'rod_gold') useGoldRod = true;
 
             // Legacy / Fallback (if mixed)
@@ -398,14 +261,11 @@ const CrazyFishing = () => {
         // Apply Skin
         skinRef.current = skin;
         setEquippedSkin(skin);
-        if (shopState?.equipped?.fishing_bobber) setEquippedBobber(shopState.equipped.fishing_bobber);
+        setEquippedBobber(bobber);
 
         // Apply Rod
         if (shopState?.unlocked?.includes('rod_gold')) useGoldRod = true;
-
         setHasGoldenRod(useGoldRod);
-
-
 
         // Pass unlocked items for passive bonuses (Hats, Rods, etc)
         if (shopState?.unlocked) {
@@ -437,7 +297,7 @@ const CrazyFishing = () => {
         particles: [],
         shake: 0,
         bossSpawned: false,
-        lastBiomeIndex: -1 // Track zones
+        lastBiomeIndex: -1
     });
 
     const isMouseDown = useRef(false);
@@ -449,16 +309,14 @@ const CrazyFishing = () => {
         img.src = '/assets/boy-logo.png';
         logoImgRef.current = img;
 
-        // Load Save (Safeguarded)
+        // Load Save (Safeguarded) - ONLY local prefs, not coins/inv
         try {
-            const savedCoins = parseInt(localStorage.getItem('arcadeCoins')) || 0;
-            setCoins(savedCoins);
-            const savedInv = JSON.parse(localStorage.getItem('fishingInventory')) || [];
-            setInventory(savedInv);
-            const savedSkin = localStorage.getItem('fishingSkin') || 'default';
-            setEquippedSkin(savedSkin);
-            const savedBobber = localStorage.getItem('fishingBobber') || 'lure_neon';
-            setEquippedBobber(savedBobber);
+            const savedSkin = localStorage.getItem('fishingSkin'); // Optional local override?
+            if (savedSkin) setEquippedSkin(savedSkin);
+
+            const savedBobber = localStorage.getItem('fishingBobber');
+            if (savedBobber) setEquippedBobber(savedBobber);
+
             if (localStorage.getItem('goldenRod')) setHasGoldenRod(true);
         } catch (e) {
             console.error("Save file corrupted, resetting", e);
@@ -477,36 +335,32 @@ const CrazyFishing = () => {
     }, []);
 
     const buyItem = (item) => {
-        if (inventory.includes(item.id)) {
+        const category = item.type === 'skin' ? 'fishing_boat' :
+            item.type === 'bobber' ? 'fishing_bobber' : 'fishing_misc';
+
+        // Check if owned via global shopState
+        if (shopState.unlocked.includes(item.id)) {
             // Equip if owned
-            if (item.type === 'skin') {
-                setEquippedSkin(item.id);
-                localStorage.setItem('fishingSkin', item.id);
-                playCollect();
-            } else if (item.type === 'bobber') {
-                setEquippedBobber(item.id);
-                localStorage.setItem('fishingBobber', item.id);
-                playCollect();
-            }
+            equipItem(category, item.id);
+            playCollect();
             return;
         }
+
+        // Buy using Context
         if (coins >= item.price) {
-            const newCoins = coins - item.price;
-            setCoins(newCoins);
-            localStorage.setItem('arcadeCoins', newCoins);
+            const success = contextBuyItem({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                type: 'permanent'
+            });
 
-            const newInv = [...inventory, item.id];
-            setInventory(newInv);
-            localStorage.setItem('fishingInventory', JSON.stringify(newInv));
-
-            playWin();
-            // Auto Equip
-            if (item.type === 'skin') {
-                setEquippedSkin(item.id);
-                localStorage.setItem('fishingSkin', item.id);
-            } else if (item.type === 'bobber') {
-                setEquippedBobber(item.id);
-                localStorage.setItem('fishingBobber', item.id);
+            if (success) {
+                playWin();
+                // Auto Equip
+                equipItem(category, item.id);
+            } else {
+                playCrash(); // Should not happen if check passed, but safety
             }
         } else {
             playCrash(); // Too poor
@@ -594,7 +448,7 @@ const CrazyFishing = () => {
         // DROPPING
         if (mode === 'DROPPING') {
             // Start Drop (Slower)
-            state.depth += 0.45;
+            state.depth += 0.9;
             if (state.depth > MAX_DEPTH) state.depth = MAX_DEPTH;
 
             // Biome Check
@@ -729,7 +583,13 @@ const CrazyFishing = () => {
             // Move Fish
             state.fish.forEach(f => {
                 if (mode === 'REELING_UP') {
-                    f.y += 25;
+                    f.y += 15;
+                    f.x += f.dir * 2;
+                } else if (mode === 'BATTLE') { // ... (rest is same)
+                    // Freeze vertical movement relative to camera (since camera is locked)
+                    // Just drift slightly
+                    f.x += f.dir * 0.5;
+                    f.y += Math.sin(Date.now() / 500) * 0.2;
                 } else {
                     // Normal Dropping Movement
                     if (f.fromTop) {
@@ -740,9 +600,9 @@ const CrazyFishing = () => {
                     } else {
                         f.y -= 3; // Standard Parallax
                     }
+                    f.x += f.dir * 2;
                 }
 
-                f.x += f.dir * 2;
                 if (f.x < 0 || f.x > GAME_WIDTH - 40) f.dir *= -1;
             });
             // Filter logic: In reel up, we want to keep them until they hit bottom
@@ -973,54 +833,14 @@ const CrazyFishing = () => {
             ctx.restore();
         });
 
-        // 3. LIGHTING & ATMOSPHERE (ABYSS ENGINE)
-        drawLighting(ctx, state);
-
-        // 4. FISH DROPPING (WITH HATS)
-        if (mode === 'DROPPING') {
+        // FISH DROPPING (WITH HATS)
+        if (mode === 'DROPPING' || mode === 'BATTLE' || mode === 'REELING_UP') {
             ctx.font = '30px serif';
             state.fish.forEach(f => {
                 // Shiny Glow
                 if (f.type.shiny) { ctx.shadowColor = 'gold'; ctx.shadowBlur = 10; }
 
-                // SPRITE RENDER
-                const spriteCfg = FISH_SPRITES[f.type.id];
-                const sheet = spriteCfg ? spritesRef.current[spriteCfg.sheet] : null;
-
-                if (sheet && sheet.complete && sheet.naturalWidth !== 0) {
-                    const cols = spriteCfg.grid[0];
-                    const rows = spriteCfg.grid[1];
-                    const sw = sheet.width / cols;
-                    const sh = sheet.height / rows;
-                    const sx = (spriteCfg.index % cols) * sw;
-                    const sy = Math.floor(spriteCfg.index / cols) * sh;
-
-                    const size = 60; // Standard size
-
-                    ctx.save();
-                    // Center pivot for flipping
-                    const drawX = f.x + 20; // approximate center of emoji text bounds
-                    const drawY = f.y - 10;
-                    ctx.translate(drawX, drawY);
-
-                    if (f.dir === -1) ctx.scale(-1, 1); // Flip if moving left
-
-                    ctx.drawImage(sheet, sx, sy, sw, sh, -size / 2, -size / 2, size, size);
-                    ctx.restore();
-                } else {
-                    // Fallback Emoji
-                    ctx.fillText(f.type.emoji, f.x, f.y);
-                }
-
-                // BUBBLES (Atmosphere)
-                if (Math.random() > 0.95) {
-                    state.particles.push({
-                        x: f.x + (Math.random() * 40), y: f.y,
-                        dx: 0, dy: -2, life: 1.0, char: '°', size: 10 + Math.random() * 5,
-                        color: 'rgba(200, 255, 255, 0.5)'
-                    });
-                }
-
+                ctx.fillText(f.type.emoji, f.x, f.y);
                 ctx.shadowBlur = 0;
 
                 // Cosmetic Hat (If unlocked)
@@ -1084,21 +904,9 @@ const CrazyFishing = () => {
             drawBattle(ctx, state);
         }
 
-        // SPEED LINES (Dropping)
-        if (mode === 'DROPPING' || mode === 'REELING_UP') {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            for (let i = 0; i < 5; i++) {
-                const lx = Math.random() * GAME_WIDTH;
-                const ly = Math.random() * GAME_HEIGHT;
-                ctx.moveTo(lx, ly);
-                ctx.lineTo(lx, ly + (mode === 'DROPPING' ? -100 : 100));
-            }
-            ctx.stroke();
-        }
-
-        // HUD - MOVED TO HTML OVERLAY (See Render)
+        // HUD
+        ctx.fillStyle = 'white'; ctx.font = '16px monospace';
+        if (mode !== 'CASTING') ctx.fillText(`DEPTH: ${Math.floor(state.depth)}m`, 10, 20);
     };
 
     // Helper    // Draw Boat based on Skin
@@ -1215,89 +1023,30 @@ const CrazyFishing = () => {
     };
 
     const drawBattle = (ctx, state) => {
-        // CYBER-GLOW BATTLE INTERFACE
-        const trackX = GAME_WIDTH / 2 - 30;
-        const trackY = 50;
-        const trackW = 60;
+        const trackX = GAME_WIDTH / 2 - 25; const trackY = 50;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(trackX, trackY, 50, BAR_AREA_HEIGHT);
+        ctx.strokeStyle = 'white'; ctx.strokeRect(trackX, trackY, 50, BAR_AREA_HEIGHT);
 
-        ctx.save();
-
-        // 1. Track Background (Glassy)
-        ctx.fillStyle = 'rgba(0, 20, 40, 0.8)';
-        ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.roundRect(trackX, trackY, trackW, BAR_AREA_HEIGHT, 10);
-        ctx.fill();
-        ctx.stroke();
-
-        // Big Bar Upgrade Logic
+        // Big Bar Upgrade
         const effectiveBarHeight = inventory.includes('bigbar') ? BAR_HEIGHT * 1.2 : BAR_HEIGHT;
+
         const barY = (trackY + BAR_AREA_HEIGHT) - state.barPos - effectiveBarHeight;
-
-        // 2. The "Safe Zone" Bar (Gradient + Glow)
-        const overlap = (state.barPos < state.fishPos + 40 && state.barPos + effectiveBarHeight > state.fishPos);
-
-        const barGrad = ctx.createLinearGradient(trackX, barY, trackX + trackW, barY);
-        barGrad.addColorStop(0, overlap ? '#00ff00' : '#888800');
-        barGrad.addColorStop(1, overlap ? '#ccffcc' : '#ffff00');
-
-        ctx.shadowColor = overlap ? '#00ff00' : 'orange';
-        ctx.shadowBlur = overlap ? 20 : 5;
-        ctx.fillStyle = barGrad;
-
-        ctx.beginPath();
-        ctx.roundRect(trackX + 4, barY, trackW - 8, effectiveBarHeight, 5);
-        ctx.fill();
-
-        ctx.shadowBlur = 0; // Reset
-
-        // 3. The Fish Icon (Bobbing)
         const fishY = (trackY + BAR_AREA_HEIGHT) - state.fishPos - 40;
 
-        // Use Sprite if available!
-        const f = state.battleFish;
-        const spriteCfg = FISH_SPRITES[f.type.id];
-        const sheet = spriteCfg ? spritesRef.current[spriteCfg.sheet] : null;
+        const overlap = (state.barPos < state.fishPos + 40 && state.barPos + effectiveBarHeight > state.fishPos);
 
-        if (sheet && sheet.complete) {
-            const cols = spriteCfg.grid[0];
-            const rows = spriteCfg.grid[1];
-            const sw = sheet.width / cols;
-            const sh = sheet.height / rows;
-            const sx = ((spriteCfg.index % cols) * sw) + (sw * 0.15); // Safe crop
-            const sy = (Math.floor(spriteCfg.index / cols) * sh) + (sh * 0.15);
-            ctx.drawImage(sheet, sx, sy, sw * 0.7, sh * 0.7, trackX + 10, fishY + 10, 40, 40);
-        } else {
-            ctx.font = '30px serif';
-            ctx.fillText(f.emoji, trackX + 15, fishY + 35);
-        }
+        ctx.fillStyle = overlap ? '#00ff00' : 'rgba(0,255,0,0.4)';
+        ctx.fillRect(trackX + 2, barY, 46, effectiveBarHeight);
 
-        // 4. Progress Bar (Side)
+        ctx.font = '30px serif';
+        if (state.battleFish.type === 'image') ctx.fillText('🧜‍♂️', trackX + 10, fishY + 30);
+        else ctx.fillText(state.battleFish.emoji, trackX + 10, fishY + 30);
+
+        // Progress
         const h = (state.catchPercent / 100) * BAR_AREA_HEIGHT;
-
-        // Container
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(trackX + trackW + 10, trackY, 15, BAR_AREA_HEIGHT);
-
-        // Fill
-        const progGrad = ctx.createLinearGradient(0, trackY + BAR_AREA_HEIGHT, 0, trackY);
-        progGrad.addColorStop(0, 'red');
-        progGrad.addColorStop(0.5, 'yellow');
-        progGrad.addColorStop(1, '#00ff00');
-
-        ctx.fillStyle = progGrad;
-        ctx.fillRect(trackX + trackW + 12, (trackY + BAR_AREA_HEIGHT) - h, 11, h);
-
-        // Text Feedback
-        if (overlap) {
-            ctx.fillStyle = '#00ff00';
-            ctx.font = 'bold 24px "Orbitron", monospace';
-            ctx.shadowColor = 'black'; ctx.shadowBlur = 4;
-            ctx.fillText("REELING!", GAME_WIDTH / 2 - 60, 40);
-            ctx.shadowBlur = 0;
-        }
-
-        ctx.restore();
+        if (overlap) { ctx.fillStyle = '#00ff00'; ctx.font = 'bold 24px monospace'; ctx.fillText("REELING!", GAME_WIDTH / 2 - 40, 40); }
+        ctx.fillStyle = overlap ? 'cyan' : 'gold';
+        ctx.fillRect(trackX + 60, (trackY + BAR_AREA_HEIGHT) - h, 20, h);
     };
 
     const drawShowcase = (ctx, state) => {
@@ -1366,29 +1115,10 @@ const CrazyFishing = () => {
         // THE CATCH (Floating High)
         const fishY = charY - 120 - (Math.sin(state.castTimer / 10) * 10); // Higher up
         const f = state.battleFish || caughtFish;
-
-        // SPRITE SHOWCASE
-        const spriteCfg = f ? FISH_SPRITES[f.type.id] : null;
-        const sheet = spriteCfg ? spritesRef.current[spriteCfg.sheet] : null;
-
-        if (sheet && sheet.complete) {
-            const cols = spriteCfg.grid[0]; // ... redundant calc but robust
-            const rows = spriteCfg.grid[1];
-            const sw = sheet.width / cols;
-            const sh = sheet.height / rows;
-            const sx = ((spriteCfg.index % cols) * sw) + (sw * 0.15);
-            const sy = (Math.floor(spriteCfg.index / rows) * sh) + (sh * 0.15); // Note: index/rows? No index/cols usually.
-            // Logic check: sx is index % cols. sy is index / cols. 
-            const properSy = (Math.floor(spriteCfg.index / cols) * sh) + (sh * 0.15);
-
-            const sSize = 150;
-            ctx.drawImage(sheet, sx, properSy, sw * 0.7, sh * 0.7, charX - 75, fishY - 75, sSize, sSize);
-        } else if (f) {
-            ctx.font = '80px serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(f.emoji, charX, fishY);
-            ctx.textAlign = 'start';
-        }
+        ctx.font = '80px serif';
+        ctx.textAlign = 'center';
+        if (f && f.type === 'image') ctx.fillText('🧜‍♂️', charX, fishY);
+        else if (f) ctx.fillText(f.emoji, charX, fishY);
         ctx.textAlign = 'start';
 
         // GOD RAYS / GLOW
@@ -1435,14 +1165,11 @@ const CrazyFishing = () => {
         gameStateRef.current = 'BATTLE'; setGameState('BATTLE'); setCaughtFish(fish);
         stateRef.current.battleFish = fish; stateRef.current.barPos = 0; stateRef.current.catchPercent = 25;
         if (navigator.vibrate) navigator.vibrate(200); // Heavy buzz
-
-        // HITSTOP (IMPACT)
-        stateRef.current.shake = 10;
-        // Optional: play "Hit" sound
-        playBeep(); // Replace with impact sound if available
+        playBeep();
     };
     const startReelUp = () => {
-        gameStateRef.current = 'REELING_UP'; // No state set needed for visual-only modes usually, but consistency helps
+        gameStateRef.current = 'REELING_UP';
+        setGameState('REELING_UP');
         playCollect(); // Reel sound
     };
     const startShowcase = () => {
@@ -1546,56 +1273,6 @@ const CrazyFishing = () => {
             x: GAME_WIDTH / 2 - 100, y: GAME_HEIGHT / 2,
             dx: 0, dy: -1, life: 2.0, char: 'ESCAPED!', color: 'red', size: 40
         });
-    };
-
-    // --- ABYSS ENGINE (LIGHTING) ---
-    const drawLighting = (ctx, state) => {
-        const depth = state.depth;
-
-        // 1. DEPTH VIGNETTE
-        // As depth increases, visible radius decreases
-        if (depth > 300) {
-            ctx.save();
-            const radius = Math.max(300, 1000 - (depth * 0.3)); // Shrinks deep down
-            // Dynamic Light Pos (follows hook in deep, or sun in shallow)
-            const lx = depth > 900 ? state.hookX : GAME_WIDTH / 2;
-            const ly = depth > 900 ? state.hookY : 0;
-
-            const grad = ctx.createRadialGradient(lx, ly, radius * 0.2, lx, ly, radius);
-            grad.addColorStop(0, 'rgba(0,0,0,0)'); // Transparent center
-            grad.addColorStop(1, `rgba(0,0,10,${Math.min(0.95, depth / 3000)})`); // Dark edges
-
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            ctx.restore();
-        }
-
-        // 2. BIOLUMINESCENCE GLOW
-        // For standard "Particle" glows or deep sea creatures
-        if (depth > 600) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'lighter';
-
-            // Draw hook light
-            const hookGlow = ctx.createRadialGradient(state.hookX, state.hookY, 10, state.hookX, state.hookY, 150);
-            hookGlow.addColorStop(0, 'rgba(200, 255, 255, 0.4)');
-            hookGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = hookGlow;
-            ctx.beginPath(); ctx.arc(state.hookX, state.hookY, 150, 0, Math.PI * 2); ctx.fill();
-
-            // Glow for recent particles/fish that are "luminous"
-            state.fish.forEach(f => {
-                if (f.type.id === 'jelly' || f.type.id === 'angler' || f.type.id === 'cyber' || f.type.id === 'flash' || f.type.id === 'ember' || f.type.shiny) {
-                    const g = ctx.createRadialGradient(f.x + 20, f.y + 20, 10, f.x + 20, f.y + 20, 80);
-                    g.addColorStop(0, f.type.id === 'ember' ? 'rgba(255,100,0,0.4)' : 'rgba(0,255,255,0.3)');
-                    g.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = g;
-                    ctx.beginPath(); ctx.arc(f.x + 20, f.y + 20, 80, 0, Math.PI * 2); ctx.fill();
-                }
-            });
-
-            ctx.restore();
-        }
     };
 
     // Controls
@@ -1728,29 +1405,24 @@ const CrazyFishing = () => {
                 outline: 'none',
                 overscrollBehavior: 'none'
             }}>
-            {/* COMPACT HEADER - REMOVED, INTEGRATED INTO HUD */}
-            {/* <div style={{ position: 'absolute', top: '10px', width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 10 }}> */}
-            {/* </div> */}
+            {/* COMPACT HEADER */}
+            <div style={{ position: 'absolute', top: '10px', width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 10 }}>
+                <h1 style={{ fontFamily: '"Orbitron", sans-serif', fontSize: '1.8rem', margin: 0, textShadow: '0 0 10px rgba(0,0,0,0.8)', color: hasGoldenRod ? 'var(--neon-gold)' : 'white' }}>
+                    {hasGoldenRod ? '✨ GOLDEN FISHING ✨' : 'DEEP DIVE FISHING'}
+                </h1>
+            </div>
 
-            {/* OLD SCORE HUD - REMOVED */}
+            <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '1.2rem', color: 'white', fontWeight: 'bold', zIndex: 10, fontFamily: '"Orbitron", monospace', display: 'flex', gap: '20px' }}>
+                <span style={{ color: 'var(--neon-gold)', textShadow: '0 0 5px orange' }}>💰 {coins}</span>
+                <span style={{ color: 'var(--neon-pink)', textShadow: '0 0 5px red' }}>🔥 {combo}</span>
+            </div>
 
-            {/* HOME BUTTON */}
             {/* HOME BUTTON */}
             <Link to="/arcade" style={{ position: 'absolute', top: '15px', left: '20px', zIndex: 100 }}>
                 <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)', textDecoration: 'none' }}>
                     🏠 EXIT
                 </SquishyButton>
             </Link>
-
-            {/* ABYSS ENGINE OVERLAY - Optional Flash */}
-            {
-                stateRef.current.shake > 2 && (
-                    <div style={{
-                        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                        background: 'white', opacity: 0.1, pointerEvents: 'none', mixBlendMode: 'overlay'
-                    }} />
-                )
-            }
 
             {/* MAIN GAME CONTAINER - Centered */}
             <div style={{
@@ -1812,35 +1484,6 @@ const CrazyFishing = () => {
                         </div>
                     )}
 
-
-                    {/* 2026 HUD OVERLAY */}
-                    <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 50, pointerEvents: 'none' }}>
-                        {/* DEPTH GAUGE */}
-                        <div style={{ display: 'flex', alignItems: 'end', gap: '5px' }}>
-                            <div style={{ fontSize: '3rem', fontFamily: '"Orbitron", sans-serif', fontWeight: 'bold', color: 'cyan', textShadow: '0 0 10px cyan' }}>
-                                {Math.floor(stateRef.current.depth)}
-                            </div>
-                            <div style={{ fontSize: '1.5rem', color: '#aaa', paddingBottom: '10px' }}>m</div>
-                        </div>
-                        {/* CURRENT BIOME */}
-                        <div style={{ fontSize: '1.2rem', color: 'white', letterSpacing: '2px', opacity: 0.8, marginTop: '-5px' }}>
-                            {BIOMES.find(b => stateRef.current.depth <= b.maxDepth)?.name.toUpperCase() || 'UNKNOWN'}
-                        </div>
-                    </div>
-
-                    {/* SCORE & COMBO HUD - TOP RIGHT */}
-                    <div style={{ position: 'absolute', top: '20px', right: '20px', textAlign: 'right', pointerEvents: 'none', zIndex: 50 }}>
-                        <div style={{ fontSize: '1.5rem', color: '#ffcc00', textShadow: '0 0 10px orange', fontFamily: '"Orbitron", monospace' }}>
-                            💰 {coins}
-                        </div>
-                        {combo > 1 && (
-                            <div style={{ fontSize: '1.2rem', color: '#ff0055', fontWeight: 'bold', textShadow: '0 0 10px red', animation: 'pulse 0.5s infinite' }}>
-                                {combo}x STREAK
-                            </div>
-                        )}
-                    </div>
-
-
                     {/* OVERLAYS */}
                     {gameState === 'FISHDEX' && (
                         <Overlay title="📘 FISHDEX" onClose={() => setGameState('IDLE')} color="cyan">
@@ -1876,7 +1519,7 @@ const CrazyFishing = () => {
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                 {SHOP_ITEMS.map(item => {
-                                    const owned = inventory.includes(item.id);
+                                    const owned = shopState.unlocked.includes(item.id);
                                     const equipped = (equippedSkin === item.id) || (equippedBobber === item.id);
                                     return (
                                         <div key={item.id} onClick={() => buyItem(item)} style={{
@@ -1959,7 +1602,7 @@ const CrazyFishing = () => {
             </div>
 
             <Link to="/arcade" style={{ marginTop: '20px', color: 'white', textDecoration: 'underline', fontSize: '1rem' }}>Exit Dock</Link>
-        </div >
+        </div>
     );
 };
 

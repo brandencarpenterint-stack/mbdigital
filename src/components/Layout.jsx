@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabaseClient';
 // Lazy Load Modals to prevent circular dependencies & reduce bundle size
 const ProfileModal = React.lazy(() => import('./ProfileModal'));
 const DailyStash = React.lazy(() => import('./DailyStash'));
@@ -40,7 +41,7 @@ const Layout = () => {
 
     // Contexts
     // Consolidated useGamification call - extracting all needed values once
-    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile, addCoins, unlockAchievement, setShopState } = useGamification() || { dailyState: null, shopState: null, userProfile: null, addCoins: () => { }, unlockAchievement: () => { }, setShopState: () => { }, viewedProfile: null, setViewedProfile: () => { } };
+    const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile, addCoins, unlockAchievement, setShopState, session } = useGamification() || { dailyState: null, shopState: null, userProfile: null, addCoins: () => { }, unlockAchievement: () => { }, setShopState: () => { }, viewedProfile: null, setViewedProfile: () => { } };
 
     const { unreadCount } = useNotifications();
     const { soundEnabled, toggleSound } = useSettings();
@@ -102,6 +103,22 @@ const Layout = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [addCoins, playWin, playPowerUp, shopState?.unlocked, unlockDecor]);
+
+    // PRESENCE HEARTBEAT
+    useEffect(() => {
+        if (!session?.user || !supabase) return;
+
+        const heartbeat = async () => {
+            await supabase
+                .from('profiles')
+                .update({ last_seen: new Date().toISOString() })
+                .eq('id', session.user.id);
+        };
+
+        heartbeat(); // Immediate
+        const interval = setInterval(heartbeat, 30000); // Every 30s
+        return () => clearInterval(interval);
+    }, [session]);
 
     const isFullScreenGame = location.pathname.startsWith('/arcade/') && location.pathname !== '/arcade';
 
@@ -200,6 +217,19 @@ const Layout = () => {
                     </div>
 
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center', position: 'relative' }}>
+                        {/* GUEST MODE INDICATOR */}
+                        {!session?.user && (
+                            <button
+                                onClick={() => setViewedProfile(userProfile)}
+                                style={{
+                                    background: 'var(--neon-pink)', color: 'white', border: 'none',
+                                    padding: '5px 10px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold',
+                                    cursor: 'pointer', animation: 'pulse 2s infinite'
+                                }}
+                            >
+                                ⚠ GUEST MODE
+                            </button>
+                        )}
                         {/* NOTIFICATIONS */}
                         <button
                             onClick={() => setShowNotifications(!showNotifications)}
@@ -347,11 +377,11 @@ const Layout = () => {
                         </Link>
 
                         {/* 5. PROFILE (With PocketBro Status) */}
-                        <button
-                            onClick={() => setViewedProfile(userProfile)}
+                        <Link
+                            to="/profile"
                             className="dock-icon"
                             style={{
-                                opacity: viewedProfile ? 1 : 0.5,
+                                opacity: location.pathname === '/profile' ? 1 : 0.5,
                                 background: 'transparent', border: 'none', cursor: 'pointer',
                                 position: 'relative'
                             }}
@@ -372,7 +402,7 @@ const Layout = () => {
                             }}>
                                 {getMood()}
                             </div>
-                        </button>
+                        </Link>
                     </div>
 
                     <style>{`

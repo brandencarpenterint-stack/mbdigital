@@ -10,6 +10,7 @@ export const SHOP_ITEMS = [
     { id: 'food_apple', type: 'snake_food', name: 'Red Apple', price: 0, category: 'snake', slot: 'snake_food', description: 'Healthy default.', icon: '🍎' },
     { id: 'food_burger', type: 'snake_food', name: 'Cheezburger', price: 500, category: 'snake', slot: 'snake_food', description: 'Can i haz?', icon: '🍔', unlockCondition: 'snake_novice' },
     { id: 'food_sushi', type: 'snake_food', name: 'Sashimi', price: 1000, category: 'snake', slot: 'snake_food', description: 'Fancy dining.', icon: '🍣', unlockCondition: 'snake_pro' },
+    { id: 'food_caviar', type: 'snake_food', name: 'Almas Caviar', price: 25000, category: 'snake', slot: 'snake_food', description: 'It tastes like debt.', icon: '🥫' },
 
     // --- FISHING: RODS & UPGRADES ---
     { id: 'rod_default', type: 'fishing_rod', name: 'Bamboo Pole', price: 0, category: 'fishing', slot: 'fishing_rod', description: 'Ol\' reliable.', icon: '🎋' },
@@ -24,6 +25,7 @@ export const SHOP_ITEMS = [
     { id: 'bobber_sparkle', type: 'fishing_bobber', name: 'Sparkle', price: 2500, category: 'fishing', slot: 'fishing_bobber', description: 'Glitter trail!', icon: '✨' },
     { id: 'bobber_neon', type: 'fishing_bobber', name: 'Neon Pulse', price: 3000, category: 'fishing', slot: 'fishing_bobber', description: 'Cyber trail.', icon: '🧿' },
     { id: 'bobber_comet', type: 'fishing_bobber', name: 'Comet', price: 5000, category: 'fishing', slot: 'fishing_bobber', description: 'Burning tail effect.', icon: '☄️' },
+    { id: 'bobber_brick', type: 'fishing_bobber', name: 'Actual Brick', price: 75000, category: 'fishing', slot: 'fishing_bobber', description: 'Sinks immediately. Very unhelpful.', icon: '🧱' },
 
     // --- FISHING: BOATS (SKINS) ---
     { id: 'boat_default', type: 'fishing_boat', name: 'Dinghy', price: 0, category: 'fishing', slot: 'fishing_boat', description: 'It floats.', icon: '🚣' },
@@ -58,6 +60,7 @@ export const SHOP_ITEMS = [
     { id: 'ball_std', type: 'brick_ball', name: 'Steel Ball', price: 0, category: 'brick', slot: 'brick_ball', description: 'Heavy metal.', icon: '⚪' },
     { id: 'ball_fire', type: 'brick_ball', name: 'Fireball', price: 1000, category: 'brick', slot: 'brick_ball', description: 'Visual heat.', icon: '☄️', unlockCondition: 'brick_level_5' },
     { id: 'ball_eye', type: 'brick_ball', name: 'Eyeball', price: 1500, category: 'brick', slot: 'brick_ball', description: 'It watches you.', icon: '👁️', unlockCondition: 'brick_level_10' },
+    { id: 'ball_invisible', type: 'brick_ball', name: 'Invisible Ball', price: 100000, category: 'brick', slot: 'brick_ball', description: 'Pay to lose.', icon: '🫥' },
 
     // --- GALAXY SHIPS ---
     { id: 'ship_default', type: 'galaxy_ship', name: 'Interceptor', price: 0, category: 'galaxy', slot: 'galaxy', description: 'Standard issue.', icon: '🚀' },
@@ -107,6 +110,7 @@ export const SHOP_ITEMS = [
     { id: 'furn_cat_tree', type: 'decor', name: 'Cat Tower', price: 600, category: 'homedecor', slot: 'decor', description: 'For the cat.', icon: '🐈' },
     { id: 'furn_ufo', type: 'decor', name: 'Model UFO', price: 1500, category: 'homedecor', slot: 'decor', description: 'I want to believe.', icon: '🛸' },
     { id: 'rug_dance', type: 'decor', name: 'Dance Floor', price: 500, category: 'homedecor', slot: 'decor', description: 'Disco lights.', icon: '🕺' },
+    { id: 'furn_pet_rock', type: 'decor', name: 'Pet Rock', price: 50000, category: 'homedecor', slot: 'decor', description: 'It does absolutely nothing.', icon: '🪨' },
     { id: 'furn_konami', type: 'decor', name: 'Retro Controller', price: 0, category: 'homedecor', slot: 'decor', description: 'Up Up Down Down...', icon: '🎮', hidden: true },
 
     // --- DASHBOARD THEMES ---
