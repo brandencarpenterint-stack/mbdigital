@@ -8,41 +8,60 @@ import { useGamification } from '../context/GamificationContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import PocketPet from '../components/pocket-pet/PocketPet';
 import useRetroSound from '../hooks/useRetroSound';
+import TheButton from '../components/TheButton';
 import { supabase } from '../lib/supabaseClient';
-import './Home.css'; // Shared styles for dashboard grid
+import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
 import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
+    const { userProfile, xp } = useGamification() || {};
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOnline = async () => {
-            if (!supabase) return;
-            // Fetch users active in last 15 mins
-            const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+            let users = [];
+            
+            if (supabase) {
+                // Fetch users active in last 15 mins
+                const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
-            const { data } = await supabase
-                .from('profiles')
-                .select('display_name, avatar_url, xp, last_seen')
-                .gt('last_seen', fifteenMinsAgo)
-                .order('last_seen', { ascending: false })
-                .limit(20);
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('display_name, avatar_url, coins, last_seen')
+                    .gt('last_seen', fifteenMinsAgo)
+                    .order('last_seen', { ascending: false })
+                    .limit(20);
 
-            if (data) {
-                setOnlineUsers(data.map(u => ({
-                    ...u,
-                    level: Math.floor(Math.sqrt((u.xp || 0) / 250)) || 1
-                })));
+                if (data) {
+                    users = data.map(u => ({
+                        ...u,
+                        level: Math.floor(Math.sqrt((u.coins || 0) / 250)) || 1
+                    }));
+                }
             }
+
+            // Always include the current user
+            if (userProfile && userProfile.name) {
+                const isMe = users.find(u => u.display_name === userProfile.name);
+                if (!isMe) {
+                    users.unshift({
+                        display_name: userProfile.name,
+                        avatar_url: userProfile.avatar_url,
+                        level: Math.floor(Math.sqrt((xp || 0) / 250)) || 1
+                    });
+                }
+            }
+
+            setOnlineUsers(users);
             setLoading(false);
         };
 
         fetchOnline();
         const interval = setInterval(fetchOnline, 30000); // Refresh every 30s
         return () => clearInterval(interval);
-    }, []);
+    }, [userProfile, xp]);
 
     if (loading) return null;
 
@@ -100,15 +119,7 @@ const OnlinePlaza = () => {
 };
 
 const games = [
-    {
-        id: 'wheel',
-        title: 'WHEEL OF DEGEN',
-        desc: 'Spin. Win. Lose it all.',
-        gradient: 'linear-gradient(135deg, #ff0055 0%, #aa00ff 100%)',
-        icon: '🎡',
-        colSpan: 2, 
-        leaderboardId: 'dopamine_wheel'
-    },
+
     {
         id: 'slots',
         title: 'COSMIC SLOTS',
@@ -216,6 +227,24 @@ const games = [
         icon: '💣',
         colSpan: 1,
         leaderboardId: 'bro_cannon'
+    },
+    {
+        id: 'beatlab',
+        title: 'BEAT LAB',
+        desc: 'Sonic Studio.',
+        gradient: 'linear-gradient(135deg, #110022, #330066)',
+        icon: '🎹',
+        colSpan: 1,
+        path: '/beatlab'
+    },
+    {
+        id: 'subslayer',
+        title: 'SUB SLAYER',
+        desc: 'Expense Tracker.',
+        gradient: 'linear-gradient(135deg, #220000, #440000)',
+        icon: '⚔️',
+        colSpan: 1,
+        path: '/subslayer'
     }
 ];
 
@@ -432,7 +461,7 @@ const ArcadeHub = () => {
                             display: 'flex', justifyContent: 'center'
                         }}
                     >
-                        <Link to={`/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                        <Link to={game.path || `/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent' }}>
                             <ArcadeCabinet
                                 game={game}
                                 highScore={getHighScore(game.id, stats)}
@@ -441,6 +470,11 @@ const ArcadeHub = () => {
                         </Link>
                     </motion.div>
                 ))}
+                
+                {/* THE BUTTON (Viral Stunt) */}
+                <motion.div variants={itemVariants} style={{ height: '100%', gridColumn: 'span 1', display: 'flex', justifyContent: 'center' }}>
+                    <TheButton />
+                </motion.div>
             </motion.div>
 
             {/* LEADERBOARDS SECTION */}

@@ -33,7 +33,7 @@ const COLS = 3;
 const SPIN_COST = 15;
 
 const CosmicSlots = () => {
-    const { coins, spendCoins, addCoins, updateStat, userProfile } = useGamification() || { coins: 0, spendCoins: () => false, addCoins: () => { } };
+    const { coins, spendCoins, addCoins, updateStat, incrementStat, userProfile } = useGamification() || { coins: 0, spendCoins: () => false, addCoins: () => { } };
     const { playJump, playCollect, playWin } = useRetroSound();
 
     const [grid, setGrid] = useState([
@@ -58,6 +58,8 @@ const CosmicSlots = () => {
 
         // Attempt to spend coins
         if (!spendCoins(SPIN_COST)) return;
+
+        if (incrementStat) incrementStat('slotsSpins', 1);
 
         setIsSpinning(true);
         setWinAmount(0);

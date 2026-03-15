@@ -7,15 +7,18 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
 
 const BIOMES = [
-    { name: 'STREETS', limit: 2500, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
-    { name: 'SUNSET WAVE', limit: 5000, bgTop: '#ff7e5f', bgBot: '#feb47b', plat: '#554433', text: 'white', border: '#332211' },
-    { name: 'TOXIC WASTE', limit: 7500, bgTop: '#4b1', bgBot: '#260', plat: '#3f3', text: '#cbff00', border: '#252' },
-    { name: 'CYBER CITY', limit: 10000, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
-    { name: 'ICE AGE', limit: 12500, bgTop: '#00d2ff', bgBot: '#3a7bd5', plat: '#e0ffff', text: '#caf0f8', border: '#90e0ef' },
-    { name: 'VOLCANO', limit: 15000, bgTop: '#800000', bgBot: '#ff0000', plat: '#300', text: '#ff4500', border: '#ffaa00' },
-    { name: 'GLITCH REALM', limit: 17500, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
-    { name: 'MIDNIGHT TOKYO', limit: 20000, bgTop: '#0f0c29', bgBot: '#302b63', plat: '#ff00cc', text: '#00d4ff', border: '#ff00cc' },
-    { name: 'STRATOSPHERE', limit: 22500, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' },
+    { name: 'STREETS', limit: 3000, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
+    { name: 'SUNSET WAVE', limit: 6000, bgTop: '#ff7e5f', bgBot: '#feb47b', plat: '#554433', text: 'white', border: '#332211' },
+    { name: 'TOXIC WASTE', limit: 9000, bgTop: '#4b1', bgBot: '#260', plat: '#3f3', text: '#cbff00', border: '#252' },
+    { name: 'CYBER CITY', limit: 12000, bgTop: '#2b1055', bgBot: '#7597de', plat: '#00ffaa', text: '#00ffaa', border: 'white' },
+    { name: 'ICE AGE', limit: 15000, bgTop: '#00d2ff', bgBot: '#3a7bd5', plat: '#e0ffff', text: '#caf0f8', border: '#90e0ef' },
+    { name: 'VOLCANO', limit: 18000, bgTop: '#800000', bgBot: '#ff0000', plat: '#300', text: '#ff4500', border: '#ffaa00' },
+    { name: 'CANDY LAND', limit: 21000, bgTop: '#ffb6c1', bgBot: '#ff69b4', plat: '#ff1493', text: '#fff', border: '#fff' },
+    { name: 'GLITCH REALM', limit: 24000, bgTop: '#000000', bgBot: '#111111', plat: '#00ff00', text: '#00ff00', border: 'lime', glitch: true },
+    { name: 'MIDNIGHT TOKYO', limit: 28000, bgTop: '#0f0c29', bgBot: '#302b63', plat: '#ff00cc', text: '#00d4ff', border: '#ff00cc' },
+    { name: 'DEEP SPACE', limit: 32000, bgTop: '#000011', bgBot: '#000033', plat: '#888', text: '#ccc', border: '#444' },
+    { name: 'STRATOSPHERE', limit: 36000, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' },
+    { name: 'THE VOID', limit: 40000, bgTop: '#1a0033', bgBot: '#000', plat: '#5500ff', text: '#aa00ff', border: '#ff0055' },
     { name: 'ASCENSION', limit: 999999, bgTop: '#FFD700', bgBot: '#FFFFFF', plat: '#FFFFFF', text: '#B8860B', border: '#FFD700' }
 ];
 
@@ -32,7 +35,7 @@ const MerchJump = () => {
 
     // Assets
     const SKINS = [
-        { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png?t=v2', hoodie: '#111' },
+        { id: 'jump_guy', name: 'JUMPER', src: '/assets/skins/jump_guy.png?t=v3', hoodie: '#111' },
         { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png?t=v2', hoodie: '#593a28' },
         { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png?t=v2', hoodie: '#7cb9e8' },
         { id: 'face_default', name: 'OG', src: '/assets/skins/face_default.png?t=v2', hoodie: '#333' },
@@ -171,10 +174,18 @@ const MerchJump = () => {
         let w = 70 + Math.random() * 30;
         let type = 'normal';
 
-        if (score > 2500 && Math.random() > 0.7) type = 'moving';
-        if (score > 5000 && Math.random() > 0.8) type = 'crumble';
+        // Platform variety scaling by biome limit
+        if (score > 4000 && Math.random() > 0.7) type = 'moving';
+        if (score > 8000 && Math.random() > 0.8) type = 'crumble';
+        
+        // Ice Biome Slippery Platforms
+        if (biome.name === 'ICE AGE' && Math.random() > 0.5) type = 'slippery';
+        // Volcano Biome Melting Platforms
+        if (biome.name === 'VOLCANO' && Math.random() > 0.5) type = 'melting';
+        // Void/Deep Space shrinking platforms
+        if ((biome.name === 'THE VOID' || biome.name === 'DEEP SPACE') && Math.random() > 0.6) type = 'shrinking';
 
-        if (score > 7500 && Math.random() > 0.8) {
+        if (score > 12000 && Math.random() > 0.8) {
             const gap = 40 + Math.random() * 30;
             const w2 = 40;
             platformsRef.current.push({
@@ -299,10 +310,20 @@ const MerchJump = () => {
         if (player.vy > 0) {
             platformsRef.current.forEach((p, idx) => {
                 if (player.x > p.x - 20 && player.x < p.x + p.w + 20 && player.y + 30 > p.y && player.y + 30 < p.y + p.h + 20) {
-                    player.vy = JUMP_FORCE;
-                    playJump();
+                    
+                    if (p.type === 'slippery') {
+                         player.vy = JUMP_FORCE * 0.7; // Lower jump
+                         playJump();
+                    } else {
+                         player.vy = JUMP_FORCE;
+                         playJump();
+                    }
+                    
                     if (p.type === 'crumble') {
                         platformsRef.current.splice(idx, 1); playCrash();
+                    }
+                    if (p.type === 'melting') {
+                        p.w = Math.max(20, p.w - 15); // Shrinks when jumped on
                     }
                 }
             });
@@ -364,12 +385,31 @@ const MerchJump = () => {
 
         // Platforms
         platformsRef.current.forEach(p => {
+            if (p.type === 'shrinking') {
+                p.w = Math.max(10, p.w - 0.2); // Shrink continuously
+            }
+
             ctx.fillStyle = p.color || currentBiome.plat;
             if (p.type === 'crumble') ctx.fillStyle = '#A0522D';
+            if (p.type === 'slippery') ctx.fillStyle = '#b0e0e6'; // Powder Blue
+            if (p.type === 'melting') ctx.fillStyle = '#ff4500'; // OrangeRed
+            if (p.type === 'shrinking') ctx.fillStyle = '#8a2be2'; // BlueViolet
+            
             ctx.fillRect(p.x, p.y, p.w, p.h);
+            
             if (p.type === 'crumble') {
                 ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(p.x + 5, p.y); ctx.lineTo(p.x + 15, p.y + p.h); ctx.stroke();
             }
+            if (p.type === 'slippery') {
+                ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(p.x, p.y, p.w, 4); // extra shiny top
+            }
+            if (p.type === 'melting') {
+                ctx.fillStyle = '#ff8c00'; // DarkOrange drips
+                for(let i=10; i<p.w; i+=15) {
+                     ctx.fillRect(p.x + i, p.y + p.h, 4, 6 + Math.random() * 5);
+                }
+            }
+
             ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(p.x, p.y, p.w, 4);
             ctx.strokeStyle = p.border || currentBiome.border; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h);
         });

@@ -118,17 +118,20 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
             // Identifying info
             const code = readOnlyProfile.code;
             const name = readOnlyProfile.name;
+            const id = readOnlyProfile.id;
 
-            if ((!code || code === 'UNKNOWN') && !name) return; // Can't fetch
+            if ((!code || code === 'UNKNOWN') && !name && !id) return; // Can't fetch
 
             setLoadingRemote(true);
             try {
                 let query = supabase.from('profiles').select('*');
 
-                if (code && code !== 'UNKNOWN') {
+                if (id) {
+                    query = query.eq('id', id);
+                } else if (code && code !== 'UNKNOWN') {
                     query = query.eq('friend_code', code);
                 } else if (name) {
-                    query = query.eq('display_name', name);
+                    query = query.eq('display_name', name).limit(1);
                 }
 
                 const { data, error } = await query.single();
@@ -264,7 +267,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     const petStatsToDisplay = isReadOnly ? (remoteProfile?.pocket_state || readOnlyProfile?.pocket_state) : pocketStats;
 
     const handleVibe = () => {
-        feedService.publish(`vibed with ${displayProfile.name}! ✨`, 'love', userProfile?.name);
+        feedService.publish(`vibed with ${displayProfile.name}! ✨`, 'love', myProfile?.name);
         triggerConfetti();
         playClick();
     };
@@ -275,7 +278,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
     };
 
     const handleFlex = (targetName) => {
-        feedService.publish(`flexed on ${targetName} 💪`, 'flex', userProfile?.name);
+        feedService.publish(`flexed on ${targetName} 💪`, 'flex', myProfile?.name);
         playClick();
     };
 
@@ -290,8 +293,8 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
         }
 
         const entry = {
-            from: userProfile.name,
-            avatar: userProfile.avatar,
+            from: myProfile.name,
+            avatar: myProfile.avatar,
             emoji: stickerEmoji,
             ts: Date.now()
         };

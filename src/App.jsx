@@ -32,8 +32,6 @@ const MerchJump = lazy(() => import('./games/MerchJump/MerchJump'));
 const CosmicSlots = lazy(() => import('./games/CosmicSlots/CosmicSlots'));
 const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
 const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
-const DopamineWheel = lazy(() => import('./games/DopamineWheel/DopamineWheel'));
-
 import CosmicBackground from './components/CosmicBackground';
 import PageTransition from './components/PageTransition';
 
@@ -103,7 +101,6 @@ function App() {
             <Route path="arcade/slots" element={<CosmicSlots />} />
             <Route path="arcade/sub-hunter" element={<SubHunterGame />} />
             <Route path="arcade/bro-cannon" element={<BroCannon />} />
-            <Route path="arcade/wheel" element={<DopamineWheel />} />
           </Route>
         </Routes>
       </Suspense>

@@ -91,7 +91,7 @@ const GachaponModal = ({ onClose }) => {
                                                         filter: isUnlocked ? 'none' : 'grayscale(100%)'
                                                     }}>
                                                         <div style={{ fontSize: '2.5rem', marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '60px' }}>
-                                                            {item.sheet ? <StickerSprite sticker={item} size={60} /> : (item.image ? <img src={item.image} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} /> : item.icon)}
+                                                            {(item.sheet || col.sheet) ? <StickerSprite sticker={item} size={60} /> : (item.image ? <img src={item.image} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} /> : item.icon)}
                                                         </div>
                                                         <div style={{ fontSize: '0.6rem', textAlign: 'center', color: '#fff' }}>{item.name}</div>
                                                     </div>
@@ -116,7 +116,7 @@ const GachaponModal = ({ onClose }) => {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', width: '200px', height: '200px'
                                     }}>
                                         <div style={{ fontSize: '6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
-                                            {reward.sheet ? <StickerSprite sticker={reward} size={150} /> : (reward.image ? <img src={reward.image} style={{ maxHeight: '80%', maxWidth: '80%', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }} /> : reward.icon)}
+                                            {(reward.sheet || STICKER_COLLECTIONS.find(c => c.items.some(i => i.id === reward.id))?.sheet) ? <StickerSprite sticker={reward} size={150} /> : (reward.image ? <img src={reward.image} style={{ maxHeight: '80%', maxWidth: '80%', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }} /> : reward.icon)}
                                         </div>
                                     </div>
                                     <h2 style={{ marginTop: '20px', color: '#fff', textShadow: '0 0 10px white' }}>{reward.name}</h2>

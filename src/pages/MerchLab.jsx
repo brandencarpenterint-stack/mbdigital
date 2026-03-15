@@ -87,7 +87,7 @@ const MEME_PRESETS = [
 ];
 
 const MerchLab = () => {
-    const { shopState, launchDrop, activeDrops, hasUpgrade, coins, addCoins } = useGamification();
+    const { shopState, launchDrop, activeDrops, hasUpgrade, coins, addCoins, dailyState } = useGamification();
     const { showToast } = useToast();
     const { playClick, playWin, playError, playExplosion, playAirhorn, playBoing } = useRetroSound();
 
@@ -115,6 +115,10 @@ const MerchLab = () => {
 
     // User Assets
     const userAssets = [
+        '/assets/stickers/money_face.png',
+        '/assets/stickers/cat_hoodie.png',
+        '/assets/stickers/blue_bunny.png',
+        '/assets/stickers/merch_typo.png',
         '/assets/skins/face_money.png',
         '/assets/skins/face_bear.png',
         '/assets/skins/face_bunny.png',

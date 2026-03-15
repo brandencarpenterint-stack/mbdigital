@@ -8,7 +8,7 @@ const LiveFeed = () => {
     const [messages, setMessages] = useState([
         { id: 1, user: 'System', text: 'Connecting to Global Feed...', time: 'Now', color: '#ffaaaa' }
     ]);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const [inputMsg, setInputMsg] = useState('');
     const [isSending, setIsSending] = useState(false);
 

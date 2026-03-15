@@ -1028,7 +1028,7 @@ const CrazyFishing = () => {
         ctx.strokeStyle = 'white'; ctx.strokeRect(trackX, trackY, 50, BAR_AREA_HEIGHT);
 
         // Big Bar Upgrade
-        const effectiveBarHeight = inventory.includes('bigbar') ? BAR_HEIGHT * 1.2 : BAR_HEIGHT;
+        const effectiveBarHeight = invRef.current.includes('bigbar') ? BAR_HEIGHT * 1.2 : BAR_HEIGHT;
 
         const barY = (trackY + BAR_AREA_HEIGHT) - state.barPos - effectiveBarHeight;
         const fishY = (trackY + BAR_AREA_HEIGHT) - state.fishPos - 40;

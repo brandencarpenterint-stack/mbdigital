@@ -3,10 +3,12 @@ import SquishyButton from './SquishyButton';
 import { smartFloodFill } from '../utils/drawingUtils';
 
 const COLORS = [
-    '#ff0055', '#00ffaa', '#ffff00', '#00ccff', '#ff9900', '#cc00ff', '#ffffff', '#000000'
+    '#ff0055', '#ff4d4d', '#ff9900', '#ffff00', '#ccff00', '#00ffaa', 
+    '#00ccff', '#0055ff', '#aa00ff', '#cc00ff', '#ff00aa', '#ffffff', 
+    '#aaaaaa', '#555555', '#333333', '#000000'
 ];
 
-const STICKERS = [
+const BASE_STICKERS = [
     { type: 'emoji', content: '⭐' },
     { type: 'emoji', content: '🚀' },
     { type: 'emoji', content: '🌈' },
@@ -20,15 +22,22 @@ const STICKERS = [
     { type: 'image', content: '/assets/brokid-logo.png' }
 ];
 
-const ColoringCanvas = ({ templateImage, onComplete }) => {
+// Generate premium stickers from 0 to 27 for sheet1 and 0 to 23 for sheet2
+const PREMIUM_STICKERS = [];
+for (let i = 0; i < 28; i++) PREMIUM_STICKERS.push({ type: 'image', content: `/assets/stickers/pack_1/sheet1_${i}.png` });
+for (let i = 0; i < 24; i++) PREMIUM_STICKERS.push({ type: 'image', content: `/assets/stickers/pack_1/sheet2_${i}.png` });
+
+const ColoringCanvas = ({ templateImage, onComplete, hasPremiumStamps }) => {
     const canvasContainerRef = useRef(null);
     const lineCanvasRef = useRef(null);
     const colorCanvasRef = useRef(null);
 
     // Tools: 'pencil', 'bucket', 'eraser', 'sticker'
+    const allStickers = hasPremiumStamps ? [...BASE_STICKERS, ...PREMIUM_STICKERS] : BASE_STICKERS;
+    
     const [tool, setTool] = useState('bucket');
     const [color, setColor] = useState('#ff0055');
-    const [selectedSticker, setSelectedSticker] = useState(STICKERS[0]);
+    const [selectedSticker, setSelectedSticker] = useState(allStickers[0]);
     const [brushSize, setBrushSize] = useState(10);
     const [isDrawing, setIsDrawing] = useState(false);
 
@@ -189,16 +198,18 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
             {/* Toolbar */}
             <div style={{
                 display: 'flex',
+                flexWrap: 'wrap',
                 gap: '10px',
+                justifyContent: 'center',
                 background: '#222',
                 padding: '10px',
-                borderRadius: '50px',
+                borderRadius: '25px',
                 border: '2px solid #555'
             }}>
                 {COLORS.map(c => (
                     <SquishyButton
                         key={c}
-                        onClick={() => { setColor(c); setTool('pencil'); }}
+                        onClick={() => { setColor(c); setTool(prev => prev === 'eraser' ? 'bucket' : prev); }}
                         style={{
                             width: '30px',
                             height: '30px',
@@ -218,7 +229,7 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
                     <input
                         type="color"
                         value={color}
-                        onChange={(e) => { setColor(e.target.value); setTool('pencil'); }}
+                        onChange={(e) => { setColor(e.target.value); setTool(prev => prev === 'eraser' ? 'bucket' : prev); }}
                         style={{ width: '150%', height: '150%', padding: 0, border: 'none', background: 'none' }}
                     />
                 </label>
@@ -237,9 +248,11 @@ const ColoringCanvas = ({ templateImage, onComplete }) => {
                     background: '#222',
                     padding: '10px',
                     borderRadius: '20px',
-                    border: '2px dashed #555'
+                    border: '2px dashed #555',
+                    maxWidth: '100%',
+                    overflowX: 'auto'
                 }}>
-                    {STICKERS.map((s, i) => (
+                    {allStickers.map((s, i) => (
                         <button
                             key={i}
                             onClick={() => setSelectedSticker(s)}

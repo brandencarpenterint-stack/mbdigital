@@ -630,6 +630,10 @@ export const GamificationProvider = ({ children }) => {
         const finalAmount = Math.floor(amount * multiplier);
 
         setCoins(prev => prev + finalAmount);
+        
+        if (finalAmount > 0) {
+            incrementStat('coinsEarnedToday', finalAmount);
+        }
 
         // COIN GAIN ALWAYS BRINGS USERS (The Hype machine)
         if (amount > 0) {
@@ -656,6 +660,17 @@ export const GamificationProvider = ({ children }) => {
     };
 
     const incrementStat = (key, amount = 1) => {
+        // DAILY QUEST TRACKING HOOK
+        setDailyState(dPrev => {
+            const updatedQuests = dPrev.quests.map(q => {
+                if (!q.claimed && q.type === key && !q.condition) {
+                    return { ...q, progress: q.progress + amount };
+                }
+                return q;
+            });
+            return { ...dPrev, quests: updatedQuests };
+        });
+
         setStats(prev => {
             // Defensive: Don't increment arrays
             if (Array.isArray(prev[key])) {
@@ -664,23 +679,9 @@ export const GamificationProvider = ({ children }) => {
             }
 
             const newVal = (prev[key] || 0) + amount;
-
-            // DAILY QUEST TRACKING HOOK
-            setDailyState(dPrev => {
-                const updatedQuests = dPrev.quests.map(q => {
-                    if (!q.claimed && q.type === key && !q.condition) {
-                        return { ...q, progress: q.progress + amount };
-                    }
-                    return q;
-                });
-                return { ...dPrev, quests: updatedQuests };
-            });
-
             return { ...prev, [key]: newVal };
         });
     };
-
-
 
     useEffect(() => {
         localStorage.setItem('merchboy_shop', JSON.stringify(shopState));
@@ -876,9 +877,6 @@ export const GamificationProvider = ({ children }) => {
                         friend_code: userProfile.code,
                         avatar_url: userProfile.avatar,
                         coins: coins,
-                        squad: userProfile.squad,
-                        xp: currentTotalXP,
-                        games_played: stats.gamesPlayedCount || 0,
                         high_scores: {
                             merch_jump: stats.merchJumpHighScore || 0,
                             neon_snake: stats.snakeHighScore || 0,
@@ -1128,16 +1126,22 @@ export const GamificationProvider = ({ children }) => {
 
 
     const updateStat = (key, value) => {
-        setStats(prev => {
-            // 1. Highscore Quest Check
-            if (typeof value === 'number' && (!prev[key] || value > prev[key])) {
-                checkHighscoreQuest(key, value);
-            }
+        if (key === 'gamesPlayed') {
+            // We must call incrementStat directly outside of setStats
+            // Because players play the same game multiple times
+            incrementStat('gamesPlayedCount', 1);
+        }
 
+        // 1. Highscore Quest Check
+        // Note: checking blindly if it is a number. The actual checker verifies if value >= target.
+        if (typeof value === 'number') {
+            checkHighscoreQuest(key, value);
+        }
+
+        setStats(prev => {
             // 2. Array Handling (gamesPlayed)
             if (Array.isArray(prev[key])) {
                 if (!prev[key].includes(value)) {
-                    if (key === 'gamesPlayed') incrementStat('gamesPlayedCount', 1);
                     return { ...prev, [key]: [...prev[key], value] };
                 }
                 return prev;
@@ -1145,6 +1149,12 @@ export const GamificationProvider = ({ children }) => {
 
             // 3. Standard Replacement
             const newValue = typeof value === 'function' ? value(prev[key] || 0) : value;
+            
+            // Re-verify highscore condition just in case we only want to update if greater
+            if (typeof value === 'number' && typeof prev[key] === 'number' && value <= prev[key]) {
+                 return prev;
+            }
+
             return { ...prev, [key]: newValue };
         });
     };
@@ -1229,7 +1239,7 @@ export const GamificationProvider = ({ children }) => {
 
     return (
         <GamificationContext.Provider value={{
-            stats, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
+            stats, incrementStat, updateStat, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
             claimQuest, skipQuest, checkHighscoreQuest, shopState, setShopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,
             unlockedStickers, buyCapsule, triggerConfetti,

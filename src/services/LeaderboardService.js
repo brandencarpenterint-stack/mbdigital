@@ -16,12 +16,13 @@ export const LeaderboardService = {
 
             const { data, error } = await supabase
                 .from('profiles')
-                .select('display_name, high_scores, coins, friend_code, xp, squad')
-                .order('coins', { ascending: false }) // Initial heuristic: rich players play more
-                .limit(50);
+                .select('id, display_name, avatar_url, high_scores, coins, friend_code, squad')
+                .order('last_seen', { ascending: false })
+                .limit(1000);
 
             const STAT_MAP = {
-                'crazy_fishing': 'crazyFishingHighScore',
+                'crazy_fishing': 'fishHighWeight', // Usually fish_caught or fishHighWeight
+                'crazy_fishing_count': 'fishCaught',
                 'neon_snake': 'snakeHighScore',
                 'flappy_mascot': 'flappyHighScore',
                 'galaxy_defender': 'galaxyHighScore',
@@ -42,15 +43,21 @@ export const LeaderboardService = {
                     else if (gameId === 'coins') score = p.coins || 0;
                     else if (gameId === 'arena_wins') score = (p.high_scores && p.high_scores.arena_wins) ? parseInt(p.high_scores.arena_wins) : 0;
                     else {
-                        const key = STAT_MAP[gameId] || gameId;
-                        score = (p.high_scores && p.high_scores[key]) ? parseInt(p.high_scores[key]) : 0;
+                        const camelKey = STAT_MAP[gameId];
+                        // check if high_scores exists, then try the direct gameId, then the camelKey mapped one.
+                        if (p.high_scores) {
+                            score = parseInt(p.high_scores[gameId]) || parseInt(p.high_scores[camelKey]) || 0;
+                        }
                     }
 
                     return {
+                        id: p.id,
                         player: p.display_name,
                         code: p.friend_code,
                         squad: p.squad,
-                        score: score
+                        score: score,
+                        avatar: p.avatar_url,
+                        stats: p.high_scores || {} // Pass full stats along just in case
                     };
                 });
 

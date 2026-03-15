@@ -52,6 +52,18 @@ export const STICKER_COLLECTIONS = [
             { id: 'ox_tank', name: 'O2 Tank', rarity: 'epic', row: 2, col: 1 },
             { id: 'mech_claw', name: 'Mech Claw', rarity: 'legendary', row: 2, col: 2 }
         ]
+    },
+    {
+        id: 'merch_drops',
+        name: 'Merch Drops',
+        description: 'Exclusive Merchboy apparel stickers.',
+        reward: { coins: 1500 },
+        items: [
+            { id: 'merch_typo', name: 'Merchboy Typo', rarity: 'common', image: '/assets/stickers/merch_typo.png' },
+            { id: 'money_face', name: 'Money Face', rarity: 'rare', image: '/assets/stickers/money_face.png' },
+            { id: 'cat_hoodie', name: 'Cat Hoodie', rarity: 'epic', image: '/assets/stickers/cat_hoodie.png' },
+            { id: 'blue_bunny', name: 'Blue Bunny', rarity: 'legendary', image: '/assets/stickers/blue_bunny.png' }
+        ]
     }
 ];
 

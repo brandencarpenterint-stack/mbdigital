@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../context/SettingsContext';
 
 const TRACKS = [
-    { title: "Lofi Study", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Elipsis.mp3", duration: "Stream" },
-    { title: "CPU Talk", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/BoxCat_Games/Nameless_the_Hackers_RPG_Soundtrack/BoxCat_Games_-_10_-_CPU_Talk.mp3", duration: "Stream" },
-    { title: "Night Float", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3", duration: "Stream" },
-    { title: "THE SIGNAL", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ketsa/Raising_Frequency/Ketsa_-_10_-_Raising_Frequency.mp3", duration: "Encrypted" },
+    { title: "Lofi Study", src: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", duration: "Stream" },
+    { title: "Neon Nights", src: "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3", duration: "Stream" },
+    { title: "Chill Vibes", src: "https://cdn.pixabay.com/audio/2022/11/22/audio_73138b0cd2.mp3", duration: "Stream" },
+    { title: "THE SIGNAL", src: "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ce8cd6.mp3", duration: "Encrypted" },
 ];
 
 const PirateRadio = () => {
@@ -82,7 +82,7 @@ const PirateRadio = () => {
             className="glass-panel"
             style={{
                 position: 'fixed',
-                bottom: '80px', // Above bottom nav
+                top: '100px', // Moved below header
                 right: '20px',
                 width: isExpanded ? '300px' : '50px',
                 height: '50px',

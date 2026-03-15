@@ -8,9 +8,7 @@ import { usePocketBro } from '../context/PocketBroContext';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
 import useRetroSound from '../hooks/useRetroSound';
-import TheButton from '../components/TheButton';
 
-// Helper for Staggered Animation
 const container = {
     hidden: { opacity: 0 },
     show: {
@@ -220,64 +218,25 @@ const Home = () => {
                     </motion.div>
                 </Link>
 
-                {/* OFFICIAL STORE (External) */}
-                <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #FFD700 0%, #FFAA00 100%)', // Gold
-                            color: 'black',
-                            padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                            border: '1px solid #ffcc00'
-                        }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🛍️</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>
-                                <div style={{ fontWeight: '900', letterSpacing: '-1px' }}>MERCHBOY.SHOP</div>
-                                <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: 'bold' }}>OFFICIAL STORE</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </a>
 
-                <Link to="/beatlab" style={{ textDecoration: 'none', display: 'block' }}>
+                {/* ARCADE ZONE */}
+                <Link to="/arcade" style={{ textDecoration: 'none', display: 'block' }}>
                     <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
                         <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #110022, #330066)',
-                            border: '1px solid #5500aa',
-                            color: '#e0c0ff',
+                            background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+                            border: '1px solid #444',
+                            color: '#00ffcc',
                             padding: '20px',
                             display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
                         }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🎹</div>
+                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🕹️</div>
                             <div style={{ transform: 'translateZ(10px)' }}>
-                                BEAT LAB
-                                <div style={{ fontSize: '0.7rem', color: '#aa88cc' }}>SONIC STUDIO</div>
+                                ARCADE ZONE
+                                <div style={{ fontSize: '0.7rem', color: '#888' }}>GAMES & UTILITIES</div>
                             </div>
                         </TiltCard>
                     </motion.div>
                 </Link>
-
-                <Link to="/subslayer" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #220000, #440000)',
-                            border: '1px solid #ff3333',
-                            color: '#ffaaaa',
-                            padding: '20px',
-                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-                        }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>⚔️</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>
-                                SUB SLAYER
-                                <div style={{ fontSize: '0.7rem', color: '#cc5555' }}>EXPENSE TRACKER</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
-
-                {/* THE BUTTON (Viral Stunt) */}
-                <motion.div variants={item} style={{ height: '100%' }}>
-                    <TheButton />
-                </motion.div>
 
             </motion.div>
         </div>

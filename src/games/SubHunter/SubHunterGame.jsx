@@ -7,8 +7,7 @@ import { useSettings } from '../../context/SettingsContext';
 const SubHunterGame = () => {
     const navigate = useNavigate();
     const canvasRef = useRef(null);
-    const { updateStats, addCoins } = useGamification() || {};
-    const { incrementStat } = useInventory() || { incrementStat: () => { } };
+    const { updateStats, addCoins, incrementStat } = useGamification() || {};
     const { soundEnabled } = useSettings();
 
     // Game State
@@ -186,6 +185,11 @@ const SubHunterGame = () => {
             if (updateStats) {
                 updateStats({ subHunterHighScore: stateRef.current.score });
             }
+        }
+
+        if (incrementStat) {
+            incrementStat('gamesPlayedCount', 1);
+            incrementStat('gamesPlayed', 'sub_hunter');
         }
 
         // Coins

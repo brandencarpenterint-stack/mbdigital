@@ -8,24 +8,34 @@ const LeaderboardTable = ({ gameId }) => {
     const { setViewedProfile } = useGamification();
 
     useEffect(() => {
+        let isMounted = true;
         const fetchScores = async () => {
-            setLoading(true);
+            if (scores.length === 0) setLoading(true); // Only show loading spinner on initial load
             const data = await LeaderboardService.getTopScores(gameId);
-            setScores(data);
-            setLoading(false);
+            if (isMounted) {
+                setScores(data);
+                setLoading(false);
+            }
         };
+
         fetchScores();
-    }, [gameId]);
+        const interval = setInterval(fetchScores, 30000); // 30s live refresh
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, [gameId, scores.length]);
 
     const handleRowClick = (entry) => {
         // Construct a partial profile from leaderboard data
         const partialProfile = {
+            id: entry.id,
             name: entry.player,
             // Generate a consistent avatar if we don't have one, or use a default
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`,
-            code: 'UNKNOWN',
+            avatar: entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`,
+            code: entry.code || 'UNKNOWN',
             squad: entry.squad || 'UNKNOWN',
-            stats: {
+            stats: entry.stats || {
                 gameHighScore: entry.score // Just show what we know
             },
             isMock: true // Flag to tell ProfileModal this is a partial view
@@ -63,7 +73,7 @@ const LeaderboardTable = ({ gameId }) => {
                                         {/* Avatar Fallback */}
                                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#333', overflow: 'hidden' }}>
                                             <img
-                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`}
+                                                src={entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.player}`}
                                                 alt="av"
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
