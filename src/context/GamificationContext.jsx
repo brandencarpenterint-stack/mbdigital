@@ -90,6 +90,25 @@ export const GamificationProvider = ({ children }) => {
 
 
     // --- INVENTORY MANAGEMENT ---
+        const removeInventoryItem = (itemId, instanceId) => {
+        setShopState(prev => {
+            const currentInventory = prev.inventory || {};
+            const items = currentInventory[itemId] || [];
+            const newItems = items.filter(i => i.id !== instanceId);
+            
+            const newInventory = { ...currentInventory };
+            if (newItems.length === 0) {
+                delete newInventory[itemId];
+            } else {
+                newInventory[itemId] = newItems;
+            }
+            
+            return {
+                ...prev,
+                inventory: newInventory
+            };
+        });
+    };
     const addInventoryItem = (itemId, type, metadata = {}) => {
         setShopState(prev => {
             const currentInventory = prev.inventory || {};
@@ -1253,7 +1272,7 @@ export const GamificationProvider = ({ children }) => {
     };
 
     return (
-        <GamificationContext.Provider value={{ addInventoryItem, 
+        <GamificationContext.Provider value={{ addInventoryItem, removeInventoryItem, 
             stats, incrementStat, updateStat, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
             claimQuest, skipQuest, checkHighscoreQuest, shopState, setShopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,
