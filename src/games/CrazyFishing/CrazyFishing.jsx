@@ -26,112 +26,99 @@ const BIOMES = [
 
 const FISH_DATA = [
     // --- SURFACE (0-300m) ---
-    { id: 'boot', name: 'Old Boot', score: 1, emoji: '👢', minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1, weight: [0.5, 2.0] },
-    { id: 'can', name: 'Soda Can', score: 1, emoji: '🥤', minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1, weight: [0.1, 0.5] },
-    { id: 'goldy', name: 'Goldy', score: 5, emoji: '🐟', minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1.5, weight: [0.1, 1.5] },
-    { id: 'shrimp', name: 'Lil Shrimp', score: 3, emoji: '🦐', minDepth: 50, maxDepth: 300, pattern: 'DART', speed: 2.5, weight: [0.05, 0.2] },
-    { id: 'ducky', name: 'Lost Duck', score: 10, emoji: '🐤', minDepth: 0, maxDepth: 100, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 1.0] },
-    { id: 'sushi', name: 'Runaway Sushi', score: 15, emoji: '🍣', minDepth: 100, maxDepth: 350, pattern: 'DART', speed: 3.0, weight: [0.1, 0.3] },
-    // NEW Phase 27
-    { id: 'bottle', name: 'Message', score: 5, emoji: '🍾', minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
-    { id: 'wood', name: 'Driftwood', score: 2, emoji: '🪵', minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 0.8, weight: [2.0, 10.0] },
-
+    { id: 'boot', name: 'Old Boot', score: 1, sheet: 'surface', row: 0, col: 0, minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1, weight: [0.5, 2.0] },
+    { id: 'can', name: 'Soda Can', score: 1, sheet: 'surface', row: 0, col: 1, minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1, weight: [0.1, 0.5] },
+    { id: 'bottle', name: 'Message', score: 5, sheet: 'surface', row: 0, col: 2, minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
+    { id: 'wood', name: 'Driftwood', score: 2, sheet: 'surface', row: 0, col: 3, minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 0.8, weight: [2.0, 10.0] },
+    { id: 'goldy', name: 'Goldy', score: 5, sheet: 'surface', row: 1, col: 0, minDepth: 0, maxDepth: 300, pattern: 'FLOAT', speed: 1.5, weight: [0.1, 1.5] },
+    { id: 'shrimp', name: 'Lil Shrimp', score: 3, sheet: 'surface', row: 1, col: 1, minDepth: 50, maxDepth: 300, pattern: 'DART', speed: 2.5, weight: [0.05, 0.2] },
+    { id: 'ducky', name: 'Lost Duck', score: 10, sheet: 'surface', row: 1, col: 2, minDepth: 0, maxDepth: 100, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 1.0] },
+    { id: 'sushi', name: 'Runaway Sushi', score: 15, sheet: 'surface', row: 1, col: 3, minDepth: 100, maxDepth: 350, pattern: 'DART', speed: 3.0, weight: [0.1, 0.3] },
     // --- SEAGRASS (300-600m) ---
-    { id: 'crab', name: 'Crabby', score: 8, emoji: '🦀', minDepth: 300, maxDepth: 600, pattern: 'DART', speed: 2.0, weight: [0.5, 3.0] },
-    { id: 'turtle', name: 'Mr. Turtle', score: 25, emoji: '🐢', minDepth: 300, maxDepth: 600, pattern: 'FLOAT', speed: 0.8, weight: [10.0, 50.0] },
-    { id: 'seahorse', name: 'Seahorse', score: 12, emoji: '🐉', minDepth: 350, maxDepth: 600, pattern: 'SINE', speed: 1.5, weight: [0.1, 0.5] },
-    { id: 'snake', name: 'Sea Snake', score: 18, emoji: '🐍', minDepth: 400, maxDepth: 600, pattern: 'SINE', speed: 3.0, weight: [1.0, 5.0] },
-    { id: 'eel', name: 'Zappy Eel', score: 20, emoji: '⚡', minDepth: 550, maxDepth: 700, pattern: 'GLITCH', speed: 4.0, weight: [2.0, 8.0] },
-    // NEW Phase 27
-    { id: 'snail', name: 'Gary', score: 6, emoji: '🐌', minDepth: 300, maxDepth: 600, pattern: 'FLOAT', speed: 0.2, weight: [0.1, 0.5] },
-    { id: 'cuke', name: 'Sea Cucumber', score: 10, emoji: '🥒', minDepth: 500, maxDepth: 600, pattern: 'FLOAT', speed: 0.1, weight: [0.5, 1.0] },
-
+    { id: 'crab', name: 'Crabby', score: 8, sheet: 'surface', row: 2, col: 0, minDepth: 300, maxDepth: 600, pattern: 'DART', speed: 2.0, weight: [0.5, 3.0] },
+    { id: 'turtle', name: 'Mr. Turtle', score: 25, sheet: 'surface', row: 2, col: 1, minDepth: 300, maxDepth: 600, pattern: 'FLOAT', speed: 0.8, weight: [10.0, 50.0] },
+    { id: 'seahorse', name: 'Seahorse', score: 12, sheet: 'surface', row: 2, col: 2, minDepth: 350, maxDepth: 600, pattern: 'SINE', speed: 1.5, weight: [0.1, 0.5] },
+    { id: 'snake', name: 'Sea Snake', score: 18, sheet: 'surface', row: 2, col: 3, minDepth: 400, maxDepth: 600, pattern: 'SINE', speed: 3.0, weight: [1.0, 5.0] },
+    { id: 'eel', name: 'Zappy Eel', score: 20, sheet: 'surface', row: 3, col: 0, minDepth: 550, maxDepth: 700, pattern: 'GLITCH', speed: 4.0, weight: [2.0, 8.0] },
+    { id: 'snail', name: 'Gary', score: 6, sheet: 'surface', row: 3, col: 1, minDepth: 300, maxDepth: 600, pattern: 'FLOAT', speed: 0.2, weight: [0.1, 0.5] },
+    { id: 'cuke', name: 'Sea Cucumber', score: 10, sheet: 'surface', row: 3, col: 2, minDepth: 500, maxDepth: 600, pattern: 'FLOAT', speed: 0.1, weight: [0.5, 1.0] },
+    
     // --- CORAL (600-900m) ---
-    { id: 'guppy', name: 'Neon Guppy', score: 10, emoji: '🐠', minDepth: 600, maxDepth: 900, pattern: 'DART', speed: 2.5, weight: [0.1, 0.5] },
-    { id: 'clown', name: 'Nemo', score: 15, emoji: '🟠', minDepth: 600, maxDepth: 900, pattern: 'DART', speed: 2.0, weight: [0.2, 0.8] },
-    { id: 'squid', name: 'Squiddy', score: 20, emoji: '🦑', minDepth: 650, maxDepth: 900, pattern: 'DART', speed: 3.0, weight: [2.0, 15.0] },
-    { id: 'lobster', name: 'Rock Lobster', score: 25, emoji: '🦞', minDepth: 700, maxDepth: 900, pattern: 'FLOAT', speed: 2.0, weight: [1.0, 5.0] },
-    { id: 'puffer', name: 'Puff Daddy', score: 30, emoji: '🐡', minDepth: 600, maxDepth: 900, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 4.0] },
-    { id: 'star', name: 'Pat-Rock', score: 10, emoji: '⭐', minDepth: 600, maxDepth: 900, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 2.0] },
-    // NEW Phase 27
-    { id: 'box', name: 'Boxfish', score: 35, emoji: '📦', minDepth: 700, maxDepth: 900, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
-    { id: 'conch', name: 'Magic Conch', score: 40, emoji: '🐚', minDepth: 800, maxDepth: 900, pattern: 'FLOAT', speed: 0, weight: [2.0, 5.0] },
-
+    { id: 'guppy', name: 'Neon Guppy', score: 10, sheet: 'coral', row: 0, col: 0, minDepth: 600, maxDepth: 900, pattern: 'DART', speed: 2.5, weight: [0.1, 0.5] },
+    { id: 'clown', name: 'Nemo', score: 15, sheet: 'coral', row: 0, col: 1, minDepth: 600, maxDepth: 900, pattern: 'DART', speed: 2.0, weight: [0.2, 0.8] },
+    { id: 'squid', name: 'Squiddy', score: 20, sheet: 'coral', row: 0, col: 2, minDepth: 650, maxDepth: 900, pattern: 'DART', speed: 3.0, weight: [2.0, 15.0] },
+    { id: 'lobster', name: 'Rock Lobster', score: 25, sheet: 'coral', row: 0, col: 3, minDepth: 700, maxDepth: 900, pattern: 'FLOAT', speed: 2.0, weight: [1.0, 5.0] },
+    { id: 'puffer', name: 'Puff Daddy', score: 30, sheet: 'coral', row: 1, col: 0, minDepth: 600, maxDepth: 900, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 4.0] },
+    { id: 'star', name: 'Pat-Rock', score: 10, sheet: 'coral', row: 1, col: 1, minDepth: 600, maxDepth: 900, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 2.0] },
+    { id: 'box', name: 'Boxfish', score: 35, sheet: 'coral', row: 1, col: 2, minDepth: 700, maxDepth: 900, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
+    { id: 'conch', name: 'Magic Conch', score: 40, sheet: 'coral', row: 1, col: 3, minDepth: 800, maxDepth: 900, pattern: 'FLOAT', speed: 0, weight: [2.0, 5.0] },
+    
     // --- TWILIGHT (900-1200m) ---
-    { id: 'jelly', name: 'Jelly', score: 30, emoji: '🎐', minDepth: 900, maxDepth: 1200, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 5.0] },
-    { id: 'stingray', name: 'Flappy Ray', score: 40, emoji: '🛸', minDepth: 950, maxDepth: 1200, pattern: 'SINE', speed: 1.5, weight: [10.0, 40.0] },
-    { id: 'angler', name: 'Lantern Fish', score: 45, emoji: '🏮', minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 3.0, weight: [5.0, 15.0] },
-    { id: 'sword', name: 'Swordy', score: 50, emoji: '🗡️', minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 5.0, weight: [50.0, 200.0] },
-    { id: 'micro', name: 'Microbe', score: 5, emoji: '🦠', minDepth: 1100, maxDepth: 1200, pattern: 'FLOAT', speed: 0.5, weight: [0.01, 0.05] },
-    // NEW Phase 27
-    { id: 'flash', name: 'Flashlight', score: 55, emoji: '🔦', minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 4.0, weight: [0.5, 1.0] },
-    { id: 'vamp', name: 'Vampire Squid', score: 60, emoji: '🦑', minDepth: 1100, maxDepth: 1200, pattern: 'GLITCH', speed: 3.0, weight: [5.0, 10.0] },
-
+    { id: 'jelly', name: 'Jelly', score: 30, sheet: 'coral', row: 2, col: 0, minDepth: 900, maxDepth: 1200, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 5.0] },
+    { id: 'stingray', name: 'Flappy Ray', score: 40, sheet: 'coral', row: 2, col: 1, minDepth: 950, maxDepth: 1200, pattern: 'SINE', speed: 1.5, weight: [10.0, 40.0] },
+    { id: 'angler', name: 'Lantern Fish', score: 45, sheet: 'coral', row: 2, col: 2, minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 3.0, weight: [5.0, 15.0] },
+    { id: 'sword', name: 'Swordy', score: 50, sheet: 'coral', row: 2, col: 3, minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 5.0, weight: [50.0, 200.0] },
+    { id: 'micro', name: 'Microbe', score: 5, sheet: 'coral', row: 3, col: 0, minDepth: 1100, maxDepth: 1200, pattern: 'FLOAT', speed: 0.5, weight: [0.01, 0.05] },
+    { id: 'flash', name: 'Flashlight', score: 55, sheet: 'coral', row: 3, col: 1, minDepth: 1000, maxDepth: 1200, pattern: 'DART', speed: 4.0, weight: [0.5, 1.0] },
+    { id: 'vamp', name: 'Vampire Squid', score: 60, sheet: 'coral', row: 3, col: 2, minDepth: 1100, maxDepth: 1200, pattern: 'GLITCH', speed: 3.0, weight: [5.0, 10.0] },
+    { id: 'iso', name: 'Giant Isopod', score: 90, sheet: 'coral', row: 3, col: 3, minDepth: 1700, maxDepth: 1800, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
+    
     // --- MIDNIGHT (1200-1500m) ---
-    { id: 'shark', name: 'Sharky', score: 50, emoji: '🦈', minDepth: 1200, maxDepth: 1500, pattern: 'SINE', speed: 2.0, weight: [50.0, 300.0] },
-    { id: 'whale', name: 'Whaley', score: 80, emoji: '🐳', minDepth: 1200, maxDepth: 1500, pattern: 'FLOAT', speed: 1.0, weight: [1000.0, 5000.0] },
-    { id: 'moon', name: 'Moon Rock', score: 100, emoji: '🌑', minDepth: 1300, maxDepth: 1500, pattern: 'FLOAT', speed: 0.2, weight: [100.0, 200.0] },
-    // NEW Phase 27
-    { id: 'wolf', name: 'Wolf Fish', score: 70, emoji: '🐟', minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
-    { id: 'sleep', name: 'Sleeper Shark', score: 75, emoji: '💤', minDepth: 1400, maxDepth: 1500, pattern: 'FLOAT', speed: 0.5, weight: [200.0, 400.0] },
-
+    { id: 'shark', name: 'Sharky', score: 50, sheet: 'deep', row: 0, col: 0, minDepth: 1200, maxDepth: 1500, pattern: 'SINE', speed: 2.0, weight: [50.0, 300.0] },
+    { id: 'whale', name: 'Whaley', score: 80, sheet: 'deep', row: 0, col: 1, minDepth: 1200, maxDepth: 1500, pattern: 'FLOAT', speed: 1.0, weight: [1000.0, 5000.0] },
+    { id: 'moon', name: 'Moon Rock', score: 100, sheet: 'deep', row: 0, col: 2, minDepth: 1300, maxDepth: 1500, pattern: 'FLOAT', speed: 0.2, weight: [100.0, 200.0] },
+    { id: 'wolf', name: 'Wolf Fish', score: 70, sheet: 'deep', row: 0, col: 3, minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
+    { id: 'sleep', name: 'Sleeper Shark', score: 75, sheet: 'deep', row: 1, col: 0, minDepth: 1400, maxDepth: 1500, pattern: 'FLOAT', speed: 0.5, weight: [200.0, 400.0] },
+    
     // --- TRENCH (1500-1800m) ---
-    { id: 'blob', name: 'Blobfish', score: 70, emoji: '🗿', minDepth: 1500, maxDepth: 1800, pattern: 'FLOAT', speed: 0.5, weight: [5.0, 20.0] },
-    { id: 'worm', name: 'Tube Worm', score: 60, emoji: '🐛', minDepth: 1550, maxDepth: 1800, pattern: 'FLOAT', speed: 0, weight: [1.0, 2.0] },
-    // NEW Phase 27
-    { id: 'viper', name: 'Viperfish', score: 85, emoji: '🦷', minDepth: 1600, maxDepth: 1800, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
-    { id: 'iso', name: 'Giant Isopod', score: 90, emoji: '🦗', minDepth: 1700, maxDepth: 1800, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 2.0] },
-
+    { id: 'blob', name: 'Blobfish', score: 70, sheet: 'deep', row: 1, col: 1, minDepth: 1500, maxDepth: 1800, pattern: 'FLOAT', speed: 0.5, weight: [5.0, 20.0] },
+    { id: 'worm', name: 'Tube Worm', score: 60, sheet: 'deep', row: 1, col: 2, minDepth: 1550, maxDepth: 1800, pattern: 'FLOAT', speed: 0, weight: [1.0, 2.0] },
+    { id: 'viper', name: 'Viperfish', score: 85, sheet: 'deep', row: 1, col: 3, minDepth: 1600, maxDepth: 1800, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    
     // --- NEON CITY (1800-2100m) ---
-    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '👾', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
-    { id: 'robot', name: 'Bot-01', score: 120, emoji: '🤖', minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
-    // NEW Phase 27
-    { id: 'floppy', name: 'Diskette', score: 50, emoji: '💾', minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
-    { id: 'batt', name: 'Battery', score: 60, emoji: '🔋', minDepth: 2000, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.2, 0.5] },
-
+    { id: 'cyber', name: 'Cyber Fish', score: 110, sheet: 'deep', row: 2, col: 0, minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    { id: 'robot', name: 'Bot-01', score: 120, sheet: 'deep', row: 2, col: 1, minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
+    { id: 'floppy', name: 'Diskette', score: 50, sheet: 'deep', row: 2, col: 2, minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
+    { id: 'batt', name: 'Battery', score: 60, sheet: 'deep', row: 2, col: 3, minDepth: 2000, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.2, 0.5] },
+    
     // --- BONEYARD (2100-2400m) ---
-    { id: 'skull', name: 'Bone Fish', score: 60, emoji: '☠️', minDepth: 2100, maxDepth: 2400, pattern: 'DART', speed: 3.0, weight: [5.0, 10.0] },
-    { id: 'fossil', name: 'Trilobite', score: 80, emoji: '🐌', minDepth: 2150, maxDepth: 2400, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 3.0] },
-    { id: 'dino', name: 'Rex Skull', score: 200, emoji: '🦖', minDepth: 2200, maxDepth: 2400, pattern: 'SINE', speed: 1.0, weight: [500.0, 1000.0] },
-    // NEW Phase 27
-    { id: 'key', name: 'Skeleton Key', score: 100, emoji: '🗝️', minDepth: 2100, maxDepth: 2400, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
-    { id: 'pirate_skull', name: 'Jolly Roger', score: 150, emoji: '🏴‍☠️', minDepth: 2200, maxDepth: 2400, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
-
+    { id: 'skull', name: 'Bone Fish', score: 60, sheet: 'deep', row: 3, col: 0, minDepth: 2100, maxDepth: 2400, pattern: 'DART', speed: 3.0, weight: [5.0, 10.0] },
+    { id: 'fossil', name: 'Trilobite', score: 80, sheet: 'deep', row: 3, col: 1, minDepth: 2150, maxDepth: 2400, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 3.0] },
+    { id: 'key', name: 'Skeleton Key', score: 100, sheet: 'deep', row: 3, col: 1, minDepth: 2100, maxDepth: 2400, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
+    { id: 'pirate_skull', name: 'Jolly Roger', score: 150, sheet: 'deep', row: 3, col: 0, minDepth: 2200, maxDepth: 2400, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
+    { id: 'dino', name: 'Rex Skull', score: 200, sheet: 'void', row: 0, col: 0, minDepth: 2200, maxDepth: 2400, pattern: 'SINE', speed: 1.0, weight: [500.0, 1000.0] },
+    
     // --- MAGMA CORE (2400-2700m) ---
-    { id: 'ember', name: 'Fire Fish', score: 130, emoji: '🐠', minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
-    { id: 'dragon', name: 'Sea Dragon', score: 150, emoji: '🐉', minDepth: 2450, maxDepth: 2700, pattern: 'SINE', speed: 2.0, weight: [50.0, 200.0] },
-    // NEW Phase 27
-    { id: 'rock', name: 'Obsidian', score: 40, emoji: '🪨', minDepth: 2400, maxDepth: 2700, pattern: 'FLOAT', speed: 0, weight: [50.0, 100.0] },
-    { id: 'cooked', name: 'Dinner', score: 200, emoji: '🍗', minDepth: 2500, maxDepth: 2700, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 1.0] },
-
+    { id: 'ember', name: 'Fire Fish', score: 130, sheet: 'void', row: 0, col: 1, minDepth: 2400, maxDepth: 2700, pattern: 'DART', speed: 6.0, weight: [2.0, 8.0] },
+    { id: 'dragon', name: 'Sea Dragon', score: 150, sheet: 'void', row: 0, col: 2, minDepth: 2450, maxDepth: 2700, pattern: 'SINE', speed: 2.0, weight: [50.0, 200.0] },
+    { id: 'rock', name: 'Obsidian', score: 40, sheet: 'void', row: 0, col: 3, minDepth: 2400, maxDepth: 2700, pattern: 'FLOAT', speed: 0, weight: [50.0, 100.0] },
+    { id: 'cooked', name: 'Dinner', score: 200, sheet: 'void', row: 0, col: 1, minDepth: 2500, maxDepth: 2700, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 1.0] },
+    
     // --- FROZEN DEEP (2700-3000m) ---
-    { id: 'ice', name: 'Ice Cube', score: 90, emoji: '🧊', minDepth: 2700, maxDepth: 3000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 20.0] },
-    { id: 'penguin', name: 'Lost Pingu', score: 200, emoji: '🐧', minDepth: 2750, maxDepth: 3000, pattern: 'DART', speed: 4.0, weight: [5.0, 15.0] },
-    // NEW Phase 27
-    { id: 'yeti', name: 'Yeti Crab', score: 210, emoji: '🦀', minDepth: 2800, maxDepth: 3000, pattern: 'FLOAT', speed: 1.0, weight: [2.0, 5.0] },
-    { id: 'pizza', name: 'Frozen Pizza', score: 150, emoji: '🍕', minDepth: 2900, maxDepth: 3000, pattern: 'FLOAT', speed: 0, weight: [0.5, 0.5] },
-
+    { id: 'ice', name: 'Ice Cube', score: 90, sheet: 'void', row: 1, col: 0, minDepth: 2700, maxDepth: 3000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 20.0] },
+    { id: 'penguin', name: 'Lost Pingu', score: 200, sheet: 'void', row: 1, col: 1, minDepth: 2750, maxDepth: 3000, pattern: 'DART', speed: 4.0, weight: [5.0, 15.0] },
+    { id: 'yeti', name: 'Yeti Crab', score: 210, sheet: 'void', row: 1, col: 2, minDepth: 2800, maxDepth: 3000, pattern: 'FLOAT', speed: 1.0, weight: [2.0, 5.0] },
+    { id: 'pizza', name: 'Frozen Pizza', score: 150, sheet: 'void', row: 1, col: 0, minDepth: 2900, maxDepth: 3000, pattern: 'FLOAT', speed: 0, weight: [0.5, 0.5] },
+    
     // --- THE ETHER (3000-3500m) ---
-    { id: 'spirit', name: 'Wisp', score: 180, emoji: '👻', minDepth: 3000, maxDepth: 3500, pattern: 'SINE', speed: 2.0, weight: [0.0, 0.0] },
-    { id: 'angel', name: 'Seraphim', score: 333, emoji: '👼', minDepth: 3100, maxDepth: 3500, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 7.0] },
-    // NEW Phase 27
-    { id: 'cloud', name: 'Nimbus', score: 250, emoji: '☁️', minDepth: 3000, maxDepth: 3500, pattern: 'FLOAT', speed: 0.5, weight: [0.0, 0.0] },
-    { id: 'harp', name: 'Angel Harp', score: 300, emoji: '🎵', minDepth: 3200, maxDepth: 3500, pattern: 'SINE', speed: 1.5, weight: [5.0, 10.0] },
-
+    { id: 'spirit', name: 'Wisp', score: 180, sheet: 'void', row: 1, col: 3, minDepth: 3000, maxDepth: 3500, pattern: 'SINE', speed: 2.0, weight: [0.0, 0.0] },
+    { id: 'angel', name: 'Seraphim', score: 333, sheet: 'void', row: 2, col: 0, minDepth: 3100, maxDepth: 3500, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 7.0] },
+    { id: 'cloud', name: 'Nimbus', score: 250, emoji: '☁️', minDepth: 3000, maxDepth: 3500, pattern: 'FLOAT', speed: 0.5, weight: [0.0, 0.0] }, 
+    { id: 'harp', name: 'Angel Harp', score: 300, sheet: 'void', row: 2, col: 0, minDepth: 3200, maxDepth: 3500, pattern: 'SINE', speed: 1.5, weight: [5.0, 10.0] },
+    
     // --- VOID (3500-4000m) ---
-    { id: 'glitch', name: 'MISSINGNO', score: 150, emoji: '👾', minDepth: 3500, maxDepth: 4000, pattern: 'GLITCH', speed: 6.0, weight: [0.0, 999.9] },
-    { id: 'eye', name: 'Watcher', score: 120, emoji: '👁️', minDepth: 3500, maxDepth: 4000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 50.0] },
-    { id: 'alien', name: 'Invader', score: 140, emoji: '👽', minDepth: 3600, maxDepth: 4000, pattern: 'GLITCH', speed: 5.0, weight: [40.0, 80.0] },
-    { id: 'dna', name: 'Origin', score: 200, emoji: '🧬', minDepth: 3700, maxDepth: 4000, pattern: 'SINE', speed: 3.0, weight: [0.001, 0.002] },
-    { id: 'blackhole', name: 'Singularity', score: 500, emoji: '⚫', minDepth: 3800, maxDepth: 4000, pattern: 'FLOAT', speed: 0.1, weight: [9999.0, 9999.0] },
-    // NEW Phase 27
-    { id: 'null', name: 'NULL', score: 0, emoji: '🚫', minDepth: 3500, maxDepth: 4000, pattern: 'GLITCH', speed: 10.0, weight: [0.0, 0.0] },
-    { id: 'undef', name: 'undefined', score: 404, emoji: '⁉️', minDepth: 3600, maxDepth: 4000, pattern: 'GLITCH', speed: 8.0, weight: [404.0, 404.0] },
-
+    { id: 'glitch', name: 'MISSINGNO', score: 150, sheet: 'void', row: 2, col: 1, minDepth: 3500, maxDepth: 4000, pattern: 'GLITCH', speed: 6.0, weight: [0.0, 999.9] },
+    { id: 'eye', name: 'Watcher', score: 120, sheet: 'void', row: 2, col: 2, minDepth: 3500, maxDepth: 4000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 50.0] },
+    { id: 'alien', name: 'Invader', score: 140, sheet: 'void', row: 2, col: 3, minDepth: 3600, maxDepth: 4000, pattern: 'GLITCH', speed: 5.0, weight: [40.0, 80.0] },
+    { id: 'dna', name: 'Origin', score: 200, sheet: 'void', row: 3, col: 0, minDepth: 3700, maxDepth: 4000, pattern: 'SINE', speed: 3.0, weight: [0.001, 0.002] },
+    { id: 'blackhole', name: 'Singularity', score: 500, sheet: 'void', row: 3, col: 1, minDepth: 3800, maxDepth: 4000, pattern: 'FLOAT', speed: 0.1, weight: [9999.0, 9999.0] },
+    { id: 'null', name: 'NULL', score: 0, sheet: 'void', row: 3, col: 2, minDepth: 3500, maxDepth: 4000, pattern: 'GLITCH', speed: 10.0, weight: [0.0, 0.0] },
+    { id: 'undef', name: 'undefined', score: 404, sheet: 'void', row: 3, col: 3, minDepth: 3600, maxDepth: 4000, pattern: 'GLITCH', speed: 8.0, weight: [404.0, 404.0] },
+    
     // --- LEGENDARIES (Universal/Abyss) ---
-    { id: 'goldboot', name: 'Golden Boot', score: 500, emoji: '🥾', minDepth: 0, maxDepth: 4000, pattern: 'DART', speed: 4.0, weight: [10.0, 10.0], legendary: true },
-    { id: 'cybershark', name: 'Cyber Shark', score: 1000, emoji: '🦈', minDepth: 1800, maxDepth: 2100, pattern: 'GLITCH', speed: 5.0, weight: [500.0, 1000.0], legendary: true },
-    { id: 'kraken', name: 'Lil Kraken', score: 800, emoji: '🐙', minDepth: 3500, maxDepth: 4000, pattern: 'SINE', speed: 3.0, weight: [200.0, 500.0], legendary: true },
+    { id: 'goldboot', name: 'Golden Boot', score: 500, sheet: 'surface', row: 0, col: 0, minDepth: 0, maxDepth: 4000, pattern: 'DART', speed: 4.0, weight: [10.0, 10.0], legendary: true },
+    { id: 'cybershark', name: 'Cyber Shark', score: 1000, sheet: 'deep', row: 2, col: 0, minDepth: 1800, maxDepth: 2100, pattern: 'GLITCH', speed: 5.0, weight: [500.0, 1000.0], legendary: true },
+    { id: 'kraken', name: 'Lil Kraken', score: 800, sheet: 'void', row: 2, col: 2, minDepth: 3500, maxDepth: 4000, pattern: 'SINE', speed: 3.0, weight: [200.0, 500.0], legendary: true },
 ];
 
 const SHOP_ITEMS = [
@@ -200,6 +187,7 @@ const CrazyFishing = () => {
         incrementStat,
         updateStat,
         addCoins,
+        addInventoryItem,
         userProfile
     } = useGamification() || {};
 
@@ -231,6 +219,19 @@ const CrazyFishing = () => {
     const canvasRef = useRef(null);
     const requestRef = useRef();
     const logoImgRef = useRef(null);
+    // Sprite Sheets for Fish
+    const sheetRefs = useRef({
+        surface: null, coral: null, deep: null, void: null
+    });
+
+    useEffect(() => {
+        const load = (src) => { const img = new Image(); img.src = src; return img; };
+        sheetRefs.current.surface = load('/assets/fishing/fishing_surface.png');
+        sheetRefs.current.coral = load('/assets/fishing/fishing_coral.png');
+        sheetRefs.current.deep = load('/assets/fishing/fishing_deep.png');
+        sheetRefs.current.void = load('/assets/fishing/fishing_void.png');
+    }, []);
+
 
     // State Refs (For Game Loop)
     const skinRef = useRef('boat_default');
@@ -783,6 +784,19 @@ const CrazyFishing = () => {
             const dy = (Math.random() - 0.5) * state.shake;
             ctx.translate(dx, dy);
         }
+        
+        const drawFish = (ctx, fish, x, y, size = 50) => {
+            if (fish.sheet && sheetRefs.current[fish.sheet]) {
+                const sx = fish.col * (sheetRefs.current[fish.sheet].width / 4);
+                const sy = fish.row * (sheetRefs.current[fish.sheet].height / 4);
+                const sSizeX = sheetRefs.current[fish.sheet].width / 4;
+                const sSizeY = sheetRefs.current[fish.sheet].height / 4;
+                ctx.drawImage(sheetRefs.current[fish.sheet], sx, sy, sSizeX, sSizeY, x - size/2, y - size/2, size, size);
+            } else {
+                ctx.fillText(fish.emoji || '❓', x, y);
+            }
+        };
+
         // 1. DYNAMIC BACKGROUND (BIOME)
         const currentBiome = BIOMES.find(b => state.depth <= b.maxDepth) || BIOMES[0];
         // Gradient
@@ -840,7 +854,7 @@ const CrazyFishing = () => {
                 // Shiny Glow
                 if (f.type.shiny) { ctx.shadowColor = 'gold'; ctx.shadowBlur = 10; }
 
-                ctx.fillText(f.type.emoji, f.x, f.y);
+                drawFish(ctx, f.type, f.x, f.y, 40);
                 ctx.shadowBlur = 0;
 
                 // Cosmetic Hat (If unlocked)

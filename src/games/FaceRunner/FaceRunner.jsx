@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
+import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';

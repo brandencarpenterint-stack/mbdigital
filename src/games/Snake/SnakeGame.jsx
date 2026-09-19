@@ -5,7 +5,7 @@ import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 import { triggerConfetti, triggerWinConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
-import GameOverCard from '../../components/GameOverCard';
+import UniversalGameOver from '../../components/UniversalGameOver';
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 150;
@@ -360,10 +360,12 @@ const SnakeGame = () => {
 
                 {/* Game Over */}
                 {gameOver && (
-                    <GameOverCard
+                    <UniversalGameOver
+                        gameName="NEON SNAKE"
                         score={score}
                         bestScore={highScore}
-                        gameId="snake"
+                        coinsEarned={Math.floor(score / 10)}
+                        xpEarned={100}
                         onReplay={restartGame}
                         onHome={() => window.location.href = '/arcade'}
                     >
@@ -388,7 +390,7 @@ const SnakeGame = () => {
                                 ❤️ REVIVE ({shopState.inventory['snake_life']})
                             </button>
                         )}
-                    </GameOverCard>
+                    </UniversalGameOver>
                 )}
             </div>
 

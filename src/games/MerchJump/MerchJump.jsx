@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useGamification } from '../../context/GamificationContext';
 import SquishyButton from '../../components/SquishyButton';
-import GameOverCard from '../../components/GameOverCard';
+import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
 
@@ -601,7 +601,15 @@ const MerchJump = () => {
                         <>
                             {gameState === 'GAMEOVER' ? (
                                 <div className="game-overlay" style={{ position: 'absolute', inset: 0, borderRadius: '10px', overflow: 'hidden' }}>
-                                    <GameOverCard score={Math.floor(scoreRef.current)} bestScore={highScore} gameId="merch_jump" onReplay={initGame} onHome={() => window.location.href = '/arcade'} />
+                                    <UniversalGameOver
+                                        gameName="MERCH JUMP"
+                                        score={Math.floor(scoreRef.current)}
+                                        bestScore={highScore}
+                                        coinsEarned={Math.floor(scoreRef.current / 200)}
+                                        xpEarned={100}
+                                        onReplay={initGame}
+                                        onHome={() => window.location.href = '/arcade'}
+                                    />
                                 </div>
                             ) : (
                                 <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>

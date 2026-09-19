@@ -17,6 +17,7 @@ const CryptoExchange = lazy(() => import('./pages/CryptoExchange'));
 const BroFinder = lazy(() => import('./pages/BroFinder'));
 const TheArena = lazy(() => import('./pages/TheArena'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Inventory = lazy(() => import('./pages/Inventory'));
 
 // GAMES
 const SnakeGame = lazy(() => import('./games/Snake/SnakeGame'));
@@ -86,6 +87,7 @@ function App() {
             <Route path="bro-finder" element={<BroFinder />} />
             <Route path="arena" element={<TheArena />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="vault" element={<Inventory />} />
 
             {/* Game Routes Placeholders */}
             <Route path="arcade/snake" element={<SnakeGame />} />

@@ -89,6 +89,21 @@ export const GamificationProvider = ({ children }) => {
 
 
 
+    // --- INVENTORY MANAGEMENT ---
+    const addInventoryItem = (itemId, type, metadata = {}) => {
+        setShopState(prev => {
+            const currentInventory = prev.inventory || {};
+            const items = currentInventory[itemId] || [];
+            return {
+                ...prev,
+                inventory: {
+                    ...currentInventory,
+                    [itemId]: [...items, { id: Date.now().toString() + Math.random(), type, ...metadata, acquiredAt: new Date().toISOString() }]
+                }
+            };
+        });
+    };
+
     // --- ECONOMY STATE ---
     const [coins, setCoins] = useState(() => parseInt(localStorage.getItem('arcadeCoins')) || 0);
 
@@ -1238,7 +1253,7 @@ export const GamificationProvider = ({ children }) => {
     };
 
     return (
-        <GamificationContext.Provider value={{
+        <GamificationContext.Provider value={{ addInventoryItem, 
             stats, incrementStat, updateStat, coins, addCoins, spendCoins, userProfile, updateProfile, dailyState, claimDailyLogin,
             claimQuest, skipQuest, checkHighscoreQuest, shopState, setShopState, buyItem, equipItem, unlockHiddenItem, consumeItem,
             unlockedAchievements, getLevelInfo,

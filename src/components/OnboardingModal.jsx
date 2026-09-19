@@ -46,7 +46,7 @@ const OnboardingModal = () => {
         const hasBooted = localStorage.getItem('merchos_v3_boot');
         if (!hasBooted) {
             setVisible(true);
-            setStep('BOOT');
+            setStep('FORM');
         }
     }, []);
 
@@ -82,7 +82,7 @@ const OnboardingModal = () => {
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
             // Move to Mission Phase instead of closing immediately
-            setStep('MISSION');
+            closeOnboarding();
         }
     };
 

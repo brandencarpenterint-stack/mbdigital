@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
+import UniversalGameOver from '../../components/UniversalGameOver';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 

@@ -3,102 +3,91 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Home.css';
 import TiltCard from '../components/TiltCard';
-import { useSquad } from '../context/SquadContext';
-import { usePocketBro } from '../context/PocketBroContext';
 import { useGamification } from '../context/GamificationContext';
-import { useToast } from '../context/ToastContext';
 import useRetroSound from '../hooks/useRetroSound';
 
 const container = {
     hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
 const item = {
     hidden: { opacity: 0, y: 50, scale: 0.9 },
-    show: {
-        opacity: 1, y: 0, scale: 1,
-        transition: { type: "spring", stiffness: 100 }
-    }
+    show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 100 } }
 };
 
 const Home = () => {
-    const { getMood } = usePocketBro();
-    const { getLevelInfo, dailyState, userProfile, coins, followers, activeDrops } = useGamification();
+    const { getLevelInfo, userProfile, coins } = useGamification();
     const { playBeep } = useRetroSound();
 
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
     const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
 
-    // Revenue Calc
-    const totalRevenue = activeDrops?.reduce((a, b) => a + (b.revenue || 0), 0) || 0;
-
-    // Crypto Ticker State
-    const [ticker, setTicker] = useState("MCH: $102 ▲ | GLT: $49 ▲");
-
-    // Live Clock
     const [time, setTime] = useState(new Date());
-    const { showToast } = useToast();
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-
-
     return (
-        <div className="home-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
-
-            {/* 1. TOP BAR: STATUS & TICKER */}
-            <motion.div
-                className="top-bar-container"
-                initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-            >
-                {/* CLOCK */}
+        <div className="home-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
+            
+            {/* TOP BAR */}
+            <motion.div className="top-bar-container" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
                 <div className="glass-panel" style={{ padding: '0 15px', height: '100%', display: 'flex', alignItems: 'center', fontFamily: 'monospace', fontSize: '1.2rem', color: '#00ffcc', fontWeight: 'bold' }}>
                     {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
-
-                {/* SPACER */}
                 <div style={{ flex: 1 }}></div>
-
-                {/* SHOP BTN */}
                 <a href="https://merchboy.shop" target="_blank" className="squishy-btn" style={{
                     height: '100%', padding: '0 20px', background: '#FFD700', color: 'black',
                     display: 'flex', alignItems: 'center', fontWeight: '900', borderRadius: '8px',
                     textDecoration: 'none', fontSize: '0.9rem'
-                }}>
-                    🛍️ SHOP
-                </a>
+                }}>🛍️ SHOP</a>
             </motion.div>
 
-            {/* DASHBOARD GRID */}
-            <motion.div
-                className="dashboard-grid"
-                variants={container}
-                initial="hidden"
-                animate="show"
-            >
-                {/* 1. OPERATOR ID CARD (Profile) */}
-                <motion.div variants={item} onMouseEnter={playBeep}>
-                    <TiltCard className="bento-card" style={{
-                        background: 'linear-gradient(135deg, #111, #222)',
-                        border: '1px solid #333', padding: '25px'
-                    }}>
+            {/* HERO ARCADE BUTTON */}
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} style={{ marginBottom: '30px' }}>
+                <Link to="/arcade" style={{ textDecoration: 'none', display: 'block' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(255, 0, 255, 0.15))',
+                        backdropFilter: 'blur(10px)',
+                        border: '2px solid rgba(0, 255, 204, 0.3)',
+                        borderRadius: '30px',
+                        padding: '80px 40px',
+                        textAlign: 'center',
+                        boxShadow: '0 0 50px rgba(0, 255, 204, 0.1), inset 0 0 20px rgba(255, 0, 255, 0.1)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 10px 60px rgba(0, 255, 204, 0.3)'; playBeep(); }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 0 50px rgba(0, 255, 204, 0.1)'; }}
+                    >
+                        <h1 style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', margin: 0, background: 'linear-gradient(to right, #00ffcc, #ff00ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 30px rgba(0,255,204,0.4)', fontWeight: '900', letterSpacing: '4px' }}>
+                            ENTER ARCADE
+                        </h1>
+                        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', marginTop: '15px', letterSpacing: '3px', fontFamily: 'monospace' }}>
+                            PRESS START TO BEGIN
+                        </div>
+                    </div>
+                </Link>
+            </motion.div>
+
+            {/* SLIM DASHBOARD GRID */}
+            <motion.div className="dashboard-grid" variants={container} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+                
+                {/* OPERATOR ID CARD */}
+                <motion.div variants={item}>
+                    <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #111, #222)', border: '1px solid #333', padding: '25px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <div style={{ position: 'relative', width: '70px', height: '70px', transform: 'translateZ(10px)' }}>
-                                {/* Avatar Ring */}
                                 <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: -5, width: '80px', height: '80px', transform: 'rotate(-90deg)' }}>
                                     <circle cx="50" cy="50" r="45" stroke="#333" strokeWidth="5" fill="none" />
-                                    <circle cx="50" cy="50" r="45" stroke="#00ffcc" strokeWidth="5" fill="none" strokeDasharray="283" strokeDashoffset={283 - (283 * progress / 100)} transition="stroke-dashoffset 1s" />
+                                    <circle cx="50" cy="50" r="45" stroke="#00ffcc" strokeWidth="5" fill="none" strokeDasharray="283" strokeDashoffset={283 - (283 * progress / 100)} style={{ transition: 'stroke-dashoffset 1s' }} />
                                 </svg>
-                                <img src={userProfile?.avatar || "/assets/merchboy_face.png"} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #000' }} />
+                                <img src={userProfile?.avatar || "/assets/skins/face_default.png"} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #000' }} alt="Avatar" />
                             </div>
                             <div style={{ transform: 'translateZ(20px)' }}>
                                 <div style={{ color: '#888', fontSize: '0.7rem', letterSpacing: '2px' }}>OPERATOR</div>
@@ -106,137 +95,35 @@ const Home = () => {
                                 <div style={{ color: '#00ffcc', fontSize: '0.9rem', fontWeight: 'bold' }}>{rank} // LVL {level}</div>
                             </div>
                         </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
-                            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px', textAlign: 'center', transform: 'translateZ(10px)' }}>
-                                <div style={{ fontSize: '0.7rem', color: '#555' }}>BALANCE</div>
-                                <div style={{ fontSize: '1.2rem', color: '#ffd700' }}>🪙 {coins}</div>
-                            </div>
-                            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px', textAlign: 'center', transform: 'translateZ(10px)' }}>
-                                <div style={{ fontSize: '0.7rem', color: '#555' }}>MOOD</div>
-                                <div style={{ fontSize: '1.2rem' }}>{getMood()}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: 'auto', transform: 'translateZ(10px)' }}>
+                            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.8rem', color: '#888', letterSpacing: '1px' }}>FUNDS</span>
+                                <span style={{ fontSize: '1.2rem', color: '#ffd700', fontWeight: 'bold' }}>🪙 {coins}</span>
                             </div>
                         </div>
                     </TiltCard>
                 </motion.div>
 
-                {/* 2. MISSION CONTROL (Quests) */}
-                <motion.div variants={item} onMouseEnter={playBeep}>
-                    <TiltCard className="bento-card" style={{
-                        background: '#0f0f1b', border: '1px solid #444', padding: '0', overflow: 'hidden'
-                    }} glowColor="rgba(0,255,100,0.2)">
-                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px 25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333' }}>
-                            <span style={{ fontWeight: 'bold', color: '#fff' }}>DAILY MISSIONS</span>
-                            <span style={{ fontSize: '0.8rem', background: '#333', padding: '2px 8px', borderRadius: '4px' }}>
-                                {dailyState?.quests?.filter(q => q.claimed).length}/3
-                            </span>
-                        </div>
-                        <div style={{ padding: '20px', transform: 'translateZ(10px)' }}>
-                            {dailyState?.quests?.map(q => (
-                                <div key={q.id} style={{
-                                    display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px',
-                                    opacity: q.claimed ? 0.5 : 1
-                                }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', border: q.claimed ? 'none' : '2px solid #555',
-                                        background: q.claimed ? '#00ff00' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}>
-                                        {q.claimed && '✓'}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ textDecoration: q.claimed ? 'line-through' : 'none', color: '#ddd' }}>
-                                            {q.desc || q.text} {/* Use desc if available */}
-                                        </div>
-                                        {!q.claimed && (
-                                            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '2px' }}>
-                                                Progress: {q.progress || 0} / {q.target}
-                                                <div style={{ width: '100%', height: '4px', background: '#333', marginTop: '2px', borderRadius: '2px' }}>
-                                                    <div style={{
-                                                        width: `${Math.min(100, ((q.progress || 0) / q.target) * 100)}%`,
-                                                        height: '100%', background: 'var(--neon-green)', borderRadius: '2px'
-                                                    }} />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    {!q.claimed && (q.progress || 0) >= q.target && (
-                                        <button style={{
-                                            background: 'gold', color: 'black', border: 'none', borderRadius: '4px',
-                                            padding: '5px 10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer'
-                                        }}>
-                                            CLAIM
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </TiltCard>
+                {/* CREATIVE STUDIO & RANKINGS */}
+                <motion.div variants={item} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <Link to="/leaderboard" style={{ textDecoration: 'none', flex: 1 }}>
+                        <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FFAA00 100%)', color: '#000', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                            <div style={{ textAlign: 'center', transform: 'translateZ(20px)' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '5px' }}>🏆</div>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>GLOBAL RANKINGS</h3>
+                            </div>
+                        </TiltCard>
+                    </Link>
+                    
+                    <Link to="/vault" style={{ textDecoration: 'none', flex: 1 }}>
+                        <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)', color: '#000', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                            <div style={{ textAlign: 'center', transform: 'translateZ(20px)' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '5px' }}>🎒</div>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>THE VAULT</h3>
+                            </div>
+                        </TiltCard>
+                    </Link>
                 </motion.div>
-
-                {/* 3. FEATURED APP: LEADERBOARD */}
-                <Link to="/leaderboard" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #FFD700 0%, #FFAA00 100%)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'black', padding: '20px'
-                        }} glowColor="rgba(255, 215, 0, 0.4)">
-                            <div style={{ textAlign: 'center', transform: 'translateZ(30px)' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '5px' }}>🏆</div>
-                                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>RANKINGS</h2>
-                                <div style={{ opacity: 0.8, fontSize: '0.7rem', fontWeight: 'bold' }}>HALL OF LEGENDS</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
-
-
-
-
-                <Link to="/merch-lab" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{ background: '#fff', color: '#333', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🧢</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>MERCH LAB <div style={{ fontSize: '0.7rem', color: '#888' }}>DESIGN STUDIO</div></div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
-
-                <Link to="/coloring" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: '#fff', color: '#333',
-                            padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                            border: '2px solid #ff0055'
-                        }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🎨</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>
-                                COLORING BOOK
-                                <div style={{ fontSize: '0.7rem', color: '#888' }}>RELAX & CREATE</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
-
-
-                {/* ARCADE ZONE */}
-                <Link to="/arcade" style={{ textDecoration: 'none', display: 'block' }}>
-                    <motion.div variants={item} onMouseEnter={playBeep} style={{ height: '100%' }}>
-                        <TiltCard className="bento-card" style={{
-                            background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-                            border: '1px solid #444',
-                            color: '#00ffcc',
-                            padding: '20px',
-                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-                        }}>
-                            <div style={{ fontSize: '2.5rem', transform: 'translateZ(20px)' }}>🕹️</div>
-                            <div style={{ transform: 'translateZ(10px)' }}>
-                                ARCADE ZONE
-                                <div style={{ fontSize: '0.7rem', color: '#888' }}>GAMES & UTILITIES</div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-                </Link>
 
             </motion.div>
         </div>

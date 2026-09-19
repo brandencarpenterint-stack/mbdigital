@@ -5,7 +5,7 @@ import { feedService } from '../../utils/feed';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
-import GameOverCard from '../../components/GameOverCard';
+import UniversalGameOver from '../../components/UniversalGameOver';
 
 const MOLE_COUNT = 16;
 const GAME_DURATION = 30;
@@ -231,10 +231,12 @@ const WhackAMoleGame = () => {
             </div>
 
             {gameOver && (
-                <GameOverCard
+                <UniversalGameOver
+                    gameName="NEON WHACK"
                     score={score}
                     bestScore={highScore}
-                    gameId="whack"
+                    coinsEarned={Math.floor(score / 10)}
+                    xpEarned={100}
                     onReplay={startGame}
                     onHome={() => window.location.href = '/arcade'}
                 />
