@@ -3,12 +3,23 @@ import { STICKER_COLLECTIONS } from '../config/StickerDefinitions';
 
 const StickerSprite = ({ sticker, size = 64, style = {} }) => {
     // Find collection to get sheet URL
-    const collection = STICKER_COLLECTIONS.find(c => c.items.some(i => i.id === sticker.id));
+    // Handle if sticker is passed as a string ID
+    const stickerId = typeof sticker === 'string' ? sticker : sticker.id;
+    let stickerData = typeof sticker === 'object' ? sticker : null;
 
-    if (!collection) return <span>?</span>;
+    const collection = STICKER_COLLECTIONS.find(c => {
+        const found = c.items.find(i => i.id === stickerId);
+        if (found) {
+            if (!stickerData) stickerData = found;
+            return true;
+        }
+        return false;
+    });
+
+    if (!collection || !stickerData) return <span>❓</span>;
 
     const sheetUrl = collection.sheet;
-    const { row, col } = sticker;
+    const { row = 0, col = 0 } = stickerData;
 
     // Sprite Sheet Logic (3x3 Grid)
     // background-position: x% y%

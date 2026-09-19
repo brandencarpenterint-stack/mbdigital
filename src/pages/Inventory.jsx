@@ -14,6 +14,14 @@ const FISH_SHEETS = {
     coral: '/assets/fishing/fishing_coral.png',
     deep: '/assets/fishing/fishing_deep.png',
     void: '/assets/fishing/fishing_void.png',
+    seagrass: '/assets/fishing/fishing_seagrass.png',
+    abyss: '/assets/fishing/fishing_abyss.png',
+    boneyard: '/assets/fishing/fishing_boneyard.png',
+    ether: '/assets/fishing/fishing_ether.png',
+    frozen: '/assets/fishing/fishing_frozen.png',
+    magma: '/assets/fishing/fishing_magma.png',
+    neon: '/assets/fishing/fishing_neon.png',
+    twilight: '/assets/fishing/fishing_twilight.png',
 };
 
 const FISH_DATA_MAP = {
