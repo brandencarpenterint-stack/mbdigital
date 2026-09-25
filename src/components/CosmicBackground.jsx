@@ -156,7 +156,8 @@ const CosmicBackground = () => {
                     0%, 100% { opacity: 0.3; }
                     50% { opacity: 0.5; }
                 }
-            `}</style>
+            `}    @keyframes pulseSun { 0% { opacity: 0.5; transform: translateX(-50%) scale(1); } 100% { opacity: 0.7; transform: translateX(-50%) scale(1.05); } }
+            </style>
         </div>
     );
 };

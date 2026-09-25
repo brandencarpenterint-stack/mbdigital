@@ -310,3 +310,34 @@ button:active, a:active, .bento-card:active {
   transition: transform 0.05s ease !important;
   filter: brightness(1.2) !important;
 }
+
+.bento-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    position: relative;
+    transform-style: preserve-3d;
+}
+.bento-card::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    background: linear-gradient(45deg, #ff00ff, #00ffcc, #ff0055, #00ffcc);
+    z-index: -1;
+    border-radius: inherit;
+    background-size: 400%;
+    animation: neonGlow 5s linear infinite;
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+}
+.bento-card:hover::before {
+    opacity: 1;
+}
+.bento-card:hover {
+    transform: translateY(-5px) scale(1.02) !important;
+    box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3), 0 0 20px rgba(255, 0, 255, 0.2) !important;
+}
+
+@keyframes neonGlow {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
