@@ -38,6 +38,7 @@ const Layout = () => {
     const [coins, setCoins] = useState(0);
     const [isDailyReady, setIsDailyReady] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showBank, setShowBank] = useState(false);
 
     // Contexts
     // Consolidated useGamification call - extracting all needed values once
