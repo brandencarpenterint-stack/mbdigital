@@ -101,6 +101,21 @@ const Terminal = () => {
                 print(args.join(' '));
                 break;
 
+            case 'launch':
+                if (args[0] === 'nuke') {
+                    if (coins < 1000) {
+                        print("INSUFFICIENT FUNDS. REQUIRED: 1,000 COINS.");
+                    } else {
+                        print("AUTHORIZATION ACCEPTED.");
+                        print("LAUNCHING OMEGA PROTOCOL...");
+                        addCoins(-1000);
+                        import('../config/supabaseClient').then(({ supabase }) => {
+                            supabase.channel('arcade_nuke').send({ type: 'broadcast', event: 'launch' });
+                        });
+                    }
+                }
+                break;
+
             case 'exit':
                 window.location.href = '/'; // Hard nav to ensure clear
                 break;

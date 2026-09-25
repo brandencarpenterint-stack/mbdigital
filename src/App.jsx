@@ -39,6 +39,8 @@ import PageTransition from './components/PageTransition';
 import GlobalChat from './components/GlobalChat';
 import RadioWidget from './components/RadioWidget';
 import MultiplayerCursors from './components/MultiplayerCursors';
+import MatrixRain from './components/MatrixRain';
+import GlobalNukeEvent from './components/GlobalNukeEvent';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -55,6 +57,8 @@ function App() {
       <GlobalChat />
       <RadioWidget />
       <MultiplayerCursors />
+      <MatrixRain />
+      <GlobalNukeEvent />
       <div style={{
         position: 'fixed',
         top: 0,
