@@ -37,6 +37,7 @@ import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
 import GlobalChat from './components/GlobalChat';
+import RadioWidget from './components/RadioWidget';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -51,6 +52,7 @@ function App() {
       <CosmicBackground />
       <GlobalEventOverlay />
       <GlobalChat />
+      <RadioWidget />
       <div style={{
         position: 'fixed',
         top: 0,
