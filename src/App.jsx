@@ -36,6 +36,7 @@ const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
 import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
+import GlobalChat from './components/GlobalChat';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -49,6 +50,7 @@ function App() {
       <PageTransition />
       <CosmicBackground />
       <GlobalEventOverlay />
+      <GlobalChat />
       <div style={{
         position: 'fixed',
         top: 0,
