@@ -40,3 +40,12 @@
 .rgb-split {
     text-shadow: 2px 0 0 rgba(255,0,0,0.5), -2px 0 0 rgba(0,255,255,0.5) !important;
 }
+
+
+/* ARCADE CURSOR */
+body, html, * {
+    cursor: url('https://cur.cursors-4u.net/games/gam-11/gam1090.cur'), auto !important;
+}
+button:hover, a:hover, [role="button"]:hover, .clickable:hover {
+    cursor: url('https://cur.cursors-4u.net/games/gam-11/gam1090.cur'), pointer !important;
+}

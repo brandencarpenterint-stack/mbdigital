@@ -253,7 +253,22 @@ const Terminal = () => {
 
             // SECRET COMMANDS
             case 'sudo':
-                print("User is not in the sudoers file. This incident will be reported.");
+                if (args[0] === 'merchboy') {
+                    print("INITIATING PROTOCOL: OMEGA-BRAND...");
+                    setTimeout(() => {
+                        document.body.classList.add('glitch-active');
+                        print("SECURITY BREACH DETECTED.");
+                        print("UPLOADING 10,000 COINS...");
+                        addCoins(10000);
+                        playWin();
+                        triggerEvent('GLITCH_STORM');
+                        setTimeout(() => {
+                            print("WELCOME, ROOT USER.");
+                        }, 2000);
+                    }, 1000);
+                } else {
+                    print("User is not in the sudoers file. This incident will be reported.");
+                }
                 break;
 
             case 'merchboy':

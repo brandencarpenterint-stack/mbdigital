@@ -34,7 +34,7 @@ const GlobalEventOverlay = () => {
             const h = canvas.height;
 
 
-            if (currentEvent.id === 'NEON_RAIN') {
+            if (activeMode === 'NEON_RAIN') {
                 return {
                     x: Math.random() * w,
                     y: -10,
