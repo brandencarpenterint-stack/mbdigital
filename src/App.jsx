@@ -38,6 +38,7 @@ import './crt.css';
 import PageTransition from './components/PageTransition';
 import GlobalChat from './components/GlobalChat';
 import RadioWidget from './components/RadioWidget';
+import MultiplayerCursors from './components/MultiplayerCursors';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -53,6 +54,7 @@ function App() {
       <GlobalEventOverlay />
       <GlobalChat />
       <RadioWidget />
+      <MultiplayerCursors />
       <div style={{
         position: 'fixed',
         top: 0,
