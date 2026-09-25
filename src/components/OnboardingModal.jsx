@@ -3,6 +3,7 @@ import { useGamification } from '../context/GamificationContext';
 import SquishyButton from './SquishyButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import useRetroSound from '../hooks/useRetroSound';
+import { supabase } from '../config/supabaseClient';
 
 const AVATARS = [
     '/assets/skins/face_default.png',
@@ -35,6 +36,7 @@ const OnboardingModal = () => {
 
     // Form State
     const [name, setName] = useState('');
+    const [inviteCode, setInviteCode] = useState('');
     const [avatar, setAvatar] = useState(AVATARS[0]);
 
     useEffect(() => {
@@ -69,19 +71,34 @@ const OnboardingModal = () => {
         }
     }, [step, currentLogIndex]);
 
-    const handleComplete = () => {
+        const handleComplete = async () => {
         if (!name.trim()) {
             alert("IDENTIFICATION REQUIRED. ENTER CODE NAME.");
             return;
         }
 
         if (updateProfile && addCoins) {
+            let bonusCoins = 500;
+            if (inviteCode.trim()) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('id, name')
+                    .eq('friend_code', inviteCode.toUpperCase())
+                    .single();
+                
+                if (data) {
+                    bonusCoins += 5000;
+                    alert(`REFERRAL ACCEPTED: +5000 COINS! Welcome bro of ${data.name}!`);
+                } else {
+                    alert("INVALID INVITE CODE. PROCEEDING WITHOUT REFERRAL.");
+                }
+            }
+
             updateProfile({ name: name.toUpperCase(), avatar: avatar });
-            addCoins(500);
+            addCoins(bonusCoins);
             localStorage.setItem('merchos_v3_boot', 'true');
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-            // Move to Mission Phase instead of closing immediately
             closeOnboarding();
         }
     };
@@ -179,7 +196,7 @@ const OnboardingModal = () => {
                         </div>
 
                         {/* NAME INPUT */}
-                        <div style={{ marginBottom: '30px', width: '100%' }}>
+                        <div style={{ marginBottom: '15px', width: '100%' }}>
                             <input
                                 type="text"
                                 placeholder="ENTER CODENAME..."
@@ -189,6 +206,21 @@ const OnboardingModal = () => {
                                     width: '100%', padding: '15px', borderRadius: '15px',
                                     background: '#2d3748', border: '2px solid #4a5568',
                                     color: 'white', fontSize: '1.2rem', textAlign: 'center',
+                                    outline: 'none', textTransform: 'uppercase', fontFamily: '"Press Start 2P"'
+                                }}
+                            />
+                        </div>
+                        {/* INVITE CODE INPUT */}
+                        <div style={{ marginBottom: '30px', width: '100%' }}>
+                            <input
+                                type="text"
+                                placeholder="INVITE CODE (OPTIONAL)"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '10px', borderRadius: '10px',
+                                    background: '#1a202c', border: '2px dashed var(--neon-gold)',
+                                    color: 'var(--neon-gold)', fontSize: '0.9rem', textAlign: 'center',
                                     outline: 'none', textTransform: 'uppercase', fontFamily: '"Press Start 2P"'
                                 }}
                             />

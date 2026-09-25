@@ -1059,10 +1059,27 @@ export const GamificationProvider = ({ children }) => {
         const today = new Date().toISOString().split('T')[0];
         if (dailyState.lastCheckIn === today) return false;
 
+        let newStreak = dailyState.streak + 1;
+        if (dailyState.lastCheckIn) {
+            const last = new Date(dailyState.lastCheckIn);
+            const current = new Date(today);
+            const diffTime = Math.abs(current - last);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) {
+                newStreak = 1; // Brutal reset
+                showToast("Streak Broken! 🔥 Back to Day 1.", "error");
+            } else {
+                showToast(`Streak Level ${newStreak}! 🔥`, "success");
+            }
+        } else {
+            newStreak = 1;
+            showToast(`Streak Level 1! 🔥`, "success");
+        }
+
         setDailyState(prev => ({
             ...prev,
             lastCheckIn: today,
-            streak: prev.streak + 1
+            streak: newStreak
         }));
 
         playWin();

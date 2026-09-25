@@ -272,6 +272,22 @@ const Layout = () => {
                             )}
                         </button>
 
+                        {/* STREAK INDICATOR */}
+                        {dailyState?.streak > 0 && (
+                            <div style={{
+                                background: 'rgba(0,0,0,0.5)',
+                                border: `1px solid ${dailyState.streak >= 15 ? '#00f260' : dailyState.streak >= 7 ? 'gold' : dailyState.streak >= 3 ? 'silver' : '#cd7f32'}`,
+                                padding: '5px 12px', borderRadius: '20px',
+                                fontSize: '0.9rem', 
+                                color: dailyState.streak >= 15 ? '#00f260' : dailyState.streak >= 7 ? 'gold' : dailyState.streak >= 3 ? 'silver' : '#cd7f32',
+                                fontWeight: 'bold',
+                                display: 'flex', alignItems: 'center', gap: '5px',
+                                textShadow: dailyState.streak >= 15 ? '0 0 10px #00f260' : 'none',
+                                animation: dailyState.streak >= 15 ? 'pulse 2s infinite' : 'none'
+                            }} title={`${dailyState.streak} Day Streak!`}>
+                                🔥 {dailyState.streak}
+                            </div>
+                        )}
                         <div style={{
                             background: 'rgba(0,0,0,0.5)',
                             border: '1px solid var(--neon-gold)',
