@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Home.css';
 import TiltCard from '../components/TiltCard';
+import TheButton from '../components/TheButton';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
 
@@ -156,7 +157,40 @@ const Home = () => {
                             </div>
                         </TiltCard>
                     </Link>
+                                </motion.div>
+
+
+                {/* CRYPTO EXCHANGE WIDGET */}
+                <motion.div variants={item}>
+                    <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #1a1a24, #0d0d14)', border: '1px solid #333', padding: '25px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+                            <div style={{ color: '#00ffcc', fontSize: '1rem', fontWeight: 'bold', letterSpacing: '2px' }}>THE EXCHANGE 📈</div>
+                            <Link to="/exchange" style={{ background: '#00ffcc', color: '#000', padding: '5px 10px', borderRadius: '5px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: 'bold' }}>TRADE</Link>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {cryptoMarket?.slice(0,3).map(token => (
+                                <div key={token.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ fontSize: '1.2rem' }}>{token.emoji}</span>
+                                        <span style={{ fontWeight: 'bold', color: '#fff' }}>{token.id}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                        <span style={{ color: '#fff', fontFamily: 'monospace' }}>${token.price.toFixed(2)}</span>
+                                        <span style={{ color: token.trend > 0 ? '#00ffcc' : token.trend < 0 ? '#ff0055' : '#888', fontSize: '0.7rem' }}>
+                                            {token.trend > 0 ? '+' : ''}{(token.trend * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </TiltCard>
                 </motion.div>
+
+                {/* THE BUTTON (GLOBAL SOCIAL EXPERIMENT) */}
+                <motion.div variants={item}>
+                    <TheButton />
+                </motion.div>
+
 
             </motion.div>
         </div>
