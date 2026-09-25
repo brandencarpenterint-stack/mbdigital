@@ -17,7 +17,7 @@ const item = {
 };
 
 const Home = () => {
-    const { getLevelInfo, userProfile, coins } = useGamification();
+    const { getLevelInfo, userProfile, coins, cryptoMarket } = useGamification();
     const { playBeep } = useRetroSound();
 
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
@@ -46,7 +46,30 @@ const Home = () => {
                 }}>🛍️ SHOP</a>
             </motion.div>
 
-            {/* HERO ARCADE BUTTON */}
+            
+            {/* LIVE CRYPTO TICKER */}
+            <div style={{
+                background: '#000', borderTop: '1px solid #333', borderBottom: '1px solid #333',
+                marginBottom: '20px', padding: '5px 0', overflow: 'hidden', whiteSpace: 'nowrap',
+                display: 'flex', fontFamily: 'monospace', fontSize: '0.9rem'
+            }}>
+                <motion.div
+                    animate={{ x: [0, -1000] }}
+                    transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
+                    style={{ display: 'flex', gap: '30px', color: '#888' }}
+                >
+                    {[...Array(3)].map((_, i) => (
+                        <React.Fragment key={i}>
+                            {cryptoMarket?.map(token => (
+                                <span key={token.id} style={{ color: token.trend > 0 ? '#00ffcc' : token.trend < 0 ? '#ff0055' : '#888' }}>
+                                    {token.emoji} {token.id} ${token.price.toFixed(2)} {token.trend > 0 ? '▲' : token.trend < 0 ? '▼' : '▬'}
+                                </span>
+                            ))}
+                        </React.Fragment>
+                    ))}
+                </motion.div>
+            </div>
+\n            {/* HERO ARCADE BUTTON */}
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} style={{ marginBottom: '30px' }}>
                 <Link to="/arcade" style={{ textDecoration: 'none', display: 'block' }}>
                     <div className="bento-card" style={{
@@ -106,6 +129,16 @@ const Home = () => {
 
                 {/* CREATIVE STUDIO & RANKINGS */}
                 <motion.div variants={item} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    
+                    <Link to="/pocketbro" style={{ textDecoration: 'none', flex: 1 }}>
+                        <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #ff0055 0%, #ff00ff 100%)', color: '#fff', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                            <div style={{ textAlign: 'center', transform: 'translateZ(20px)' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '5px' }}>👾</div>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>POCKET BRO</h3>
+                            </div>
+                        </TiltCard>
+                    </Link>
+                    
                     <Link to="/leaderboard" style={{ textDecoration: 'none', flex: 1 }}>
                         <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FFAA00 100%)', color: '#000', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                             <div style={{ textAlign: 'center', transform: 'translateZ(20px)' }}>
