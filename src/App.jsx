@@ -34,6 +34,7 @@ const CosmicSlots = lazy(() => import('./games/CosmicSlots/CosmicSlots'));
 const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
 const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
 import CosmicBackground from './components/CosmicBackground';
+import './crt.css';
 import PageTransition from './components/PageTransition';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
@@ -42,7 +43,9 @@ import { useTime } from './context/TimeContext';
 function App() {
   const { isNight } = useTime() || { isNight: false };
   return (
-    <>
+    <div className="crt-flicker">
+      <div className="crt-overlay" />
+      <div className="crt-vignette" />
       <PageTransition />
       <CosmicBackground />
       <GlobalEventOverlay />
@@ -106,7 +109,7 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
-    </>
+    </div>
   );
 }
 
