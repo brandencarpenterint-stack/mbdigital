@@ -9,10 +9,10 @@ import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
-const GRAVITY = 0.6;
-const JUMP_STRENGTH = -10;
-const PIPE_SPEED = 3;
-const PIPE_SPACING = 200;
+const GRAVITY = 0.8;
+const JUMP_STRENGTH = -12;
+const PIPE_SPEED = 5;
+const PIPE_SPACING = 180;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [

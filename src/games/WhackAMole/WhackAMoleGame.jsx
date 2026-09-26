@@ -60,7 +60,7 @@ const WhackAMoleGame = () => {
     };
 
     const popMoles = () => {
-        const popTime = Math.random() * 800 + 400; // Random time
+        const popTime = Math.random() * 500 + 200; // Random time
         popTimerRef.current = setTimeout(() => {
             if (!gameActive && timeLeft <= 0) return;
 

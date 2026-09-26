@@ -87,7 +87,7 @@ const MemoryMatchGame = () => {
             setTimeout(() => {
                 setFlipped([]);
                 setDisabled(false);
-            }, 1000);
+            }, 400);
         }
     };
 

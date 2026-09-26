@@ -20,6 +20,7 @@ const UniversalGameOver = ({
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
     
     const isNewRecord = score > (bestScore || 0);
+    const finalCoins = Math.max(finalCoins * 3, Math.floor(score * 1.5));
 
     // Animation States
     const [displayScore, setDisplayScore] = useState(0);
@@ -39,14 +40,14 @@ const UniversalGameOver = ({
             const ease = 1 - (1 - relativeProgress) * (1 - relativeProgress);
 
             setDisplayScore(Math.floor(ease * score));
-            setDisplayCoins(Math.floor(ease * coinsEarned));
+            setDisplayCoins(Math.floor(ease * finalCoins));
             
             if (relativeProgress < 1) {
                 requestAnimationFrame(animate);
                 if (Math.random() > 0.8) playCoin();
             } else {
                 setDisplayScore(score);
-                setDisplayCoins(coinsEarned);
+                setDisplayCoins(finalCoins);
                 
                 if (progress < 15 && xpEarned > 0) {
                     setShowLevelUp(true);
@@ -60,7 +61,7 @@ const UniversalGameOver = ({
         };
 
         requestAnimationFrame(animate);
-    }, [score, coinsEarned]);
+    }, [score, finalCoins]);
 
     return (
         <div style={{

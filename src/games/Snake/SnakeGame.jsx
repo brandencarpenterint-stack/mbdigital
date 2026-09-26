@@ -8,7 +8,7 @@ import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 
 const GRID_SIZE = 20;
-const INITIAL_SPEED = 150;
+const INITIAL_SPEED = 80;
 const FACE_ASSETS = [
     '/assets/snake/face1.png',
     '/assets/snake/face2.png',

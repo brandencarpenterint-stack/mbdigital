@@ -109,7 +109,7 @@ const FaceRunner = () => {
         // --- UPDATE ---
         if (playingRef.current) {
             // Speed up over time (faster scaling)
-            speedRef.current = Math.min(30 + (scoreRef.current * 0.015), 120);
+            speedRef.current = Math.min(50 + (scoreRef.current * 0.03), 150);
 
             // Spawn Rate
             if (Math.random() < 0.08) {
@@ -123,7 +123,7 @@ const FaceRunner = () => {
 
                 if (obs.z <= 0) {
                     obstaclesRef.current.splice(i, 1);
-                    scoreRef.current += 5; // 5m per obstacle passed
+                    scoreRef.current += 15; // 5m per obstacle passed
                     setScore(Math.floor(scoreRef.current));
                 }
             }
