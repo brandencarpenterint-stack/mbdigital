@@ -42,6 +42,7 @@ import MultiplayerCursors from './components/MultiplayerCursors';
 import MatrixRain from './components/MatrixRain';
 import GlobalNukeEvent from './components/GlobalNukeEvent';
 import GlobalRaidBoss from './components/GlobalRaidBoss';
+import AttractMode from './components/AttractMode';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -61,6 +62,7 @@ function App() {
       <MatrixRain />
       <GlobalNukeEvent />
       <GlobalRaidBoss />
+      <AttractMode />
       <div style={{
         position: 'fixed',
         top: 0,
