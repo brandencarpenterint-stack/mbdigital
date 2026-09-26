@@ -45,7 +45,7 @@ const Layout = () => {
     const { dailyState, shopState, userProfile, viewedProfile, setViewedProfile, addCoins, unlockAchievement, setShopState, session } = useGamification() || { dailyState: null, shopState: null, userProfile: null, addCoins: () => { }, unlockAchievement: () => { }, setShopState: () => { }, viewedProfile: null, setViewedProfile: () => { } };
 
     const { unreadCount } = useNotifications();
-    const { soundEnabled, toggleSound } = useSettings();
+    const { soundEnabled, toggleSound, tiktokMode, toggleTiktokMode } = useSettings();
     const { getMood, isCritical, unlockDecor } = usePocketBro() || { getMood: () => '🥚', isCritical: false, unlockDecor: () => { } };
     const { setThemeId } = useTheme();
 
