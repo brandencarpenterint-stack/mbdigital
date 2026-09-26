@@ -41,6 +41,7 @@ import RadioWidget from './components/RadioWidget';
 import MultiplayerCursors from './components/MultiplayerCursors';
 import MatrixRain from './components/MatrixRain';
 import GlobalNukeEvent from './components/GlobalNukeEvent';
+import GlobalRaidBoss from './components/GlobalRaidBoss';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -59,6 +60,7 @@ function App() {
       <MultiplayerCursors />
       <MatrixRain />
       <GlobalNukeEvent />
+      <GlobalRaidBoss />
       <div style={{
         position: 'fixed',
         top: 0,

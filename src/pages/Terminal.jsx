@@ -101,6 +101,16 @@ const Terminal = () => {
                 print(args.join(' '));
                 break;
 
+            case 'spawn':
+                if (args[0] === 'boss') {
+                    print("AUTHORIZATION ACCEPTED.");
+                    print("TEARING A RIFT IN THE VOID...");
+                    import('../config/supabaseClient').then(({ supabase }) => {
+                        supabase.channel('arcade_boss').send({ type: 'broadcast', event: 'spawn' });
+                    });
+                }
+                break;
+
             case 'launch':
                 if (args[0] === 'nuke') {
                     if (coins < 1000) {
