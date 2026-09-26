@@ -157,6 +157,23 @@ const UniversalGameOver = ({
                         REPLAY
                     </SquishyButton>
                 </div>
+
+                <button 
+                    onClick={() => {
+                        const text = encodeURIComponent(`I just scored ${score} on ${gameName} at Merchboy Digital! Think you can beat me? 🕹️🔥 #MerchboyArcade`);
+                        const url = encodeURIComponent(window.location.origin);
+                        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+                    }}
+                    style={{
+                        width: '100%', padding: '15px', background: '#1DA1F2', color: '#fff',
+                        border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: '10px', boxShadow: '0 5px 15px rgba(29, 161, 242, 0.4)', marginTop: '15px'
+                    }}
+                >
+                    🐦 BRAG ON X (TWITTER)
+                </button>
+
             </motion.div>
         </div>
     );
