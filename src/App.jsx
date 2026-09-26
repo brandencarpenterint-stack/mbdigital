@@ -44,6 +44,7 @@ import GlobalNukeEvent from './components/GlobalNukeEvent';
 import GlobalRaidBoss from './components/GlobalRaidBoss';
 import AttractMode from './components/AttractMode';
 import SingularityEvent from './components/SingularityEvent';
+import GlobalGraffiti from './components/GlobalGraffiti';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -65,6 +66,7 @@ function App() {
       <GlobalRaidBoss />
       <AttractMode />
       <SingularityEvent />
+      <GlobalGraffiti />
       <div style={{
         position: 'fixed',
         top: 0,
