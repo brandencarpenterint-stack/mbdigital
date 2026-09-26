@@ -43,6 +43,7 @@ import MatrixRain from './components/MatrixRain';
 import GlobalNukeEvent from './components/GlobalNukeEvent';
 import GlobalRaidBoss from './components/GlobalRaidBoss';
 import AttractMode from './components/AttractMode';
+import SingularityEvent from './components/SingularityEvent';
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -63,6 +64,7 @@ function App() {
       <GlobalNukeEvent />
       <GlobalRaidBoss />
       <AttractMode />
+      <SingularityEvent />
       <div style={{
         position: 'fixed',
         top: 0,

@@ -101,6 +101,14 @@ const Terminal = () => {
                 print(args.join(' '));
                 break;
 
+            case '33x':
+                print("INITIATING 33X PROTOCOL...");
+                print("WARNING: REALITY ANCHORS FAILING.");
+                import('../config/supabaseClient').then(({ supabase }) => {
+                    supabase.channel('arcade_singularity').send({ type: 'broadcast', event: '33x' });
+                });
+                break;
+
             case 'spawn':
                 if (args[0] === 'boss') {
                     print("AUTHORIZATION ACCEPTED.");
