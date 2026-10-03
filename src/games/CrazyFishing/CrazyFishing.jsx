@@ -67,22 +67,22 @@ const FISH_DATA = [
     { id: 'shark', name: 'Sharky', score: 50, emoji: '🦈', minDepth: 1200, maxDepth: 1500, pattern: 'SINE', speed: 2.0, weight: [50.0, 300.0] },
     { id: 'whale', name: 'Whaley', score: 80, emoji: '🐋', minDepth: 1200, maxDepth: 1500, pattern: 'FLOAT', speed: 1.0, weight: [1000.0, 5000.0] },
     { id: 'moon', name: 'Moon Rock', score: 100, emoji: '🌘', minDepth: 1300, maxDepth: 1500, pattern: 'FLOAT', speed: 0.2, weight: [100.0, 200.0] },
-    { id: 'wolf', name: 'Wolf Fish', score: 70, minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
-    { id: 'sleep', name: 'Sleeper Shark', score: 75, minDepth: 1400, maxDepth: 1500, pattern: 'FLOAT', speed: 0.5, weight: [200.0, 400.0] },
+    { id: 'wolf', name: 'Wolf Fish', score: 70, emoji: '🐺', minDepth: 1200, maxDepth: 1500, pattern: 'DART', speed: 3.0, weight: [10.0, 20.0] },
+    { id: 'sleep', name: 'Sleeper Shark', score: 75, emoji: '💤', minDepth: 1400, maxDepth: 1500, pattern: 'FLOAT', speed: 0.5, weight: [200.0, 400.0] },
     
     // --- TRENCH (1500-1800m) ---
-    { id: 'blob', name: 'Blobfish', score: 70, minDepth: 1500, maxDepth: 1800, pattern: 'FLOAT', speed: 0.5, weight: [5.0, 20.0] },
-    { id: 'worm', name: 'Tube Worm', score: 60, minDepth: 1550, maxDepth: 1800, pattern: 'FLOAT', speed: 0, weight: [1.0, 2.0] },
-    { id: 'viper', name: 'Viperfish', score: 85, minDepth: 1600, maxDepth: 1800, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    { id: 'blob', name: 'Blobfish', score: 70, emoji: '💧', minDepth: 1500, maxDepth: 1800, pattern: 'FLOAT', speed: 0.5, weight: [5.0, 20.0] },
+    { id: 'worm', name: 'Tube Worm', score: 60, emoji: '🪱', minDepth: 1550, maxDepth: 1800, pattern: 'FLOAT', speed: 0, weight: [1.0, 2.0] },
+    { id: 'viper', name: 'Viperfish', score: 85, emoji: '🐍', minDepth: 1600, maxDepth: 1800, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
     
     // --- NEON CITY (1800-2100m) ---
-    { id: 'cyber', name: 'Cyber Fish', score: 110, minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
-    { id: 'robot', name: 'Bot-01', score: 120, minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
-    { id: 'floppy', name: 'Diskette', score: 50, minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
-    { id: 'batt', name: 'Battery', score: 60, minDepth: 2000, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.2, 0.5] },
+    { id: 'cyber', name: 'Cyber Fish', score: 110, emoji: '🤖', minDepth: 1800, maxDepth: 2100, pattern: 'DART', speed: 5.0, weight: [2.0, 5.0] },
+    { id: 'robot', name: 'Bot-01', score: 120, emoji: '🦾', minDepth: 1850, maxDepth: 2100, pattern: 'GLITCH', speed: 3.0, weight: [50.0, 100.0] },
+    { id: 'floppy', name: 'Diskette', score: 50, emoji: '💾', minDepth: 1900, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
+    { id: 'batt', name: 'Battery', score: 60, emoji: '🔋', minDepth: 2000, maxDepth: 2100, pattern: 'FLOAT', speed: 0, weight: [0.2, 0.5] },
     
     // --- BONEYARD (2100-2400m) ---
-    { id: 'skull', name: 'Bone Fish', score: 60, minDepth: 2100, maxDepth: 2400, pattern: 'DART', speed: 3.0, weight: [5.0, 10.0] },
+    { id: 'skull', name: 'Bone Fish', score: 60, emoji: '💀', minDepth: 2100, maxDepth: 2400, pattern: 'DART', speed: 3.0, weight: [5.0, 10.0] },
     { id: 'fossil', name: 'Trilobite', score: 80, emoji: '🦴', minDepth: 2150, maxDepth: 2400, pattern: 'FLOAT', speed: 1.0, weight: [1.0, 3.0] },
     { id: 'key', name: 'Skeleton Key', score: 100, emoji: '🗝', minDepth: 2100, maxDepth: 2400, pattern: 'FLOAT', speed: 0, weight: [0.1, 0.1] },
     { id: 'pirate_skull', name: 'Jolly Roger', score: 150, emoji: '☠', minDepth: 2200, maxDepth: 2400, pattern: 'FLOAT', speed: 0.5, weight: [1.0, 2.0] },
@@ -95,9 +95,9 @@ const FISH_DATA = [
     { id: 'cooked', name: 'Dinner', score: 200, emoji: '🍗', minDepth: 2500, maxDepth: 2700, pattern: 'FLOAT', speed: 0.5, weight: [0.5, 1.0] },
     
     // --- FROZEN DEEP (2700-3000m) ---
-    { id: 'ice', name: 'Ice Cube', score: 90, minDepth: 2700, maxDepth: 3000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 20.0] },
-    { id: 'penguin', name: 'Lost Pingu', score: 200, minDepth: 2750, maxDepth: 3000, pattern: 'DART', speed: 4.0, weight: [5.0, 15.0] },
-    { id: 'yeti', name: 'Yeti Crab', score: 210, minDepth: 2800, maxDepth: 3000, pattern: 'FLOAT', speed: 1.0, weight: [2.0, 5.0] },
+    { id: 'ice', name: 'Ice Cube', score: 90, emoji: '🧊', minDepth: 2700, maxDepth: 3000, pattern: 'FLOAT', speed: 0.5, weight: [10.0, 20.0] },
+    { id: 'penguin', name: 'Lost Pingu', score: 200, emoji: '🐧', minDepth: 2750, maxDepth: 3000, pattern: 'DART', speed: 4.0, weight: [5.0, 15.0] },
+    { id: 'yeti', name: 'Yeti Crab', score: 210, emoji: '🦍', minDepth: 2800, maxDepth: 3000, pattern: 'FLOAT', speed: 1.0, weight: [2.0, 5.0] },
     { id: 'pizza', name: 'Frozen Pizza', score: 150, emoji: '🍕', minDepth: 2900, maxDepth: 3000, pattern: 'FLOAT', speed: 0, weight: [0.5, 0.5] },
     
     // --- THE ETHER (3000-3500m) ---
@@ -117,7 +117,7 @@ const FISH_DATA = [
     
     // --- LEGENDARIES (Universal/Abyss) ---
     { id: 'goldboot', name: 'Golden Boot', score: 500, emoji: '🥾', minDepth: 0, maxDepth: 4000, pattern: 'DART', speed: 4.0, weight: [10.0, 10.0], legendary: true },
-    { id: 'cybershark', name: 'Cyber Shark', score: 1000, minDepth: 1800, maxDepth: 2100, pattern: 'GLITCH', speed: 5.0, weight: [500.0, 1000.0], legendary: true },
+    { id: 'cybershark', name: 'Cyber Shark', score: 1000, emoji: '🦈', minDepth: 1800, maxDepth: 2100, pattern: 'GLITCH', speed: 5.0, weight: [500.0, 1000.0], legendary: true },
     { id: 'kraken', name: 'Lil Kraken', score: 800, emoji: '🐙', minDepth: 3500, maxDepth: 4000, pattern: 'SINE', speed: 3.0, weight: [200.0, 500.0], legendary: true },
 ];
 
