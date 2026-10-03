@@ -377,12 +377,22 @@ const NeonBrickBreaker = () => {
         if (updateStat) updateStat('gamesPlayed', 'neon_brick');
     };
 
-    const gameLoop = () => {
+    const gameLoop = (timestamp) => {
         if (!gameActiveRef.current) return;
+
+        const state = gameState.current;
+        if (timestamp) {
+            if (!state.lastTime) state.lastTime = timestamp;
+            const delta = timestamp - state.lastTime;
+            if (delta < 16) {
+                state.animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
+            state.lastTime = timestamp - (delta % 16);
+        }
 
         const ctx = canvasRef.current?.getContext('2d');
         if (!ctx) return;
-        const state = gameState.current;
 
         // --- UPDATE ---
         if (!state.transitioning) {

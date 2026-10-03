@@ -369,8 +369,18 @@ const CrazyFishing = () => {
     };
 
     // --- LOOP ---
-    const gameLoop = () => {
+    const gameLoop = (timestamp) => {
         if (!stateRef.current.isRunning) return;
+
+        if (timestamp) {
+            if (!stateRef.current.lastTime) stateRef.current.lastTime = timestamp;
+            const delta = timestamp - stateRef.current.lastTime;
+            if (delta < 16) {
+                requestRef.current = requestAnimationFrame(gameLoop);
+                return;
+            }
+            stateRef.current.lastTime = timestamp - (delta % 16);
+        }
 
         try {
             const currentMode = gameStateRef.current;
@@ -785,15 +795,21 @@ const CrazyFishing = () => {
             ctx.translate(dx, dy);
         }
         
-        const drawFish = (ctx, fish, x, y, size = 50) => {
-            if (fish.sheet && sheetRefs.current[fish.sheet]) {
-                const sx = fish.col * (sheetRefs.current[fish.sheet].width / 4);
-                const sy = fish.row * (sheetRefs.current[fish.sheet].height / 4);
-                const sSizeX = sheetRefs.current[fish.sheet].width / 4;
-                const sSizeY = sheetRefs.current[fish.sheet].height / 4;
-                ctx.drawImage(sheetRefs.current[fish.sheet], sx, sy, sSizeX, sSizeY, x - size/2, y - size/2, size, size);
+        const drawFish = (ctx, fish, x, y, size = 50, dir = 1) => {
+            const img = fish.sheet && sheetRefs.current[fish.sheet];
+            if (img && img.complete && img.width > 0) {
+                const sx = fish.col * (img.width / 4);
+                const sy = fish.row * (img.height / 4);
+                const sSizeX = img.width / 4;
+                const sSizeY = img.height / 4;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                if (dir === -1) ctx.scale(-1, 1);
+                ctx.drawImage(img, sx, sy, sSizeX, sSizeY, -size/2, -size/2, size, size);
+                ctx.restore();
             } else {
-                ctx.fillText(fish.emoji || '❓', x, y);
+                ctx.fillText(fish.emoji || '?', x, y);
             }
         };
 
@@ -854,7 +870,7 @@ const CrazyFishing = () => {
                 // Shiny Glow
                 if (f.type.shiny) { ctx.shadowColor = 'gold'; ctx.shadowBlur = 10; }
 
-                drawFish(ctx, f.type, f.x, f.y, 40);
+                drawFish(ctx, f.type, f.x, f.y, 40, f.dir);
                 ctx.shadowBlur = 0;
 
                 // Cosmetic Hat (If unlocked)
@@ -906,9 +922,7 @@ const CrazyFishing = () => {
         if (mode === 'REELING_UP') {
             // Draw Caught Fish on Hook
             const f = state.battleFish;
-            ctx.font = '40px serif';
-            if (f.type === 'image') ctx.fillText('🧜‍♂️', state.hookX - 20, state.hookY + 40);
-            else ctx.fillText(f.emoji, state.hookX - 20, state.hookY + 40);
+            if (f) drawFish(ctx, f, state.hookX, state.hookY + 20, 60);
         }
 
         // BATTLE UI
@@ -1052,9 +1066,7 @@ const CrazyFishing = () => {
         ctx.fillStyle = overlap ? '#00ff00' : 'rgba(0,255,0,0.4)';
         ctx.fillRect(trackX + 2, barY, 46, effectiveBarHeight);
 
-        ctx.font = '30px serif';
-        if (state.battleFish.type === 'image') ctx.fillText('🧜‍♂️', trackX + 10, fishY + 30);
-        else ctx.fillText(state.battleFish.emoji, trackX + 10, fishY + 30);
+        drawFish(ctx, state.battleFish, trackX + 25, fishY + 20, 40);
 
         // Progress
         const h = (state.catchPercent / 100) * BAR_AREA_HEIGHT;
@@ -1129,11 +1141,7 @@ const CrazyFishing = () => {
         // THE CATCH (Floating High)
         const fishY = charY - 120 - (Math.sin(state.castTimer / 10) * 10); // Higher up
         const f = state.battleFish || caughtFish;
-        ctx.font = '80px serif';
-        ctx.textAlign = 'center';
-        if (f && f.type === 'image') ctx.fillText('🧜‍♂️', charX, fishY);
-        else if (f) ctx.fillText(f.emoji, charX, fishY);
-        ctx.textAlign = 'start';
+        if (f) drawFish(ctx, f, charX, fishY - 20, 100, -1);
 
         // GOD RAYS / GLOW
         ctx.save();
@@ -1516,7 +1524,7 @@ const CrazyFishing = () => {
                                             opacity: unlocked ? 1 : 0.5,
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                                         }}>
-                                            <div style={{ fontSize: '3rem' }}>{unlocked ? fish.emoji : '❓'}</div>
+                                            <div style={{ width: '60px', height: '60px', filter: unlocked ? 'drop-shadow(0 0 5px cyan)' : 'brightness(0)', opacity: unlocked ? 1 : 0.5, backgroundImage: `url(/assets/fishing/fishing_${fish.sheet}.png)`, backgroundSize: '400% 400%', backgroundPosition: `${fish.col * 33.3333}% ${fish.row * 33.3333}%`, transform: 'scaleX(-1)' }}></div>
                                             <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginTop: '5px', color: 'white' }}>{unlocked ? fish.name : '???'}</div>
                                             {unlocked && <div style={{ fontSize: '0.7rem', color: 'lime' }}>Max: {best}kg</div>}
                                         </div>
@@ -1572,7 +1580,14 @@ const CrazyFishing = () => {
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 120
                         }}>
                             <h2 style={{ color: 'var(--neon-gold)', fontSize: '3rem', margin: 0, fontFamily: '"Orbitron", sans-serif', textShadow: '0 0 20px gold' }}>CAUGHT!</h2>
-                            <div style={{ fontSize: '6rem', margin: '20px', filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))' }}>{caughtFish.type === 'image' ? <img src={caughtFish.src} style={{ width: '120px' }} /> : caughtFish.emoji}</div>
+                            <div style={{
+                                width: '120px', height: '120px', margin: '20px auto',
+                                filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))',
+                                backgroundImage: `url(/assets/fishing/fishing_${caughtFish.sheet}.png)`,
+                                backgroundSize: '400% 400%',
+                                backgroundPosition: `${caughtFish.col * 33.3333}% ${caughtFish.row * 33.3333}%`,
+                                transform: 'scaleX(-1)'
+                            }}></div>
                             <h3 style={{ color: 'white', fontSize: '2rem', margin: '5px', fontFamily: '"Orbitron", sans-serif' }}>{caughtFish.name}</h3>
                             <div style={{ color: isNewRecord ? 'var(--neon-green)' : '#ccc', fontSize: '1.2rem', fontFamily: 'monospace' }}>{measuredWeight}kg {isNewRecord && "🏆 NEW PB!"}</div>
                             <div style={{ margin: '20px', textAlign: 'center' }}>

@@ -88,7 +88,6 @@ const GalaxyDefender = () => {
             shake: 0,
             stars: [],
             powerups: [],
-            powerups: [],
             weapon: 'NORMAL',     // NORMAL, SPREAD, RAPID, LASER
             weaponTimer: 0,
             hasShield: false,
@@ -173,8 +172,17 @@ const GalaxyDefender = () => {
     };
 
     const gameLoop = (timestamp) => {
-        const ctx = canvasRef.current.getContext('2d');
         const state = gameState.current;
+        if (timestamp) {
+            if (!state.lastTime) state.lastTime = timestamp;
+            const delta = timestamp - state.lastTime;
+            if (delta < 16) {
+                state.animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
+            state.lastTime = timestamp - (delta % 16);
+        }
+        const ctx = canvasRef.current.getContext('2d');
 
         // Shake Effect
         let offsetX = 0;

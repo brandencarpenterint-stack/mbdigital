@@ -33,7 +33,18 @@ const SubHunterGame = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
 
+        let lastTime = 0;
         const loop = (timestamp) => {
+            if (timestamp) {
+                if (!lastTime) lastTime = timestamp;
+                const delta = timestamp - lastTime;
+                if (delta < 16) {
+                    animationFrameId = requestAnimationFrame(loop);
+                    return;
+                }
+                lastTime = timestamp - (delta % 16);
+            }
+
             if (gameState === 'playing') {
                 update(timestamp, canvas);
             }

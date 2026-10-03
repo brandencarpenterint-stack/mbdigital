@@ -121,7 +121,6 @@ const CosmicBackground = () => {
                     opacity: 0.3;
                 }
                 @keyframes rain { from { background-position: 0 0; } to { background-position: 0 50px; } }
-
                 /* GLITCH */
                 .glitch-overlay {
                     position: absolute; inset: 0;
@@ -156,7 +155,8 @@ const CosmicBackground = () => {
                     0%, 100% { opacity: 0.3; }
                     50% { opacity: 0.5; }
                 }
-            `}    @keyframes pulseSun { 0% { opacity: 0.5; transform: translateX(-50%) scale(1); } 100% { opacity: 0.7; transform: translateX(-50%) scale(1.05); } }
+                @keyframes pulseSun { 0% { opacity: 0.5; transform: translateX(-50%) scale(1); } 100% { opacity: 0.7; transform: translateX(-50%) scale(1.05); } }
+            `}
             </style>
         </div>
     );

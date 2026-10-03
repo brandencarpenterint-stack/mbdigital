@@ -108,8 +108,18 @@ const BroCannon = () => {
     };
 
     // --- MAIN LOOP ---
-    const tick = () => {
+    const tick = (timestamp) => {
         if (gameStateRef.current !== 'FLYING') return;
+
+        if (timestamp) {
+            if (!physics.current.lastTime) physics.current.lastTime = timestamp;
+            const delta = timestamp - physics.current.lastTime;
+            if (delta < 16) {
+                raFrame.current = requestAnimationFrame(tick);
+                return;
+            }
+            physics.current.lastTime = timestamp - (delta % 16);
+        }
 
         const p = physics.current;
         const drag = 0.99 + (upgrades.aero * 0.0005);

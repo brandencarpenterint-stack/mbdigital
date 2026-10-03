@@ -167,11 +167,21 @@ const FlappyMascot = () => {
 
 
 
-    const gameLoop = () => {
+    const gameLoop = (timestamp) => {
         if (!gameActiveRef.current) return;
 
-        const ctx = canvasRef.current.getContext('2d');
         const state = gameState.current;
+        if (timestamp) {
+            if (!state.lastTime) state.lastTime = timestamp;
+            const delta = timestamp - state.lastTime;
+            if (delta < 16) {
+                state.animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
+            state.lastTime = timestamp - (delta % 16);
+        }
+
+        const ctx = canvasRef.current.getContext('2d');
 
         // Clear
         ctx.fillStyle = '#70c5ce'; // Sky blue

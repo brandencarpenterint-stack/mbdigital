@@ -92,8 +92,19 @@ const FaceRunner = () => {
         });
     };
 
-    const gameLoop = () => {
+    const gameLoop = (timestamp) => {
         if (!canvasRef.current) return;
+
+        if (timestamp) {
+            if (!playerRef.current.lastTime) playerRef.current.lastTime = timestamp;
+            const delta = timestamp - playerRef.current.lastTime;
+            if (delta < 16) {
+                requestRef.current = requestAnimationFrame(gameLoop);
+                return;
+            }
+            playerRef.current.lastTime = timestamp - (delta % 16);
+        }
+
         const ctx = canvasRef.current.getContext('2d');
         const width = CANVAS_WIDTH;
         const height = CANVAS_HEIGHT;
