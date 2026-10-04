@@ -99,26 +99,27 @@ const MemoryMatchGame = () => {
             if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // Success Triple-Tap
 
             // Allow animation to finish
-            if (solved.length + 1 === CARDS.length) {
+            if (solved.length + 1 === cards.length / 2) {
                 playWin();
                 triggerConfetti();
                 const finalScore = score + 100 + (Math.max(0, 50 - moves) * 10);
+                setScore(finalScore);
+                
                 if (finalScore > highScore) {
                     setHighScore(finalScore);
                     if (updateStat) updateStat('memoryHighScore', finalScore);
-
-                    const playerName = userProfile?.name || 'Mind Master';
-                    feedService.publish(`solved the Memory Matrix with ${finalScore} points! 🧠`, 'win', playerName);
                 }
 
                 if (updateStat) updateStat('gamesPlayed', 'memory_match');
                 if (addCoins) addCoins(50);
+                
+                setTimeout(() => setGameState('ROUND_OVER'), 1000);
             }
         } else {
             setTimeout(() => {
                 setFlipped([]);
                 setDisabled(false);
-            }, 400);
+            }, 1000);
         }
     };
 
@@ -176,7 +177,7 @@ const MemoryMatchGame = () => {
                                 width: '100%',
                                 height: '100%',
                                 position: 'relative',
-                                transition: 'transform 0.6s',
+                                transition: 'transform 0.8s',
                                 transformStyle: 'preserve-3d',
                                 transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
                             }}>
