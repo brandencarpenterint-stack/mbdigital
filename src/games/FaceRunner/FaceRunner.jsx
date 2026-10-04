@@ -57,7 +57,7 @@ const FaceRunner = () => {
         { id: 'jump_guy', name: 'JUMPER', src: '/assets/skins/jump_guy.png' },
         { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png' },
         { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png' },
-        { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png' },
+
     ];
     const faceImgs = useRef({});
 
