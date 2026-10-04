@@ -23,6 +23,8 @@ const MemoryMatchGame = () => {
     const [cards, setCards] = useState([]);
     const [flipped, setFlipped] = useState([]);
     const [solved, setSolved] = useState([]);
+    const [round, setRound] = useState(1);
+    const [gameState, setGameState] = useState('PLAYING');
     const [disabled, setDisabled] = useState(false);
     const [score, setScore] = useState(0);
     const [moves, setMoves] = useState(0);
@@ -37,8 +39,14 @@ const MemoryMatchGame = () => {
 
     const { playBeep, playCollect, playWin } = useRetroSound();
 
-    const initializeGame = () => {
-        const duplicatedCards = [...CARDS, ...CARDS];
+    const initializeGame = (resetScore = false) => {
+        let pairsCount = 6 + (round * 2); // R1: 8 pairs (4x4), R2: 10 pairs (4x5), R3: 12 pairs (4x6)
+        if (pairsCount > CARD_POOL.length) pairsCount = CARD_POOL.length;
+
+        const shuffledPool = [...CARD_POOL].sort(() => Math.random() - 0.5);
+        const selectedCards = shuffledPool.slice(0, pairsCount);
+
+        const duplicatedCards = [...selectedCards, ...selectedCards];
         const shuffledCards = duplicatedCards
             .sort(() => Math.random() - 0.5)
             .map((card, index) => ({ ...card, uid: index }));
@@ -46,14 +54,22 @@ const MemoryMatchGame = () => {
         setCards(shuffledCards);
         setFlipped([]);
         setSolved([]);
-        setScore(0);
-        setMoves(0);
+        if (resetScore) {
+            setScore(0);
+            setMoves(0);
+            setRound(1);
+        }
+        setGameState('PLAYING');
         setDisabled(false);
     };
 
     useEffect(() => {
-        initializeGame();
-    }, []);
+        if (round > 1) {
+            initializeGame(false);
+        } else {
+            initializeGame(true);
+        }
+    }, [round]);
 
     const checkForMatch = ([firstId, secondId]) => {
         const firstCard = cards.find(c => c.uid === firstId);
@@ -121,7 +137,7 @@ const MemoryMatchGame = () => {
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: `repeat(${cards.length >= 24 ? 6 : (cards.length === 20 ? 5 : 4)}, 1fr)`,
                 gap: '15px',
                 padding: '20px',
                 backgroundColor: '#1a1a2e',
@@ -135,8 +151,8 @@ const MemoryMatchGame = () => {
                             key={card.uid}
                             onClick={() => handleClick(card.uid)}
                             style={{
-                                width: '100px',
-                                height: '100px',
+                                width: cards.length >= 24 ? '80px' : '100px',
+                                height: cards.length >= 24 ? '80px' : '100px',
                                 perspective: '1000px',
                                 cursor: 'pointer'
                             }}
@@ -191,7 +207,7 @@ const MemoryMatchGame = () => {
                 })}
             </div>
 
-            {solved.length === CARDS.length && (
+            {gameState === 'ROUND_OVER' && (
                 <div style={{
                     position: 'fixed',
                     top: '50%',
@@ -204,9 +220,9 @@ const MemoryMatchGame = () => {
                     textAlign: 'center',
                     zIndex: 100
                 }}>
-                    <h2 style={{ fontSize: '3rem', color: '#ffff00', margin: '0 0 20px 0' }}>YOU WIN!</h2>
+                    <h2 style={{ fontSize: '3rem', color: '#ffff00', margin: '0 0 20px 0' }}>ROUND CLEARED!</h2>
                     <p style={{ fontSize: '1.5rem', marginBottom: '30px', color: 'white' }}>Great Job!</p>
-                    <SquishyButton onClick={initializeGame} style={{
+                    <SquishyButton onClick={() => setRound(r => r + 1)} style={{
                         padding: '10px 20px',
                         fontSize: '1.2rem',
                         backgroundColor: '#ffff00',
@@ -216,7 +232,7 @@ const MemoryMatchGame = () => {
                         marginRight: '15px',
                         fontWeight: 'bold'
                     }}>
-                        PLAY AGAIN
+                        NEXT ROUND
                     </SquishyButton>
                     <Link to="/arcade" style={{
                         padding: '10px 20px',
