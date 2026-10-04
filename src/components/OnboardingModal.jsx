@@ -89,6 +89,20 @@ const OnboardingModal = () => {
                 if (data) {
                     bonusCoins += 5000;
                     alert(`REFERRAL ACCEPTED: +5000 COINS! Welcome bro of ${data.name}!`);
+                    
+                    // Award the inviter! Since we don't have an RPC, we will fetch their profile and upsert.
+                    // (Assuming RLS allows this in this prototype environment)
+                    try {
+                        const { data: inviterData } = await supabase.from('profiles').select('*').eq('id', data.id).single();
+                        if (inviterData) {
+                            await supabase.from('profiles').upsert({
+                                ...inviterData,
+                                coins: (inviterData.coins || 0) + 5000
+                            });
+                        }
+                    } catch (err) {
+                        console.error("Failed to reward inviter", err);
+                    }
                 } else {
                     alert("INVALID INVITE CODE. PROCEEDING WITHOUT REFERRAL.");
                 }
