@@ -39,6 +39,14 @@ const MerchJump = () => {
         { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png?t=v2', hoodie: '#593a28' },
         { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png?t=v2', hoodie: '#7cb9e8' },
         { id: 'face_default', name: 'OG', src: '/assets/skins/face_default.png?t=v2', hoodie: '#333' },
+        { id: 'face_dino', name: 'DINO', src: '/assets/skins/face_dino.png', hoodie: '#85c34a' },
+        { id: 'face_star', name: 'STAR', src: '/assets/skins/face_star.png', hoodie: '#ffaa00' },
+        { id: 'face_space', name: 'SPACE', src: '/assets/skins/face_space.png', hoodie: '#33ccff' },
+        { id: 'face_pumpkin', name: 'PUMPKIN', src: '/assets/skins/face_pumpkin.png', hoodie: '#ff6600' },
+        { id: 'face_gamer', name: 'GAMER', src: '/assets/skins/face_gamer.png', hoodie: '#9966ff' },
+        { id: 'face_frog', name: 'FROG', src: '/assets/skins/face_frog.png', hoodie: '#66ff99' },
+        { id: 'face_astro', name: 'ASTRO', src: '/assets/skins/face_astro.png', hoodie: '#ffcc00' },
+        { id: 'face_rainbow', name: 'RAINBOW', src: '/assets/skins/face_rainbow.png', hoodie: '#ff6699' },
     ];
 
     // STREAKS
@@ -624,7 +632,7 @@ const MerchJump = () => {
                             ) : (
                                 <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
                                     <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>SKIN SELECT</h2>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                         {SKINS.map(skin => (
                                             <button key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop(); }}
                                                 style={{ background: selectedSkin.id === skin.id ? '#87CEEB' : '#eee', border: 'none', borderRadius: '10px', padding: '10px', cursor: 'pointer', transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)' }}>
