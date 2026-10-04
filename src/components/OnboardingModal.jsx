@@ -7,9 +7,17 @@ import { supabase } from '../config/supabaseClient';
 
 const AVATARS = [
     '/assets/skins/face_default.png',
-    '/assets/skins/face_money.png',
+    '/assets/skins/jump_guy.png',
     '/assets/skins/face_bear.png',
     '/assets/skins/face_bunny.png',
+    '/assets/skins/face_dino.png',
+    '/assets/skins/face_star.png',
+    '/assets/skins/face_space.png',
+    '/assets/skins/face_pumpkin.png',
+    '/assets/skins/face_gamer.png',
+    '/assets/skins/face_frog.png',
+    '/assets/skins/face_astro.png',
+    '/assets/skins/face_rainbow.png'
 ];
 
 const BOOT_LOGS = [
@@ -189,13 +197,13 @@ const OnboardingModal = () => {
 
                         {/* AVATAR SELECTOR */}
                         <div style={{ marginBottom: '20px', width: '100%' }}>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
                                 {AVATARS.map(src => (
                                     <div
                                         key={src}
                                         onClick={() => setAvatar(src)}
                                         style={{
-                                            width: '60px', height: '60px', borderRadius: '50%',
+                                            width: '50px', height: '50px', borderRadius: '50%',
                                             border: avatar === src ? '4px solid var(--neon-blue)' : '2px solid #4a5568',
                                             overflow: 'hidden', cursor: 'pointer',
                                             transform: avatar === src ? 'scale(1.1)' : 'scale(1)',

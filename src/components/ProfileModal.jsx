@@ -25,9 +25,17 @@ import RoastModal from './RoastModal';
 
 const AVATARS = [
     '/assets/skins/face_default.png',
-    '/assets/skins/face_money.png',
+    '/assets/skins/jump_guy.png',
     '/assets/skins/face_bear.png',
     '/assets/skins/face_bunny.png',
+    '/assets/skins/face_dino.png',
+    '/assets/skins/face_star.png',
+    '/assets/skins/face_space.png',
+    '/assets/skins/face_pumpkin.png',
+    '/assets/skins/face_gamer.png',
+    '/assets/skins/face_frog.png',
+    '/assets/skins/face_astro.png',
+    '/assets/skins/face_rainbow.png'
 ];
 
 const MODEL_FRIENDS = [
