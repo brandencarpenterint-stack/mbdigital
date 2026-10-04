@@ -38,7 +38,7 @@ const FaceRunner = () => {
             setHighScore(stats.faceRunnerHighScore);
         }
     }, [stats]);
-    const [selectedFace, setSelectedFace] = useState('face_money');
+    const [selectedFace, setSelectedFace] = useState('face_default');
 
     // Refs for Loop
     const playingRef = useRef(false);
@@ -52,15 +52,21 @@ const FaceRunner = () => {
     const requestRef = useRef(null);
 
     // Assets
+    const SKINS = [
+        { id: 'face_default', name: 'OG', src: '/assets/skins/face_default.png' },
+        { id: 'jump_guy', name: 'JUMPER', src: '/assets/skins/jump_guy.png' },
+        { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png' },
+        { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png' },
+        { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png' },
+    ];
     const faceImgs = useRef({});
 
     useEffect(() => {
         // Preload Faces
-        const faces = ['face_money', 'face_bear', 'face_bunny', 'face_default'];
-        faces.forEach(f => {
+        SKINS.forEach(skin => {
             const img = new Image();
-            img.src = `/assets/skins/${f}.png`;
-            faceImgs.current[f] = img;
+            img.src = skin.src;
+            faceImgs.current[skin.id] = img;
         });
         return () => cancelAnimationFrame(requestRef.current);
     }, []);
@@ -305,10 +311,32 @@ const FaceRunner = () => {
             />
 
             {gameState === 'START' && (
-                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '2px solid cyan' }}>
-                    <h1 style={{ color: 'cyan', fontSize: '3rem', margin: 0 }}>FACE WARP</h1>
-                    <p style={{ color: 'white', marginBottom: '20px' }}>Avoid the Void.</p>
-                    <SquishyButton onClick={startGame} style={{ background: 'cyan', color: 'black', fontSize: '1.5rem', padding: '15px 40px' }}>RUN</SquishyButton>
+                <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.9)', padding: '40px', borderRadius: '20px', border: '2px solid cyan', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <h1 style={{ color: 'cyan', fontSize: '3rem', margin: 0, fontFamily: '"Orbitron"' }}>FACE WARP</h1>
+                    <p style={{ color: 'white', marginBottom: '20px', fontFamily: 'monospace' }}>Avoid the Void.</p>
+                    
+                    {/* SKIN SELECTOR */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '300px' }}>
+                        {SKINS.map(skin => (
+                            <button 
+                                key={skin.id}
+                                onClick={() => setSelectedFace(skin.id)}
+                                style={{
+                                    background: selectedFace === skin.id ? 'cyan' : '#222',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '5px',
+                                    cursor: 'pointer',
+                                    transform: selectedFace === skin.id ? 'scale(1.1)' : 'scale(1)',
+                                    transition: 'transform 0.1s'
+                                }}
+                            >
+                                <img src={skin.src} alt={skin.name} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                            </button>
+                        ))}
+                    </div>
+
+                    <SquishyButton onClick={startGame} style={{ background: 'cyan', color: 'black', fontSize: '1.5rem', padding: '15px 40px', fontWeight: 'bold' }}>RUN</SquishyButton>
                 </div>
             )}
 
