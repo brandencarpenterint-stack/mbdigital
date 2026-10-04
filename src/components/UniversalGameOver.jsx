@@ -20,7 +20,7 @@ const UniversalGameOver = ({
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
     
     const isNewRecord = score > (bestScore || 0);
-    const finalCoins = Math.max(finalCoins * 3, Math.floor(score * 1.5));
+    const finalCoins = Math.max(coinsEarned * 3, Math.floor(score * 1.5));
 
     // Animation States
     const [displayScore, setDisplayScore] = useState(0);
