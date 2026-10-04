@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
+import confetti from 'canvas-confetti';
 
 // A simple 2.5D Social Hangout Room
 const TheBunker = () => {
@@ -26,6 +27,20 @@ const TheBunker = () => {
 
         const channel = supabase.channel('bunker_room', {
             config: { broadcast: { ack: false } }
+        });
+
+        channel.on('broadcast', { event: 'player_action' }, (payload) => {
+            const data = payload.payload;
+            if (data.type === 'fireworks') {
+                confetti({
+                    particleCount: 50,
+                    spread: 80,
+                    startVelocity: 40,
+                    origin: { x: data.x / 100, y: data.y / 100 },
+                    colors: ['#00ffcc', '#ff00ff', '#ffffff', '#ffaa00'],
+                    zIndex: 9999
+                });
+            }
         });
 
         channel.on('broadcast', { event: 'player_update' }, (payload) => {
@@ -109,6 +124,37 @@ const TheBunker = () => {
         
         // Broadcast immediately on move
         setTimeout(broadcastState, 50); 
+    };
+
+    const triggerFireworks = () => {
+        playBeep();
+        // Fire locally
+        confetti({
+            particleCount: 50,
+            spread: 80,
+            startVelocity: 40,
+            origin: { x: myPos.x / 100, y: myPos.y / 100 },
+            colors: ['#00ffcc', '#ff00ff', '#ffffff', '#ffaa00'],
+            zIndex: 9999
+        });
+        // Broadcast
+        if (channelRef.current) {
+            channelRef.current.send({
+                type: 'broadcast',
+                event: 'player_action',
+                payload: { type: 'fireworks', x: myPos.x, y: myPos.y }
+            });
+        }
+    };
+
+    const sendEmoji = (emoji) => {
+        playBeep();
+        setMyChat(emoji); // Reuse chat bubble for big emojis
+        broadcastState(emoji);
+        setTimeout(() => {
+            setMyChat(prev => prev === emoji ? null : prev);
+            broadcastState(null);
+        }, 3000);
     };
 
     const sendChat = (e) => {
@@ -273,6 +319,20 @@ const TheBunker = () => {
             {/* Render Me */}
             {renderPlayer(null, true)}
 
+            {/* Action Bar */}
+            <div style={{
+                position: 'absolute', bottom: '90px', left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', gap: '10px', zIndex: 1000
+            }}>
+                <button onClick={(e) => { e.stopPropagation(); sendEmoji('🔥'); }} style={actionBtnStyle}>🔥</button>
+                <button onClick={(e) => { e.stopPropagation(); sendEmoji('💀'); }} style={actionBtnStyle}>💀</button>
+                <button onClick={(e) => { e.stopPropagation(); sendEmoji('🚀'); }} style={actionBtnStyle}>🚀</button>
+                <button onClick={(e) => { e.stopPropagation(); sendEmoji('💰'); }} style={actionBtnStyle}>💰</button>
+                <button onClick={(e) => { e.stopPropagation(); triggerFireworks(); }} style={{ ...actionBtnStyle, background: 'var(--neon-blue)', color: 'black', fontWeight: 'bold' }}>
+                    🧨 FIREWORKS
+                </button>
+            </div>
+
             {/* Chat Bar */}
             <div style={{
                 position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
@@ -303,6 +363,18 @@ const TheBunker = () => {
             </div>
         </div>
     );
+};
+
+const actionBtnStyle = {
+    padding: '10px 15px',
+    borderRadius: '15px',
+    background: 'rgba(0,0,0,0.8)',
+    border: '2px solid #444',
+    color: 'white',
+    fontSize: '1.2rem',
+    cursor: 'pointer',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
+    transition: 'transform 0.1s'
 };
 
 export default TheBunker;
