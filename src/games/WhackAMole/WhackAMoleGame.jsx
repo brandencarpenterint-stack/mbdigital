@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 import useRetroSound from '../../hooks/useRetroSound';
@@ -7,15 +6,39 @@ import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 
-const MOLE_COUNT = 16;
 const GAME_DURATION = 30;
+
+const IMAGES = {
+    default: '/assets/skins/face_default.png',
+    cat: '/assets/merchboy_cat.png',
+    bunny: '/assets/merchboy_bunny.png',
+    dino: '/assets/skins/face_dino.png',
+    star: '/assets/skins/face_star.png',
+    space: '/assets/skins/face_space.png',
+    pumpkin: '/assets/skins/face_pumpkin.png',
+    gamer: '/assets/skins/face_gamer.png',
+    frog: '/assets/skins/face_frog.png',
+    astro: '/assets/skins/face_astro.png',
+    rainbow: '/assets/skins/face_rainbow.png'
+};
 
 const WhackAMoleGame = () => {
     const { updateStat, addCoins, userProfile, stats } = useGamification() || {};
-    const [moles, setMoles] = useState(new Array(MOLE_COUNT).fill(false));
+    
+    // Board size settings
+    const [gridSize, setGridSize] = useState(4); // 3x3, 4x4, 5x5
+    const MOLE_COUNT = gridSize * gridSize;
+
+    const [moles, setMoles] = useState(new Array(16).fill(false));
+    const [moleTypes, setMoleTypes] = useState(new Array(16).fill('default'));
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('whackHighScore')) || 0);
     const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+
+    useEffect(() => {
+        setMoles(new Array(MOLE_COUNT).fill(false));
+        setMoleTypes(new Array(MOLE_COUNT).fill('default'));
+    }, [gridSize]);
 
     // Sync local high score with global stat on mount
     useEffect(() => {
@@ -23,6 +46,7 @@ const WhackAMoleGame = () => {
             setHighScore(stats.whackHighScore);
         }
     }, [stats]);
+    
     const [gameActive, setGameActive] = useState(false);
     const [gameOver, setGameOver] = useState(false);
 
@@ -31,8 +55,6 @@ const WhackAMoleGame = () => {
     // Timer Ref to clear intervals
     const popTimerRef = useRef(null);
     const gameTimerRef = useRef(null);
-
-    const [moleTypes, setMoleTypes] = useState(new Array(MOLE_COUNT).fill('default'));
 
     const endGame = () => {
         clearInterval(gameTimerRef.current);
@@ -51,7 +73,7 @@ const WhackAMoleGame = () => {
 
             if (score > 100) {
                 const playerName = userProfile?.name || 'Player';
-                feedService.publish(`is a Whack-a-Mole Champion! Score: ${score} 🔨`, 'win', playerName);
+                feedService.publish(`is a Whack-a-Mole Champion! Score: ${score} 👾`, 'win', playerName);
             }
         }
 
@@ -60,23 +82,27 @@ const WhackAMoleGame = () => {
     };
 
     const popMoles = () => {
-        const popTime = Math.random() * 500 + 200; // Random time
+        // Slower pop time (was 200-700, now 400-1100)
+        const popTime = Math.random() * 700 + 400; 
+        
         popTimerRef.current = setTimeout(() => {
             if (!gameActive && timeLeft <= 0) return;
 
-            const newMoles = [...moles]; // Copy current state to avoid overwriting others if we want multi-mole (though currently it clears others? No, line 48 was creating new Array)
-            // Wait, previous logic was `new Array(MOLE_COUNT).fill(false)`. This meant only ONE mole at a time.
-            // Do we want only one? The user didn't specify multi-mole. Sticking to one for now but randomizing types.
+            // Generate 1-2 moles depending on grid size
+            const maxMoles = gridSize === 5 ? 2 : 1;
+            const molesToPop = Math.floor(Math.random() * maxMoles) + 1;
+            
             const resetMoles = new Array(MOLE_COUNT).fill(false);
-
-            const randomIdx = Math.floor(Math.random() * MOLE_COUNT);
-            resetMoles[randomIdx] = true;
-            setMoles(resetMoles);
-
-            // Random Face
-            const types = ['default', 'cat', 'bunny', 'money'];
             const newTypes = [...moleTypes];
-            newTypes[randomIdx] = types[Math.floor(Math.random() * types.length)];
+            const typesKeys = Object.keys(IMAGES);
+
+            for (let i = 0; i < molesToPop; i++) {
+                const randomIdx = Math.floor(Math.random() * MOLE_COUNT);
+                resetMoles[randomIdx] = true;
+                newTypes[randomIdx] = typesKeys[Math.floor(Math.random() * typesKeys.length)];
+            }
+            
+            setMoles(resetMoles);
             setMoleTypes(newTypes);
 
             popMoles();
@@ -123,11 +149,8 @@ const WhackAMoleGame = () => {
         };
     }, []);
 
-    const IMAGES = {
-        default: '/assets/merchboy_face.png',
-        cat: '/assets/merchboy_cat.png',
-        bunny: '/assets/merchboy_bunny.png',
-        money: '/assets/merchboy_money.png'
+    const cycleGridSize = () => {
+        setGridSize(prev => prev === 3 ? 4 : (prev === 4 ? 5 : 3));
     };
 
     return (
@@ -147,30 +170,42 @@ const WhackAMoleGame = () => {
             `}</style>
             <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '2.5rem', margin: '10px 0', textAlign: 'center' }}>WHACK-A-MOLE</h1>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '500px', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '500px', marginBottom: '10px', fontSize: '1.2rem', fontWeight: 'bold' }}>
                 <span>SCORE: {score}</span>
                 <span>TIME: {timeLeft}s</span>
                 <span>HIGH: {highScore}</span>
             </div>
 
             {!gameActive && !gameOver && (
-                <SquishyButton onClick={startGame} style={{
-                    padding: '15px 40px',
-                    fontSize: '1.5rem',
-                    backgroundColor: '#ff0055',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    boxShadow: '0 5px 0 #990033',
-                    marginBottom: '20px'
-                }}>
-                    START GAME
-                </SquishyButton>
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                    <SquishyButton onClick={startGame} style={{
+                        padding: '10px 30px',
+                        fontSize: '1.2rem',
+                        backgroundColor: '#ff0055',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        boxShadow: '0 5px 0 #990033'
+                    }}>
+                        START
+                    </SquishyButton>
+                    <SquishyButton onClick={cycleGridSize} style={{
+                        padding: '10px 30px',
+                        fontSize: '1.2rem',
+                        backgroundColor: '#444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        boxShadow: '0 5px 0 #222'
+                    }}>
+                        GRID: {gridSize}x{gridSize}
+                    </SquishyButton>
+                </div>
             )}
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
                 gap: '10px',
                 padding: '10px',
                 width: '100%',
