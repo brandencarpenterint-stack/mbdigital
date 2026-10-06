@@ -4,10 +4,13 @@ import { supabase } from '../lib/supabaseClient';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
 import confetti from 'canvas-confetti';
+import { SHOP_ITEMS } from '../config/ShopItems';
 
 // A simple 2.5D Social Hangout Room
 const TheBunker = () => {
-    const { userProfile } = useGamification() || {};
+    const { userProfile, shopState, consumeItem } = useGamification() || {};
+    const [visualEffects, setVisualEffects] = useState([]);
+
     const { playClick, playBeep, playJump } = useRetroSound();
     const [players, setPlayers] = useState({});
     const [chatInput, setChatInput] = useState('');
@@ -29,31 +32,21 @@ const TheBunker = () => {
             config: { broadcast: { ack: false } }
         });
 
-        channel.on('broadcast', { event: 'player_action' }, (payload) => {
+                channel.on('broadcast', { event: 'player_action' }, (payload) => {
             const data = payload.payload;
             if (data.type === 'fireworks') {
                 confetti({
-                    particleCount: 50,
-                    spread: 80,
-                    startVelocity: 40,
+                    particleCount: 50, spread: 80, startVelocity: 40,
                     origin: { x: data.x / 100, y: data.y / 100 },
-                    colors: ['#00ffcc', '#ff00ff', '#ffffff', '#ffaa00'],
-                    zIndex: 9999
+                    colors: ['#00ffcc', '#ff00ff', '#ffffff', '#ffaa00'], zIndex: 9999
                 });
+            } else {
+                // Add to visual effects (smoke, pie)
+                setVisualEffects(prev => [...prev, { id: Date.now() + Math.random(), type: data.type, x: data.x, y: data.y }]);
+                setTimeout(() => {
+                    setVisualEffects(prev => prev.filter(e => Date.now() - e.id < 2000)); // cleanup hack, actual cleanup below
+                }, 2000);
             }
-        });
-
-        channel.on('broadcast', { event: 'player_update' }, (payload) => {
-            const data = payload.payload;
-            if (data.id === myId.current) return;
-            
-            setPlayers(prev => ({
-                ...prev,
-                [data.id]: {
-                    ...data,
-                    lastSeen: Date.now()
-                }
-            }));
         }).subscribe();
 
         channelRef.current = channel;
@@ -82,7 +75,14 @@ const TheBunker = () => {
         // Initial broadcast
         setTimeout(broadcastState, 500);
 
+        
+        // Cleanup visual effects periodically
+        const fxCleanup = setInterval(() => {
+            setVisualEffects(prev => prev.filter(e => Date.now() - parseInt(e.id) < 1500));
+        }, 1000);
+
         return () => {
+            clearInterval(fxCleanup);
             supabase.removeChannel(channel);
             clearInterval(heartbeat);
             clearInterval(cleanup);
@@ -126,23 +126,35 @@ const TheBunker = () => {
         setTimeout(broadcastState, 50); 
     };
 
-    const triggerFireworks = () => {
+    
+    const triggerAction = (actionType) => {
+        // Find item in shop
+        const item = SHOP_ITEMS.find(i => i.id === actionType);
+        if (actionType !== 'fireworks' && (!item || !shopState?.inventory?.[actionType] || shopState.inventory[actionType] <= 0)) {
+            playError();
+            alert("You don't have any of these! Buy them in the Shop.");
+            return;
+        }
+
+        if (actionType !== 'fireworks') {
+            consumeItem(actionType);
+        }
+
         playBeep();
-        // Fire locally
-        confetti({
-            particleCount: 50,
-            spread: 80,
-            startVelocity: 40,
-            origin: { x: myPos.x / 100, y: myPos.y / 100 },
-            colors: ['#00ffcc', '#ff00ff', '#ffffff', '#ffaa00'],
-            zIndex: 9999
-        });
-        // Broadcast
+        
+        if (actionType === 'fireworks' || actionType === 'bunker_fireworks') {
+            confetti({
+                particleCount: 50, spread: 80, startVelocity: 40,
+                origin: { x: myPos.x / 100, y: myPos.y / 100 }, zIndex: 9999
+            });
+        } else {
+            setVisualEffects(prev => [...prev, { id: Date.now(), type: actionType, x: myPos.x, y: myPos.y }]);
+        }
+
         if (channelRef.current) {
             channelRef.current.send({
-                type: 'broadcast',
-                event: 'player_action',
-                payload: { type: 'fireworks', x: myPos.x, y: myPos.y }
+                type: 'broadcast', event: 'player_action',
+                payload: { type: actionType, x: myPos.x, y: myPos.y }
             });
         }
     };

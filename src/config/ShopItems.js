@@ -1,4 +1,10 @@
 export const SHOP_ITEMS = [
+    // --- BUNKER SPECIALS (CONSUMABLES) ---
+    { id: 'bunker_pie', type: 'consumable', name: 'Custard Pie', price: 50, category: 'bunker', description: 'Splat someone in the face. Hilarious.', icon: '🥧' },
+    { id: 'bunker_smoke', type: 'consumable', name: 'Smoke Bomb', price: 150, category: 'bunker', description: 'Vanish in a cloud of ninja smoke.', icon: '💨' },
+    { id: 'bunker_trail_fire', type: 'bunker_trail', name: 'Fire Trail', price: 500, category: 'bunker', slot: 'bunker_trail', description: 'Leave a trail of fire as you run.', icon: '🔥' },
+    { id: 'bunker_fireworks', type: 'consumable', name: 'Mega Fireworks', price: 200, category: 'bunker', description: 'Launch a massive firework show across the room.', icon: '🎆' },
+
     // --- SNAKE SKINS ---
     { id: 'snake_default', type: 'snake_skin', name: 'Neon Green', price: 0, category: 'snake', slot: 'snake', description: 'The classic look.', icon: '🟩' },
     { id: 'snake_gold', type: 'snake_skin', name: 'Midas Touch', price: 500, category: 'snake', slot: 'snake', description: 'Solid gold snake. Fancy!', icon: '🏆' },
@@ -152,4 +158,5 @@ export const CATEGORIES = [
     { id: 'themes', name: 'OS Themes', icon: '🎨' },
     { id: 'radio', name: 'Radio Skins', icon: '📻' },
     { id: 'powerups', name: 'Power Ups', icon: '⚡' },
+    { id: 'bunker', name: 'Bunker Specials', icon: '🧨' },
 ];
