@@ -176,153 +176,76 @@ const Layout = () => {
             {!isFullScreenGame && <HypeTicker />}
 
             {!isFullScreenGame && (
-                <header className="glass-panel main-header" style={{
-                    position: 'fixed', top: '30px', left: 0, right: 0, zIndex: 1000,
-                    borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '10px 20px', height: '60px'
+                <>
+{/* FLOATING TOP BAR (Clean & Minimal) */}
+                <div style={{
+                    position: 'fixed', top: '20px', left: '20px', right: '20px', zIndex: 1000,
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                    pointerEvents: 'none' // Let clicks pass through empty space
                 }}>
-                    <div className="logo-section">
-                        <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {/* Animated Faces */}
-                            <div style={{
-                                width: '35px', height: '35px',
-                                animation: 'float 3s ease-in-out infinite',
-                                position: 'relative'
-                            }}>
-                                <img
-                                    src={FACES[faceIndex]}
-                                    alt="Face"
-                                    style={{
-                                        width: '100%', height: '100%', objectFit: 'contain',
-                                        transition: 'transform 0.5s',
-                                        filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.5))'
-                                    }}
-                                />
+                    {/* Left: Logo & Faction */}
+                    <div style={{ pointerEvents: 'auto', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <a href="https://merchboy.shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.6)', padding: '5px 15px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div style={{ width: '25px', height: '25px', animation: 'float 3s ease-in-out infinite' }}>
+                                <img src={FACES[faceIndex]} alt="Face" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.5))' }} />
                             </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>POWERED BY</span>
-                                <span style={{ fontSize: '1rem', color: '#fff', fontWeight: '900', letterSpacing: '0.5px' }}>MBDIGITAL</span>
-                            </div>
+                            <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '900', letterSpacing: '1px' }}>MBDIGITAL</span>
                         </a>
-                        <style>{`
-                                0%, 100% { transform: translateY(0); }
-                                50% { transform: translateY(-5px); }
-                            }
-                            @keyframes bounce {
-                                0%, 100% { transform: translateY(0); }
-                                50% { transform: translateY(-10px); }
-                            }
-                        `}</style>
+                        
+                        {userProfile?.squad && (
+                            <div style={{ background: 'rgba(0,0,0,0.6)', padding: '5px 15px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                {userProfile.squad}
+                            </div>
+                        )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', position: 'relative' }}>
-                        {/* GUEST MODE INDICATOR */}
-                        {!session?.user && (
-                            <button
-                                onClick={() => setViewedProfile(userProfile)}
-                                style={{
-                                    background: 'var(--neon-pink)', color: 'white', border: 'none',
-                                    padding: '5px 10px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold',
-                                    cursor: 'pointer', animation: 'pulse 2s infinite'
-                                }}
-                            >
-                                ⚠ GUEST MODE
+                    {/* Right: Stats & Settings */}
+                    <div style={{ pointerEvents: 'auto', display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(0,0,0,0.6)', padding: '5px 10px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        {/* Daily Quests Toggle */}
+                        {session?.user && (
+                            <button onClick={() => setShowQuests(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px', position: 'relative' }}>
+                                🎯
+                                {showQuestDot && <div style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, background: '#ff0055', borderRadius: '50%', boxShadow: '0 0 5px #ff0055' }} />}
                             </button>
                         )}
-                        {/* NOTIFICATIONS */}
-                        <button
-                            onClick={() => setShowNotifications(!showNotifications)}
-                            style={{
-                                background: 'transparent', border: 'none', cursor: 'pointer',
-                                fontSize: '1.5rem', padding: '0', position: 'relative'
-                            }}
-                        >
-                            🔔
-                            {unreadCount > 0 && (
-                                <div style={{
-                                    position: 'absolute', top: -5, right: -5,
-                                    width: '18px', height: '18px', background: '#ff0055', color: 'white',
-                                    borderRadius: '50%', fontSize: '0.7rem', display: 'flex',
-                                    justifyContent: 'center', alignItems: 'center', border: '2px solid black',
-                                    animation: 'pulse 1s infinite'
-                                }}>
-                                    {unreadCount}
-                                </div>
-                            )}
-                        </button>
-                        {showNotifications && <NotificationList onClose={() => setShowNotifications(false)} />}
 
-                        {/* QUESTS BUTTON */}
-                        <button
-                            onClick={() => setShowQuests(true)}
-                            style={{
-                                background: 'transparent', border: 'none', cursor: 'pointer',
-                                fontSize: '1.5rem', padding: '0', position: 'relative'
-                            }}
-                        >
-                            📜
-                            {showQuestDot && (
-                                <div style={{
-                                    position: 'absolute', top: -2, right: -2,
-                                    width: '10px', height: '10px', background: '#ff0055',
-                                    borderRadius: '50%', boxShadow: '0 0 5px #ff0055',
-                                    animation: 'pulse 1s infinite'
-                                }} />
-                            )}
-                        </button>
-
-                        {/* STREAK INDICATOR */}
+                        {/* Streak */}
                         {dailyState?.streak > 0 && (
-                            <div style={{
-                                background: 'rgba(0,0,0,0.5)',
-                                border: `1px solid ${dailyState.streak >= 15 ? '#00f260' : dailyState.streak >= 7 ? 'gold' : dailyState.streak >= 3 ? 'silver' : '#cd7f32'}`,
-                                padding: '5px 12px', borderRadius: '20px',
-                                fontSize: '0.9rem', 
-                                color: dailyState.streak >= 15 ? '#00f260' : dailyState.streak >= 7 ? 'gold' : dailyState.streak >= 3 ? 'silver' : '#cd7f32',
-                                fontWeight: 'bold',
-                                display: 'flex', alignItems: 'center', gap: '5px',
-                                textShadow: dailyState.streak >= 15 ? '0 0 10px #00f260' : 'none',
-                                animation: dailyState.streak >= 15 ? 'pulse 2s infinite' : 'none'
-                            }} title={`${dailyState.streak} Day Streak!`}>
+                            <div style={{ fontSize: '0.9rem', color: dailyState.streak >= 15 ? '#00f260' : dailyState.streak >= 7 ? 'gold' : dailyState.streak >= 3 ? 'silver' : '#cd7f32', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 🔥 {dailyState.streak}
                             </div>
                         )}
-                        <div style={{
-                            background: 'rgba(0,0,0,0.5)',
-                            border: '1px solid var(--neon-gold)',
-                            padding: '5px 12px', borderRadius: '20px',
-                            fontSize: '0.9rem', color: 'var(--neon-gold)', fontWeight: 'bold'
-                        }}>
+
+                        {/* Coins */}
+                        <div style={{ fontSize: '0.9rem', color: 'var(--neon-gold)', fontWeight: 'bold', marginLeft: '5px' }}>
                             🪙 {coins.toLocaleString()}
                         </div>
-                        <button
-                            onClick={() => setShowDaily(true)}
-                            style={{
-                                background: 'transparent', border: 'none', cursor: 'pointer',
-                                fontSize: '1.5rem', padding: '0',
-                                opacity: isDailyReady ? 1 : 0.6,
-                                filter: isDailyReady ? 'drop-shadow(0 0 5px gold)' : 'grayscale(100%)',
-                                animation: isDailyReady ? 'bounce 1s infinite' : 'none'
-                            }}
-                        >
+
+                        {/* Stash */}
+                        <button onClick={() => setShowDaily(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px', opacity: isDailyReady ? 1 : 0.6, filter: isDailyReady ? 'drop-shadow(0 0 5px gold)' : 'grayscale(100%)', animation: isDailyReady ? 'bounce 1s infinite' : 'none', marginLeft: '5px' }}>
                             🎁
                         </button>
-                        <button
-                            onClick={toggleSound}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0' }}
-                        >
+
+                        {/* Sound */}
+                        <button onClick={toggleSound} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px', marginLeft: '5px' }}>
                             {soundEnabled ? '🔊' : '🔇'}
                         </button>
+                        
+                        {/* Admin Void (Guest Mode) */}
+                        {!session?.user && (
+                            <Link to="/void" style={{ background: '#ff0055', color: 'white', padding: '3px 10px', borderRadius: '15px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: 'bold', marginLeft: '5px' }}>
+                                GUEST
+                            </Link>
+                        )}
                     </div>
-                </header>
+                </div>
+</>
             )}
 
             {/* PAGE CONTENT */}
             <main
                 className="main-content"
-                style={{ paddingTop: '90px', minHeight: '100vh' }}
+                style={{ paddingTop: '80px', minHeight: '100vh' }}
             >
                 <AnimatePresence mode='wait'>
                     <motion.div
@@ -365,9 +288,9 @@ const Layout = () => {
                             🏠
                         </Link>
 
-                        {/* 2. HUSTLE MODE (Productivity) */}
-                        <Link to="/hustle" className="dock-icon" style={{ opacity: location.pathname === '/hustle' ? 1 : 0.5 }}>
-                            ⏱️
+                        {/* 2. FACTIONS */}
+                        <Link to="/factions" className="dock-icon" style={{ opacity: location.pathname === '/factions' ? 1 : 0.5 }}>
+                            ⚔️
                         </Link>
 
                         {/* 3. ARCADE (Promoted to CENTER FAB) */}
