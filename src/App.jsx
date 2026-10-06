@@ -5,6 +5,7 @@ const Home = lazy(() => import('./pages/Home'));
 const Coloring = lazy(() => import('./pages/Coloring'));
 const ArcadeHub = lazy(() => import('./pages/ArcadeHub'));
 const Factions = lazy(() => import('./pages/Factions'));
+const TheUnderworld = lazy(() => import('./pages/TheUnderworld'));
 const ShopPage = lazy(() => import('./pages/ShopPage'));
 const BeatLab = lazy(() => import('./pages/BeatLab'));
 const PocketBro = lazy(() => import('./pages/PocketBro'));
@@ -105,6 +106,7 @@ function App() {
             <Route path="profile" element={<BroCard />} />
             <Route path="arcade" element={<ArcadeHub />} />
             <Route path="factions" element={<Factions />} />
+            <Route path="underworld" element={<TheUnderworld />} />
             <Route path="shop" element={<ShopPage />} />
             <Route path="merch-lab" element={<MerchLab />} />
             <Route path="terminal" element={<Terminal />} />
