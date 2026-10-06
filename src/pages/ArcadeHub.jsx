@@ -245,6 +245,15 @@ const games = [
         icon: '⚔️',
         colSpan: 1,
         path: '/subslayer'
+    },
+    {
+        id: 'coloring',
+        title: 'COLOR STUDIO',
+        desc: 'Relax and paint.',
+        gradient: 'linear-gradient(135deg, #FF69B4, #8A2BE2)',
+        icon: '🎨',
+        colSpan: 2,
+        path: '/coloring'
     }
 ];
 
