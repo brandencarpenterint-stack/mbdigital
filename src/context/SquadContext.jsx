@@ -1,77 +1,65 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../config/supabaseClient'; // Ensure correct path
 
 const SquadContext = createContext();
-
 export const useSquad = () => useContext(SquadContext);
 
 export const SquadProvider = ({ children }) => {
-    // Persistent User Squad (Team)
     const [userSquad, setUserSquad] = useState(() => localStorage.getItem('userSquad') || null);
-
-    // Persistent Recruits (BroFinder Matches)
-    const [recruits, setRecruits] = useState(() => {
-        const saved = localStorage.getItem('squadRecruits');
-        return saved ? JSON.parse(saved) : [];
-    });
-
-    // Global State
+    
+    // Global State for Faction War
     const [squadScores, setSquadScores] = useState({
         CYBER: 450250,
         SOLAR: 448100,
         VOID: 432000
     });
 
-    // Save persistence
     useEffect(() => {
         if (userSquad) localStorage.setItem('userSquad', userSquad);
     }, [userSquad]);
 
+    // LIVE Global Warfare Sync (Supabase Broadcast)
     useEffect(() => {
-        localStorage.setItem('squadRecruits', JSON.stringify(recruits));
-    }, [recruits]);
+        if (!supabase) return;
+        
+        // Listen to donations from other players in real-time
+        const channel = supabase.channel('faction_wars')
+            .on('broadcast', { event: 'faction_donate' }, (payload) => {
+                console.log("Realtime Faction Donate:", payload.payload);
+                const { faction, amount } = payload.payload;
+                setSquadScores(prev => ({
+                    ...prev,
+                    [faction]: (prev[faction] || 0) + amount
+                }));
+            })
+            .subscribe();
 
-
-    const recruitMember = (member) => {
-        setRecruits(prev => [...prev, { ...member, joinedAt: Date.now(), xp: 0, level: 1 }]);
-    };
-
-    const fireMember = (id) => {
-        setRecruits(prev => prev.filter(m => m.id !== id));
-    };
-
-    // LIVE Global Warfare (Aggregation)
-    useEffect(() => {
-        const fetchScores = async () => {
-            // DB columns missing. Using local/mock scores for now.
-            // if (!supabase) return;
-            // try {
-            //    const { data, error } = await supabase.from('profiles').select('squad, xp');
-            //    ...
-            // } catch (e) { ... }
-
-            // Keep Mock Scores
-            // console.log("Squad Sync Skipped (DB Schema Pending)");
+        return () => {
+            supabase.removeChannel(channel);
         };
-
-        fetchScores(); // Initial
-        const interval = setInterval(fetchScores, 10000); // Poll every 10s
-
-        return () => clearInterval(interval);
     }, []);
 
     const joinSquad = (team) => {
         setUserSquad(team);
-        // Haptic Feedback handled in UI
     };
 
     const contribute = (amount) => {
         if (!userSquad) return;
-
+        
+        // Optimistic local update
         setSquadScores(prev => ({
             ...prev,
             [userSquad]: prev[userSquad] + amount
         }));
+
+        // Broadcast to everyone else
+        if (supabase) {
+            supabase.channel('faction_wars').send({
+                type: 'broadcast',
+                event: 'faction_donate',
+                payload: { faction: userSquad, amount }
+            });
+        }
     };
 
     const getLeadingSquad = () => {
@@ -82,13 +70,13 @@ export const SquadProvider = ({ children }) => {
         const DETAILS = {
             CYBER: { name: 'Cyber Punks', color: '#00f3ff', icon: '🦾' },
             SOLAR: { name: 'Solar Knights', color: '#ffaa00', icon: '☀️' },
-            VOID: { name: 'Void Walkers', color: '#9d00ff', icon: '🌑' }
+            VOID: { name: 'Void Walkers', color: '#9d00ff', icon: '🔮' }
         };
-        return DETAILS[id] || { name: 'Unknown', color: '#fff' };
+        return DETAILS[id] || { name: 'Unknown', color: '#fff', icon: '❓' };
     };
 
     return (
-        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad, getSquadDetails, recruits, recruitMember, fireMember }}>
+        <SquadContext.Provider value={{ userSquad, squadScores, joinSquad, contribute, getLeadingSquad, getSquadDetails }}>
             {children}
         </SquadContext.Provider>
     );
