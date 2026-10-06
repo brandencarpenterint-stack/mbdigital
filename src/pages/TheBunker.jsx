@@ -8,7 +8,7 @@ import { SHOP_ITEMS } from '../config/ShopItems';
 
 // A simple 2.5D Social Hangout Room
 const TheBunker = () => {
-    const { userProfile, shopState, consumeItem } = useGamification() || {};
+    const { userProfile, shopState, consumeItem, incrementStat } = useGamification() || {};
     const [visualEffects, setVisualEffects] = useState([]);
 
     const { playClick, playBeep, playJump } = useRetroSound();
@@ -139,6 +139,9 @@ const TheBunker = () => {
         if (actionType !== 'fireworks') {
             consumeItem(actionType);
         }
+
+        if (actionType === 'bunker_pie') incrementStat('bunkerPiesThrown', 1);
+        if (actionType === 'bunker_smoke') incrementStat('bunkerSmokesUsed', 1);
 
         playBeep();
         

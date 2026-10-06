@@ -20,7 +20,7 @@ const GAMES_LIST = [
 ];
 
 const TheUnderworld = () => {
-    const { coins, addCoins, userProfile } = useGamification();
+    const { coins, addCoins, userProfile, incrementStat } = useGamification();
     const { playBeep, playClick, playError, playWin } = useRetroSound();
     const navigate = useNavigate();
     
@@ -95,6 +95,7 @@ const TheUnderworld = () => {
         const confirmMsg = `Match ${wager.wager} coins to beat ${wager.targetScore} in ${wager.gameName}?`;
         if (window.confirm(confirmMsg)) {
             addCoins(-wager.wager); // Deduct your match
+            incrementStat('underworldWagersMatched', 1);
             playWin();
             
             // Broadcast accepted

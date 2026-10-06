@@ -8,7 +8,7 @@ import { feedService } from '../utils/feed';
 
 const Factions = () => {
     const { userSquad, squadScores, contribute, getSquadDetails, getLeadingSquad } = useSquad();
-    const { coins, addCoins, userProfile } = useGamification();
+    const { coins, addCoins, userProfile, incrementStat } = useGamification();
     const { playCoin, playWin, playError } = useRetroSound();
     const [timeLeft, setTimeLeft] = useState({ d: 4, h: 12, m: 32, s: 0 });
     const [donateAmount, setDonateAmount] = useState(100);
@@ -52,6 +52,7 @@ const Factions = () => {
         
         // Contribute to faction
         contribute(donateAmount);
+        incrementStat('factionPointsDonated', donateAmount);
         playCoin();
         triggerConfetti();
 
