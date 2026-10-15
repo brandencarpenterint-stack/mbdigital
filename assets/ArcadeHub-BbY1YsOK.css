@@ -1,0 +1,244 @@
+/* 3D CABINET CONTAINER */
+.cabinet-container {
+    width: 100%;
+    height: 340px;
+    /* Taller for cabinet */
+    position: relative;
+    perspective: 1200px;
+    /* Deep perspective */
+    margin-bottom: 20px;
+}
+
+.cabinet {
+    width: 240px;
+    height: 320px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateY(0deg) rotateX(0deg);
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+/* Hover Effect: Rotate slightly to show depth */
+@media (hover: hover) {
+    .cabinet-container:hover .cabinet {
+        transform: translate(-50%, -50%) rotateY(-15deg) rotateX(5deg);
+    }
+}
+
+/* CABINET FACES */
+.cab-face {
+    position: absolute;
+    backface-visibility: hidden;
+    /* Hide inside for performance? Or keep for solidity */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 1. FRONT FACE (Main) */
+.cab-front {
+    width: 240px;
+    height: 320px;
+    background: #111;
+    transform: translateZ(60px);
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* 2. SIDES */
+.cab-left {
+    width: 120px;
+    height: 320px;
+    background: #222;
+    /* Darker side */
+    transform: rotateY(-90deg) translateZ(60px);
+    border-radius: 10px 0 0 0;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+}
+
+.cab-right {
+    width: 120px;
+    height: 320px;
+    background: #222;
+    transform: rotateY(90deg) translateZ(180px);
+    /* 240 - 60 = 180? Math check: width is 240. Center is 120. Z is 60. Right face needs to be at X=240. */
+    /* Re-calculating:
+     Center is 0,0.
+     Front is at Z=60.
+     Right face needs to be at X=120. (Half width)
+     RotateY(90) puts it flat.
+  */
+    transform: rotateY(90deg) translateZ(180px);
+    border-radius: 0 10px 0 0;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+}
+
+/* Fix Side Position: 
+   If width 240, half is 120.
+   RotateY(90): Plane is now along Z axis.
+   TranslateZ(120): Moves it 'forward' relative to the plane, which is RIGHT in world space.
+*/
+.cab-right {
+    transform: rotateY(90deg) translateZ(120px);
+}
+
+.cab-left {
+    transform: rotateY(-90deg) translateZ(120px);
+}
+
+.cab-top {
+    width: 240px;
+    height: 120px;
+    background: #080808;
+    transform: rotateX(90deg) translateZ(60px);
+}
+
+.cab-back {
+    width: 240px;
+    height: 320px;
+    background: #050505;
+    transform: rotateY(180deg) translateZ(60px);
+}
+
+/* MARQUEE (Header) */
+.cab-marquee {
+    height: 60px;
+    background: #000;
+    border-bottom: 4px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 15px currentColor;
+    /* Glow based on color */
+    z-index: 5;
+}
+
+.marquee-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: white;
+    text-shadow: 0 0 5px currentColor;
+    text-transform: uppercase;
+    z-index: 2;
+    text-align: center;
+    line-height: 1;
+}
+
+/* SCREEN AREA */
+.cab-screen-housing {
+    flex: 1;
+    background: #000;
+    padding: 15px;
+    position: relative;
+    /* Inset effect */
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 1);
+}
+
+.cab-screen {
+    width: 100%;
+    height: 100%;
+    background: #1a1a2e;
+    border-radius: 4px 4px 30px 30px;
+    /* CRT Curve */
+    border: 2px solid #333;
+    position: relative;
+    overflow: hidden;
+}
+
+/* SCANLINES */
+.cab-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* SCREEN CONTENT */
+.cab-screen-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* CONTROL PANEL */
+.cab-controls {
+    height: 80px;
+    background: linear-gradient(to bottom, #222, #111);
+    transform-origin: top;
+    transform: rotateX(-20deg) translateZ(10px);
+    /* Slanted out? No, Slanted In usually */
+    /* Let's try separate prism for controls if fancy, but for now just bottom section */
+    border-top: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 20px;
+    box-shadow: inset 0 5px 10px rgba(255, 255, 255, 0.05);
+}
+
+.joystick {
+    width: 15px;
+    height: 15px;
+    background: red;
+    border-radius: 50%;
+    box-shadow: 2px 2px 0px #500, 0 5px 5px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.joystick::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 2px;
+    width: 10px;
+    height: 20px;
+    background: silver;
+    z-index: -1;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.arcade-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: lime;
+    box-shadow: 1px 1px 0 #050;
+}
+
+/* ZONE GLOWS */
+.glow-cyber {
+    box-shadow: 0 0 30px rgba(0, 242, 96, 0.4);
+    border: 1px solid #00f260;
+}
+
+.glow-solar {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+    border: 1px solid gold;
+}
+
+.glow-void {
+    box-shadow: 0 0 30px rgba(176, 38, 255, 0.4);
+    border: 1px solid #b026ff;
+}
+
+.glow-neutral {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    border: 1px solid #555;
+}
