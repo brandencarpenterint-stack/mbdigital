@@ -63,6 +63,46 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'cyber_derby_track',
+        name: 'Bro Derby Velodrome',
+        icon: '🏇',
+        durationMinutes: 30,
+        energyCost: 35,
+        minStage: 'CHILD',
+        description: 'Compete on the cyber track circuit for race winnings & turbo gear.',
+        lootTable: {
+            minCoins: 250,
+            maxCoins: 750,
+            xp: 300,
+            dropRate: 0.5,
+            items: [
+                { id: 'furn_arcade', weight: 40 },
+                { id: 'furn_robot', weight: 35 },
+                { id: 'rug_retro', weight: 25 }
+            ]
+        }
+    },
+    {
+        id: 'underworld_vault_raid',
+        name: 'Cyber Vault Infiltration',
+        icon: '🔓',
+        durationMinutes: 120,
+        energyCost: 65,
+        minStage: 'TEEN',
+        description: 'Crack secret cipher locks in the high-stakes illegal betting den.',
+        lootTable: {
+            minCoins: 800,
+            maxCoins: 2500,
+            xp: 900,
+            dropRate: 0.7,
+            items: [
+                { id: 'furn_chest', weight: 40 },
+                { id: 'bg_cyber', weight: 35 },
+                { id: 'furn_pc', weight: 25 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',

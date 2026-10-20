@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useGamification } from '../context/GamificationContext';
 import { POCKET_BRO_STAGES, usePocketBro } from '../context/PocketBroContext';
 import { useToast } from '../context/ToastContext';
@@ -198,6 +199,84 @@ const PocketBro = () => {
                     boxShadow: '0 0 20px var(--neon-blue)'
                 }}>
                     POCKET BRO v3.0
+                </div>
+
+                {/* QUICK ARCADE & CASINO PORTALS */}
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginBottom: '18px',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    maxWidth: '360px'
+                }}>
+                    <Link to="/arcade" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(0, 229, 255, 0.15)',
+                            border: '1px solid #00e5ff',
+                            color: '#00e5ff',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            ◄ ARCADE
+                        </div>
+                    </Link>
+
+                    <Link to="/arcade/derby" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(0, 255, 102, 0.15)',
+                            border: '1px solid #00ff66',
+                            color: '#00ff66',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            🏇 DERBY TRACK
+                        </div>
+                    </Link>
+
+                    <Link to="/arcade/blackjack" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(255, 215, 0, 0.15)',
+                            border: '1px solid #ffd700',
+                            color: '#ffd700',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            🃏 CYBER 21
+                        </div>
+                    </Link>
+
+                    <Link to="/underworld" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(255, 0, 127, 0.15)',
+                            border: '1px solid #ff007f',
+                            color: '#ff88aa',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            🔓 THE VAULT
+                        </div>
+                    </Link>
                 </div>
 
                 {/* THE DEVICE */}
