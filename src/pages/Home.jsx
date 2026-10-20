@@ -108,6 +108,9 @@ const Home = () => {
                             <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
                                 🎰 Cosmic Slots: 100,000 CP High-Roller Vault
                             </span>
+                            <span style={{ color: '#f107a3', fontWeight: 'bold' }}>
+                                🔮 NEW: Cyber Plinko Pegged Gravity Drops • 100x Multipliers Live!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -164,6 +167,30 @@ const Home = () => {
                             <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>HOT DROP</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>HYPE DROP: MYSTERY CRATES</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Spin CS:GO style cases & equip rare custom skins!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/plinko" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(241, 7, 163, 0.2), rgba(123, 47, 247, 0.2))',
+                        border: '2px solid rgba(241, 7, 163, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(241, 7, 163, 0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #f107a3)' }} alt="Plinko" />
+                        <div>
+                            <div style={{ background: '#f107a3', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>100X DROPS</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER PLINKO</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Pegged gravity physics & multi-ball cascades!</div>
                         </div>
                     </div>
                 </Link>

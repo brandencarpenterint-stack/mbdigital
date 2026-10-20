@@ -130,6 +130,16 @@ const games = [
         leaderboardId: 'hype_drop'
     },
     {
+        id: 'plinko',
+        title: 'CYBER PLINKO',
+        desc: 'Pegged Gravity 100x Drops',
+        gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
+        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #f107a3)'}} />,
+        colSpan: 2,
+        path: '/arcade/plinko',
+        leaderboardId: 'cyber_plinko'
+    },
+    {
         id: 'merch-defense',
         title: 'MERCH DEFENSE',
         desc: 'Branded Tower Defense',
@@ -488,6 +498,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🎲</span> THE UNDERWORLD (WAGERS)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/plinko" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(241, 7, 163, 0.2)',
+                        border: '1px solid #f107a3',
+                        color: '#ff88d2',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🔮</span> CYBER PLINKO (100X)
                     </div>
                 </Link>
             </div>
