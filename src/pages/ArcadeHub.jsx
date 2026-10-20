@@ -150,6 +150,16 @@ const games = [
     },
 
     {
+        id: 'wheel',
+        title: 'CYBER WHEEL',
+        desc: '10,000 CP Daily Jackpot Spin',
+        gradient: 'linear-gradient(135deg, #ffd700 0%, #ff007f 100%)',
+        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
+        colSpan: 2,
+        path: '/arcade/wheel',
+        leaderboardId: 'cyber_wheel'
+    },
+    {
         id: 'slots',
         title: 'COSMIC SLOTS',
         desc: 'Spin to WIN BIG!',
@@ -316,7 +326,7 @@ const getHighScore = (id, stats) => {
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
     if (id === 'sub-hunter') return stats.subHunterHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
-    if (id === 'wheel') return 'DEGEN';
+    if (id === 'wheel') return stats?.wheelHighScore ? `${stats.wheelHighScore.toLocaleString()} CP` : 'FREE SPIN';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
     if (id === 'bro-cannon') return stats.broCannonHighScore || 0;
     if (id === 'merch-defense') return stats.merchDefenseHighScore ? WAVE  : 'READY';
@@ -515,6 +525,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🔮</span> CYBER PLINKO (100X)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/wheel" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 215, 0, 0.2)',
+                        border: '1px solid #ffd700',
+                        color: '#ffd700',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🎡</span> CYBER WHEEL (FREE SPIN)
                     </div>
                 </Link>
             </div>

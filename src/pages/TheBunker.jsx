@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
@@ -322,10 +323,105 @@ const TheBunker = () => {
                 }} />
             </div>
 
-            <div style={{ position: 'absolute', top: '20px', left: '20px', color: 'white', fontFamily: 'monospace', pointerEvents: 'none', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px' }}>
-                <div style={{ color: '#00ffcc', fontWeight: 'bold' }}>THE BUNKER (LOBBY)</div>
-                <div>PLAYERS ONLINE: {Object.keys(players).length + 1}</div>
-                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '5px' }}>Click anywhere on the floor to walk.</div>
+            <div style={{ position: 'absolute', top: '20px', left: '20px', color: 'white', fontFamily: 'monospace', pointerEvents: 'none', background: 'rgba(0,0,0,0.7)', padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(0,255,204,0.3)', backdropFilter: 'blur(8px)', zIndex: 100 }}>
+                <div style={{ color: '#00ffcc', fontWeight: 'bold', fontSize: '1rem', letterSpacing: '1px' }}>THE BUNKER (COMMUNITY LOBBY)</div>
+                <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '2px' }}>PLAYERS IN ROOM: {Object.keys(players).length + 1}</div>
+                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '4px' }}>Click anywhere on the floor to walk.</div>
+            </div>
+
+            {/* TOP RIGHT CONTROLS: KLAXON & EXIT */}
+            <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px', zIndex: 1000 }} onClick={e => e.stopPropagation()}>
+                <button
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('spawn-raid-boss'));
+                        try { playCrash(); } catch(err) {}
+                    }}
+                    style={{
+                        background: 'linear-gradient(135deg, #ff0055, #ff5500)',
+                        border: '2px solid rgba(255,255,255,0.4)',
+                        color: 'white',
+                        padding: '10px 18px',
+                        borderRadius: '25px',
+                        fontWeight: '900',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 20px rgba(255,0,85,0.6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <span>🚨</span> SOUND THE ALARM
+                </button>
+
+                <Link
+                    to="/arcade"
+                    style={{
+                        background: 'rgba(0,0,0,0.7)',
+                        border: '1px solid #00ffcc',
+                        color: '#00ffcc',
+                        padding: '10px 18px',
+                        borderRadius: '25px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        textDecoration: 'none',
+                        backdropFilter: 'blur(5px)',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}
+                >
+                    ◄ ARCADE
+                </Link>
+            </div>
+
+            {/* INTERACTIVE BUNKER ARCADE MACHINE (BACKGROUND OBJECT) */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/plinko';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '32%',
+                    right: '18%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: '#ff007f',
+                    color: '#fff',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 10px #ff007f',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    PLAY PLINKO
+                </div>
+                <div style={{
+                    width: '60px',
+                    height: '90px',
+                    background: 'linear-gradient(145deg, #222, #111)',
+                    border: '3px solid #00ffcc',
+                    borderRadius: '8px 8px 2px 2px',
+                    boxShadow: '0 0 25px rgba(0,255,204,0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '42px', height: '32px', background: '#000', border: '1px solid #ff007f', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                        🔮
+                    </div>
+                    <div style={{ width: '40px', height: '14px', background: '#333', borderRadius: '3px' }} />
+                </div>
             </div>
 
             {/* Render Other Players */}

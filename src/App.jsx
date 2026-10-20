@@ -39,6 +39,7 @@ const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
 const MerchDefense = lazy(() => import('./games/MerchDefense/MerchDefense'));
 const HypeDrop = lazy(() => import('./games/HypeDrop/HypeDrop'));
 const CyberPlinko = lazy(() => import('./games/CyberPlinko/CyberPlinko'));
+const CyberWheel = lazy(() => import('./games/CyberWheel/CyberWheel'));
 import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
@@ -138,6 +139,8 @@ function App() {
             <Route path="unboxing" element={<HypeDrop />} />
             <Route path="arcade/plinko" element={<CyberPlinko />} />
             <Route path="plinko" element={<CyberPlinko />} />
+            <Route path="arcade/wheel" element={<CyberWheel />} />
+            <Route path="wheel" element={<CyberWheel />} />
           </Route>
         </Routes>
       </Suspense>

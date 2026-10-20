@@ -12,6 +12,7 @@ const MOCK_WAGERS = [
 ];
 
 const GAMES_LIST = [
+    { id: 'wheel', name: 'Cyber Wheel' },
     { id: 'unboxing', name: 'HypeDrop Mystery Crates' },
     { id: 'merch-defense', name: 'Merch Defense TD' },
     { id: 'bro-cannon', name: 'Bro Cannon Launch' },
