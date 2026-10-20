@@ -12,6 +12,7 @@ const MOCK_WAGERS = [
 ];
 
 const GAMES_LIST = [
+    { id: 'drift', name: 'Neon Drift: 2088' },
     { id: 'wheel', name: 'Cyber Wheel' },
     { id: 'unboxing', name: 'HypeDrop Mystery Crates' },
     { id: 'merch-defense', name: 'Merch Defense TD' },

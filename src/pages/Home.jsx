@@ -111,6 +111,9 @@ const Home = () => {
                             <span style={{ color: '#f107a3', fontWeight: 'bold' }}>
                                 🔮 NEW: Cyber Plinko Pegged Gravity Drops • 100x Multipliers Live!
                             </span>
+                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
+                                🏎️ NEW: Neon Drift 2088 • Outrun the Void at 240 MPH!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>

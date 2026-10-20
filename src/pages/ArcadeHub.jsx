@@ -169,6 +169,16 @@ const games = [
         leaderboardId: 'cosmic_slots'
     },
     {
+        id: 'drift',
+        title: 'NEON DRIFT: 2088',
+        desc: 'Pseudo-3D Synthwave Racer',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        colSpan: 2,
+        path: '/arcade/drift',
+        leaderboardId: 'neon_drift'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -323,6 +333,7 @@ const getHighScore = (id, stats) => {
     if (id === 'brick') return stats.brickHighScore || 0;
     if (id === 'flappy') return stats.flappyHighScore || 0;
     if (id === 'fishing') return stats.crazyFishingHighScore || 0;
+    if (id === 'drift') return stats?.neonDriftHighScore ? `${stats.neonDriftHighScore.toLocaleString()} PTS` : 'READY';
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
     if (id === 'sub-hunter') return stats.subHunterHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
@@ -542,6 +553,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🎡</span> CYBER WHEEL (FREE SPIN)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/drift" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 0, 127, 0.2)',
+                        border: '1px solid #ff007f',
+                        color: '#ff88aa',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🏎️</span> NEON DRIFT (240 MPH)
                     </div>
                 </Link>
             </div>
