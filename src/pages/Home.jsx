@@ -120,6 +120,9 @@ const Home = () => {
                             <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
                                 🃏 NEW: Cyber 21 Blackjack • 3:2 Natural Payouts & Whale Stakes Live!
                             </span>
+                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
+                                ⚡ NEW: Cyber Pinball 2088 • B-R-O Drop Targets & 3x Multiball Chaos!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -272,6 +275,30 @@ const Home = () => {
                             <div style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>3:2 PAYOUTS</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER 21</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>High-Roller VIP Blackjack, Splits & Charlie Bonus!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/pinball" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.3), rgba(0, 229, 255, 0.2))',
+                        border: '2px solid rgba(255, 0, 127, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 127, 0.4)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ff007f', filter: 'drop-shadow(0 0 10px #ff007f)' }} alt="Pinball" />
+                        <div>
+                            <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>SYNTHWAVE PINBALL</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER PINBALL</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Dino & Bunny Bumpers, B-R-O Drop Targets & Multiball!</div>
                         </div>
                     </div>
                 </Link>

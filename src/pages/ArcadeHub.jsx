@@ -199,6 +199,16 @@ const games = [
         leaderboardId: 'cyber_21'
     },
     {
+        id: 'pinball',
+        title: 'CYBER PINBALL 2088',
+        desc: 'Bumper Chaos, B-R-O Drop Targets & 3x Multiball',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_star.png' alt='Pinball' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        colSpan: 2,
+        path: '/arcade/pinball',
+        leaderboardId: 'cyber_pinball'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -641,6 +651,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🃏</span> CYBER 21 (3:2 PAYOUTS)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/pinball" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 0, 127, 0.2)',
+                        border: '1px solid #ff007f',
+                        color: '#ff66b2',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>⚡</span> CYBER PINBALL (3X MULTI)
                     </div>
                 </Link>
             </div>

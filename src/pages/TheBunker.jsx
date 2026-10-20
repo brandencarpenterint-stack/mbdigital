@@ -524,6 +524,56 @@ const TheBunker = () => {
                 </div>
             </div>
 
+            {/* INTERACTIVE BUNKER CYBER PINBALL MACHINE */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/pinball';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '35%',
+                    left: '10%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: 'linear-gradient(90deg, #ff007f, #00e5ff)',
+                    color: '#fff',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 12px #ff007f',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    CYBER PINBALL
+                </div>
+                <div style={{
+                    width: '64px',
+                    height: '96px',
+                    background: 'linear-gradient(145deg, #1f0b2e, #090014)',
+                    border: '3px solid #ff007f',
+                    borderRadius: '8px 8px 4px 4px',
+                    boxShadow: '0 0 25px rgba(255,0,127,0.5)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '48px', height: '40px', background: '#000', border: '1px solid #00e5ff', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+                        ⚡
+                    </div>
+                    <div style={{ width: '46px', height: '12px', background: 'linear-gradient(90deg, #ff007f, #ffd700)', borderRadius: '3px' }} />
+                </div>
+            </div>
+
             {/* Render Other Players */}
             {Object.values(players).map(p => renderPlayer(p, false))}
             

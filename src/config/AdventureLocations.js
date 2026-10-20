@@ -103,6 +103,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'pinball_wizard',
+        name: 'Neon Pinball Wizard Hall',
+        icon: '⚡',
+        durationMinutes: 45,
+        energyCost: 35,
+        minStage: 'CHILD',
+        description: 'Test flipper reflexes, hit secret bumper combos, and earn high-score rewards.',
+        lootTable: {
+            minCoins: 350,
+            maxCoins: 1000,
+            xp: 400,
+            dropRate: 0.5,
+            items: [
+                { id: 'furn_arcade', weight: 45 },
+                { id: 'rug_retro', weight: 35 },
+                { id: 'furn_tv', weight: 20 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',
