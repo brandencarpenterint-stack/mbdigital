@@ -10,10 +10,12 @@ const MOCK_WAGERS = [
     { id: 'm1', player: 'ShadowBroker', gameId: 'slots', gameName: 'Cosmic Slots', wager: 5000, state: 'open', targetScore: 1000 },
     { id: 'm2', player: 'GlitchKing99', gameId: 'face-runner', gameName: 'Face Warp', wager: 2500, state: 'open', targetScore: 150 },
     { id: 'm3', player: 'VoidEntity', gameId: 'brick', gameName: 'Neon Bricks', wager: 10000, state: 'open', targetScore: 4000 },
-    { id: 'm4', player: 'CyberJockey', gameId: 'derby', gameName: 'Cyber Derby', wager: 7500, state: 'open', targetScore: 2500 }
+    { id: 'm4', player: 'CyberJockey', gameId: 'derby', gameName: 'Cyber Derby', wager: 7500, state: 'open', targetScore: 2500 },
+    { id: 'm5', player: 'DonDino', gameId: 'blackjack', gameName: 'Cyber 21', wager: 15000, state: 'open', targetScore: 21 }
 ];
 
 const GAMES_LIST = [
+    { id: 'blackjack', name: 'Cyber 21: High-Roller Blackjack' },
     { id: 'derby', name: 'Cyber Derby: Bro Grand Prix' },
     { id: 'drift', name: 'Neon Drift: 2088' },
     { id: 'plinko', name: 'Cyber Plinko' },

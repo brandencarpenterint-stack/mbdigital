@@ -117,6 +117,9 @@ const Home = () => {
                             <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
                                 🏇 NEW: Cyber Derby: Bro Grand Prix • 8-Bro Racing & 100x Exactas!
                             </span>
+                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                                🃏 NEW: Cyber 21 Blackjack • 3:2 Natural Payouts & Whale Stakes Live!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -245,6 +248,30 @@ const Home = () => {
                             <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>8-BRO DERBY</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER DERBY</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Velodrome track racing, tactical nitro & exactas!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/blackjack" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(13, 40, 24, 0.5), rgba(0, 255, 102, 0.2))',
+                        border: '2px solid rgba(0, 255, 102, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_money.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ffd700', filter: 'drop-shadow(0 0 10px #ffd700)' }} alt="Blackjack" />
+                        <div>
+                            <div style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>3:2 PAYOUTS</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER 21</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>High-Roller VIP Blackjack, Splits & Charlie Bonus!</div>
                         </div>
                     </div>
                 </Link>

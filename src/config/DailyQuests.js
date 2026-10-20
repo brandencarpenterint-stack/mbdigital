@@ -28,6 +28,10 @@ export const DAILY_TEMPLATES = [
     { id: 'derby_races_3', desc: 'Race in 3 Cyber Derbies', target: 3, reward: 120, type: 'derbyRaces', game: 'derby' },
     { id: 'derby_win_1', desc: 'Win 1st Place in Cyber Derby', target: 1, reward: 200, type: 'derbyWins', game: 'derby' },
 
+    // CYBER 21 BLACKJACK
+    { id: 'bj_wins_3', desc: 'Win 3 Cyber 21 Hands', target: 3, reward: 125, type: 'blackjackWins', game: 'blackjack' },
+    { id: 'bj_natural_1', desc: 'Hit a Natural Blackjack (21)', target: 1, reward: 200, type: 'blackjackBlackjacks', game: 'blackjack' },
+
     // MERCH DEFENSE
     { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
 
@@ -63,6 +67,7 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_bj_15', desc: 'WEEKLY: Win 15 Hands of Cyber 21', target: 15, reward: 850, type: 'blackjackWins', game: 'blackjack', isWeekly: true },
     { id: 'week_derby_10', desc: 'WEEKLY: Win 10 Cyber Derby Races', target: 10, reward: 900, type: 'derbyWins', game: 'derby', isWeekly: true },
     { id: 'week_plinko_50', desc: 'WEEKLY: Drop 50 Plinko Chips', target: 50, reward: 600, type: 'plinkoDrops', game: 'plinko', isWeekly: true },
     { id: 'week_drift_10000', desc: 'WEEKLY: Reach 10,000 PTS in Neon Drift', target: 10000, reward: 800, type: 'neonDriftHighScore', condition: 'gt', game: 'drift', isWeekly: true },
