@@ -1,4 +1,4 @@
-﻿/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -177,6 +177,16 @@ const games = [
         colSpan: 2,
         path: '/arcade/drift',
         leaderboardId: 'neon_drift'
+    },
+    {
+        id: 'derby',
+        title: 'CYBER DERBY',
+        desc: '8-Bro Cyber Track Racing & Exacta Bets',
+        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/derby',
+        leaderboardId: 'cyber_derby'
     },
     {
         id: 'face-runner',
@@ -570,6 +580,40 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🏎️</span> NEON DRIFT (240 MPH)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/derby" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 255, 102, 0.2)',
+                        border: '1px solid #00ff66',
+                        color: '#66ffaa',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🏇</span> CYBER DERBY (EXACTA BETS)
+                    </div>
+                </Link>
+
+                <Link to="/underworld" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 215, 0, 0.2)',
+                        border: '1px solid #ffd700',
+                        color: '#ffd700',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🔓</span> CYBER VAULT JACKPOT
                     </div>
                 </Link>
             </div>

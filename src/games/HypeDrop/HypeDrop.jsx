@@ -81,7 +81,7 @@ const WINNER_INDEX = 45;
 const TOTAL_SPIN_ITEMS = 60;
 
 const HypeDrop = () => {
-    const { coins, spendCoins, addCoins, userProfile, updateProfile } = useGamification() || {};
+    const { coins, spendCoins, addCoins, incrementStat, userProfile, updateProfile } = useGamification() || {};
     const { showToast } = useToast() || { showToast: () => {} };
     const { playWin, playCrash, playCollect } = useRetroSound();
 
@@ -146,6 +146,10 @@ const HypeDrop = () => {
         }
 
         spendCoins(selectedCrate.cost);
+        if (incrementStat) {
+            incrementStat('cratesOpened', 1);
+            incrementStat('gamesPlayedCount', 1);
+        }
         setIsSpinning(true);
         setShowRewardModal(false);
 

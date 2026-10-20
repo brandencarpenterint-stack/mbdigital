@@ -44,7 +44,7 @@ const AVATARS = [
 const PENTATONIC = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
 
 const CyberPlinko = () => {
-    const { coins, addCoins, updateStat, userProfile, stats } = useGamification() || {};
+    const { coins, addCoins, updateStat, incrementStat, userProfile, stats } = useGamification() || {};
     const { playBoop, playWin, playAirhorn, playCollect, playCrash } = useRetroSound();
 
     const canvasRef = useRef(null);
@@ -404,6 +404,10 @@ const CyberPlinko = () => {
         }
 
         if (addCoins) addCoins(-cost);
+        if (incrementStat) {
+            incrementStat('plinkoDrops', count);
+            incrementStat('gamesPlayedCount', 1);
+        }
 
         for (let i = 0; i < count; i++) {
             setTimeout(() => {

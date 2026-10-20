@@ -14,6 +14,26 @@ export const DAILY_TEMPLATES = [
     // MERCH JUMP
     { id: 'jump_5000', desc: 'Score 5000 in Jump', target: 5000, reward: 75, type: 'merchJumpHighScore', condition: 'gt', game: 'jump' },
 
+    // CYBER PLINKO
+    { id: 'plinko_drops_5', desc: 'Drop 5 Cyber Plinko Chips', target: 5, reward: 75, type: 'plinkoDrops', game: 'plinko' },
+    { id: 'plinko_win_100', desc: 'Score 100+ CP on Plinko', target: 100, reward: 120, type: 'plinkoHighScore', condition: 'gt', game: 'plinko' },
+
+    // CYBER WHEEL
+    { id: 'wheel_spin_1', desc: 'Spin the Cyber Wheel', target: 1, reward: 100, type: 'wheelSpins', game: 'wheel' },
+
+    // NEON DRIFT
+    { id: 'drift_2000', desc: 'Reach 2,000 PTS in Neon Drift', target: 2000, reward: 150, type: 'neonDriftHighScore', condition: 'gt', game: 'drift' },
+
+    // CYBER DERBY
+    { id: 'derby_races_3', desc: 'Race in 3 Cyber Derbies', target: 3, reward: 120, type: 'derbyRaces', game: 'derby' },
+    { id: 'derby_win_1', desc: 'Win 1st Place in Cyber Derby', target: 1, reward: 200, type: 'derbyWins', game: 'derby' },
+
+    // MERCH DEFENSE
+    { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
+
+    // HYPE DROP
+    { id: 'hypedrop_unbox_1', desc: 'Unbox a Mystery Crate', target: 1, reward: 100, type: 'cratesOpened', game: 'unboxing' },
+
     // COSMIC SLOTS
     { id: 'slots_spin_10', desc: 'Spin Slots 10 Times', target: 10, reward: 50, type: 'slotsSpins', game: 'slots' },
 
@@ -43,6 +63,9 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_derby_10', desc: 'WEEKLY: Win 10 Cyber Derby Races', target: 10, reward: 900, type: 'derbyWins', game: 'derby', isWeekly: true },
+    { id: 'week_plinko_50', desc: 'WEEKLY: Drop 50 Plinko Chips', target: 50, reward: 600, type: 'plinkoDrops', game: 'plinko', isWeekly: true },
+    { id: 'week_drift_10000', desc: 'WEEKLY: Reach 10,000 PTS in Neon Drift', target: 10000, reward: 800, type: 'neonDriftHighScore', condition: 'gt', game: 'drift', isWeekly: true },
     { id: 'week_fish_50', desc: 'WEEKLY: Catch 50 Fish', target: 50, reward: 500, type: 'fishCaught', game: 'fishing', isWeekly: true },
     { id: 'week_games_40', desc: 'WEEKLY: Play 40 Games', target: 40, reward: 400, type: 'gamesPlayedCount', game: 'general', isWeekly: true },
     { id: 'week_rares_5', desc: 'WEEKLY: Catch 5 Rare Fish', target: 5, reward: 800, type: 'legendariesCaught', game: 'fishing', isWeekly: true },

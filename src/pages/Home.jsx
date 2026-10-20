@@ -114,6 +114,9 @@ const Home = () => {
                             <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
                                 🏎️ NEW: Neon Drift 2088 • Outrun the Void at 240 MPH!
                             </span>
+                            <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
+                                🏇 NEW: Cyber Derby: Bro Grand Prix • 8-Bro Racing & 100x Exactas!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -218,6 +221,30 @@ const Home = () => {
                             <div style={{ background: '#00c6ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>TOWER DEFENSE</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>MERCH DEFENSE</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Astro, Bear & Dino turrets • Stop the haters!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/derby" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.2), rgba(0, 229, 255, 0.2))',
+                        border: '2px solid rgba(0, 255, 102, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_dino.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66', filter: 'drop-shadow(0 0 10px #00ff66)' }} alt="Derby" />
+                        <div>
+                            <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>8-BRO DERBY</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER DERBY</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Velodrome track racing, tactical nitro & exactas!</div>
                         </div>
                     </div>
                 </Link>

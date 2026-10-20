@@ -4,15 +4,19 @@ import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabaseClient';
 import useRetroSound from '../hooks/useRetroSound';
 import { useNavigate } from 'react-router-dom';
+import CyberVault from '../components/CyberVault';
 
 const MOCK_WAGERS = [
     { id: 'm1', player: 'ShadowBroker', gameId: 'slots', gameName: 'Cosmic Slots', wager: 5000, state: 'open', targetScore: 1000 },
     { id: 'm2', player: 'GlitchKing99', gameId: 'face-runner', gameName: 'Face Warp', wager: 2500, state: 'open', targetScore: 150 },
-    { id: 'm3', player: 'VoidEntity', gameId: 'brick', gameName: 'Neon Bricks', wager: 10000, state: 'open', targetScore: 4000 }
+    { id: 'm3', player: 'VoidEntity', gameId: 'brick', gameName: 'Neon Bricks', wager: 10000, state: 'open', targetScore: 4000 },
+    { id: 'm4', player: 'CyberJockey', gameId: 'derby', gameName: 'Cyber Derby', wager: 7500, state: 'open', targetScore: 2500 }
 ];
 
 const GAMES_LIST = [
+    { id: 'derby', name: 'Cyber Derby: Bro Grand Prix' },
     { id: 'drift', name: 'Neon Drift: 2088' },
+    { id: 'plinko', name: 'Cyber Plinko' },
     { id: 'wheel', name: 'Cyber Wheel' },
     { id: 'unboxing', name: 'HypeDrop Mystery Crates' },
     { id: 'merch-defense', name: 'Merch Defense TD' },
@@ -154,6 +158,9 @@ const TheUnderworld = () => {
                         ILLEGAL WAGERS & SHADOW DUELS
                     </p>
                 </div>
+
+                {/* PROGRESSIVE CYBER VAULT */}
+                <CyberVault />
 
                 {/* Create Wager Button */}
                 <div style={{ textAlign: 'right', marginBottom: '20px' }}>

@@ -24,7 +24,7 @@ const SEGMENTS = [
 ];
 
 const CyberWheel = () => {
-    const { coins, addCoins, updateStat, userProfile, stats } = useGamification() || {};
+    const { coins, addCoins, updateStat, incrementStat, userProfile, stats } = useGamification() || {};
     const { playAirhorn, playWin, playCollect, playCrash, playBoop } = useRetroSound();
 
     const canvasRef = useRef(null);
@@ -181,6 +181,11 @@ const CyberWheel = () => {
             setFreeSpinsLeft(0);
         } else {
             if (addCoins) addCoins(-SPIN_COST);
+        }
+
+        if (incrementStat) {
+            incrementStat('wheelSpins', 1);
+            incrementStat('gamesPlayedCount', 1);
         }
 
         setIsSpinning(true);
