@@ -4,6 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
+import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 600;
 const GAME_HEIGHT = 600;
@@ -40,7 +41,7 @@ const WAYPOINTS = [
 
 const MerchDefense = () => {
     const canvasRef = useRef(null);
-    const { addCoins, updateStat } = useGamification();
+    const { addCoins, updateStat, userProfile, stats } = useGamification();
     const { playShoot, playExplosion, playWin, playCrash, playBoop } = useRetroSound();
 
     const [gameState, setGameState] = useState('START'); // START, PLAYING, GAMEOVER, WIN
@@ -124,10 +125,13 @@ const MerchDefense = () => {
                     state.waveActive = false;
                     setWave(w => {
                         const next = w + 1;
+                        addCoins(next * 25);
+                        updateStat('merchDefenseHighScore', Math.max(stats?.merchDefenseHighScore || 0, next));
                         if (next > 10) {
                             setGameState('WIN');
-                            addCoins(500);
+                            addCoins(1000);
                             playWin();
+                                                        feedService.publish({ text: '🏰 ' + (userProfile?.name || 'Commander') + ' conquered all 10 Waves in Merch Defense!', type: 'jackpot' });
                         }
                         return next;
                     });
@@ -154,6 +158,9 @@ const MerchDefense = () => {
                             if (nl <= 0) {
                                 setGameState('GAMEOVER');
                                 playCrash();
+                                                                if (stateRef.current.wave >= 3) {
+                                    feedService.publish({ text: '🛡️ ' + (userProfile?.name || 'Defender') + ' defended to Wave ' + stateRef.current.wave + ' in Merch Defense!', type: 'game' });
+                                }
                             }
                             return nl;
                         });
@@ -323,8 +330,12 @@ const MerchDefense = () => {
         if (gameState !== 'PLAYING') return;
         
         const rect = canvasRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvasRef.current.width / rect.width;
+        const scaleY = canvasRef.current.height / rect.height;
+        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
 
         // Check if on path
         let onPath = false;
@@ -388,15 +399,15 @@ const MerchDefense = () => {
             )}
 
             {gameState === 'PLAYING' && (
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
                     {/* CANVAS */}
                     <div style={{ border: '4px solid #333', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 0 50px rgba(0,255,200,0.1)' }}>
                         <canvas 
                             ref={canvasRef} 
                             width={GAME_WIDTH} 
                             height={GAME_HEIGHT} 
-                            onClick={handleCanvasClick}
-                            style={{ cursor: 'crosshair' }}
+                            onClick={handleCanvasClick} onTouchStart={handleCanvasClick}
+                            style={{ cursor: 'crosshair', maxWidth: '100%', height: 'auto', display: 'block' }}
                         />
                     </div>
 

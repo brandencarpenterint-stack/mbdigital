@@ -129,6 +129,15 @@ const games = [
         colSpan: 2,
         leaderboardId: 'hype_drop'
     },
+    {
+        id: 'merch-defense',
+        title: 'MERCH DEFENSE',
+        desc: 'Branded Tower Defense',
+        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+        icon: <img src='/assets/skins/face_astro.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00c6ff)'}} />,
+        colSpan: 2,
+        leaderboardId: 'merch_defense'
+    },
 
     {
         id: 'slots',
@@ -282,6 +291,7 @@ const getHighScore = (id, stats) => {
     if (id === 'wheel') return 'DEGEN';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
     if (id === 'bro-cannon') return stats.broCannonHighScore || 0;
+    if (id === 'merch-defense') return stats.merchDefenseHighScore ? WAVE  : 'READY';
     return 0;
 };
 

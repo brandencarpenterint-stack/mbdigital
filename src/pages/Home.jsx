@@ -6,6 +6,7 @@ import TiltCard from '../components/TiltCard';
 import TheButton from '../components/TheButton';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
+import { useRealBtc } from '../hooks/useRealBtc';
 
 const container = {
     hidden: { opacity: 0 },
@@ -18,8 +19,9 @@ const item = {
 };
 
 const Home = () => {
-    const { getLevelInfo, userProfile, coins, cryptoMarket } = useGamification();
+    const { getLevelInfo, userProfile, coins } = useGamification();
     const { playBeep } = useRetroSound();
+    const { btcPrice, priceChange24h, chartData, loading } = useRealBtc();
 
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
     const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
@@ -31,6 +33,37 @@ const Home = () => {
         return () => clearInterval(timer);
     }, []);
 
+    const isBtcUp = priceChange24h >= 0;
+    const btcColor = isBtcUp ? '#00ffcc' : '#ff0055';
+
+    // Mini Sparkline component
+    const MiniSparkline = ({ data, color }) => {
+        if (!data || data.length < 2) return null;
+        const max = Math.max(...data);
+        const min = Math.min(...data);
+        const range = max - min || 1;
+        const width = 100;
+        const height = 40;
+        const points = data.map((val, i) => {
+            const x = (i / (data.length - 1)) * width;
+            const y = height - ((val - min) / range) * height;
+            return `${x},${y}`;
+        }).join(' ');
+
+        return (
+            <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '40px', overflow: 'visible' }}>
+                <defs>
+                    <linearGradient id="homeBtcGrad" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+                        <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+                    </linearGradient>
+                </defs>
+                <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#homeBtcGrad)" stroke="none" />
+                <polyline fill="none" stroke={color} strokeWidth="2" points={points} vectorEffect="non-scaling-stroke" />
+            </svg>
+        );
+    };
+
     return (
         <div className="home-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px', paddingBottom: '120px' }}>
             
@@ -40,45 +73,55 @@ const Home = () => {
                     {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
                 <div style={{ flex: 1 }}></div>
-                <a href="https://merchboy.shop" target="_blank" className="squishy-btn" style={{
+                <a href="https://merchboy.shop" target="_blank" rel="noreferrer" className="squishy-btn" style={{
                     height: '100%', padding: '0 20px', background: '#FFD700', color: 'black',
                     display: 'flex', alignItems: 'center', fontWeight: '900', borderRadius: '8px',
                     textDecoration: 'none', fontSize: '0.9rem'
                 }}>🛍️ SHOP</a>
             </motion.div>
 
-            
-            {/* LIVE CRYPTO TICKER */}
+            {/* LIVE PULSE TICKER: REAL BITCOIN + ARCADE DROPS */}
             <div style={{
-                background: '#000', borderTop: '1px solid #333', borderBottom: '1px solid #333',
-                marginBottom: '20px', padding: '5px 0', overflow: 'hidden', whiteSpace: 'nowrap',
-                display: 'flex', fontFamily: 'monospace', fontSize: '0.9rem'
+                background: '#0a0a10', borderTop: '1px solid #222', borderBottom: '1px solid #222',
+                marginBottom: '20px', padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap',
+                display: 'flex', fontFamily: 'monospace', fontSize: '0.85rem'
             }}>
                 <motion.div
-                    animate={{ x: [0, -1000] }}
-                    transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
-                    style={{ display: 'flex', gap: '30px', color: '#888' }}
+                    animate={{ x: [0, -1200] }}
+                    transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
+                    style={{ display: 'flex', gap: '40px', color: '#aaa', alignItems: 'center' }}
                 >
                     {[...Array(3)].map((_, i) => (
                         <React.Fragment key={i}>
-                            {cryptoMarket?.map(token => (
-                                <span key={token.id} style={{ color: token.trend > 0 ? '#00ffcc' : token.trend < 0 ? '#ff0055' : '#888' }}>
-                                    {token.emoji} {token.id} ${token.price.toFixed(2)} {token.trend > 0 ? '▲' : token.trend < 0 ? '▼' : '▬'}
-                                </span>
-                            ))}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f7931a', display: 'inline-block', boxShadow: '0 0 6px #f7931a' }}></span>
+                                <strong style={{ color: '#fff' }}>₿ BTC/USD:</strong>
+                                <span style={{ color: '#fff', fontWeight: 'bold' }}>${btcPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span style={{ color: btcColor, fontWeight: 'bold' }}>({isBtcUp ? '+' : ''}{priceChange24h.toFixed(2)}%)</span>
+                            </span>
+                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
+                                📦 NEW: HypeDrop Mystery Crates are Live! CS:GO Ticker Unboxings
+                            </span>
+                            <span style={{ color: '#00ffcc', fontWeight: 'bold' }}>
+                                🏰 NEW: Merch Defense TD • Deploy Branded Turrets Against Haters
+                            </span>
+                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                                🎰 Cosmic Slots: 100,000 CP High-Roller Vault
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
             </div>
-\n            {/* HERO ARCADE BUTTON */}
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} style={{ marginBottom: '30px' }}>
+
+            {/* HERO ARCADE BUTTON */}
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring" }} style={{ marginBottom: '20px' }}>
                 <Link to="/arcade" style={{ textDecoration: 'none', display: 'block' }}>
                     <div className="bento-card" style={{
                         background: 'linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(255, 0, 255, 0.15))',
                         backdropFilter: 'blur(10px)',
                         border: '2px solid rgba(0, 255, 204, 0.3)',
                         borderRadius: '30px',
-                        padding: '80px 40px',
+                        padding: '70px 40px',
                         textAlign: 'center',
                         boxShadow: '0 0 50px rgba(0, 255, 204, 0.1), inset 0 0 20px rgba(255, 0, 255, 0.1)',
                         cursor: 'pointer',
@@ -89,11 +132,62 @@ const Home = () => {
                     onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 10px 60px rgba(0, 255, 204, 0.3)'; playBeep(); }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 0 50px rgba(0, 255, 204, 0.1)'; }}
                     >
-                        <h1 style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', margin: 0, background: 'linear-gradient(to right, #00ffcc, #ff00ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 30px rgba(0,255,204,0.4)', fontWeight: '900', letterSpacing: '4px' }}>
+                        <h1 style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', margin: 0, background: 'linear-gradient(to right, #00ffcc, #ff00ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 30px rgba(0,255,204,0.4)', fontWeight: '900', letterSpacing: '4px' }}>
                             ENTER ARCADE
                         </h1>
-                        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', marginTop: '15px', letterSpacing: '3px', fontFamily: 'monospace' }}>
-                            PRESS START TO BEGIN
+                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', marginTop: '12px', letterSpacing: '3px', fontFamily: 'monospace' }}>
+                            16 RETRO GAMES • DAILY QUESTS • HIGH SCORES
+                        </div>
+                    </div>
+                </Link>
+            </motion.div>
+
+            {/* FEATURED DROP HIGHLIGHTS: HYPEDROP & MERCH DEFENSE */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px', marginBottom: '25px' }}>
+                <Link to="/arcade/unboxing" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.2), rgba(121, 40, 202, 0.2))',
+                        border: '2px solid rgba(255, 0, 127, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 127, 0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #ff007f)' }} alt="Crate" />
+                        <div>
+                            <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>HOT DROP</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>HYPE DROP: MYSTERY CRATES</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Spin CS:GO style cases & equip rare custom skins!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/merch-defense" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 198, 255, 0.2), rgba(0, 114, 255, 0.2))',
+                        border: '2px solid rgba(0, 198, 255, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 198, 255, 0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_astro.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #00c6ff)' }} alt="Defense" />
+                        <div>
+                            <div style={{ background: '#00c6ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>TOWER DEFENSE</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>MERCH DEFENSE</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Astro, Bear & Dino turrets • Stop the haters!</div>
                         </div>
                     </div>
                 </Link>
@@ -130,7 +224,6 @@ const Home = () => {
 
                 {/* CREATIVE STUDIO & RANKINGS */}
                 <motion.div variants={item} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    
                     <Link to="/bunker" style={{ textDecoration: 'none', flex: 1 }}>
                         <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #ff0055 0%, #ff00ff 100%)', color: '#fff', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                             <div style={{ textAlign: 'center', transform: 'translateZ(20px)' }}>
@@ -167,31 +260,36 @@ const Home = () => {
                             </div>
                         </TiltCard>
                     </Link>
-                                </motion.div>
+                </motion.div>
 
-
-                {/* CRYPTO EXCHANGE WIDGET */}
+                {/* LIVE BITCOIN SATELLITE CARD */}
                 <motion.div variants={item}>
-                    <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #1a1a24, #0d0d14)', border: '1px solid #333', padding: '25px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
-                            <div style={{ color: '#00ffcc', fontSize: '1rem', fontWeight: 'bold', letterSpacing: '2px' }}>THE EXCHANGE 📈</div>
-                            <Link to="/exchange" style={{ background: '#00ffcc', color: '#000', padding: '5px 10px', borderRadius: '5px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: 'bold' }}>TRADE</Link>
+                    <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, #171724, #0c0c14)', border: '1px solid #2d2d42', padding: '25px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #28283a', paddingBottom: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00ffcc', display: 'inline-block', boxShadow: '0 0 8px #00ffcc' }}></span>
+                                <div style={{ color: '#f7931a', fontSize: '0.95rem', fontWeight: 'bold', letterSpacing: '1px' }}>BITCOIN ORACLE ₿</div>
+                            </div>
+                            <Link to="/exchange" style={{ background: '#f7931a', color: '#000', padding: '5px 12px', borderRadius: '6px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: '900' }}>LIVE FEED</Link>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {cryptoMarket?.slice(0,3).map(token => (
-                                <div key={token.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '1.2rem' }}>{token.emoji}</span>
-                                        <span style={{ fontWeight: 'bold', color: '#fff' }}>{token.id}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                        <span style={{ color: '#fff', fontFamily: 'monospace' }}>${token.price.toFixed(2)}</span>
-                                        <span style={{ color: token.trend > 0 ? '#00ffcc' : token.trend < 0 ? '#ff0055' : '#888', fontSize: '0.7rem' }}>
-                                            {token.trend > 0 ? '+' : ''}{(token.trend * 100).toFixed(1)}%
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+                        
+                        <div style={{ marginBottom: '15px' }}>
+                            <div style={{ color: '#888', fontSize: '0.7rem', letterSpacing: '1px' }}>BTC / USD SPOT</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', letterSpacing: '1px', marginTop: '2px' }}>
+                                ${btcPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                            <div style={{ color: btcColor, fontSize: '0.85rem', fontWeight: 'bold', marginTop: '2px' }}>
+                                {isBtcUp ? '▲' : '▼'} {Math.abs(priceChange24h).toFixed(2)}% (24H)
+                            </div>
+                        </div>
+
+                        {/* Sparkline */}
+                        <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                            <MiniSparkline data={chartData} color={btcColor} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', color: '#555', fontSize: '0.65rem' }}>
+                                <span>24H SATELLITE ORACLE</span>
+                                <span>LIVE</span>
+                            </div>
                         </div>
                     </TiltCard>
                 </motion.div>
@@ -200,7 +298,6 @@ const Home = () => {
                 <motion.div variants={item}>
                     <TheButton />
                 </motion.div>
-
 
             </motion.div>
         </div>
