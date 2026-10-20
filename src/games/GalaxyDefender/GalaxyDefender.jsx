@@ -37,7 +37,7 @@ const GalaxyDefender = () => {
 
     // Sync Ref
     const gameActiveRef = useRef(false);
-    const bossImgRef = useRef(null);
+    const bossImgsRef = useRef([]);
 
     const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
 
@@ -57,10 +57,20 @@ const GalaxyDefender = () => {
     });
 
     useEffect(() => {
-        const img = new Image();
-        img.src = '/assets/merchboy_face.png'; // Head Logo
-        bossImgRef.current = img;
-        return () => cancelAnimationFrame(gameState.current.animationId); // Cleanup on unmount
+        const skins = [
+            '/assets/skins/face_money.png',   // 0: Money
+            '/assets/skins/face_astro.png',   // 1: Astro
+            '/assets/skins/face_bear.png',    // 2: Bear
+            '/assets/skins/face_cat.png',     // 3: Cat
+            '/assets/skins/face_pumpkin.png', // 4: Pumpkin
+            '/assets/merchboy_face.png'       // 5: Final Boss
+        ];
+        bossImgsRef.current = skins.map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+        return () => cancelAnimationFrame(gameState.current.animationId);
     }, []);
 
     const startGame = () => {
@@ -242,7 +252,7 @@ const GalaxyDefender = () => {
                         dir: 1,
                         flash: 0,
                         lastAttack: 0,
-                        type: state.level % 3 // Vary boss type (0, 1, 2)
+                        type: (state.level - 1) % 6 // Matches our 6 boss images
                     };
                     state.bossActive = true;
                     // Clear enemies
@@ -269,25 +279,32 @@ const GalaxyDefender = () => {
                         state.boss.dir *= -1;
                     }
 
-                    // MOUTH LASER ATTACK
-                    // Fires faster at higher levels
-                    const fireRate = Math.max(500, 2000 - (state.level * 200));
+                    // BOSS SPECIFIC ATTACKS
+                    const fireRate = Math.max(400, 2000 - (state.level * 200));
 
                     if (timestamp - state.boss.lastAttack > fireRate) {
                         const bossCenterX = state.boss.x + BOSS_SIZE / 2;
-                        // Spread shot at higher levels
-                        if (state.level >= 2) {
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: -2 });
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: 2 });
+                        
+                        if (state.boss.type === 0) { // Money Boss
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: -3, color: 'gold' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 0, color: 'gold' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 3, color: 'gold' });
+                        } else if (state.boss.type === 1) { // Astro Boss
+                            state.enemyLasers.push({ x: bossCenterX - 5, y: state.boss.y + BOSS_SIZE, width: 10, height: 40, speed: 10, dx: 0, color: '#00ffff' });
+                        } else if (state.boss.type === 2) { // Bear Boss
+                            state.enemyLasers.push({ x: bossCenterX - 40, y: state.boss.y + BOSS_SIZE, width: 80, height: 80, speed: 4, dx: 0, color: '#8b4513' });
+                        } else if (state.boss.type === 3) { // Cat Boss
+                            state.enemyLasers.push({ x: bossCenterX - 15, y: state.boss.y + BOSS_SIZE, width: 30, height: 30, speed: 8, dx: (Math.random() - 0.5) * 8, color: '#ff69b4' });
+                        } else if (state.boss.type === 4) { // Pumpkin Boss
+                            for(let i=-2; i<=2; i++) {
+                                state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: i * 2.5, color: '#ff8c00' });
+                            }
+                        } else { // Merchboy
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: -4, color: 'red' });
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: 0, color: 'white' });
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: 4, color: '#00aaff' });
                         }
-                        state.enemyLasers.push({
-                            x: bossCenterX - 10,
-                            y: state.boss.y + BOSS_SIZE - 20,
-                            width: 20,
-                            height: 40,
-                            speed: 8,
-                            dx: 0
-                        });
+                        
                         state.boss.lastAttack = timestamp;
                     }
                 }
@@ -544,9 +561,22 @@ const GalaxyDefender = () => {
         });
 
         // Boss Lasers
-        ctx.fillStyle = '#ff0000';
         state.enemyLasers.forEach(l => {
-            ctx.fillRect(l.x, l.y, l.width, l.height);
+            if (state.boss && state.boss.type === 'face_money') {
+                ctx.fillStyle = '#00ff00'; ctx.font = '30px serif';
+                ctx.fillText('$', l.x - 5, l.y + 20);
+            } else if (state.boss && state.boss.type === 'face_bear') {
+                ctx.font = '40px serif'; ctx.fillText('🪨', l.x - 10, l.y + 30);
+            } else if (state.boss && state.boss.type === 'face_cat') {
+                ctx.font = '25px serif'; ctx.fillText('🧶', l.x - 5, l.y + 15);
+            } else if (state.boss && state.boss.type === 'face_pumpkin') {
+                ctx.font = '30px serif'; ctx.fillText('👻', l.x - 5, l.y + 20);
+            } else if (state.boss && state.boss.type === 'merchboy_face') {
+                ctx.font = '35px serif'; ctx.fillText('🔥', l.x - 5, l.y + 25);
+            } else {
+                ctx.fillStyle = l.color || '#ff0000';
+                ctx.fillRect(l.x, l.y, l.width, l.height);
+            }
         });
 
         // Powerups

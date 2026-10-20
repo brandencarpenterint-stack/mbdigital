@@ -9,41 +9,26 @@ import { feedService } from '../../utils/feed';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
-const GRAVITY = 0.8;
-const JUMP_STRENGTH = -12;
-const PIPE_SPEED = 5;
-const PIPE_SPACING = 180;
+const GRAVITY = 0.4;
+const JUMP_STRENGTH = -7;
+const PIPE_SPEED = 3;
+const PIPE_SPACING = 250;
 const BIRD_SIZE = 40;
 
 const CHARACTERS = [
-    { id: 'flappy_boy', type: 'image', content: '/assets/merchboy_face.png', name: 'Classic' },
-    { id: 'flappy_money', type: 'image', content: '/assets/merchboy_money.png', name: 'Money' },
-    { id: 'flappy_cat', type: 'image', content: '/assets/merchboy_cat.png', name: 'Bear' },
-    { id: 'flappy_bunny', type: 'image', content: '/assets/merchboy_bunny.png', name: 'Bunny' }, ,
-    { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
-    { id: 'flappy_cat', type: 'emoji', content: '🐱', name: 'Kitty' },
-    { id: 'flappy_dog', type: 'emoji', content: '🐶', name: 'Puppy' },
-    { id: 'flappy_frog', type: 'emoji', content: '🐸', name: 'Froggo' },
-    { id: 'flappy_unicorn', type: 'emoji', content: '🦄', name: 'Uni' },
-    { id: 'flappy_rainbow', type: 'emoji', content: '🌈', name: 'Pride' },
-    { id: 'flappy_ghost', type: 'emoji', content: '👻', name: 'Spooky' },
-    { id: 'flappy_zombie', type: 'emoji', content: '🧟', name: 'Walker' }, // Missing in Shop? Add it there later if needed
-    { id: 'flappy_vampire', type: 'emoji', content: '🧛', name: 'Drac' }, // Missing in Shop
-    { id: 'flappy_clown', type: 'emoji', content: '🤡', name: 'Bozo' }, // Missing in Shop
-    { id: 'flappy_poop', type: 'emoji', content: '💩', name: 'Stinky' },
-    { id: 'flappy_hotdog', type: 'emoji', content: '🌭', name: 'Glizzy' }, // Missing
-    { id: 'flappy_taco', type: 'emoji', content: '🌮', name: 'Crunch' }, // Missing
-    { id: 'flappy_burger', type: 'emoji', content: '🍔', name: 'Beefy' }, // Missing
-    { id: 'flappy_alien', type: 'emoji', content: '👽', name: 'Paul' },
-    { id: 'flappy_robot', type: 'emoji', content: '🤖', name: 'Bot' },
-    { id: 'flappy_cowboy', type: 'emoji', content: '🤠', name: 'Sheriff' },
-    { id: 'flappy_monster', type: 'emoji', content: '👾', name: '8-Bit' },
-    { id: 'flappy_diamond', type: 'emoji', content: '💎', name: 'Richie' },
-    { id: 'flappy_crown', type: 'emoji', content: '👑', name: 'King' }, // Missing
-    { id: 'flappy_catdog', type: 'emoji', content: '😺', name: 'CatDog' },
-    { id: 'flappy_face_money', type: 'image', content: '/assets/skins/face_money.png', name: 'Money' },
+    { id: 'flappy_boy', type: 'image', content: '/assets/skins/face_default.png', name: 'Classic' },
     { id: 'flappy_face_bear', type: 'image', content: '/assets/skins/face_bear.png', name: 'Bear' },
     { id: 'flappy_face_bunny', type: 'image', content: '/assets/skins/face_bunny.png', name: 'Bunny' },
+    { id: 'flappy_cat', type: 'image', content: '/assets/skins/face_cat.png', name: 'Kitty' },
+    { id: 'flappy_frog', type: 'image', content: '/assets/skins/face_frog.png', name: 'Froggo' },
+    { id: 'flappy_rainbow', type: 'image', content: '/assets/skins/face_rainbow.png', name: 'Pride' },
+    { id: 'flappy_alien', type: 'image', content: '/assets/skins/face_astro.png', name: 'Paul' },
+    { id: 'flappy_brokid', type: 'image', content: '/assets/brokid-logo.png', name: 'BroKid' },
+    { id: 'flappy_monster', type: 'image', content: '/assets/skins/face_dino.png', name: '8-Bit' },
+    { id: 'flappy_diamond', type: 'image', content: '/assets/skins/face_star.png', name: 'Richie' },
+    { id: 'flappy_cowboy', type: 'image', content: '/assets/skins/face_pumpkin.png', name: 'Sheriff' },
+    { id: 'flappy_robot', type: 'image', content: '/assets/skins/face_gamer.png', name: 'BeepBoop' },
+    { id: 'flappy_ghost', type: 'image', content: '/assets/skins/face_space.png', name: 'Spooky' },
 ];
 
 const FlappyMascot = () => {
@@ -153,7 +138,7 @@ const FlappyMascot = () => {
 
             if (score > 10) {
                 const playerName = userProfile?.name || 'Player';
-                feedService.publish(`is flying high! Score: ${score} in Flappy Mascot 🦅`, 'win', playerName);
+                feedService.publish(`is flying high! Score: ${score} in FlappyBro 🦅`, 'win', playerName);
             }
         }
 
@@ -205,7 +190,7 @@ const FlappyMascot = () => {
         // Add Pipe
         if (state.pipes[state.pipes.length - 1].x < GAME_WIDTH - PIPE_SPACING) {
             const minHeight = 50;
-            const maxHeight = GAME_HEIGHT - 150 - minHeight;
+            const maxHeight = GAME_HEIGHT - 250 - minHeight;
             const height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
             state.pipes.push({ x: GAME_WIDTH, topHeight: height });
         }
@@ -222,7 +207,7 @@ const FlappyMascot = () => {
             // Horizontal Hit?
             if (50 + BIRD_SIZE > pipe.x && 50 < pipe.x + 60) {
                 // Vertical Hit?
-                if (state.birdY < pipe.topHeight || state.birdY + BIRD_SIZE > pipe.topHeight + 150) {
+                if (state.birdY < pipe.topHeight || state.birdY + BIRD_SIZE > pipe.topHeight + 250) {
                     endGame();
                 }
             }
@@ -242,7 +227,7 @@ const FlappyMascot = () => {
             ctx.strokeRect(pipe.x - 4, pipe.topHeight - 20, 68, 20);
 
             // Bottom Pipe
-            const bottomY = pipe.topHeight + 150;
+            const bottomY = pipe.topHeight + 250;
             ctx.fillRect(pipe.x, bottomY, 60, GAME_HEIGHT - bottomY);
             ctx.strokeRect(pipe.x, bottomY, 60, GAME_HEIGHT - bottomY);
             // Cap
@@ -390,7 +375,7 @@ const FlappyMascot = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#70c5ce' }}>
-            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>FLAPPY MASCOT</h1>
+            <h1 style={{ fontFamily: '"Courier New", monospace', fontSize: '3rem', margin: '10px 0' }}>FLAPPY BRO</h1>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '400px', marginBottom: '10px', fontSize: '1.2rem', color: '#fff', fontWeight: 'bold' }}>
                 <span>SCORE: {score}</span>
@@ -459,11 +444,7 @@ const FlappyMascot = () => {
                 <div style={{ display: 'flex', gap: '10px', padding: '0 10px' }}>
                     {CHARACTERS.map(char => {
                         // Unlocked if in Shop OR one of the default faces
-                        const isDefault = ['flappy_boy', 'flappy_money', 'flappy_cat', 'flappy_bunny'].includes(char.id);
-                        const isUnlocked = isDefault || shopState?.unlocked?.includes(char.id);
                         const isSelected = selectedId === char.id;
-
-                        if (!isUnlocked) return null; // Hide locked
 
                         return (
                             <button
@@ -485,7 +466,7 @@ const FlappyMascot = () => {
                                 }}
                             >
                                 <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>
-                                    {char.type === 'emoji' ? char.content : (char.id === 'flappy_boy' ? '👦' : '🅱️')}
+                                    <img src={char.content} style={{ width: '35px', height: '35px', objectFit: 'contain' }} alt={char.name} />
                                 </div>
                                 <span style={{ fontSize: '0.7rem', color: 'white', whiteSpace: 'nowrap' }}>{char.name}</span>
                             </button>

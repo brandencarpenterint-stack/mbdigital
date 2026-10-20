@@ -104,49 +104,57 @@ export const PocketBroProvider = ({ children }) => {
                         let nextType = newStats.type || 'SOOT';
                         let nextColor = newStats.color || '#111';
 
-                        // Evolution Logic based on Stage
+                        // EVOLUTION LOGIC
+                        const night = (newStats.history?.nightActions || 0);
+                        const avgHappy = newStats.history?.avgHappy || 50;
+                        const avgHunger = newStats.history?.avgHunger || 50;
+                        const poopAccum = newStats.history?.poopCount || 0; // if tracked
+                        const energy = newStats.energy || 50;
+                        const rng = Math.random();
+
                         if (newStats.stage === 'BABY') {
-                            // Branching Logic for CHILD stage
-                            const night = (newStats.history?.nightActions || 0);
-                            const avgHappy = newStats.history?.avgHappy || 50;
-                            const avgHunger = newStats.history?.avgHunger || 50;
-                            const energy = newStats.energy || 50;
-                            const rng = Math.random();
-
-                            // 1. Check for SPECIAL (Perfect Stats) -> ORB
-                            if (avgHappy > 95 && avgHunger > 95) {
-                                nextType = 'ORB';
-                                nextColor = '#00BCD4'; // Cyan
-                            }
-                            // 2. Check for CHAOS (Low Happy, High Night) -> ALIEN
-                            else if (avgHappy < 40 && night > 10) {
-                                nextType = 'ALIEN';
-                                nextColor = '#9C27B0'; // Purple
-                            }
-                            // 3. Environment Checks
+                            // BABY -> CHILD (Base Classes)
+                            if (avgHappy > 95 && avgHunger > 95) { nextType = 'ORB'; nextColor = '#00BCD4'; }
+                            else if (avgHappy < 40 && night > 10) { nextType = 'ALIEN'; nextColor = '#9C27B0'; }
                             else if (night > 20) { nextType = 'GHOST'; nextColor = '#e0e0e0'; }
-                            else if (avgHunger > 70) { nextType = 'SLIME'; nextColor = '#00ff00'; }
+                            else if (avgHunger < 40) { nextType = 'SLIME'; nextColor = '#00ff00'; } // Hungry = Slime
                             else if (avgHappy > 80 && energy > 80) { nextType = 'ROBOT'; nextColor = '#607d8b'; }
-
-                            // 4. Rare Reroll (DINO)
                             else if (rng > 0.85) { nextType = 'DINO'; nextColor = '#4CAF50'; }
-                            else { nextType = 'SOOT'; nextColor = '#111'; }
-
-                            // 5. COLOR MUTATION (Shiny!)
-                            if (Math.random() > 0.9) {
-                                // Gilded / Shiny
-                                nextColor = '#FFD700'; // GOLD
-                            } else if (Math.random() > 0.9) {
-                                // Void / Shadow
-                                nextColor = '#000000';
+                            else { nextType = 'SOOT'; nextColor = '#444'; }
+                        }
+                        else if (newStats.stage === 'CHILD') {
+                            // CHILD -> TEEN (Sub-classes)
+                            if (newStats.type === 'SLIME') {
+                                if (avgHappy < 40) { nextType = 'POISON_SLIME'; nextColor = '#8A2BE2'; newStats.effect = 'jitter'; }
+                                else if (avgHappy > 80) { nextType = 'KING_SLIME'; nextColor = '#FFD700'; newStats.effect = 'shiny'; }
+                            } else if (newStats.type === 'GHOST') {
+                                if (night > 50) { nextType = 'VAMPIRE'; nextColor = '#8B0000'; }
+                                else { nextType = 'SHADOW'; nextColor = '#111'; newStats.effect = 'ghost'; }
+                            } else if (newStats.type === 'ROBOT') {
+                                if (energy > 90) { nextType = 'MECH'; nextColor = '#FF4500'; }
+                                else { nextType = 'CYBORG'; nextColor = '#708090'; }
+                            } else if (newStats.type === 'DINO') {
+                                if (avgHunger > 80) { nextType = 'DRAGON'; nextColor = '#DC143C'; }
+                            } else if (newStats.type === 'ORB') {
+                                if (avgHappy > 90) { nextType = 'ANGEL'; nextColor = '#FFFFFF'; newStats.effect = 'rainbow'; }
+                            } else if (newStats.type === 'ALIEN') {
+                                if (night > 30) { nextType = 'MUTANT'; nextColor = '#00FA9A'; newStats.effect = 'glitch'; }
+                            } else {
+                                // Soot evolutions
+                                if (avgHappy > 80) { nextType = 'CLOUD'; nextColor = '#FFF'; }
+                                else if (avgHunger < 30) { nextType = 'TRASH'; nextColor = '#556B2F'; }
+                            }
+                        }
+                        else if (newStats.stage === 'TEEN' || newStats.stage === 'ADULT') {
+                            // TEEN -> ADULT -> ELDER (Color/Effect Intensification)
+                            if (Math.random() > 0.8) {
+                                newStats.effect = 'shiny';
                             }
                         }
 
-                        // FUTURE: Add more branching for Teen/Adult
-                        if (newStats.stage === 'CHILD') {
-                            if (newStats.type === 'SLIME') { nextColor = '#00FA9A'; } // Evolve color
-                            if (newStats.type === 'DINO') { nextColor = '#388E3C'; } // Darker Green
-                        }
+                        // Rare Color Mutations across all stages
+                        if (Math.random() > 0.95) nextColor = '#FFD700'; // GOLDEN
+                        if (Math.random() > 0.95) nextColor = '#FF1493'; // HOT PINK
 
                         newStats.stage = nextStageKey;
                         newStats.type = nextType;
@@ -180,6 +188,31 @@ export const PocketBroProvider = ({ children }) => {
     }, [stats]);
 
     // Actions
+    
+    // Listen for Cloud Hydration
+    useEffect(() => {
+        const handleHydrate = (e) => {
+            const cloudData = e.detail;
+            if (!cloudData) return;
+            
+            setStats(prev => {
+                // Merge cloud data, but only if it seems more advanced (higher XP or stage index)
+                // Or simply trust cloud data. We'll trust cloud data for properties.
+                return {
+                    ...prev,
+                    stage: cloudData.stage || prev.stage,
+                    type: cloudData.type || prev.type,
+                    color: cloudData.color || prev.color,
+                    tempStatus: cloudData.effect || prev.tempStatus,
+                    happy: cloudData.happy !== undefined ? cloudData.happy : prev.happy,
+                    hunger: cloudData.hunger !== undefined ? cloudData.hunger : prev.hunger
+                };
+            });
+        };
+        window.addEventListener('hydratePocketBro', handleHydrate);
+        return () => window.removeEventListener('hydratePocketBro', handleHydrate);
+    }, []);
+
     const feed = (amount = 30) => {
         setStats(prev => ({
             ...prev,

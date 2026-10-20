@@ -241,4 +241,22 @@
 .glow-neutral {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     border: 1px solid #555;
+}@media (max-width: 768px) {
+    .dashboard-grid.arcade-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding-bottom: 20px !important;
+    }
+    .cabinet-container {
+        height: 180px;
+        margin-bottom: 5px;
+    }
+    .cabinet {
+        transform: translate(-50%, -50%) scale(0.65);
+    }
+}
+@media (hover: hover) and (max-width: 768px) {
+    .dashboard-grid.arcade-grid .cabinet-container:hover .cabinet {
+        transform: translate(-50%, -50%) scale(0.65) rotateY(-15deg) rotateX(5deg);
+    }
 }

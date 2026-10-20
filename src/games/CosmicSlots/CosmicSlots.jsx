@@ -8,14 +8,14 @@ import SquishyButton from '../../components/SquishyButton';
 
 // SYMBOLS CONFIG
 const SYMBOLS = [
-    { id: 'wild', char: '⭐', value: 0, weight: 1 }, // Wildcard (Value determined by match)
-    { id: 'cat', img: '/assets/merchboy_cat.png', value: 25, weight: 3 },
-    { id: 'bunny', img: '/assets/merchboy_bunny.png', value: 25, weight: 3 },
-    { id: 'face', img: '/assets/merchboy_face.png', value: 10, weight: 4 },
-    { id: 'money', img: '/assets/merchboy_money.png', value: 50, weight: 1 },
-    { id: 'seven', char: '7️⃣', value: 100, weight: 1 },
-    { id: 'cherry', char: '🍒', value: 5, weight: 5 },
-    { id: 'grape', char: '🍇', value: 5, weight: 5 }
+    { id: 'money', img: '/assets/skins/face_money.png', value: 500, weight: 1 }, // JACKPOT
+    { id: 'astro', img: '/assets/skins/face_astro.png', value: 100, weight: 2 },
+    { id: 'star', img: '/assets/skins/face_star.png', value: 50, weight: 3 },
+    { id: 'gamer', img: '/assets/skins/face_gamer.png', value: 25, weight: 4 },
+    { id: 'dino', img: '/assets/skins/face_dino.png', value: 15, weight: 5 },
+    { id: 'bear', img: '/assets/skins/face_bear.png', value: 10, weight: 6 },
+    { id: 'cat', img: '/assets/skins/face_cat.png', value: 5, weight: 8 },
+    { id: 'default', img: '/assets/skins/face_default.png', value: 2, weight: 10 }
 ];
 
 const getRandomSymbol = () => {
@@ -43,6 +43,7 @@ const CosmicSlots = () => {
     ]);
 
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isJackpot, setIsJackpot] = useState(false);
     const [winAmount, setWinAmount] = useState(0);
     const [winningLines, setWinningLines] = useState([]);
     const [streak, setStreak] = useState(1); // Win Streak Multiplier
@@ -63,6 +64,7 @@ const CosmicSlots = () => {
 
         setIsSpinning(true);
         setWinAmount(0);
+        setIsJackpot(false);
         setWinningLines([]);
         playJump();
 
@@ -151,6 +153,10 @@ const CosmicSlots = () => {
             // High Score & Feed
             if (updateStat) updateStat('slotsBiggestWin', totalWin);
 
+            if (totalWin >= 1500) {
+                setIsJackpot(true);
+            }
+
             if (totalWin >= 500) {
                 const playerName = userProfile?.name || 'Player';
                 feedService.publish(`hit a JACKPOT of ${totalWin} Coins! 🎰`, 'win', playerName);
@@ -170,7 +176,7 @@ const CosmicSlots = () => {
     };
 
     return (
-        <div style={{
+        <div className={isJackpot ? 'jackpot-shake' : ''} style={{
             minHeight: '100vh',
             background: 'radial-gradient(circle, #220033 0%, #000 100%)',
             color: 'white',
@@ -292,6 +298,21 @@ const CosmicSlots = () => {
                     {winAmount > 0 && (
                         <div style={{ fontSize: '2rem', color: '#00ffaa', fontWeight: 'bold', textShadow: '0 0 20px #00ffaa' }}>
                             WIN: {winAmount} 🪙
+                        </div>
+                    )}
+
+                    {/* MASSIVE JACKPOT OVERLAY */}
+                    {isJackpot && (
+                        <div style={{
+                            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                            background: 'rgba(0,0,0,0.9)', border: '10px solid gold',
+                            padding: '50px 100px', borderRadius: '30px',
+                            boxShadow: '0 0 100px gold, inset 0 0 50px gold',
+                            zIndex: 9999, textAlign: 'center',
+                            animation: 'jackpot-pulse 0.5s infinite alternate'
+                        }}>
+                            <h1 style={{ fontSize: '6rem', color: 'gold', margin: 0, textShadow: '0 0 20px #fff' }}>JACKPOT!</h1>
+                            <h2 style={{ fontSize: '4rem', color: '#00ffaa', margin: '20px 0' }}>+{winAmount} 🪙</h2>
                         </div>
                     )}
                 </div>

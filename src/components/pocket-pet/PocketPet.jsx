@@ -16,8 +16,16 @@ const PocketPet = ({ type = 'SOOT', stage = 'EGG', mood = 'happy', isSleeping = 
     }
 
     let PetComponent;
+    
+    let baseType = type;
+    if (type.includes('SLIME')) baseType = 'SLIME';
+    if (type.includes('ORB') || type === 'ANGEL') baseType = 'ORB';
+    if (type.includes('DINO') || type === 'DRAGON') baseType = 'DINO';
+    if (type.includes('GHOST') || type === 'SHADOW' || type === 'VAMPIRE') baseType = 'GHOST';
+    if (type.includes('BOT') || type.includes('MECH') || type === 'CYBORG') baseType = 'ROBOT';
+    if (type.includes('ALIEN') || type === 'MUTANT') baseType = 'ALIEN';
 
-    switch (type) {
+    switch (baseType) {
         case 'SLIME':
             PetComponent = <SlimeRenderer stage={stage} mood={mood} isSleeping={isSleeping} isEating={isEating} skin={skin} color={color} />; break;
         case 'ROBOT':

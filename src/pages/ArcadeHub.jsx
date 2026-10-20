@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+﻿/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ import TheButton from '../components/TheButton';
 import { supabase } from '../lib/supabaseClient';
 import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
+import TiltCard from '../components/TiltCard';
 import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
@@ -119,13 +120,22 @@ const OnlinePlaza = () => {
 };
 
 const games = [
+    {
+        id: 'unboxing',
+        title: 'HYPE DROP',
+        desc: 'CS:GO Mystery Crates & Skins',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #7928ca 100%)',
+        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        colSpan: 2,
+        leaderboardId: 'hype_drop'
+    },
 
     {
         id: 'slots',
         title: 'COSMIC SLOTS',
         desc: 'Spin to WIN BIG!',
         gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', // Gold
-        icon: '🎰',
+        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
         colSpan: 2,
         leaderboardId: 'cosmic_slots'
     },
@@ -134,7 +144,7 @@ const games = [
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
         gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
-        icon: '🌀',
+        icon: <img src='/assets/skins/face_rainbow.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px cyan)'}} />,
         colSpan: 2,
         leaderboardId: 'face_runner'
     },
@@ -143,7 +153,7 @@ const games = [
         title: 'MERCH JUMP',
         desc: 'Sky High.',
         gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
-        icon: '👟',
+        icon: <img src='/assets/skins/face_bear.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #66a6ff)'}} />,
         colSpan: 1,
         leaderboardId: 'merch_jump'
     },
@@ -152,7 +162,7 @@ const games = [
         title: 'CRAZY FISHING',
         desc: 'Catch the Mer-Logo!',
         gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
-        icon: '🎣',
+        icon: <img src='/assets/merchboy_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #0072FF)'}} />,
         colSpan: 1,
         leaderboardId: 'crazy_fishing'
     },
@@ -161,7 +171,7 @@ const games = [
         title: 'WHACK-A-MOLE',
         desc: 'Bonk the moles!',
         gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)',
-        icon: '🔨',
+        icon: <img src='/assets/mole_normal.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF416C)'}} />,
         colSpan: 1,
         leaderboardId: 'whack_a_mole'
     },
@@ -170,7 +180,7 @@ const games = [
         title: 'NEON SNAKE',
         desc: 'Classic vibes.',
         gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-        icon: '🐍',
+        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #38ef7d)'}} />,
         colSpan: 1,
         leaderboardId: 'neon_snake'
     },
@@ -179,7 +189,7 @@ const games = [
         title: 'GALAXY DEFENDER',
         desc: 'Pew pew pew!',
         gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
-        icon: '🚀',
+        icon: <img src='/assets/skins/face_space.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8E2DE2)'}} />,
         colSpan: 1,
         leaderboardId: 'galaxy_defender'
     },
@@ -188,7 +198,7 @@ const games = [
         title: 'NEON BRICKS',
         desc: 'Smash pixels.',
         gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
-        icon: '🧱',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #da22ff)'}} />,
         colSpan: 1,
         leaderboardId: 'neon_bricks'
     },
@@ -197,7 +207,7 @@ const games = [
         title: 'MEMORY MATCH',
         desc: 'Train your brain.',
         gradient: 'linear-gradient(135deg, #f79d00 0%, #64f38c 100%)',
-        icon: '🧠',
+        icon: <img src='/assets/skins/face_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #64f38c)'}} />,
         colSpan: 1,
         leaderboardId: 'memory_match'
     },
@@ -206,16 +216,16 @@ const games = [
         title: 'VOID HUNTER',
         desc: 'Destroy the Subs!',
         gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        icon: '⚓',
+        icon: <img src='/assets/avatar_alien.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #302b63)'}} />,
         colSpan: 1,
         leaderboardId: 'sub_hunter'
     },
     {
         id: 'flappy',
-        title: 'FLAPPY MASCOT',
+        title: 'FLAPPY BRO',
         desc: 'Don\'t crash.',
         gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
-        icon: '🦅',
+        icon: <img src='/assets/skins/face_default.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #22C1C3)'}} />,
         colSpan: 1,
         leaderboardId: 'flappy_mascot'
     },
@@ -224,7 +234,7 @@ const games = [
         title: 'BRO CANNON',
         desc: 'Launch for the stars!',
         gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)', // Red/Pink
-        icon: '💣',
+        icon: <img src='/assets/avatar_ghost.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF512F)'}} />,
         colSpan: 1,
         leaderboardId: 'bro_cannon'
     },
@@ -233,7 +243,7 @@ const games = [
         title: 'BEAT LAB',
         desc: 'Sonic Studio.',
         gradient: 'linear-gradient(135deg, #110022, #330066)',
-        icon: '🎹',
+        icon: <img src='/assets/skins/face_skater.jpg' style={{height:'60px', borderRadius:'50%', objectFit:'contain', filter: 'drop-shadow(0 0 10px #330066)'}} />,
         colSpan: 1,
         path: '/beatlab'
     },
@@ -242,7 +252,7 @@ const games = [
         title: 'SUB SLAYER',
         desc: 'Expense Tracker.',
         gradient: 'linear-gradient(135deg, #220000, #440000)',
-        icon: '⚔️',
+        icon: <img src='/assets/merchboy_logo_badge.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #440000)'}} />,
         colSpan: 1,
         path: '/subslayer'
     },
@@ -251,7 +261,7 @@ const games = [
         title: 'COLOR STUDIO',
         desc: 'Relax and paint.',
         gradient: 'linear-gradient(135deg, #FF69B4, #8A2BE2)',
-        icon: '🎨',
+        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8A2BE2)'}} />,
         colSpan: 2,
         path: '/coloring'
     }
@@ -267,6 +277,7 @@ const getHighScore = (id, stats) => {
     if (id === 'flappy') return stats.flappyHighScore || 0;
     if (id === 'fishing') return stats.crazyFishingHighScore || 0;
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
+    if (id === 'sub-hunter') return stats.subHunterHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
     if (id === 'wheel') return 'DEGEN';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
@@ -310,9 +321,9 @@ const ArcadeHub = () => {
             if (chance > 0.7) { // 30% Chance
                 // Determine what to drop
                 if (!shopState?.unlocked?.includes('bank_lofi')) {
-                    setLoot({ id: 'bank_lofi', icon: '📼', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+                    setLoot({ id: 'bank_lofi', icon: 'ðŸ“¼', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
                 } else if (!shopState?.unlocked?.includes('bank_cyber') && Math.random() > 0.5) {
-                    setLoot({ id: 'bank_cyber', icon: '💾', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+                    setLoot({ id: 'bank_cyber', icon: 'ðŸ’¾', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
                 }
             }
         };
@@ -402,7 +413,7 @@ const ArcadeHub = () => {
                     display: 'inline-flex', alignItems: 'center', gap: '10px',
                     border: '2px solid white'
                 }}>
-                    <span>🛒</span> VISIT GLOBAL SHOP
+                    <span>ðŸ›’</span> VISIT GLOBAL SHOP
                 </Link>
             </div>
 
@@ -428,15 +439,15 @@ const ArcadeHub = () => {
                 </div>
                 <h2 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', color: 'white', zIndex: 2 }}>POCKET BRO LINKED</h2>
                 <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', fontSize: '0.8rem', color: '#aaa', marginBottom: '15px', zIndex: 2 }}>
-                    <span>❤️ {Math.floor(broStats?.happy || 0)}% HAPPY</span>
-                    <span>⚡ {Math.floor(broStats?.xp || 0)} XP</span>
+                    <span>â¤ï¸ {Math.floor(broStats?.happy || 0)}% HAPPY</span>
+                    <span>âš¡ {Math.floor(broStats?.xp || 0)} XP</span>
                 </div>
                 <Link to="/pocketbro" style={{
                     background: 'var(--neon-blue)', color: 'black', padding: '10px 30px',
                     borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.9rem',
                     boxShadow: '0 0 15px var(--neon-blue)', zIndex: 2
                 }}>
-                    ENTER ROOM 🚪
+                    ENTER ROOM ðŸšª
                 </Link>
                 {/* BG Effect */}
                 <div style={{
@@ -450,7 +461,7 @@ const ArcadeHub = () => {
 
             {/* STAGGERED GRID */}
             <motion.div
-                className="dashboard-grid"
+                className="dashboard-grid arcade-grid"
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
@@ -494,7 +505,7 @@ const ArcadeHub = () => {
                 maxWidth: '900px', margin: '80px auto 20px auto',
                 borderRadius: '30px', backdropFilter: 'blur(10px)'
             }}>
-                <h2 style={{ color: 'gold', marginBottom: '30px', fontFamily: '"Orbitron", sans-serif', letterSpacing: '2px' }}>🌍 GLOBAL RANKINGS</h2>
+                <h2 style={{ color: 'gold', marginBottom: '30px', fontFamily: '"Orbitron", sans-serif', letterSpacing: '2px' }}>ðŸŒ GLOBAL RANKINGS</h2>
 
                 {/* Game Selector */}
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px', scrollbarWidth: 'none' }}>

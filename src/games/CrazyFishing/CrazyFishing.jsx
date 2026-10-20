@@ -652,80 +652,60 @@ const CrazyFishing = () => {
             }
         }
 
-        // BATTLE (Tug of War Mechanic)
+        // BATTLE (Stardew Valley Mechanic)
         if (mode === 'BATTLE' && state.battleFish) {
             state.fishTimer++;
             const f = state.battleFish;
-            const speed = (f.speed || 1) * 1.0;
-            const difficultyMod = Math.min((f.score || 10) * 0.0005, 0.4); 
-
-            const baseStruggleInterval = 120 - (speed * 10);
-            const struggleInterval = Math.max(40, baseStruggleInterval);
+            const difficultyMod = Math.min((f.score || 10) * 0.005, 1.5); 
             
-            if (state.fishState === 'CALM' && state.fishTimer > struggleInterval) {
-                state.fishState = 'STRUGGLING';
+            if (state.fishTimer > 60 - (difficultyMod * 10) || Math.random() < 0.02) {
                 state.fishTimer = 0;
-                for(let i=0; i<5; i++) {
-                    state.particles.push({
-                        x: state.fishPos + (Math.random()-0.5)*40,
-                        y: state.fishY + 20,
-                        dx: (Math.random()-0.5)*5,
-                        dy: -2 - Math.random()*3,
-                        life: 1, char: '💧', color: 'cyan'
-                    });
+                state.fishTarget = Math.random() * 100;
+                if (Math.random() < 0.2 + (difficultyMod * 0.1)) {
+                     state.fishTarget = Math.random() * 100; 
                 }
-            } else if (state.fishState === 'STRUGGLING' && state.fishTimer > 60 + (speed * 10)) {
-                state.fishState = 'CALM';
-                state.fishTimer = 0;
             }
-
+            
+            const dist = state.fishTarget - (state.fishY_percent || 50); 
+            state.fishY_percent = (state.fishY_percent || 50) + dist * (0.04 + difficultyMod * 0.015);
+            
             const isReeling = isMouseDown.current;
-
             if (isReeling) {
-                if (state.fishState === 'STRUGGLING') {
-                    // Reeling while struggling: Tension spikes, progress drops slightly
-                    state.lineTension += 2.0 + difficultyMod;
-                    state.catchPercent -= 0.1;
-                    state.fishPos += (Math.random() - 0.5) * 20;
-                } else {
-                    // Reeling while calm: Good progress!
-                    state.catchPercent += 0.4;
-                    state.lineTension += 0.2;
-                    state.fishPos += (GAME_WIDTH / 2 - state.fishPos) * 0.1;
-                }
+                state.barVel -= 0.35; // Lighter thrust for smoother float
             } else {
-                if (state.fishState === 'STRUGGLING') {
-                    // Letting it run: Tension drops, but fish gets away
-                    state.lineTension -= 1.0;
-                    state.catchPercent -= (0.2 + difficultyMod);
-                    state.fishPos += (Math.random() > 0.5 ? 1 : -1) * speed * 2;
-                } else {
-                    // Resting: Tension drops fast
-                    state.lineTension -= 1.5;
-                    state.catchPercent -= 0.1;
-                }
+                state.barVel += 0.4; // Gravity
             }
-
-            // Keep fish on screen visually
-            if (state.fishPos < 100) state.fishPos = 100;
-            if (state.fishPos > GAME_WIDTH - 100) state.fishPos = GAME_WIDTH - 100;
-
-            if (state.lineTension < 0) state.lineTension = 0;
+            
+            state.barVel *= 0.92; // Less friction for more floaty momentum
+            state.barPos = (state.barPos || 50) + state.barVel;
+            
+            if (state.barPos < 0) { state.barPos = 0; state.barVel = 0; }
+            if (state.barPos > 100) { state.barPos = 100; state.barVel = -(state.barVel || 0) * 0.3; } // bounce on bottom
+            
+            const BAR_SIZE = 25;
+            const fishInBar = state.fishY_percent >= state.barPos && state.fishY_percent <= state.barPos + BAR_SIZE;
+            
+            if (fishInBar) {
+                state.catchPercent += 0.4; // Fill faster
+            } else {
+                state.catchPercent -= 0.15; // Drain slower so it's playable
+            }
+            
             if (state.catchPercent < 0) state.catchPercent = 0;
-
-            // WIN / LOSE
+            
             if (state.catchPercent >= 100) {
                 startReelUp();
-            } else if (state.lineTension >= 100 || state.catchPercent <= 0) {
-                if (state.lineTension >= 100) {
-                     state.particles.push({
-                        x: GAME_WIDTH/2, y: GAME_HEIGHT/2 - 50,
-                        dx: 0, dy: -2, life: 2, char: 'SNAP!', color: 'red', size: 40
-                     });
-                     playCrash();
-                }
-                loseBattle();
+            } else if (state.catchPercent <= 0 && state.fishTimer > 120) { // More grace period
+                 state.particles.push({
+                    x: GAME_WIDTH/2, y: GAME_HEIGHT/2 - 50,
+                    dx: 0, dy: -2, life: 2, char: 'ESCAPED!', color: 'red', size: 40
+                 });
+                 playCrash();
+                 loseBattle();
             }
+            
+            state.fishPos = GAME_WIDTH / 2 - 50; 
+            state.fishY = GAME_HEIGHT / 2 + ((state.fishY_percent - 50) * 2);
         }
 
         // REELING UP (Reverse Journey)
@@ -1041,80 +1021,85 @@ const CrazyFishing = () => {
     };
 
     const drawBattle = (ctx, state) => {
-        ctx.fillStyle = 'rgba(0,0,10,0.4)';
+        ctx.fillStyle = 'rgba(0,15,30,0.7)';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
         const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2 + 50;
+        const cy = GAME_HEIGHT / 2;
 
+        // Visual line dropping down to fish
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(cx, 0);
-        
-        const isHighTension = state.lineTension > 75;
-        let lineEndX = state.fishPos;
-        let lineEndY = state.fishY;
-
-        if (isHighTension) {
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 4;
-            lineEndX += (Math.random() - 0.5) * 10;
-        } else if (state.lineTension > 40) {
-            ctx.strokeStyle = 'orange';
-            ctx.lineWidth = 3;
-        } else {
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-        }
-        
-        if (state.fishState === 'STRUGGLING') {
-             ctx.lineTo(cx + (lineEndX - cx)/2 + (Math.random()-0.5)*20, lineEndY/2);
-        }
-        ctx.lineTo(lineEndX, lineEndY);
+        ctx.lineTo(cx, cy + ((state.fishY_percent || 50) - 50) * 4);
         ctx.stroke();
+        
+        // Fish struggling visually in the water
+        ctx.font = '50px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(state.battleFish?.emoji || '🐟', cx, cy + ((state.fishY_percent || 50) - 50) * 4);
 
-        ctx.save();
-        if (state.fishState === 'STRUGGLING') {
-            ctx.shadowColor = 'red';
-            ctx.shadowBlur = 15;
-            ctx.fillStyle = 'red'; ctx.font = 'bold 24px monospace'; ctx.textAlign='center';
-            ctx.fillText("FISH PULLING! DON'T REEL!", cx, 150);
-        } else {
-            ctx.fillStyle = '#00ff00'; ctx.font = 'bold 24px monospace'; ctx.textAlign='center';
-            ctx.fillText("FISH CALM! REEL IN! (HOLD)", cx, 150);
-        }
-        drawFish(ctx, state.battleFish, lineEndX, lineEndY, 60);
-        ctx.restore();
+        // Stardew UI Box (Moved towards center, made much larger)
+        const uiX = cx + 80;
+        const uiY = cy - 200;
+        const uiW = 60; // Wider
+        const uiH = 400; // Taller
 
-        const barWidth = 400;
-        const barHeight = 25;
-        const startX = cx - barWidth / 2;
-        
-        // Progress Bar
-        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(startX, cy + 80, barWidth, barHeight);
-        ctx.strokeStyle = 'gold'; ctx.strokeRect(startX, cy + 80, barWidth, barHeight);
-        const catchW = (state.catchPercent / 100) * barWidth;
-        ctx.fillStyle = 'cyan'; ctx.fillRect(startX + 2, cy + 82, Math.max(0, catchW - 4), barHeight - 4);
-        
-        ctx.fillStyle = 'white'; ctx.font = '16px monospace'; ctx.textAlign='left';
-        ctx.fillText("DISTANCE TO BOAT (FILL TO CATCH)", startX, cy + 75);
+        // Background of minigame bar
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.strokeStyle = 'gold';
+        ctx.lineWidth = 4;
+        ctx.fillRect(uiX, uiY, uiW, uiH);
+        ctx.strokeRect(uiX, uiY, uiW, uiH);
 
-        // Tension Bar
-        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(startX, cy + 130, barWidth, barHeight);
-        ctx.strokeStyle = 'red'; ctx.strokeRect(startX, cy + 130, barWidth, barHeight);
-        const tensionW = (state.lineTension / 100) * barWidth;
+        // Catch Bar
+        const barPxHeight = (25 / 100) * uiH; 
+        const barPxY = uiY + ((state.barPos || 50) / 100) * (uiH - barPxHeight);
         
-        let tColor = '#00ff00';
-        if (state.lineTension > 50) tColor = 'orange';
-        if (state.lineTension > 80) tColor = 'red';
+        const fishInBar = (state.fishY_percent || 50) >= (state.barPos || 50) && (state.fishY_percent || 50) <= (state.barPos || 50) + 25;
+        
+        // Flash bar if fish is inside
+        ctx.fillStyle = fishInBar ? 'rgba(0,255,0,0.8)' : 'rgba(0,200,0,0.3)';
+        ctx.fillRect(uiX + 4, barPxY, uiW - 8, barPxHeight);
+        
+        // Bar borders for detail
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(uiX + 4, barPxY, uiW - 8, barPxHeight);
 
-        ctx.fillStyle = tColor; ctx.fillRect(startX + 2, cy + 132, Math.max(0, tensionW - 4), barHeight - 4);
+        // Fish Icon inside Minigame
+        const fishPxY = uiY + ((state.fishY_percent || 50) / 100) * (uiH - 30); 
+        ctx.font = '30px serif';
+        ctx.fillText(state.battleFish?.emoji || '🐟', uiX + uiW / 2, fishPxY + 15);
+
+        // Progress Bar (Right side)
+        const progX = uiX + uiW + 10;
+        const progY = uiY;
+        const progW = 20;
+        const progH = uiH;
         
-        ctx.fillStyle = 'white'; ctx.fillText("LINE TENSION (DON'T LET IT SNAP)", startX, cy + 125);
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.fillRect(progX, progY, progW, progH);
+        ctx.strokeRect(progX, progY, progW, progH);
         
-        if (isHighTension) {
-            ctx.fillStyle = 'red'; ctx.textAlign='right';
-            ctx.fillText("WARNING! SNAP IMMINENT!", startX + barWidth, cy + 125);
-        }
+        const fillH = ((state.catchPercent || 0) / 100) * progH;
+        ctx.fillStyle = fishInBar ? '#00ff00' : '#ff0000';
+        ctx.fillRect(progX, progY + progH - fillH, progW, fillH);
+        
+        // INSTRUCTIONS
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = 'bold 24px monospace';
+        ctx.fillText("TAP SPACEBAR OR SCREEN", cx, uiY + uiH + 40);
+        ctx.fillText("TO KEEP FISH IN GREEN", cx, uiY + uiH + 70);
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
     };
 
     const drawShowcase = (ctx, state) => {

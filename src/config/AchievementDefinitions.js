@@ -59,11 +59,11 @@ export const ACHIEVEMENTS = [ // Updated 2026-01-29
     { id: 'pb_party', title: 'Party Animal', description: 'Make Bro Dance.', reward: 'Disco Ball', game: 'Pocket Bro', condition: () => (getPB().stats?.tempStatus === 'dance') },
 
     // --- FLAPPY MASCOT (5) ---
-    { id: 'flappy_novice', title: 'First Flight', description: 'Score 10 points.', reward: 'Feather', game: 'Flappy Mascot', condition: (s) => s.flappyHighScore >= 10 },
-    { id: 'flappy_pro', title: 'Barnstormer', description: 'Score 50 points.', reward: 'Goggles', game: 'Flappy Mascot', condition: (s) => s.flappyHighScore >= 50 },
-    { id: 'flappy_master', title: 'Sky Captain', description: 'Score 100 points.', reward: 'Propeller', game: 'Flappy Mascot', condition: (s) => s.flappyHighScore >= 100 },
-    { id: 'flappy_addict', title: 'Frequent Flyer', description: 'Play 20 times.', reward: 'Passport', game: 'Flappy Mascot', condition: () => getGameCount('flappy_mascot') >= 20 },
-    { id: 'flappy_collector', title: 'Squadron', description: 'Unlock 5 Pilots.', reward: 'Hangar Key', game: 'Flappy Mascot', condition: () => getShop().unlocked.filter(id => id.startsWith('flappy_')).length >= 5 },
+    { id: 'flappy_novice', title: 'First Flight', description: 'Score 10 points.', reward: 'Feather', game: 'FlappyBro', condition: (s) => s.flappyHighScore >= 10 },
+    { id: 'flappy_pro', title: 'Barnstormer', description: 'Score 50 points.', reward: 'Goggles', game: 'FlappyBro', condition: (s) => s.flappyHighScore >= 50 },
+    { id: 'flappy_master', title: 'Sky Captain', description: 'Score 100 points.', reward: 'Propeller', game: 'FlappyBro', condition: (s) => s.flappyHighScore >= 100 },
+    { id: 'flappy_addict', title: 'Frequent Flyer', description: 'Play 20 times.', reward: 'Passport', game: 'FlappyBro', condition: () => getGameCount('flappy_mascot') >= 20 },
+    { id: 'flappy_collector', title: 'Squadron', description: 'Unlock 5 Pilots.', reward: 'Hangar Key', game: 'FlappyBro', condition: () => getShop().unlocked.filter(id => id.startsWith('flappy_')).length >= 5 },
 
     // --- FACE RUNNER (4) ---
     { id: 'run_novice', title: '5k Runner', description: 'Reach 500m.', reward: 'Sweatband', game: 'Face Runner', condition: (s) => s.faceRunnerHighScore >= 500 },

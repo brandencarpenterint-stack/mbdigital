@@ -152,7 +152,7 @@ export const CATEGORIES = [
     { id: 'fishing', name: 'Crazy Fishing', icon: '🎣' },
     { id: 'brick', name: 'Neon Bricks', icon: '🧱' },
     { id: 'galaxy', name: 'Galaxy Defender', icon: '🚀' },
-    { id: 'flappy', name: 'Flappy Mascot', icon: '🐥' },
+    { id: 'flappy', name: 'FlappyBro', icon: '🐥' },
     { id: 'pocketbro', name: 'Pocket Skins', icon: '🥚' },
     { id: 'homedecor', name: 'Home Decor', icon: '🛋️' },
     { id: 'themes', name: 'OS Themes', icon: '🎨' },

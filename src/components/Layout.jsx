@@ -19,7 +19,7 @@ import { useNotifications } from '../context/NotificationContext';
 import NotificationList from './NotificationList';
 import PocketCompanion from './PocketCompanion';
 import HypeTicker from './HypeTicker';
-import PirateRadio from './PirateRadio';
+
 import useRetroSound from '../hooks/useRetroSound';
 import CursorTrail from './CursorTrail';
 import './Layout.css';
@@ -264,7 +264,7 @@ const Layout = () => {
             {!isFullScreenGame && (
                 <>
                     {/* PIRATE RADIO */}
-                    <PirateRadio />
+                    
 
                     {/* THE UTILITY BELT (Bottom Dock) */}
                     <div className="glass-panel" style={{

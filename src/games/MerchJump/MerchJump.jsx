@@ -28,7 +28,7 @@ const MerchJump = () => {
     const { updateStat, addCoins, coins, spendCoins, userProfile, stats } = useGamification() || {};
 
     // Game Constants
-    const GRAVITY = 0.4;
+    const GRAVITY = 0.35;
     const JUMP_FORCE = -12;
     const WIDTH = 400;
     const HEIGHT = 600;
@@ -172,7 +172,7 @@ const MerchJump = () => {
         // Let's make it spawn periodically or at key milestones.
 
         // Spawn rule: Rare chance if score > 1000 and no items present
-        if (score > 1000 && Math.random() < 0.005 && itemsRef.current.length === 0) {
+        if (score > 1000 && Math.random() < 0.055 && itemsRef.current.length === 0) {
             itemsRef.current.push({
                 x: Math.random() * (WIDTH - 60), y: y - 100, type: 'merch_balloon', w: 50, h: 50
             });
@@ -409,7 +409,7 @@ const MerchJump = () => {
 
             ctx.fillStyle = p.color || currentBiome.plat;
             if (p.type === 'crumble') ctx.fillStyle = '#A0522D';
-            if (p.type === 'slippery') ctx.fillStyle = '#b0e0e6'; // Powder Blue
+            if (p.type === 'slippery') ctx.fillStyle = '#ff0000'; // Powder Blue
             if (p.type === 'melting') ctx.fillStyle = '#ff4500'; // OrangeRed
             if (p.type === 'shrinking') ctx.fillStyle = '#8a2be2'; // BlueViolet
             
@@ -419,7 +419,7 @@ const MerchJump = () => {
                 ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(p.x + 5, p.y); ctx.lineTo(p.x + 15, p.y + p.h); ctx.stroke();
             }
             if (p.type === 'slippery') {
-                ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(p.x, p.y, p.w, 4); // extra shiny top
+                ctx.fillStyle = 'black'; ctx.font = '12px Courier'; ctx.fillText('DANGER', p.x + 5, p.y + 12);
             }
             if (p.type === 'melting') {
                 ctx.fillStyle = '#ff8c00'; // DarkOrange drips

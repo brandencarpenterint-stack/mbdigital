@@ -15,7 +15,7 @@ const GAMES_LIST = [
     { id: 'slots', name: 'Cosmic Slots' },
     { id: 'face-runner', name: 'Face Warp' },
     { id: 'brick', name: 'Neon Bricks' },
-    { id: 'flappy', name: 'Flappy Mascot' },
+    { id: 'flappy', name: 'FlappyBro' },
     { id: 'snake', name: 'Neon Snake' }
 ];
 

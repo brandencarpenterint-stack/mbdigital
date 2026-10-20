@@ -869,6 +869,11 @@ export const GamificationProvider = ({ children }) => {
                 });
             }
 
+
+            // 5. PocketBro Hydration
+            if (data.pocket_state) {
+                window.dispatchEvent(new CustomEvent('hydratePocketBro', { detail: data.pocket_state }));
+            }
             // Update Profile Info
             setUserProfile(prev => ({
                 ...prev,
@@ -923,12 +928,18 @@ export const GamificationProvider = ({ children }) => {
                             face_runner: stats.faceRunnerHighScore || 0,
                             cosmic_slots: stats.slotsBiggestWin || 0,
                             bro_cannon: stats.broCannonHighScore || 0,
+                            sub_hunter: stats.subHunterHighScore || 0,
                             arena_wins: stats.arenaWins || 0
                         },
                         stats: stats,
                         room_data: pocketData.placedItems || [],
                         pocket_state: {
                             stage: pocketData.stage,
+                            type: pocketData.type,
+                            color: pocketData.color,
+                            effect: pocketData.tempStatus || pocketData.effect,
+                            happy: pocketData.happy,
+                            hunger: pocketData.hunger,
                             skin: shopState.equipped?.pocketbro || null,
                             theme: shopState.equipped?.theme || 'theme_default'
                         },

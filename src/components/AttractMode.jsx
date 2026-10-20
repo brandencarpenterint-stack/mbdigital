@@ -16,7 +16,7 @@ const AttractMode = () => {
         };
 
         // Listen for activity
-        window.addEventListener('mousemove', resetIdle);
+        window.addEventListener('touchstart', resetIdle); window.addEventListener('touchmove', resetIdle); window.addEventListener('mousemove', resetIdle);
         window.addEventListener('keydown', resetIdle);
         window.addEventListener('click', resetIdle);
         window.addEventListener('scroll', resetIdle);
@@ -25,7 +25,7 @@ const AttractMode = () => {
         timeout = setTimeout(() => setIsIdle(true), IDLE_TIMEOUT);
 
         return () => {
-            window.removeEventListener('mousemove', resetIdle);
+            window.removeEventListener('touchstart', resetIdle); window.removeEventListener('touchmove', resetIdle); window.removeEventListener('mousemove', resetIdle);
             window.removeEventListener('keydown', resetIdle);
             window.removeEventListener('click', resetIdle);
             window.removeEventListener('scroll', resetIdle);

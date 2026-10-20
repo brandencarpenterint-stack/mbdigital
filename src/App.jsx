@@ -36,18 +36,20 @@ const MerchJump = lazy(() => import('./games/MerchJump/MerchJump'));
 const CosmicSlots = lazy(() => import('./games/CosmicSlots/CosmicSlots'));
 const SubHunterGame = lazy(() => import('./games/SubHunter/SubHunterGame'));
 const BroCannon = lazy(() => import('./games/BroCannon/BroCannon'));
+const MerchDefense = lazy(() => import('./games/MerchDefense/MerchDefense'));
+const HypeDrop = lazy(() => import('./games/HypeDrop/HypeDrop'));
 import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
-import GlobalChat from './components/GlobalChat';
-import RadioWidget from './components/RadioWidget';
+
+
 import MultiplayerCursors from './components/MultiplayerCursors';
 import MatrixRain from './components/MatrixRain';
 import GlobalNukeEvent from './components/GlobalNukeEvent';
 import GlobalRaidBoss from './components/GlobalRaidBoss';
 import AttractMode from './components/AttractMode';
 import SingularityEvent from './components/SingularityEvent';
-import GlobalGraffiti from './components/GlobalGraffiti';
+
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
 import { useTime } from './context/TimeContext';
@@ -61,15 +63,15 @@ function App() {
       <PageTransition />
       <CosmicBackground />
       <GlobalEventOverlay />
-      <GlobalChat />
-      <RadioWidget />
+      
+      
       <MultiplayerCursors />
       <MatrixRain />
       <GlobalNukeEvent />
       <GlobalRaidBoss />
       <AttractMode />
       <SingularityEvent />
-      <GlobalGraffiti />
+      
       <div style={{
         position: 'fixed',
         top: 0,
@@ -130,6 +132,9 @@ function App() {
             <Route path="arcade/slots" element={<CosmicSlots />} />
             <Route path="arcade/sub-hunter" element={<SubHunterGame />} />
             <Route path="arcade/bro-cannon" element={<BroCannon />} />
+            <Route path="arcade/merch-defense" element={<MerchDefense />} />
+            <Route path="arcade/unboxing" element={<HypeDrop />} />
+            <Route path="unboxing" element={<HypeDrop />} />
           </Route>
         </Routes>
       </Suspense>
