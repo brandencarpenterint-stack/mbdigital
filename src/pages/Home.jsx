@@ -123,6 +123,9 @@ const Home = () => {
                             <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
                                 ⚡ NEW: Cyber Pinball 2088 • B-R-O Drop Targets & 3x Multiball Chaos!
                             </span>
+                            <span style={{ color: '#ff0055', fontWeight: 'bold' }}>
+                                🚀 NEW: Cyber Crash: Moonshot • Bail Out Before the Blast & Ride to 100x!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -299,6 +302,30 @@ const Home = () => {
                             <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>SYNTHWAVE PINBALL</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER PINBALL</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Dino & Bunny Bumpers, B-R-O Drop Targets & Multiball!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.3), rgba(255, 215, 0, 0.2))',
+                        border: '2px solid rgba(255, 0, 85, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 85, 0.4)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_dino.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ff0055', filter: 'drop-shadow(0 0 10px #ff0055)' }} alt="Crash" />
+                        <div>
+                            <div style={{ background: '#ff0055', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>100X MOONSHOT</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER CRASH</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Rocket Multipliers, Auto-Cashout & Live Multiplayer Pilots!</div>
                         </div>
                     </div>
                 </Link>

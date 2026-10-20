@@ -209,6 +209,16 @@ const games = [
         leaderboardId: 'cyber_pinball'
     },
     {
+        id: 'crash',
+        title: 'CYBER CRASH: MOONSHOT',
+        desc: 'Rocket Multiplier Moonshots, Auto-Cashout & 100x Bails',
+        gradient: 'linear-gradient(135deg, #ff0055 0%, #ffd700 100%)',
+        icon: <img src='/assets/skins/face_dino.png' alt='Crash' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0055)'}} />,
+        colSpan: 2,
+        path: '/arcade/crash',
+        leaderboardId: 'cyber_crash'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -668,6 +678,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>⚡</span> CYBER PINBALL (3X MULTI)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 0, 85, 0.2)',
+                        border: '1px solid #ff0055',
+                        color: '#ff6688',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🚀</span> CYBER CRASH (100X MOONSHOT)
                     </div>
                 </Link>
             </div>

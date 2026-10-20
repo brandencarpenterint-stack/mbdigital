@@ -123,6 +123,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'moonshot_launchpad',
+        name: 'Cyber Moonshot Launchpad',
+        icon: '🚀',
+        durationMinutes: 90,
+        energyCost: 50,
+        minStage: 'TEEN',
+        description: 'Board the hyper-rocket into orbit and salvage cosmic space debris.',
+        lootTable: {
+            minCoins: 600,
+            maxCoins: 1800,
+            xp: 700,
+            dropRate: 0.6,
+            items: [
+                { id: 'furn_ufo', weight: 40 },
+                { id: 'bg_space', weight: 35 },
+                { id: 'furn_robot', weight: 25 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',

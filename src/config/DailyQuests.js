@@ -36,6 +36,10 @@ export const DAILY_TEMPLATES = [
     { id: 'pinball_score_5000', desc: 'Score 5,000 PTS in Cyber Pinball', target: 5000, reward: 120, type: 'pinballHighScore', condition: 'gt', game: 'pinball' },
     { id: 'pinball_multiball_1', desc: 'Spell B-R-O & Trigger Pinball Multiball', target: 1, reward: 180, type: 'pinballMultiballs', game: 'pinball' },
 
+    // CYBER CRASH: MOONSHOT
+    { id: 'crash_bail_2x', desc: 'Bail Out at 2.0x+ in Cyber Crash', target: 2, reward: 125, type: 'crashHighScore', condition: 'gt', game: 'crash' },
+    { id: 'crash_wins_3', desc: 'Win 3 Cyber Crash Rounds', target: 3, reward: 150, type: 'crashWins', game: 'crash' },
+
     // MERCH DEFENSE
     { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
 
@@ -71,6 +75,7 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_crash_10x', desc: 'WEEKLY: Moonshot Bailout at 10.0x+ in Cyber Crash', target: 10, reward: 950, type: 'crashHighScore', condition: 'gt', game: 'crash', isWeekly: true },
     { id: 'week_pinball_25000', desc: 'WEEKLY: Score 25,000 PTS in Cyber Pinball', target: 25000, reward: 850, type: 'pinballHighScore', condition: 'gt', game: 'pinball', isWeekly: true },
     { id: 'week_bj_15', desc: 'WEEKLY: Win 15 Hands of Cyber 21', target: 15, reward: 850, type: 'blackjackWins', game: 'blackjack', isWeekly: true },
     { id: 'week_derby_10', desc: 'WEEKLY: Win 10 Cyber Derby Races', target: 10, reward: 900, type: 'derbyWins', game: 'derby', isWeekly: true },

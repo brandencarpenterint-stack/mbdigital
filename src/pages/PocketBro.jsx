@@ -294,6 +294,23 @@ const PocketBro = () => {
                             ⚡ PINBALL
                         </div>
                     </Link>
+
+                    <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(255, 0, 85, 0.15)',
+                            border: '1px solid #ff0055',
+                            color: '#ff88aa',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            🚀 CRASH
+                        </div>
+                    </Link>
                 </div>
 
                 {/* THE DEVICE */}
