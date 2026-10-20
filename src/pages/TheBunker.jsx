@@ -374,6 +374,106 @@ const TheBunker = () => {
                 </Link>
             </div>
 
+            {/* INTERACTIVE BUNKER CYBER 21 VIP TABLE */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/blackjack';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '32%',
+                    left: '18%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: '#ffd700',
+                    color: '#000',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 10px #ffd700',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    CYBER 21
+                </div>
+                <div style={{
+                    width: '60px',
+                    height: '90px',
+                    background: 'linear-gradient(145deg, #182218, #0a140a)',
+                    border: '3px solid #ffd700',
+                    borderRadius: '8px 8px 2px 2px',
+                    boxShadow: '0 0 25px rgba(255,215,0,0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '42px', height: '32px', background: '#000', border: '1px solid #ffd700', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                        🃏
+                    </div>
+                    <div style={{ width: '40px', height: '14px', background: '#222', borderRadius: '3px' }} />
+                </div>
+            </div>
+
+            {/* INTERACTIVE BUNKER CYBER DERBY MACHINE */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/derby';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '32%',
+                    right: '28%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: '#00ff66',
+                    color: '#000',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 10px #00ff66',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    BRO DERBY
+                </div>
+                <div style={{
+                    width: '60px',
+                    height: '90px',
+                    background: 'linear-gradient(145deg, #152515, #081208)',
+                    border: '3px solid #00ff66',
+                    borderRadius: '8px 8px 2px 2px',
+                    boxShadow: '0 0 25px rgba(0,255,102,0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '42px', height: '32px', background: '#000', border: '1px solid #00ff66', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                        🏇
+                    </div>
+                    <div style={{ width: '40px', height: '14px', background: '#222', borderRadius: '3px' }} />
+                </div>
+            </div>
+
             {/* INTERACTIVE BUNKER ARCADE MACHINE (BACKGROUND OBJECT) */}
             <div
                 onClick={(e) => {
