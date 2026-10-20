@@ -143,6 +143,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'casino_royale',
+        name: 'Neon Casino Royale Salon',
+        icon: '🎡',
+        durationMinutes: 75,
+        energyCost: 45,
+        minStage: 'CHILD',
+        description: 'Mingle with high rollers at the single-zero roulette tables and collect VIP chips.',
+        lootTable: {
+            minCoins: 500,
+            maxCoins: 1500,
+            xp: 600,
+            dropRate: 0.55,
+            items: [
+                { id: 'furn_chest', weight: 45 },
+                { id: 'rug_retro', weight: 35 },
+                { id: 'furn_arcade', weight: 20 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',

@@ -126,6 +126,9 @@ const Home = () => {
                             <span style={{ color: '#ff0055', fontWeight: 'bold' }}>
                                 🚀 NEW: Cyber Crash: Moonshot • Bail Out Before the Blast & Ride to 100x!
                             </span>
+                            <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
+                                🎡 NEW: Cyber Roulette 2088 • European Single-Zero Wheel & 35:1 Straight Ups!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -326,6 +329,30 @@ const Home = () => {
                             <div style={{ background: '#ff0055', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>100X MOONSHOT</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER CRASH</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Rocket Multipliers, Auto-Cashout & Live Multiplayer Pilots!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/roulette" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.3), rgba(0, 229, 255, 0.2))',
+                        border: '2px solid rgba(0, 255, 102, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.4)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_money.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66', filter: 'drop-shadow(0 0 10px #00ff66)' }} alt="Roulette" />
+                        <div>
+                            <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>35:1 PAYOUTS</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER ROULETTE</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Single-Zero Wheel, Neon Felt & High-Roller Inside Bets!</div>
                         </div>
                     </div>
                 </Link>

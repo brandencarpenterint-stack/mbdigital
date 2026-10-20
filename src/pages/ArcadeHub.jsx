@@ -219,6 +219,16 @@ const games = [
         leaderboardId: 'cyber_crash'
     },
     {
+        id: 'roulette',
+        title: 'CYBER ROULETTE 2088',
+        desc: 'European Single-Zero Wheel, Neon Felt & 35:1 Straight Ups',
+        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_money.png' alt='Roulette' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/roulette',
+        leaderboardId: 'cyber_roulette'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -695,6 +705,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🚀</span> CYBER CRASH (100X MOONSHOT)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/roulette" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 255, 102, 0.2)',
+                        border: '1px solid #00ff66',
+                        color: '#66ffaa',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🎡</span> CYBER ROULETTE (35:1)
                     </div>
                 </Link>
             </div>
