@@ -12,6 +12,11 @@ const MOCK_WAGERS = [
 ];
 
 const GAMES_LIST = [
+    { id: 'unboxing', name: 'HypeDrop Mystery Crates' },
+    { id: 'merch-defense', name: 'Merch Defense TD' },
+    { id: 'bro-cannon', name: 'Bro Cannon Launch' },
+    { id: 'fishing', name: 'Crazy Fishing' },
+    { id: 'merch-jump', name: 'Merch Jump' },
     { id: 'slots', name: 'Cosmic Slots' },
     { id: 'face-runner', name: 'Face Warp' },
     { id: 'brick', name: 'Neon Bricks' },

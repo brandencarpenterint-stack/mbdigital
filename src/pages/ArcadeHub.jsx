@@ -266,6 +266,24 @@ const games = [
         path: '/subslayer'
     },
     {
+        id: 'arena',
+        title: 'THE ARENA',
+        desc: 'RPG Squad Glitch Battles',
+        gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0844)'}} />,
+        colSpan: 2,
+        path: '/arena'
+    },
+    {
+        id: 'underworld',
+        title: 'THE UNDERWORLD',
+        desc: 'High-Stakes PvP Wagers',
+        gradient: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
+        icon: <img src='/assets/skins/face_hoodie.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #4e4376)'}} />,
+        colSpan: 2,
+        path: '/underworld'
+    },
+    {
         id: 'coloring',
         title: 'COLOR STUDIO',
         desc: 'Relax and paint.',
@@ -404,6 +422,74 @@ const ArcadeHub = () => {
                 <p style={{ fontSize: 'clamp(1rem, 4vw, 1.2rem)', color: '#aaa', marginTop: '10px' }}>
                     Ready to play? Select a game console below.
                 </p>
+            
+            </div>
+
+            {/* ACTION PORTAL STRIP */}
+            <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                margin: '-15px auto 35px auto',
+                maxWidth: '900px'
+            }}>
+                <button
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('spawn-raid-boss'));
+                        try { playBoop(); } catch(e) {}
+                    }}
+                    style={{
+                        background: 'linear-gradient(135deg, #ff0055, #ff5500)',
+                        color: 'white',
+                        border: '2px solid rgba(255,255,255,0.4)',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: '900',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 20px rgba(255, 0, 85, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <span>🚨</span> SUMMON RAID BOSS
+                </button>
+
+                <Link to="/arena" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(255, 8, 68, 0.2)',
+                        border: '1px solid #ff0844',
+                        color: '#ff88aa',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>⚔️</span> THE ARENA (RPG)
+                    </div>
+                </Link>
+
+                <Link to="/underworld" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(120, 115, 245, 0.2)',
+                        border: '1px solid #7873f5',
+                        color: '#c4c1ff',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>🎲</span> THE UNDERWORLD (WAGERS)
+                    </div>
+                </Link>
             </div>
 
             {/* LIVE TICKER / FEED */}

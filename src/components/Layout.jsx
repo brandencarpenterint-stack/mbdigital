@@ -18,6 +18,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationList from './NotificationList';
 import PocketCompanion from './PocketCompanion';
+import GlobalRaidBoss from './GlobalRaidBoss';
 import HypeTicker from './HypeTicker';
 
 import useRetroSound from '../hooks/useRetroSound';
@@ -380,6 +381,7 @@ const Layout = () => {
 
             {/* COMPANION MODE - Show everywhere but smaller in games (handled by component) */}
             <PocketCompanion />
+            <GlobalRaidBoss />
 
             {/* FLOATING EXIT BUTTON (For Full Screen Games) */}
             {isFullScreenGame && (
