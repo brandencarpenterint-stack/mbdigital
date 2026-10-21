@@ -7,6 +7,7 @@ const TICKER_ITEMS = [
     { id: 3, icon: '🎡', text: '@WhaleBro hit Lucky 7 on Cyber Roulette (+3,500 CP)!', path: '/arcade/roulette', color: '#ffd700' },
     { id: 4, icon: '💎', text: '@ScoutBro cashed out 5 gems on Cyber Mines (+4,200 CP)!', path: '/arcade/mines', color: '#00e5ff' },
     { id: 5, icon: '🎟️', text: '@LuckyWhale hit Match 3 Gold on Cyber Scratchers (+25,000 CP)!', path: '/arcade/scratchers', color: '#ffd700' },
+    { id: 6, icon: '⚙️', text: '@DozerKing pushed a Whale Gold Ingot on Cyber Dozer (+5,000 CP)!', path: '/arcade/dozer', color: '#ffd700' },
     { id: 4, icon: '🃏', text: '@CyberBunny hit Natural 21 Blackjack at Whale Penthouse!', path: '/arcade/blackjack', color: '#00e5ff' },
     { id: 5, icon: '⚡', text: '@MatrixBro spelled B-R-O for 3x Pinball Multiball!', path: '/arcade/pinball', color: '#d500f9' },
     { id: 6, icon: '🔓', text: 'Community Vault Pot reached 42,850 CP! 3 Keys crack it all!', path: '/underworld', color: '#ffd700' },

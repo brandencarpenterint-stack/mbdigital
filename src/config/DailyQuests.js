@@ -52,6 +52,10 @@ export const DAILY_TEMPLATES = [
     { id: 'scratchers_play_3', desc: 'Scratch 3 Cyber Scratchers', target: 3, reward: 120, type: 'scratchersPlayed', game: 'scratchers' },
     { id: 'scratchers_win_1', desc: 'Win Any Prize in Cyber Scratchers', target: 1, reward: 150, type: 'scratchersWon', game: 'scratchers' },
 
+    // CYBER COIN DOZER 2088
+    { id: 'dozer_drop_15', desc: 'Drop 15 Arcade Dozer Tokens', target: 15, reward: 120, type: 'dozerCoinsDropped', game: 'dozer' },
+    { id: 'dozer_collect_10', desc: 'Push 10 Coins/Items into Win Hopper', target: 10, reward: 160, type: 'dozerCoinsCollected', game: 'dozer' },
+
     // MERCH DEFENSE
     { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
 
@@ -87,6 +91,7 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_dozer_50', desc: 'WEEKLY: Push 50 Coins/Figurines into Win Hopper', target: 50, reward: 950, type: 'dozerCoinsCollected', game: 'dozer', isWeekly: true },
     { id: 'week_scratchers_10', desc: 'WEEKLY: Scratch 10 Cyber Scratchers', target: 10, reward: 900, type: 'scratchersPlayed', game: 'scratchers', isWeekly: true },
     { id: 'week_mines_15', desc: 'WEEKLY: Win 15 Cyber Mines Cashouts', target: 15, reward: 900, type: 'minesWins', game: 'mines', isWeekly: true },
     { id: 'week_roulette_15', desc: 'WEEKLY: Win 15 Cyber Roulette Bets', target: 15, reward: 900, type: 'rouletteWins', game: 'roulette', isWeekly: true },

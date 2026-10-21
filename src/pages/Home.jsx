@@ -135,6 +135,9 @@ const Home = () => {
                             <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
                                 🎟️ NEW: Cyber Scratchers • Silver Foil Lottery, 3 Card Tiers & 100,000 CP Grand Jackpots!
                             </span>
+                            <span style={{ color: '#00e5ff', fontWeight: 'bold' }}>
+                                ⚙️ NEW: Cyber Coin Dozer 2088 • Mechanical Pusher, Figurine Drops, Laser Shields & Quakes!
+                            </span>
                         </React.Fragment>
                     ))}
                 </motion.div>
@@ -407,6 +410,30 @@ const Home = () => {
                             <div style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>INSTANT LOTTERY</div>
                             <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER SCRATCHERS</h3>
                             <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Foil Scratch-Off, 3 Tiers & 100,000 CP Grand Jackpots!</div>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link to="/arcade/dozer" style={{ textDecoration: 'none' }}>
+                    <div className="bento-card" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(255, 0, 127, 0.2))',
+                        border: '2px solid rgba(0, 229, 255, 0.4)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 229, 255, 0.4)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        <img src="/assets/skins/face_astro.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00e5ff', filter: 'drop-shadow(0 0 10px #00e5ff)' }} alt="Dozer" />
+                        <div>
+                            <div style={{ background: '#00e5ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>ARCADE PUSHER</div>
+                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER COIN DOZER</h3>
+                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Mechanical Pusher, Mascot Figurines & Coin Quakes!</div>
                         </div>
                     </div>
                 </Link>

@@ -249,6 +249,16 @@ const games = [
         leaderboardId: 'cyber_scratchers'
     },
     {
+        id: 'dozer',
+        title: 'CYBER COIN DOZER 2088',
+        desc: 'Mechanical Neon Pusher, Figurine Drops, Laser Shields & Coin Quakes',
+        gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
+        icon: <img src='/assets/skins/face_star.png' alt='Coin Dozer' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        colSpan: 2,
+        path: '/arcade/dozer',
+        leaderboardId: 'cyber_dozer'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -776,6 +786,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🎟️</span> CYBER SCRATCHERS (LOTTERY)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/dozer" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 229, 255, 0.2)',
+                        border: '1px solid #00e5ff',
+                        color: '#00ffff',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>⚙️</span> CYBER COIN DOZER
                     </div>
                 </Link>
             </div>

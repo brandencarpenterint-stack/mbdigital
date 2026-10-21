@@ -764,6 +764,56 @@ const TheBunker = () => {
                 </div>
             </div>
 
+            {/* INTERACTIVE BUNKER CYBER COIN DOZER MACHINE */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/dozer';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '46%',
+                    left: '8%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: 'linear-gradient(90deg, #00e5ff, #ff007f)',
+                    color: '#fff',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 12px #00e5ff',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    COIN DOZER
+                </div>
+                <div style={{
+                    width: '64px',
+                    height: '96px',
+                    background: 'linear-gradient(145deg, #021a22, #00080b)',
+                    border: '3px solid #00e5ff',
+                    borderRadius: '8px 8px 4px 4px',
+                    boxShadow: '0 0 25px rgba(0,229,255,0.5)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '48px', height: '40px', background: '#000', border: '1px solid #00e5ff', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+                        ⚙️
+                    </div>
+                    <div style={{ width: '46px', height: '12px', background: 'linear-gradient(90deg, #00e5ff, #ff007f)', borderRadius: '3px' }} />
+                </div>
+            </div>
+
             {/* INTERACTIVE BUNKER CYBER MINES TERMINAL */}
             <div
                 onClick={(e) => {

@@ -203,6 +203,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'neon_dozer_carnival',
+        name: 'Cyber Dozer Carnival',
+        icon: '⚙️',
+        durationMinutes: 50,
+        energyCost: 35,
+        minStage: 'BABY',
+        description: 'Drop arcade tokens, trigger coin quakes, and push rare mascot figurines into the chute.',
+        lootTable: {
+            minCoins: 350,
+            maxCoins: 1100,
+            xp: 420,
+            dropRate: 0.6,
+            items: [
+                { id: 'furn_arcade', weight: 45 },
+                { id: 'furn_chest', weight: 35 },
+                { id: 'furn_robot', weight: 20 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',

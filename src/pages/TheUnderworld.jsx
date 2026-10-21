@@ -16,10 +16,12 @@ const MOCK_WAGERS = [
     { id: 'm7', player: 'MoonshotApe', gameId: 'crash', gameName: 'Cyber Crash', wager: 20000, state: 'open', targetScore: 10 },
     { id: 'm8', player: 'RouletteRoyale', gameId: 'roulette', gameName: 'Cyber Roulette', wager: 25000, state: 'open', targetScore: 36 },
     { id: 'm9', player: 'GridHustler', gameId: 'mines', gameName: 'Cyber Mines', wager: 30000, state: 'open', targetScore: 10 },
-    { id: 'm10', player: 'LuckyScratcher', gameId: 'scratchers', gameName: 'Cyber Scratchers', wager: 50000, state: 'open', targetScore: 25000 }
+    { id: 'm10', player: 'LuckyScratcher', gameId: 'scratchers', gameName: 'Cyber Scratchers', wager: 50000, state: 'open', targetScore: 25000 },
+    { id: 'm11', player: 'DozerKing', gameId: 'dozer', gameName: 'Cyber Coin Dozer', wager: 35000, state: 'open', targetScore: 5000 }
 ];
 
 const GAMES_LIST = [
+    { id: 'dozer', name: 'Cyber Coin Dozer 2088' },
     { id: 'scratchers', name: 'Cyber Scratchers (Lottery)' },
     { id: 'mines', name: 'Cyber Mines 2088' },
     { id: 'roulette', name: 'Cyber Roulette 2088' },
