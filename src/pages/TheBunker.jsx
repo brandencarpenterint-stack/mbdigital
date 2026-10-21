@@ -23,6 +23,46 @@ const TheBunker = () => {
     const [myPos, setMyPos] = useState({ x: 50, y: 50 }); // Percentages
     const [myChat, setMyChat] = useState(null);
 
+    const SIMULATED_PATRONS = [
+        { id: 'patron_dino', name: 'Don Dino', avatar: '/assets/skins/face_dino.png', x: 22, y: 68, chat: null },
+        { id: 'patron_bunny', name: 'Cyber Bunny', avatar: '/assets/skins/face_bunny.png', x: 74, y: 72, chat: null },
+        { id: 'patron_whale', name: 'Whale Bro', avatar: '/assets/skins/face_money.png', x: 54, y: 58, chat: null },
+        { id: 'patron_star', name: 'Astro Pilot', avatar: '/assets/skins/face_star.png', x: 38, y: 80, chat: null }
+    ];
+    const [patrons, setPatrons] = useState(SIMULATED_PATRONS);
+
+    useEffect(() => {
+        const BARK_PHRASES = [
+            'Who is ready for Cyber Derby? 🏇',
+            'Hitting 21 on the blackjack table! 💰',
+            'Moonshot 15x paid out! 🚀',
+            'Bunker drinks are free tonight! 🍸',
+            'Vault pot is getting huge! 🔓',
+            'Number 7 on Roulette paid 35:1! 🎡',
+            '🔥',
+            '💀'
+        ];
+
+        const interval = setInterval(() => {
+            setPatrons(prev => prev.map(p => {
+                if (Math.random() < 0.45) {
+                    const newX = Math.max(12, Math.min(85, p.x + (Math.random() - 0.5) * 28));
+                    const newY = Math.max(54, Math.min(84, p.y + (Math.random() - 0.5) * 22));
+                    const hasChat = Math.random() < 0.35;
+                    return {
+                        ...p,
+                        x: newX,
+                        y: newY,
+                        chat: hasChat ? BARK_PHRASES[Math.floor(Math.random() * BARK_PHRASES.length)] : null
+                    };
+                }
+                return p;
+            }));
+        }, 4200);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const userName = userProfile?.name || 'GUEST_' + myId.current.substr(0, 4);
     const avatar = userProfile?.avatar || '/assets/merchboy_face.png';
 
@@ -325,7 +365,7 @@ const TheBunker = () => {
 
             <div style={{ position: 'absolute', top: '20px', left: '20px', color: 'white', fontFamily: 'monospace', pointerEvents: 'none', background: 'rgba(0,0,0,0.7)', padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(0,255,204,0.3)', backdropFilter: 'blur(8px)', zIndex: 100 }}>
                 <div style={{ color: '#00ffcc', fontWeight: 'bold', fontSize: '1rem', letterSpacing: '1px' }}>THE BUNKER (COMMUNITY LOBBY)</div>
-                <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '2px' }}>PLAYERS IN ROOM: {Object.keys(players).length + 1}</div>
+                <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '2px' }}>PLAYERS IN ROOM: {Object.keys(players).length + 1 + (Object.keys(players).length < 2 ? patrons.length : 0)}</div>
                 <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '4px' }}>Click anywhere on the floor to walk.</div>
             </div>
 
@@ -675,7 +715,7 @@ const TheBunker = () => {
             </div>
 
             {/* Render Other Players */}
-            {Object.values(players).map(p => renderPlayer(p, false))}
+            {Object.values(players).concat(Object.keys(players).length < 2 ? patrons : []).map(p => renderPlayer(p, false))}
             
             {/* Render Me */}
             {renderPlayer(null, true)}

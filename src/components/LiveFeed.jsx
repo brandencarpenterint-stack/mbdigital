@@ -93,9 +93,31 @@ const LiveFeed = () => {
         };
         feedService.addEventListener('feed-message', handleLocal);
 
+        const SIM_EVENTS = [
+            { user: 'TurboDino', text: 'Won 1,800 CP on Bro Derby Exacta! 🏇', color: 'gold' },
+            { user: 'CyberBunny', text: 'Cashed out 14.5x on Cyber Crash! 🚀', color: 'gold' },
+            { user: 'WhaleBro', text: 'Hit Double Down 21 against Dealer! 🃏', color: '#00ccff' },
+            { user: 'AstroNeko', text: 'Spelled B-R-O on Cyber Pinball! ⚡', color: '#ff00ff' },
+            { user: 'DonDino', text: 'Straight Up 7 paid 35:1 on Roulette! 🎡', color: 'gold' },
+            { user: 'NeonSamurai', text: 'Vault pool is over 40k CP, who is spinning? 🔓', color: '#00ffcc' }
+        ];
+
+        const simInterval = setInterval(() => {
+            const ev = SIM_EVENTS[Math.floor(Math.random() * SIM_EVENTS.length)];
+            const simMessage = {
+                id: 'sim_' + Date.now() + Math.random(),
+                user: ev.user,
+                text: ev.text,
+                time: 'Just now',
+                color: ev.color
+            };
+            setMessages(prev => [simMessage, ...prev].slice(0, 6));
+        }, 13000);
+
         return () => {
             supabase.removeChannel(channel);
             feedService.removeEventListener('feed-message', handleLocal);
+            clearInterval(simInterval);
         };
     }, []);
 
