@@ -137,18 +137,28 @@ const RewardedSponsorModal = ({
                             </span>
                         </div>
 
-                        {/* TIMER BADGE */}
-                        <div style={{
-                            background: isCompleted ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.5)',
-                            border: `1px solid ${isCompleted ? '#00ff88' : 'rgba(255, 255, 255, 0.2)'}`,
-                            color: isCompleted ? '#00ff88' : '#fff',
-                            padding: '3px 10px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: '900',
-                            fontFamily: 'monospace'
-                        }}>
-                            {isCompleted ? '✓ COMPLETED' : `⏳ ${timeLeft}s`}
+                        {/* TIMER BADGE & DAILY QUOTA */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                                fontSize: '0.65rem',
+                                color: '#94a3b8',
+                                fontFamily: 'monospace'
+                            }}>
+                                ({adService.getDailyQuota().remaining}/{adService.DAILY_MAX_SPONSOR_CLAIMS || 5} LEFT TODAY)
+                            </span>
+
+                            <div style={{
+                                background: isCompleted ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.5)',
+                                border: `1px solid ${isCompleted ? '#00ff88' : 'rgba(255, 255, 255, 0.2)'}`,
+                                color: isCompleted ? '#00ff88' : '#fff',
+                                padding: '3px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: '900',
+                                fontFamily: 'monospace'
+                            }}>
+                                {isCompleted ? '✓ COMPLETED' : `⏳ ${timeLeft}s`}
+                            </div>
                         </div>
                     </div>
 

@@ -6,6 +6,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
 import SquishyButton from '../../components/SquishyButton';
+import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 
 export const SUITS = [
     { id: 'spades', symbol: '♠', name: 'Spades', color: '#00e5ff' },
@@ -110,6 +111,9 @@ const Cyber21 = () => {
     const [croupierMsg, setCroupierMsg] = useState('Place your bet, bro. The deck is freshly cut.');
     const [roundPayout, setRoundPayout] = useState(0);
     const [winStreak, setWinStreak] = useState(0);
+    const [lostBet, setLostBet] = useState(0);
+    const [hasClaimedLossInsurance, setHasClaimedLossInsurance] = useState(false);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
 
     const activeTable = TABLES[tableTier];
 
@@ -209,6 +213,8 @@ const Cyber21 = () => {
         }
 
         spendCoins(bet);
+        setLostBet(0);
+        setHasClaimedLossInsurance(false);
         playChipSound();
 
         // Reshuffle if deck has fewer than 25 cards
@@ -558,6 +564,11 @@ const Cyber21 = () => {
             setWinStreak(0);
             playBustSound();
             setCroupierMsg('Dealer takes the hand. Re-bet and double down, bro.');
+            const totalStaked = finalHands.reduce((acc, h) => acc + (h.bet || 0), 0);
+            if (totalStaked > 0) {
+                setLostBet(totalStaked);
+                setHasClaimedLossInsurance(false);
+            }
         }
     };
 
@@ -1027,6 +1038,75 @@ const Cyber21 = () => {
                         )}
                     </div>
                 )}
+
+                {/* SPONSOR LOSS INSURANCE */}
+                {phase === 'ROUND_OVER' && lostBet > 0 && !hasClaimedLossInsurance && (
+                    <div style={{
+                        width: '100%',
+                        maxWidth: '560px',
+                        margin: '0 auto 16px auto',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(255, 0, 85, 0.15) 100%)',
+                        border: '1px solid rgba(245, 158, 11, 0.5)',
+                        borderRadius: '16px',
+                        padding: '12px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        boxShadow: '0 0 20px rgba(245, 158, 11, 0.2)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '1.6rem' }}>🛡️</span>
+                            <div>
+                                <div style={{ color: '#ffd700', fontWeight: '900', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                                    SPONSOR LOSS INSURANCE AVAILABLE
+                                </div>
+                                <div style={{ color: '#cbd5e1', fontSize: '0.74rem' }}>
+                                    Recover 50% (+{Math.floor(lostBet / 2)} CP) by watching a 10s Sponsor Spot.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowSponsorModal(true)}
+                            style={{
+                                background: 'linear-gradient(135deg, #ffd700 0%, #ff8800 100%)',
+                                color: '#000',
+                                border: 'none',
+                                borderRadius: '10px',
+                                padding: '8px 14px',
+                                fontWeight: '900',
+                                fontSize: '0.75rem',
+                                fontFamily: 'monospace',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 0 12px rgba(255, 215, 0, 0.4)',
+                                flexShrink: 0
+                            }}
+                        >
+                            <span>📺</span>
+                            <span>CLAIM +{Math.floor(lostBet / 2)} CP</span>
+                        </button>
+                    </div>
+                )}
+
+                <RewardedSponsorModal
+                    isOpen={showSponsorModal}
+                    onClose={() => setShowSponsorModal(false)}
+                    rewardTitle={`+${Math.floor(lostBet / 2)} CP CASHBACK`}
+                    rewardIcon="🛡️"
+                    rewardDescription={`Complete the sponsor spot to recover 50% of your lost blackjack bet (+${Math.floor(lostBet / 2)} CP)!`}
+                    onRewarded={() => {
+                        const refund = Math.floor(lostBet / 2);
+                        addCoins(refund);
+                        setHasClaimedLossInsurance(true);
+                        setLostBet(0);
+                        showToast(`50% Loss Insurance Recovered (+${refund} CP)!`, 'coin');
+                    }}
+                />
 
                 {/* BETTING CONTROLS */}
                 {(phase === 'BETTING' || phase === 'ROUND_OVER') && (

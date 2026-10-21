@@ -6,6 +6,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
 import SquishyButton from '../../components/SquishyButton';
+import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 
 const TOTAL_TILES = 25;
 const MINE_PRESETS = [1, 3, 5, 10, 15, 24];
@@ -49,6 +50,9 @@ const CyberMines = () => {
     const [cashedOut, setCashedOut] = useState(false);
     const [scoutAvailable, setScoutAvailable] = useState(true);
     const [messageFeed, setMessageFeed] = useState('CONFIGURE MINES & BET TO START THE GRID!');
+    const [lostWager, setLostWager] = useState(0);
+    const [hasClaimedInsurance, setHasClaimedInsurance] = useState(false);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
 
     // Simulated Live Multiplayer Ghost Grid Feed
     const [ghostFeed, setGhostFeed] = useState([
@@ -168,6 +172,8 @@ const CyberMines = () => {
             setGameOver(true);
             setMessageFeed(`💥 DETONATION ON TILE ${index + 1}! BUSTED ${wager} CP!`);
             showToast(`Detonation! Lost ${wager} CP!`, 'error');
+            setLostWager(wager);
+            setHasClaimedInsurance(false);
 
             // Reveal all tiles
             setGrid(prev => prev.map(t => ({ ...t, revealed: true })));
@@ -444,6 +450,47 @@ const CyberMines = () => {
                                 <span>{scoutAvailable ? 'SCAN 1 SAFE TILE (FREE)' : 'DRONE DEPLETED'}</span>
                             </button>
                         </div>
+
+                        {/* SPONSOR LOSS INSURANCE BANNER */}
+                        {lostWager > 0 && !hasClaimedInsurance && (
+                            <div className="w-full p-3 rounded-2xl bg-gradient-to-r from-red-950/70 via-amber-950/50 to-slate-950/90 border border-amber-500/50 flex items-center justify-between gap-2 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl">🛡️</span>
+                                    <div>
+                                        <div className="text-[11px] font-black text-amber-400 font-mono tracking-wide">
+                                            SPONSOR LOSS INSURANCE
+                                        </div>
+                                        <div className="text-[10px] text-slate-300">
+                                            Recover 50% (+{Math.floor(lostWager / 2)} CP) via 10s Sponsor Spot.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSponsorModal(true)}
+                                    className="px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black font-mono text-[11px] rounded-xl shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1 cursor-pointer flex-shrink-0"
+                                >
+                                    <span>📺</span>
+                                    <span>CLAIM +{Math.floor(lostWager / 2)} CP</span>
+                                </button>
+                            </div>
+                        )}
+
+                        <RewardedSponsorModal
+                            isOpen={showSponsorModal}
+                            onClose={() => setShowSponsorModal(false)}
+                            rewardTitle={`+${Math.floor(lostWager / 2)} CP CASHBACK`}
+                            rewardIcon="🛡️"
+                            rewardDescription={`Complete the sponsor spot to recover 50% of your lost minefield bet (+${Math.floor(lostWager / 2)} CP)!`}
+                            onRewarded={() => {
+                                const refund = Math.floor(lostWager / 2);
+                                addCoins?.(refund);
+                                setHasClaimedInsurance(true);
+                                setLostWager(0);
+                                showToast?.(`50% Minefield Loss Insurance Recovered (+${refund} CP)!`, 'coin');
+                            }}
+                        />
 
                         {/* Action Buttons: Bet or Cashout */}
                         <div>
