@@ -44,6 +44,10 @@ export const DAILY_TEMPLATES = [
     { id: 'roulette_spins_5', desc: 'Spin Cyber Roulette 5 Times', target: 5, reward: 120, type: 'rouletteSpins', game: 'roulette' },
     { id: 'roulette_straight_1', desc: 'Hit a Straight Up Number in Roulette (35:1)', target: 1, reward: 250, type: 'rouletteStraightHits', game: 'roulette' },
 
+    // CYBER MINES 2088
+    { id: 'mines_clear_5', desc: 'Find 5 Safe Gems in Cyber Mines', target: 5, reward: 120, type: 'minesWins', game: 'mines' },
+    { id: 'mines_mult_3x', desc: 'Cash Out at 3.0x+ in Cyber Mines', target: 3, reward: 200, type: 'minesHighScore', condition: 'gt', game: 'mines' },
+
     // MERCH DEFENSE
     { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
 
@@ -79,6 +83,7 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_mines_15', desc: 'WEEKLY: Win 15 Cyber Mines Cashouts', target: 15, reward: 900, type: 'minesWins', game: 'mines', isWeekly: true },
     { id: 'week_roulette_15', desc: 'WEEKLY: Win 15 Cyber Roulette Bets', target: 15, reward: 900, type: 'rouletteWins', game: 'roulette', isWeekly: true },
     { id: 'week_crash_10x', desc: 'WEEKLY: Moonshot Bailout at 10.0x+ in Cyber Crash', target: 10, reward: 950, type: 'crashHighScore', condition: 'gt', game: 'crash', isWeekly: true },
     { id: 'week_pinball_25000', desc: 'WEEKLY: Score 25,000 PTS in Cyber Pinball', target: 25000, reward: 850, type: 'pinballHighScore', condition: 'gt', game: 'pinball', isWeekly: true },

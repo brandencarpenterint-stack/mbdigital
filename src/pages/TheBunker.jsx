@@ -714,6 +714,56 @@ const TheBunker = () => {
                 </div>
             </div>
 
+            {/* INTERACTIVE BUNKER CYBER MINES TERMINAL */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/mines';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '42%',
+                    left: '24%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: 'linear-gradient(90deg, #00e5ff, #00ff66)',
+                    color: '#000',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 12px #00e5ff',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    CYBER MINES
+                </div>
+                <div style={{
+                    width: '64px',
+                    height: '96px',
+                    background: 'linear-gradient(145deg, #041f26, #010a0d)',
+                    border: '3px solid #00e5ff',
+                    borderRadius: '8px 8px 4px 4px',
+                    boxShadow: '0 0 25px rgba(0,229,255,0.5)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '48px', height: '40px', background: '#000', border: '1px solid #00ff66', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+                        💎
+                    </div>
+                    <div style={{ width: '46px', height: '12px', background: 'linear-gradient(90deg, #00e5ff, #ffd700)', borderRadius: '3px' }} />
+                </div>
+            </div>
+
             {/* Render Other Players */}
             {Object.values(players).concat(Object.keys(players).length < 2 ? patrons : []).map(p => renderPlayer(p, false))}
             

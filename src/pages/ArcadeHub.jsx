@@ -229,6 +229,16 @@ const games = [
         leaderboardId: 'cyber_roulette'
     },
     {
+        id: 'mines',
+        title: 'CYBER MINES 2088',
+        desc: '5x5 Holographic Grid, Scout Drones & Exponential Gem Cashouts',
+        gradient: 'linear-gradient(135deg, #00ff66 0%, #ffd700 100%)',
+        icon: <img src='/assets/skins/face_bunny.png' alt='Mines' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/mines',
+        leaderboardId: 'cyber_mines'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
         desc: '3D Tunnel Chaos',
@@ -722,6 +732,23 @@ const ArcadeHub = () => {
                         gap: '8px'
                     }}>
                         <span>🎡</span> CYBER ROULETTE (35:1)
+                    </div>
+                </Link>
+
+                <Link to="/arcade/mines" style={{ textDecoration: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 255, 102, 0.2)',
+                        border: '1px solid #00ff66',
+                        color: '#66ffaa',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>💎</span> CYBER MINES (THE GRID)
                     </div>
                 </Link>
             </div>

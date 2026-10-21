@@ -163,6 +163,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'cyber_minefield',
+        name: 'Underground Cyber Minefield',
+        icon: '💎',
+        durationMinutes: 60,
+        energyCost: 40,
+        minStage: 'CHILD',
+        description: 'Navigate the grid with scout drones and extract neon crystals.',
+        lootTable: {
+            minCoins: 400,
+            maxCoins: 1200,
+            xp: 500,
+            dropRate: 0.55,
+            items: [
+                { id: 'furn_chest', weight: 45 },
+                { id: 'furn_pc', weight: 35 },
+                { id: 'rug_retro', weight: 20 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',

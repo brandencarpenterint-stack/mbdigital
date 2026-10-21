@@ -14,10 +14,12 @@ const MOCK_WAGERS = [
     { id: 'm5', player: 'DonDino', gameId: 'blackjack', gameName: 'Cyber 21', wager: 15000, state: 'open', targetScore: 21 },
     { id: 'm6', player: 'FlipperWizard', gameId: 'pinball', gameName: 'Cyber Pinball', wager: 12500, state: 'open', targetScore: 25000 },
     { id: 'm7', player: 'MoonshotApe', gameId: 'crash', gameName: 'Cyber Crash', wager: 20000, state: 'open', targetScore: 10 },
-    { id: 'm8', player: 'RouletteRoyale', gameId: 'roulette', gameName: 'Cyber Roulette', wager: 25000, state: 'open', targetScore: 36 }
+    { id: 'm8', player: 'RouletteRoyale', gameId: 'roulette', gameName: 'Cyber Roulette', wager: 25000, state: 'open', targetScore: 36 },
+    { id: 'm9', player: 'GridHustler', gameId: 'mines', gameName: 'Cyber Mines', wager: 30000, state: 'open', targetScore: 10 }
 ];
 
 const GAMES_LIST = [
+    { id: 'mines', name: 'Cyber Mines 2088' },
     { id: 'roulette', name: 'Cyber Roulette 2088' },
     { id: 'crash', name: 'Cyber Crash: Moonshot' },
     { id: 'pinball', name: 'Cyber Pinball 2088' },
