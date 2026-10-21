@@ -28,6 +28,7 @@ import AaaTopNav from './AaaTopNav';
 import AaaMobileBottomNav from './AaaMobileBottomNav';
 import SponsorStationModal from './SponsorStationModal';
 import QuickResumeOverlay from './QuickResumeOverlay';
+import AchievementsCodexModal from './AchievementsCodexModal';
 import './Layout.css';
 
 const FACES = [
@@ -40,6 +41,13 @@ const Layout = () => {
     const location = useLocation();
     // const [showProfile, setShowProfile] = useState(false); // REPLACED BY GLOBAL CONTEXT
     const [showDaily, setShowDaily] = useState(false);
+    const [showAchievements, setShowAchievements] = useState(false);
+
+    useEffect(() => {
+        const handleOpenAchievements = () => setShowAchievements(true);
+        window.addEventListener('open-achievements', handleOpenAchievements);
+        return () => window.removeEventListener('open-achievements', handleOpenAchievements);
+    }, []);
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [showQuests, setShowQuests] = useState(false);
     const [coins, setCoins] = useState(0);
@@ -239,6 +247,11 @@ const Layout = () => {
             <SponsorStationModal
                 isOpen={showSponsorModal}
                 onClose={() => setShowSponsorModal(false)}
+            />
+
+            <AchievementsCodexModal
+                isOpen={showAchievements}
+                onClose={() => setShowAchievements(false)}
             />
 
             {/* GLOBAL PROFILE MODAL -> USES VIEWED PROFILE */}

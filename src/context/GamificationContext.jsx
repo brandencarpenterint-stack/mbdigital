@@ -443,7 +443,7 @@ export const GamificationProvider = ({ children }) => {
         return saved ? JSON.parse(saved) : [];
     });
 
-    const { playWin } = useRetroSound();
+    const { playWin, playXboxChime } = useRetroSound();
 
     useEffect(() => {
         localStorage.setItem('merchboy_stats', JSON.stringify(stats));
@@ -971,17 +971,22 @@ export const GamificationProvider = ({ children }) => {
 
     const unlock = (achievement) => {
         setUnlockedAchievements(prev => [...prev, achievement.id]);
-        playWin(); // Sound
+        if (playXboxChime) {
+            playXboxChime();
+        } else {
+            playWin();
+        }
         addCoins(100); // bonus coins
 
         // SCREEN GOES NUTS
         triggerConfetti();
         setTimeout(() => triggerConfetti(), 300);
-        setTimeout(() => triggerConfetti(), 600);
 
         showToast(achievement.title, 'achievement', {
             description: achievement.description,
-            reward: achievement.reward || '100 Coins'
+            reward: achievement.reward || '100 Coins',
+            gamerscore: achievement.gamerscore || 25,
+            category: achievement.category || 'General'
         });
 
         // AWARD ITEM IF APPLICABLE (e.g. "Diamond Rod")

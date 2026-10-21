@@ -68,11 +68,10 @@ export const ToastProvider = ({ children }) => {
                 ))}
             </div>
 
-            {/* SEQUENTIAL ACHIEVEMENT OVERLAY (Center) */}
-            {/* SEQUENTIAL ACHIEVEMENT OVERLAY (Center) */}
+            {/* AUTHENTIC XBOX ACHIEVEMENT BANNER OVERLAY (Bottom-Center) */}
             <div style={{
-                position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
-                zIndex: 11001, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90%', maxWidth: '400px'
+                position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 11001, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '92%', maxWidth: '440px'
             }}>
                 {currentAchievement && (
                     <AchievementToast key={currentAchievement.id} toast={currentAchievement} />
@@ -123,57 +122,131 @@ const ToastItem = ({ toast, onClose }) => {
 };
 
 const AchievementToast = ({ toast }) => {
+    const gamerscore = toast.details?.gamerscore || 25;
+
     return (
         <div
             style={{
-                background: 'rgba(0,0,0,0.9)', // Dark base
-                color: 'white',
-                padding: '2px', // Border wrapper
-                borderRadius: '20px',
-                backgroundOrigin: 'border-box',
-                backgroundClip: 'content-box, border-box',
-                backgroundImage: 'linear-gradient(#000,#000), linear-gradient(135deg, gold, #ff0055)', // Neon Border
-                boxShadow: '0 0 50px rgba(255, 215, 0, 0.4)',
-                textAlign: 'center',
-                pointerEvents: 'none',
-                marginBottom: '10px',
                 width: '100%',
-                animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                background: 'linear-gradient(135deg, rgba(8, 14, 22, 0.96) 0%, rgba(12, 20, 14, 0.98) 100%)',
+                color: '#fff',
+                padding: '14px 18px',
+                borderRadius: '50px',
+                border: '1.5px solid rgba(0, 255, 136, 0.5)',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 255, 136, 0.25)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                pointerEvents: 'auto',
+                animation: 'xboxSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+                position: 'relative',
+                overflow: 'hidden'
             }}
         >
-            <div style={{ padding: '20px', borderRadius: '18px', background: '#111' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '10px', animation: 'bounce 1s infinite' }}>🏆</div>
-                <div style={{ color: 'gold', fontWeight: '900', fontSize: '1.2rem', fontFamily: '"Orbitron", sans-serif', letterSpacing: '2px', marginBottom: '5px' }}>
-                    ACHIEVEMENT UNLOCKED
+            {/* Ambient Green Sheen */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, #00ff88, transparent)'
+            }} />
+
+            {/* Glowing Xbox-Style Achievement Trophy Icon */}
+            <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #107c10 0%, #00ff88 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.4rem',
+                flexShrink: 0,
+                boxShadow: '0 0 16px rgba(0, 255, 136, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.5)',
+                border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
+                🏆
+            </div>
+
+            {/* Text Information */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#00ff88',
+                    fontSize: '0.68rem',
+                    fontWeight: '900',
+                    fontFamily: '"Orbitron", monospace',
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase'
+                }}>
+                    <span>ACHIEVEMENT UNLOCKED</span>
+                    <span>•</span>
+                    <span style={{
+                        background: 'rgba(0, 255, 136, 0.15)',
+                        border: '1px solid rgba(0, 255, 136, 0.4)',
+                        padding: '1px 6px',
+                        borderRadius: '6px',
+                        fontSize: '0.65rem'
+                    }}>
+                        +{gamerscore}G
+                    </span>
                 </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '5px' }}>{toast.message}</div>
+
+                <div style={{
+                    fontSize: '1rem',
+                    fontWeight: '900',
+                    color: '#fff',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    marginTop: '2px'
+                }}>
+                    {toast.message}
+                </div>
 
                 {toast.details?.description && (
-                    <div style={{ fontSize: '0.9rem', color: '#aaa', fontStyle: 'italic', marginBottom: '10px' }}>
-                        "{toast.details.description}"
+                    <div style={{
+                        fontSize: '0.74rem',
+                        color: '#94a3b8',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        marginTop: '1px'
+                    }}>
+                        {toast.details.description}
                     </div>
                 )}
-
-                {/* REWARD SECTION */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    {toast.details?.reward && (
-                        <div style={{ background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', color: '#00ff00', fontWeight: 'bold' }}>
-                            🎁 {toast.details.reward}
-                        </div>
-                    )}
-                    <div style={{ background: 'rgba(255,255,0,0.1)', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', color: 'gold', fontWeight: 'bold' }}>
-                        ⚡ +500 XP
-                    </div>
-                </div>
             </div>
+
+            {/* Reward Pill (if present) */}
+            {toast.details?.reward && (
+                <div style={{
+                    background: 'rgba(255, 215, 0, 0.12)',
+                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                    color: '#ffd700',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    fontSize: '0.65rem',
+                    fontWeight: '800',
+                    fontFamily: 'monospace',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                }}>
+                    🎁 {toast.details.reward}
+                </div>
+            )}
+
             <style>{`
-                @keyframes bounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-5px); }
-                }
-                @keyframes popIn {
-                    from { opacity: 0; transform: scale(0.5) translateY(50px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
+                @keyframes xboxSlideUp {
+                    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
                 }
             `}</style>
         </div>

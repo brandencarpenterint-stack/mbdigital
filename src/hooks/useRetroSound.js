@@ -375,9 +375,41 @@ const useRetroSound = () => {
         osc.stop(now + 0.4);
     };
 
+    const playXboxChime = () => {
+        if (!shouldPlay()) return;
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+
+        // Two-part ascending crystal chime
+        const chimeNotes = [
+            { freq: 987.77, start: 0, dur: 0.35, vol: 0.12 }, // B5
+            { freq: 1479.98, start: 0.08, dur: 0.85, vol: 0.16 } // F#6
+        ];
+
+        chimeNotes.forEach(({ freq, start, dur, vol }) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + start);
+
+            gain.gain.setValueAtTime(0.001, now + start);
+            gain.gain.linearRampToValueAtTime(vol, now + start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now + start);
+            osc.stop(now + start + dur);
+        });
+    };
+
     return {
         playBeep, playBoop, playJump, playCollect, playCrash, playWin, playClick,
-        playFire, playWater, playZap, playGlitch, playGhost, playAirhorn, playBoing
+        playFire, playWater, playZap, playGlitch, playGhost, playAirhorn, playBoing,
+        playXboxChime
     };
 };
 

@@ -14,7 +14,7 @@ const QuickResumeOverlay = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [showRules, setShowRules] = useState(false);
 
-    const { stats, coins } = useGamification() || {};
+    const { stats, coins, unlockedAchievements = [] } = useGamification() || {};
     const { soundEnabled, toggleSound } = useSettings() || {};
     const { showToast } = useToast() || {};
     const { playBeep, playBoop, playWin, playClick } = useRetroSound();
@@ -364,6 +364,30 @@ const QuickResumeOverlay = () => {
                                     }}
                                 >
                                     <span>📖</span> {showRules ? 'HIDE HOW TO PLAY' : 'HOW TO PLAY & CONTROLS'}
+                                </button>
+
+                                {/* 3.5 ACHIEVEMENTS CODEX */}
+                                <button
+                                    onClick={() => {
+                                        window.dispatchEvent(new CustomEvent('open-achievements'));
+                                        playClick?.();
+                                    }}
+                                    style={{
+                                        background: 'rgba(0, 255, 136, 0.1)',
+                                        border: '1px solid rgba(0, 255, 136, 0.3)',
+                                        color: '#00ff88',
+                                        borderRadius: '12px',
+                                        padding: '11px',
+                                        fontWeight: '700',
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    <span>🏆</span> ACHIEVEMENTS CODEX ({unlockedAchievements.length} UNLOCKED)
                                 </button>
 
                                 {/* 4. AUDIO TOGGLE & BOAST ROW */}

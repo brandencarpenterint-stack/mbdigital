@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import useRetroSound from '../hooks/useRetroSound';
+import { getTotalGamerscore } from '../config/AchievementDefinitions';
 
 const NAV_LINKS = [
     { to: '/', label: 'Discover', icon: '🎯' },
@@ -14,7 +15,8 @@ const NAV_LINKS = [
 
 const AaaTopNav = ({ onOpenStash, onOpenQuests, onOpenSponsor }) => {
     const location = useLocation();
-    const { coins, userProfile, dailyState, getLevelInfo } = useGamification() || {};
+    const { coins, userProfile, dailyState, getLevelInfo, unlockedAchievements } = useGamification() || {};
+    const { currentG } = getTotalGamerscore(unlockedAchievements);
     const { soundEnabled, toggleSound } = useSettings() || {};
     const { playClick } = useRetroSound();
 
@@ -156,6 +158,34 @@ const AaaTopNav = ({ onOpenStash, onOpenQuests, onOpenSponsor }) => {
                 >
                     <span>🪙</span>
                     <span>{(coins || 0).toLocaleString()}</span>
+                </button>
+
+                {/* 1.5 Xbox Gamerscore Pill */}
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('open-achievements'));
+                        playClick?.();
+                    }}
+                    style={{
+                        background: 'rgba(0, 255, 136, 0.12)',
+                        border: '1px solid rgba(0, 255, 136, 0.35)',
+                        color: '#00ff88',
+                        borderRadius: '12px',
+                        padding: '6px 12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        fontWeight: '800',
+                        fontFamily: '"Orbitron", monospace',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 10px rgba(0, 255, 136, 0.15)'
+                    }}
+                    title="Open Xbox Achievements & Gamerscore Codex"
+                >
+                    <span>🏆</span>
+                    <span>{currentG || 0}G</span>
                 </button>
 
                 {/* 2. Free Sponsor Airdrop Pill */}
