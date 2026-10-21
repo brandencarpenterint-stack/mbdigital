@@ -11,6 +11,7 @@ import useRetroSound from '../hooks/useRetroSound';
 import { supabase } from '../lib/supabaseClient';
 import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
+import SponsorStationModal from '../components/SponsorStationModal';
 import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
@@ -448,6 +449,7 @@ const ArcadeHub = () => {
     const { playBoop } = useRetroSound();
 
     const equippedSkin = shopState?.equipped?.pocketbro || null;
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('leaderboard'); // 'leaderboard', 'feed', 'plaza', 'pocketbro'
@@ -610,6 +612,26 @@ const ArcadeHub = () => {
                             <span>⚔️</span> THE ARENA
                         </div>
                     </Link>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowSponsorModal(true)}
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 114, 255, 0.2))',
+                            border: '1px solid #00f0ff',
+                            color: '#00f0ff',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: 'bold',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 14px rgba(0, 240, 255, 0.35)',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        <span>⚡</span> SPONSOR (+1,500 CP)
+                    </button>
                 </div>
             </div>
 
@@ -848,6 +870,8 @@ const ArcadeHub = () => {
                     </div>
                 )}
             </div>
+
+            <SponsorStationModal isOpen={showSponsorModal} onClose={() => setShowSponsorModal(false)} />
         </div>
     );
 };

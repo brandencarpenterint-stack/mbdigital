@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import './Home.css';
 import TiltCard from '../components/TiltCard';
 import TheButton from '../components/TheButton';
+import SponsorStationModal from '../components/SponsorStationModal';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
 import { useRealBtc } from '../hooks/useRealBtc';
@@ -27,6 +28,7 @@ const Home = () => {
     const rank = level > 20 ? "LEGEND" : (level > 10 ? "VETERAN" : "ROOKIE");
 
     const [time, setTime] = useState(new Date());
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
@@ -73,11 +75,31 @@ const Home = () => {
                     {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
                 <div style={{ flex: 1 }}></div>
-                <a href="https://merchboy.shop" target="_blank" rel="noreferrer" className="squishy-btn" style={{
-                    height: '100%', padding: '0 20px', background: '#FFD700', color: 'black',
-                    display: 'flex', alignItems: 'center', fontWeight: '900', borderRadius: '8px',
-                    textDecoration: 'none', fontSize: '0.9rem'
-                }}>🛍️ SHOP</a>
+                <div style={{ display: 'flex', gap: '8px', height: '100%' }}>
+                    <button
+                        type="button"
+                        onClick={() => setShowSponsorModal(true)}
+                        className="squishy-btn"
+                        style={{
+                            height: '100%', padding: '0 14px',
+                            background: 'linear-gradient(135deg, #00f0ff, #0072ff)',
+                            color: '#000',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            fontWeight: '900', borderRadius: '8px',
+                            border: 'none', cursor: 'pointer',
+                            fontSize: '0.82rem',
+                            boxShadow: '0 0 16px rgba(0, 240, 255, 0.4)',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        <span>⚡</span> +1.5K AIRDROP
+                    </button>
+                    <a href="https://merchboy.shop" target="_blank" rel="noreferrer" className="squishy-btn" style={{
+                        height: '100%', padding: '0 16px', background: '#FFD700', color: 'black',
+                        display: 'flex', alignItems: 'center', fontWeight: '900', borderRadius: '8px',
+                        textDecoration: 'none', fontSize: '0.85rem'
+                    }}>🛍️ SHOP</a>
+                </div>
             </motion.div>
 
             {/* LIVE PULSE TICKER: REAL BITCOIN + ARCADE DROPS */}
@@ -349,6 +371,8 @@ const Home = () => {
                 </motion.div>
 
             </motion.div>
+
+            <SponsorStationModal isOpen={showSponsorModal} onClose={() => setShowSponsorModal(false)} />
         </div>
     );
 };

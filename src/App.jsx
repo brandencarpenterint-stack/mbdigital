@@ -21,6 +21,8 @@ const BroFinder = lazy(() => import('./pages/BroFinder'));
 const TheArena = lazy(() => import('./pages/TheArena'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Inventory = lazy(() => import('./pages/Inventory'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // GAMES
 const SnakeGame = lazy(() => import('./games/Snake/SnakeGame'));
@@ -134,6 +136,8 @@ function App() {
             <Route path="arena" element={<TheArena />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="vault" element={<Inventory />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsOfService />} />
 
             {/* Game Routes Placeholders */}
             <Route path="arcade/snake" element={<SnakeGame />} />

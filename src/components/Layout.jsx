@@ -261,6 +261,31 @@ const Layout = () => {
                         <Outlet />
                     </motion.div>
                 </AnimatePresence>
+
+                {!isFullScreenGame && (
+                    <footer style={{
+                        marginTop: '80px',
+                        padding: '30px 20px 40px 20px',
+                        textAlign: 'center',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                        color: '#64748b',
+                        fontSize: '0.75rem',
+                        fontFamily: 'monospace'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '18px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                            <Link to="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>PRIVACY POLICY</Link>
+                            <span>•</span>
+                            <Link to="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>TERMS OF SERVICE</Link>
+                            <span>•</span>
+                            <a href="/ads.txt" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none' }}>ADS.TXT</a>
+                            <span>•</span>
+                            <Link to="/settings" style={{ color: '#94a3b8', textDecoration: 'none' }}>SETTINGS</Link>
+                        </div>
+                        <div style={{ color: '#475569' }}>
+                            MBDIGITAL WORLD © 2088 • ALL RIGHTS RESERVED • ENTERTAINMENT SYSTEM
+                        </div>
+                    </footer>
+                )}
             </main>
 
             {!isFullScreenGame && (
