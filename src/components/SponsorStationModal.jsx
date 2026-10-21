@@ -13,7 +13,7 @@ const DURATION_SECONDS = 8;
 const SponsorStationModal = ({ isOpen, onClose }) => {
     const { addCoins, userProfile } = useGamification() || {};
     const { gainExp } = usePocketBro() || {};
-    const { playWin, playPowerUp, playLaser, playClick } = useRetroSound();
+    const { playWin, playCollect, playZap, playClick } = useRetroSound();
     const { showToast } = useToast() || { showToast: () => {} };
 
     const [quota, setQuota] = useState(adService.getDailyQuota());
@@ -47,13 +47,13 @@ const SponsorStationModal = ({ isOpen, onClose }) => {
             setIsPlaying(false);
             setRewardReady(true);
             try {
-                playPowerUp();
+                playCollect?.();
             } catch {
                 // ignore
             }
         }
         return () => clearTimeout(timerRef.current);
-    }, [isPlaying, secondsLeft, playPowerUp]);
+    }, [isPlaying, secondsLeft, playCollect]);
 
     if (!isOpen) return null;
 
@@ -66,7 +66,7 @@ const SponsorStationModal = ({ isOpen, onClose }) => {
         setClaimedSuccess(false);
         setIsPlaying(true);
         try {
-            playLaser();
+            playZap?.();
         } catch {
             // ignore
         }
