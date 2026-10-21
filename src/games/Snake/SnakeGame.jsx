@@ -368,6 +368,11 @@ const SnakeGame = () => {
                         xpEarned={100}
                         onReplay={restartGame}
                         onHome={() => window.location.href = '/arcade'}
+                        onRevive={() => {
+                            setGameOver(false);
+                            setSnake([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
+                            setDirection('RIGHT');
+                        }}
                     >
                         {(shopState?.inventory?.['snake_life'] > 0) && (
                             <button

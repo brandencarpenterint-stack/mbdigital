@@ -4,6 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
+import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 
@@ -32,6 +33,8 @@ const GalaxyDefender = () => {
         }
     }, [stats]);
     const [gameOver, setGameOver] = useState(false);
+    const [hasRevived, setHasRevived] = useState(false);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [gameWon, setGameWon] = useState(false);
     const [gameActive, setGameActive] = useState(false);
 
@@ -82,6 +85,7 @@ const GalaxyDefender = () => {
         setLives(MAX_LIVES);
         setGameOver(false);
         setGameWon(false);
+        setHasRevived(false);
         setGameActive(true);
         gameActiveRef.current = true;
 
@@ -791,6 +795,48 @@ const GalaxyDefender = () => {
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                         <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
                         <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
+                        {/* SPONSOR REWARDED REVIVE */}
+                        {!hasRevived && (
+                            <button
+                                type="button"
+                                onClick={() => setShowSponsorModal(true)}
+                                style={{
+                                    marginBottom: '14px',
+                                    padding: '12px 24px',
+                                    background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25) 0%, rgba(0, 229, 255, 0.25) 100%)',
+                                    border: '1.5px solid #00ff88',
+                                    borderRadius: '10px',
+                                    color: '#fff',
+                                    fontWeight: '900',
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <span>📺</span>
+                                <span>FREE REVIVE (WATCH SPOT ❤️❤️)</span>
+                            </button>
+                        )}
+
+                        <RewardedSponsorModal
+                            isOpen={showSponsorModal}
+                            onClose={() => setShowSponsorModal(false)}
+                            rewardTitle="2 EXTRA LIVES REVIVE"
+                            rewardIcon="❤️"
+                            rewardDescription="Complete the 10-second sponsor spot to revive with 2 lives and continue defending!"
+                            onRewarded={() => {
+                                setHasRevived(true);
+                                setGameOver(false);
+                                setGameActive(true);
+                                setLives(2);
+                                gameLoopRef.current = requestAnimationFrame(gameLoop);
+                            }}
+                        />
+
                         <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
                         <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
                     </div>

@@ -4,6 +4,7 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
+import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 
@@ -38,6 +39,8 @@ const FlappyMascot = () => {
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
+    const [hasRevived, setHasRevived] = useState(false);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [gameActive, setGameActive] = useState(false);
 
     // Sync local high score with global stat on mount
@@ -430,6 +433,51 @@ const FlappyMascot = () => {
                                 🛡️ USE SHIELD ({shopState.inventory['flappy_shield']})
                             </SquishyButton>
                         )}
+
+                        {/* SPONSOR REWARDED REVIVE */}
+                        {!hasRevived && (
+                            <button
+                                type="button"
+                                onClick={() => setShowSponsorModal(true)}
+                                style={{
+                                    marginBottom: '14px',
+                                    padding: '12px 24px',
+                                    background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25) 0%, rgba(0, 229, 255, 0.25) 100%)',
+                                    border: '1.5px solid #00ff88',
+                                    borderRadius: '10px',
+                                    color: '#fff',
+                                    fontWeight: '900',
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <span>📺</span>
+                                <span>FREE REVIVE (WATCH SPOT ❤️)</span>
+                            </button>
+                        )}
+
+                        <RewardedSponsorModal
+                            isOpen={showSponsorModal}
+                            onClose={() => setShowSponsorModal(false)}
+                            rewardTitle="FLAPPY FREE REVIVE"
+                            rewardIcon="❤️"
+                            rewardDescription="Complete the 10-second sponsor spot to revive and continue flying!"
+                            onRewarded={() => {
+                                setHasRevived(true);
+                                setGameOver(false);
+                                setGameActive(true);
+                                gameActiveRef.current = true;
+                                gameState.current.birdY = GAME_HEIGHT / 2;
+                                gameState.current.velocity = 0;
+                                gameState.current.pipes.forEach(p => p.x += 350);
+                                requestAnimationFrame(gameLoop);
+                            }}
+                        />
 
                         <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#ff9900', border: 'none', borderRadius: '5px', color: 'white' }}>Try Again</SquishyButton>
                         <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Back to Base</Link>

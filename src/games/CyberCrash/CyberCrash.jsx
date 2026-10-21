@@ -6,6 +6,8 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
 import SquishyButton from '../../components/SquishyButton';
+import RewardedSponsorModal from '../../components/RewardedSponsorModal';
+import { motion } from 'framer-motion';
 
 const CANVAS_WIDTH = 700;
 const CANVAS_HEIGHT = 420;
@@ -40,6 +42,9 @@ const CyberCrash = () => {
     const [autoCashout, setAutoCashout] = useState(2.00);
     const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(true);
     const [hasBet, setHasBet] = useState(false);
+    const [lostWager, setLostWager] = useState(0);
+    const [hasClaimedInsurance, setHasClaimedInsurance] = useState(false);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [cashedOut, setCashedOut] = useState(false);
     const [cashedOutMultiplier, setCashedOutMultiplier] = useState(null);
     const [cashedOutAmount, setCashedOutAmount] = useState(0);
@@ -386,6 +391,10 @@ const CyberCrash = () => {
 
                     // Append to round history
                     setRoundHistory(prev => [flight.crashPoint, ...prev.slice(0, 9)]);
+                    if (hasBet && !cashedOut) {
+                        setLostWager(wager);
+                        setHasClaimedInsurance(false);
+                    }
                     setHasBet(false);
 
                     // Auto restart countdown after 3 seconds
@@ -788,6 +797,50 @@ const CyberCrash = () => {
                         )}
                     </div>
                 </div>
+
+                {/* REWARDED SPONSOR LOSS INSURANCE BANNER */}
+                {lostWager > 0 && !hasClaimedInsurance && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-red-950/70 via-amber-950/50 to-slate-950/90 border border-amber-500/50 flex flex-wrap items-center justify-between gap-2 shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl">🛡️</span>
+                            <div>
+                                <div className="text-xs font-black text-amber-400 font-mono tracking-wider">
+                                    SPONSOR LOSS INSURANCE AVAILABLE
+                                </div>
+                                <div className="text-[11px] text-slate-300">
+                                    Recover 50% (+{Math.floor(lostWager / 2)} CP) by watching a 10s Sponsor Spot.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowSponsorModal(true)}
+                            className="px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black font-mono text-xs rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <span>📺</span>
+                            <span>CLAIM +{Math.floor(lostWager / 2)} CP CASHBACK</span>
+                        </button>
+                    </motion.div>
+                )}
+
+                <RewardedSponsorModal
+                    isOpen={showSponsorModal}
+                    onClose={() => setShowSponsorModal(false)}
+                    rewardTitle={`+${Math.floor(lostWager / 2)} CP CASHBACK`}
+                    rewardIcon="🛡️"
+                    rewardDescription={`Complete the sponsor spot to recover 50% of your lost wager (+${Math.floor(lostWager / 2)} CP)!`}
+                    onRewarded={() => {
+                        const refund = Math.floor(lostWager / 2);
+                        addCoins?.(refund);
+                        setHasClaimedInsurance(true);
+                        setLostWager(0);
+                    }}
+                />
 
                 {/* Live Online Ghost Pilots Table */}
                 <div className="w-full mt-4 bg-black/60 border border-slate-800 rounded-2xl p-3">

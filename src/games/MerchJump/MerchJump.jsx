@@ -627,6 +627,7 @@ const MerchJump = () => {
                                         xpEarned={100}
                                         onReplay={initGame}
                                         onHome={() => window.location.href = '/arcade'}
+                                        onRevive={handleRevive}
                                     />
                                 </div>
                             ) : (

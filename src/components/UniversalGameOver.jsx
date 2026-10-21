@@ -1,9 +1,10 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SquishyButton from './SquishyButton';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
+import RewardedSponsorModal from './RewardedSponsorModal';
 
 const UniversalGameOver = ({ 
     gameName = "ARCADE", 
@@ -13,9 +14,12 @@ const UniversalGameOver = ({
     xpEarned = 100, 
     onReplay, 
     onHome,
+    onRevive,
     children
 }) => {
-    const { getLevelInfo } = useGamification();
+    const { getLevelInfo, addCoins } = useGamification() || {};
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
+    const [hasClaimedSponsor, setHasClaimedSponsor] = useState(false);
     const { playCoin, playWin, playBeep } = useRetroSound();
     const { level, progress } = getLevelInfo ? getLevelInfo() : { level: 1, progress: 0 };
     
@@ -147,6 +151,72 @@ const UniversalGameOver = ({
                         />
                     </div>
                 </div>
+
+                {/* REWARDED SPONSOR REVIVE OR COIN BOOSTER */}
+                {!hasClaimedSponsor && (
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        style={{ marginBottom: '20px', width: '100%' }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                playBeep?.();
+                                setShowSponsorModal(true);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '14px 18px',
+                                background: onRevive
+                                    ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.25) 0%, rgba(255, 119, 0, 0.25) 100%)'
+                                    : 'linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 229, 255, 0.2) 100%)',
+                                border: onRevive
+                                    ? '1.5px solid #ff0055'
+                                    : '1.5px solid #00ff88',
+                                borderRadius: '12px',
+                                color: '#fff',
+                                fontFamily: '"Orbitron", monospace',
+                                fontSize: '0.8rem',
+                                fontWeight: '900',
+                                letterSpacing: '0.5px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                boxShadow: onRevive
+                                    ? '0 0 20px rgba(255, 0, 85, 0.3)'
+                                    : '0 0 20px rgba(0, 255, 136, 0.3)'
+                            }}
+                        >
+                            <span>📺</span>
+                            <span>
+                                {onRevive
+                                    ? 'WATCH SPONSOR SPOT (1 FREE REVIVE ❤️)'
+                                    : `WATCH SPONSOR SPOT (+${Math.max(1000, finalCoins)} CP 🪙)`}
+                            </span>
+                        </button>
+                    </motion.div>
+                )}
+
+                <RewardedSponsorModal
+                    isOpen={showSponsorModal}
+                    onClose={() => setShowSponsorModal(false)}
+                    rewardTitle={onRevive ? '1 FREE REVIVE' : `+${Math.max(1000, finalCoins)} CP BONUS`}
+                    rewardIcon={onRevive ? '❤️' : '🪙'}
+                    rewardDescription={onRevive ? 'Complete the sponsor spot to revive and continue your run!' : 'Complete the sponsor spot to boost your coin payout!'}
+                    onRewarded={() => {
+                        setHasClaimedSponsor(true);
+                        if (onRevive) {
+                            onRevive();
+                        } else {
+                            const bonus = Math.max(1000, finalCoins);
+                            addCoins?.(bonus);
+                            setDisplayCoins(prev => prev + bonus);
+                        }
+                    }}
+                />
 
                 <div style={{ marginBottom: '20px' }}>{children}</div>
                 <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
