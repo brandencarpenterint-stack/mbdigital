@@ -329,6 +329,19 @@ const RewardedSponsorModal = ({
                             </div>
                         )}
 
+                        {/* MONETIZATION TRANSPARENCY FOOTER */}
+                        <div style={{
+                            textAlign: 'center',
+                            fontSize: '0.62rem',
+                            color: '#64748b',
+                            marginTop: '8px',
+                            fontFamily: 'monospace'
+                        }}>
+                            {adService.isRealAdsConfigured()
+                                ? '🟢 Google H5 Ad Network Active • Monetization Live'
+                                : '⚡ Preview Mode (Simulated Sponsor) • Connect Google AdSense in .env'}
+                        </div>
+
                         {/* EARLY EXIT CONFIRMATION MODAL OVERLAY */}
                         {showEarlyExitWarning && (
                             <div style={{

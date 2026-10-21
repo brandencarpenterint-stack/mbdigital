@@ -525,7 +525,7 @@ const SponsorStationModal = ({ isOpen, onClose }) => {
                         color: '#64748b',
                         fontFamily: 'monospace'
                     }}>
-                        <span>VERIFIED AD NETWORK ADAPTER</span>
+                        <span>{adService.isRealAdsConfigured() ? '🟢 LIVE GOOGLE H5 ADS ACTIVE' : '⚡ PREVIEW MODE (SIMULATED SPONSOR)'}</span>
                         <span>MBDIGITAL WORLD 2088</span>
                     </div>
                 </motion.div>

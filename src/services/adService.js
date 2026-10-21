@@ -2,71 +2,46 @@
  * MBDigital Ad & Monetization Service (adService.js)
  * Manages rewarded video ads, interstitial rate-limiting, daily sponsor quotas,
  * and seamless fallback simulation when in development or without live ad tags.
+ * 
+ * Supports:
+ * - Google AdSense for Games / H5 Game Ads Placement API (adBreak / adConfig)
+ * - AdinPlay / HTML5 Gaming Ad Networks
+ * - Curated fallback sponsor simulation for offline / adblock / test mode
  */
+
+import MonetizationConfig from '../config/MonetizationConfig';
 
 const STORAGE_KEY_DATE = 'mb_sponsor_quota_date';
 const STORAGE_KEY_COUNT = 'mb_sponsor_quota_count';
 const STORAGE_KEY_LAST_INTERSTITIAL = 'mb_last_interstitial_ts';
 
-export const DAILY_MAX_SPONSOR_CLAIMS = 5;
-export const SPONSOR_REWARD_CP = 1500;
-export const SPONSOR_REWARD_XP = 150;
-export const INTERSTITIAL_COOLDOWN_MS = 180000; // 3 minutes between interstitials
+export const DAILY_MAX_SPONSOR_CLAIMS = MonetizationConfig.dailyMaxSponsorClaims || 5;
+export const SPONSOR_REWARD_CP = MonetizationConfig.rewardCP || 1500;
+export const SPONSOR_REWARD_XP = MonetizationConfig.rewardXP || 150;
+export const INTERSTITIAL_COOLDOWN_MS = MonetizationConfig.interstitialCooldownMs || 180000; // 3 minutes
 
-export const SPONSOR_CAMPAIGNS = [
-    {
-        id: 'camp_arasaka',
-        brand: 'ARASAKA NEURAL SYSTEMS',
-        tagline: 'NEXT-GEN CORTICAL OVERCLOCKS',
-        pitch: 'Experience zero-latency neural reflex speeds exceeding 140 Terabits/sec. Out-gamble the algorithms.',
-        icon: '⚡',
-        accentColor: '#00f0ff',
-        bgGradient: 'linear-gradient(135deg, #091a28 0%, #001f3f 100%)',
-        callToAction: 'UPGRADE HARDWARE'
-    },
-    {
-        id: 'camp_brocola',
-        brand: 'BROCOLA: ZERO GLITCH',
-        tagline: 'HIGH-VOLTAGE ENERGY SYNTHESIS',
-        pitch: 'Zero Sugar. 320mg Neuro-Caffeine. Infused with liquid neon electrolytes to fuel 24-hour arcade marathons.',
-        icon: '🥤',
-        accentColor: '#00ff66',
-        bgGradient: 'linear-gradient(135deg, #0a2612 0%, #003314 100%)',
-        callToAction: 'HYDRATE OR DIE'
-    },
-    {
-        id: 'camp_voidmining',
-        brand: 'VOID CLOUD MINING CORP',
-        tagline: 'OFF-WORLD DEEP MINING RIGS',
-        pitch: 'Deploy autonomous drone swarms into Kuiper belt asteroids. Earn passive quantum compute while you sleep.',
-        icon: '🚀',
-        accentColor: '#ffd700',
-        bgGradient: 'linear-gradient(135deg, #261f0a 0%, #332200 100%)',
-        callToAction: 'STAKE SATELLITE'
-    },
-    {
-        id: 'camp_synthwave',
-        brand: 'NIGHT CITY SYNTHWAVE 2088',
-        tagline: 'HOLOGRAPHIC MUSIC FESTIVAL',
-        pitch: '72-Hour continuous cyberpunk cybercast broadcast across all orbital stations. Live bass synth assault.',
-        icon: '📻',
-        accentColor: '#ff007f',
-        bgGradient: 'linear-gradient(135deg, #28091a 0%, #33001f 100%)',
-        callToAction: 'TUNE IN FREQUENCY'
-    },
-    {
-        id: 'camp_titan',
-        brand: 'TITAN MK-IV CYBER-ARMOR',
-        tagline: 'BALLISTIC CARBON-FIBER WEAR',
-        pitch: 'Military-grade kinetic deflection with integrated sub-woofer chassis. Dominate the street and The Bunker.',
-        icon: '🛡️',
-        accentColor: '#ff003c',
-        bgGradient: 'linear-gradient(135deg, #280909 0%, #330005 100%)',
-        callToAction: 'SECURE ARMOR'
-    }
-];
+export const SPONSOR_CAMPAIGNS = MonetizationConfig.simulatedSponsors;
 
 export const adService = {
+    DAILY_MAX_SPONSOR_CLAIMS,
+    SPONSOR_REWARD_CP,
+    SPONSOR_REWARD_XP,
+    INTERSTITIAL_COOLDOWN_MS,
+
+    /**
+     * Check if real fiat ad network is configured with a live publisher ID
+     */
+    isRealAdsConfigured: () => {
+        return Boolean(MonetizationConfig.enableRealAds && MonetizationConfig.adsensePublisherId);
+    },
+
+    /**
+     * Get active publisher ID
+     */
+    getPublisherId: () => {
+        return MonetizationConfig.adsensePublisherId || '';
+    },
+
     /**
      * Returns today's quota status: remaining views, max, rewards
      */
@@ -92,7 +67,8 @@ export const adService = {
                 max: DAILY_MAX_SPONSOR_CLAIMS,
                 rewardCP: SPONSOR_REWARD_CP,
                 rewardXP: SPONSOR_REWARD_XP,
-                canClaim: remaining > 0
+                canClaim: remaining > 0,
+                isRealAds: adService.isRealAdsConfigured()
             };
         } catch {
             return {
@@ -102,7 +78,8 @@ export const adService = {
                 max: DAILY_MAX_SPONSOR_CLAIMS,
                 rewardCP: SPONSOR_REWARD_CP,
                 rewardXP: SPONSOR_REWARD_XP,
-                canClaim: true
+                canClaim: true,
+                isRealAds: false
             };
         }
     },
@@ -148,8 +125,55 @@ export const adService = {
      * Pick a random sponsor campaign for the simulator
      */
     getRandomCampaign: () => {
-        const index = Math.floor(Math.random() * SPONSOR_CAMPAIGNS.length);
-        return SPONSOR_CAMPAIGNS[index];
+        const campaigns = MonetizationConfig.simulatedSponsors || SPONSOR_CAMPAIGNS;
+        const index = Math.floor(Math.random() * campaigns.length);
+        return campaigns[index];
+    },
+
+    /**
+     * Attempt to show a real Google H5 Games rewarded video ad.
+     * Returns a promise resolving to:
+     * - 'rewarded': user watched full ad, reward claimed
+     * - 'dismissed': user skipped or closed early
+     * - 'fallback': no real ad available, show simulated modal
+     */
+    requestLiveRewardedAd: ({ beforeAd, afterAd } = {}) => {
+        return new Promise((resolve) => {
+            if (
+                typeof window !== 'undefined' &&
+                typeof window.adBreak === 'function' &&
+                adService.isRealAdsConfigured()
+            ) {
+                try {
+                    window.adBreak({
+                        type: 'reward',
+                        name: 'sponsor_revive',
+                        beforeAd: () => {
+                            beforeAd?.();
+                        },
+                        afterAd: () => {
+                            afterAd?.();
+                        },
+                        beforeReward: (showAdFn) => {
+                            showAdFn();
+                        },
+                        adDismissed: () => {
+                            resolve('dismissed');
+                        },
+                        adViewed: () => {
+                            adService.recordClaim();
+                            resolve('rewarded');
+                        }
+                    });
+                    return;
+                } catch {
+                    resolve('fallback');
+                    return;
+                }
+            }
+            // Real ads not loaded or configured -> trigger fallback modal
+            resolve('fallback');
+        });
     }
 };
 

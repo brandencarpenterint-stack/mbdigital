@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import useRetroSound from '../hooks/useRetroSound';
 import SquishyButton from '../components/SquishyButton';
 import { SHOP_ITEMS } from '../config/ShopItems';
+import adService from '../services/adService';
 
 const SettingsPage = () => {
     const { soundEnabled, toggleSound } = useSettings();
@@ -274,7 +275,36 @@ const SettingsPage = () => {
                     )}
                 </section>
 
-                {/* 4. DANGER ZONE */}
+                {/* 4. MONETIZATION & ADS ENGINE */}
+                <section className="glass-panel" style={{ padding: '25px', border: '1px solid #ffd700', background: 'rgba(255, 215, 0, 0.03)' }}>
+                    <h2 style={{ marginTop: 0, color: '#ffd700', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,215,0,0.2)', paddingBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>💰 MONETIZATION & ADS ENGINE</span>
+                        <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '6px', background: adService.isRealAdsConfigured() ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 215, 0, 0.2)', color: adService.isRealAdsConfigured() ? '#00ff88' : '#ffd700' }}>
+                            {adService.isRealAdsConfigured() ? 'LIVE MONETIZATION' : 'DEV SIMULATION'}
+                        </span>
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ccc' }}>
+                            <span>Ad Engine:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>Google H5 Games Ads / Placement API</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ccc' }}>
+                            <span>Publisher ID:</span>
+                            <span style={{ color: adService.isRealAdsConfigured() ? '#00ff88' : '#888', fontFamily: 'monospace' }}>
+                                {adService.getPublisherId() || 'None (Simulated Sponsors Active)'}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ccc' }}>
+                            <span>Rewarded Revives / Day:</span>
+                            <span style={{ color: '#00f0ff', fontFamily: 'monospace' }}>{adService.DAILY_MAX_SPONSOR_CLAIMS} Claims (1,500 CP + 150 XP each)</span>
+                        </div>
+                        <p style={{ color: '#888', fontSize: '0.75rem', lineHeight: '1.4', margin: '4px 0 0 0' }}>
+                            💡 To earn real money from player views, set your Google AdSense Publisher ID in <code>.env</code> (<code>VITE_ADSENSE_PUB_ID=ca-pub-XXXXXXXX</code>) and update <code>public/ads.txt</code>.
+                        </p>
+                    </div>
+                </section>
+
+                {/* 5. DANGER ZONE */}
                 <section className="glass-panel" style={{ padding: '25px', border: '1px solid rgba(255, 0, 0, 0.3)', background: 'rgba(20, 0, 0, 0.6)' }}>
                     <h2 style={{ marginTop: 0, color: 'red', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,0,0,0.1)', paddingBottom: '10px' }}>
                         DANGER ZONE
