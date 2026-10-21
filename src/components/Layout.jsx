@@ -9,6 +9,7 @@ const DailyQuestModal = React.lazy(() => import('./DailyQuestModal'));
 const OnboardingModal = React.lazy(() => import('./OnboardingModal'));
 const SocialSidebar = React.lazy(() => import('./SocialSidebar'));
 
+import { triggerConfetti } from '../utils/confetti';
 import SquadSelector from './SquadSelector';
 import { useGamification } from '../context/GamificationContext';
 import PirateRadioWidget from './PirateRadioWidget';
@@ -80,7 +81,7 @@ const Layout = () => {
                     }
                     if (unlockDecor) unlockDecor('furn_konami'); // Unlock in pocket bro
 
-                    import('../utils/confetti').then(module => module.triggerConfetti());
+                    triggerConfetti();
                     konamiIndex = 0;
                 }
             } else {
@@ -234,7 +235,7 @@ const Layout = () => {
                         
                         {/* Admin Void (Guest Mode) */}
                         {!session?.user && (
-                            <Link to="/void" style={{ background: '#ff0055', color: 'white', padding: '3px 10px', borderRadius: '15px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: 'bold', marginLeft: '5px' }}>
+                            <Link to="/profile" style={{ background: '#ff0055', color: 'white', padding: '3px 10px', borderRadius: '15px', textDecoration: 'none', fontSize: '0.7rem', fontWeight: 'bold', marginLeft: '5px' }}>
                                 GUEST
                             </Link>
                         )}

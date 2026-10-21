@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
@@ -9,6 +9,7 @@ import { SHOP_ITEMS } from '../config/ShopItems';
 
 // A simple 2.5D Social Hangout Room
 const TheBunker = () => {
+    const navigate = useNavigate();
     const { userProfile, shopState, consumeItem, incrementStat } = useGamification() || {};
     const [visualEffects, setVisualEffects] = useState([]);
 
@@ -418,12 +419,12 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/blackjack';
+                    navigate('/arcade/blackjack');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '32%',
-                    left: '18%',
+                    top: '28%',
+                    left: '22%',
                     zIndex: 45,
                     cursor: 'pointer',
                     display: 'flex',
@@ -468,7 +469,7 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/derby';
+                    navigate('/arcade/derby');
                 }}
                 style={{
                     position: 'absolute',
@@ -518,7 +519,7 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/plinko';
+                    navigate('/arcade/plinko');
                 }}
                 style={{
                     position: 'absolute',
@@ -568,7 +569,7 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/pinball';
+                    navigate('/arcade/pinball');
                 }}
                 style={{
                     position: 'absolute',
@@ -618,12 +619,12 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/crash';
+                    navigate('/arcade/crash');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '55%',
-                    left: '16%',
+                    top: '68%',
+                    left: '22%',
                     zIndex: 45,
                     cursor: 'pointer',
                     display: 'flex',
@@ -668,12 +669,12 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/roulette';
+                    navigate('/arcade/roulette');
                 }}
                 style={{
                     position: 'absolute',
                     top: '18%',
-                    left: '22%',
+                    left: '48%',
                     zIndex: 45,
                     cursor: 'pointer',
                     display: 'flex',
@@ -718,11 +719,11 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/scratchers';
+                    navigate('/arcade/scratchers');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '32%',
+                    top: '28%',
                     left: '8%',
                     zIndex: 45,
                     cursor: 'pointer',
@@ -768,11 +769,11 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/dozer';
+                    navigate('/arcade/dozer');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '46%',
+                    top: '48%',
                     left: '8%',
                     zIndex: 45,
                     cursor: 'pointer',
@@ -818,11 +819,11 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/hilo';
+                    navigate('/arcade/hilo');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '60%',
+                    top: '68%',
                     left: '8%',
                     zIndex: 45,
                     cursor: 'pointer',
@@ -868,12 +869,12 @@ const TheBunker = () => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    window.location.hash = '#/arcade/mines';
+                    navigate('/arcade/mines');
                 }}
                 style={{
                     position: 'absolute',
-                    top: '42%',
-                    left: '24%',
+                    top: '48%',
+                    left: '22%',
                     zIndex: 45,
                     cursor: 'pointer',
                     display: 'flex',

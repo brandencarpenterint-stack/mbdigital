@@ -7,6 +7,7 @@ import { GLOBAL_EVENTS, getDailyEvent } from '../config/GlobalEvents';
 import useRetroSound from '../hooks/useRetroSound';
 import { useToast } from './ToastContext';
 import { triggerConfetti } from '../utils/confetti';
+import { feedService } from '../utils/feed';
 import { supabase } from '../lib/supabaseClient';
 
 const GamificationContext = createContext();
@@ -997,9 +998,7 @@ export const GamificationProvider = ({ children }) => {
         }
 
         // Push to Global Feed
-        import('../utils/feed').then(({ feedService }) => {
-            feedService.publish(`unlocked achievement: ${achievement.title} 🏆`, 'win', userProfile.name);
-        });
+        feedService.publish(`unlocked achievement: ${achievement.title} 🏆`, 'win', userProfile.name);
     };
 
 
