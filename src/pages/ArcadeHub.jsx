@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiveFeed from '../components/LiveFeed';
@@ -8,11 +8,9 @@ import { useGamification } from '../context/GamificationContext';
 import { usePocketBro } from '../context/PocketBroContext';
 import PocketPet from '../components/pocket-pet/PocketPet';
 import useRetroSound from '../hooks/useRetroSound';
-import TheButton from '../components/TheButton';
 import { supabase } from '../lib/supabaseClient';
 import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
-import TiltCard from '../components/TiltCard';
 import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
@@ -23,11 +21,8 @@ const OnlinePlaza = () => {
     useEffect(() => {
         const fetchOnline = async () => {
             let users = [];
-            
             if (supabase) {
-                // Fetch users active in last 15 mins
                 const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-
                 const { data } = await supabase
                     .from('profiles')
                     .select('display_name, avatar_url, coins, last_seen')
@@ -43,7 +38,6 @@ const OnlinePlaza = () => {
                 }
             }
 
-            // Always include the current user
             if (userProfile && userProfile.name) {
                 const isMe = users.find(u => u.display_name === userProfile.name);
                 if (!isMe) {
@@ -60,21 +54,21 @@ const OnlinePlaza = () => {
         };
 
         fetchOnline();
-        const interval = setInterval(fetchOnline, 30000); // Refresh every 30s
+        const interval = setInterval(fetchOnline, 30000);
         return () => clearInterval(interval);
     }, [userProfile, xp]);
 
     if (loading) return null;
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto 40px auto', textAlign: 'left' }}>
-            <h3 style={{ color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif', fontSize: '0.9rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto 20px auto', textAlign: 'left' }}>
+            <h3 style={{ color: 'var(--neon-green)', fontFamily: '"Orbitron", sans-serif', fontSize: '0.85rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-green)', boxShadow: '0 0 10px var(--neon-green)' }}></span>
-                ONLINE PLAZA ({onlineUsers.length})
+                ONLINE PLAZA ({onlineUsers.length} BROS DETECTED)
             </h3>
 
             <div style={{
-                display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px',
+                display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px',
                 scrollbarWidth: 'thin', scrollbarColor: '#333 transparent'
             }}>
                 {onlineUsers.length === 0 && (
@@ -83,35 +77,29 @@ const OnlinePlaza = () => {
                 {onlineUsers.map((user, idx) => (
                     <motion.div
                         key={idx}
-                        whileHover={{ y: -5 }}
+                        whileHover={{ y: -3 }}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: idx * 0.05 }}
+                        transition={{ delay: idx * 0.04 }}
                         style={{
-                            minWidth: '100px',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '10px',
-                            padding: '10px',
+                            minWidth: '90px',
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '12px',
+                            padding: '8px',
                             display: 'flex', flexDirection: 'column', alignItems: 'center',
                             position: 'relative'
                         }}
                     >
-                        <div style={{
-                            width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden',
-                            border: '2px solid var(--neon-blue)', marginBottom: '5px'
-                        }}>
-                            <img src={user.avatar_url || '/assets/merchboy_face.png'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid #00ffcc', marginBottom: '5px' }}>
+                            <img src={user.avatar_url || '/assets/skins/face_default.png'} alt={user.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'white', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {user.display_name}
-                        </div>
-                        <div style={{
-                            marginTop: '5px', background: '#333', padding: '2px 6px', borderRadius: '4px',
-                            fontSize: '0.6rem', color: 'gold', fontWeight: 'bold'
-                        }}>
+                        </span>
+                        <span style={{ color: '#ffd700', fontSize: '0.65rem', fontFamily: 'monospace' }}>
                             LVL {user.level}
-                        </div>
+                        </span>
                     </motion.div>
                 ))}
             </div>
@@ -119,99 +107,20 @@ const OnlinePlaza = () => {
     );
 };
 
-const games = [
-    {
-        id: 'unboxing',
-        title: 'HYPE DROP',
-        desc: 'CS:GO Mystery Crates & Skins',
-        gradient: 'linear-gradient(135deg, #ff007f 0%, #7928ca 100%)',
-        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
-        colSpan: 2,
-        leaderboardId: 'hype_drop'
-    },
-    {
-        id: 'plinko',
-        title: 'CYBER PLINKO',
-        desc: 'Pegged Gravity 100x Drops',
-        gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
-        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #f107a3)'}} />,
-        colSpan: 2,
-        path: '/arcade/plinko',
-        leaderboardId: 'cyber_plinko'
-    },
-    {
-        id: 'merch-defense',
-        title: 'MERCH DEFENSE',
-        desc: 'Branded Tower Defense',
-        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
-        icon: <img src='/assets/skins/face_astro.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00c6ff)'}} />,
-        colSpan: 2,
-        leaderboardId: 'merch_defense'
-    },
+const CATEGORIES = [
+    { id: 'all', label: '🌟 ALL GAMES', count: 26 },
+    { id: 'casino', label: '🎰 CYBER CASINO', count: 9 },
+    { id: 'action', label: '⚡ ACTION & SKILL', count: 9 },
+    { id: 'retro', label: '👾 RETRO CLASSICS', count: 8 }
+];
 
-    {
-        id: 'wheel',
-        title: 'CYBER WHEEL',
-        desc: '10,000 CP Daily Jackpot Spin',
-        gradient: 'linear-gradient(135deg, #ffd700 0%, #ff007f 100%)',
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
-        colSpan: 2,
-        path: '/arcade/wheel',
-        leaderboardId: 'cyber_wheel'
-    },
-    {
-        id: 'slots',
-        title: 'COSMIC SLOTS',
-        desc: 'Spin to WIN BIG!',
-        gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', // Gold
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
-        colSpan: 2,
-        leaderboardId: 'cosmic_slots'
-    },
-    {
-        id: 'drift',
-        title: 'NEON DRIFT: 2088',
-        desc: 'Pseudo-3D Synthwave Racer',
-        gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
-        colSpan: 2,
-        path: '/arcade/drift',
-        leaderboardId: 'neon_drift'
-    },
-    {
-        id: 'derby',
-        title: 'CYBER DERBY',
-        desc: '8-Bro Cyber Track Racing & Exacta Bets',
-        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
-        colSpan: 2,
-        path: '/arcade/derby',
-        leaderboardId: 'cyber_derby'
-    },
-    {
-        id: 'blackjack',
-        title: 'CYBER 21 BLACKJACK',
-        desc: '3:2 Payouts, Splits & Whale Stakes',
-        gradient: 'linear-gradient(135deg, #0d2818 0%, #00ff66 100%)',
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
-        colSpan: 2,
-        path: '/arcade/blackjack',
-        leaderboardId: 'cyber_21'
-    },
-    {
-        id: 'pinball',
-        title: 'CYBER PINBALL 2088',
-        desc: 'Bumper Chaos, B-R-O Drop Targets & 3x Multiball',
-        gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_star.png' alt='Pinball' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
-        colSpan: 2,
-        path: '/arcade/pinball',
-        leaderboardId: 'cyber_pinball'
-    },
+const games = [
+    // CASINO & HIGH-ROLLER
     {
         id: 'crash',
-        title: 'CYBER CRASH: MOONSHOT',
-        desc: 'Rocket Multiplier Moonshots, Auto-Cashout & 100x Bails',
+        title: 'CYBER CRASH',
+        category: 'casino',
+        desc: 'Rocket Multipliers & 100x Auto-Cashouts',
         gradient: 'linear-gradient(135deg, #ff0055 0%, #ffd700 100%)',
         icon: <img src='/assets/skins/face_dino.png' alt='Crash' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0055)'}} />,
         colSpan: 2,
@@ -219,19 +128,10 @@ const games = [
         leaderboardId: 'cyber_crash'
     },
     {
-        id: 'roulette',
-        title: 'CYBER ROULETTE 2088',
-        desc: 'European Single-Zero Wheel, Neon Felt & 35:1 Straight Ups',
-        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_money.png' alt='Roulette' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
-        colSpan: 2,
-        path: '/arcade/roulette',
-        leaderboardId: 'cyber_roulette'
-    },
-    {
         id: 'mines',
         title: 'CYBER MINES 2088',
-        desc: '5x5 Holographic Grid, Scout Drones & Exponential Gem Cashouts',
+        category: 'casino',
+        desc: '5x5 Grid, Scout Drones & Exponential Gems',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #ffd700 100%)',
         icon: <img src='/assets/skins/face_bunny.png' alt='Mines' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
         colSpan: 2,
@@ -239,29 +139,10 @@ const games = [
         leaderboardId: 'cyber_mines'
     },
     {
-        id: 'scratchers',
-        title: 'CYBER SCRATCHERS',
-        desc: 'Silver Foil Instant Lottery, 3 Tiers & 100,000 CP Grand Jackpots',
-        gradient: 'linear-gradient(135deg, #ffd700 0%, #ff8800 100%)',
-        icon: <img src='/assets/skins/face_money.png' alt='Scratchers' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ffd700)'}} />,
-        colSpan: 2,
-        path: '/arcade/scratchers',
-        leaderboardId: 'cyber_scratchers'
-    },
-    {
-        id: 'dozer',
-        title: 'CYBER COIN DOZER 2088',
-        desc: 'Mechanical Neon Pusher, Figurine Drops, Laser Shields & Coin Quakes',
-        gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
-        icon: <img src='/assets/skins/face_star.png' alt='Coin Dozer' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
-        colSpan: 2,
-        path: '/arcade/dozer',
-        leaderboardId: 'cyber_dozer'
-    },
-    {
         id: 'hilo',
         title: 'CYBER HI-LO 2088',
-        desc: 'Holographic High-Low Streak, Up to 180x Multipliers & Instant Cashouts',
+        category: 'casino',
+        desc: 'Card Streak Guessing, Up to 180x Multipliers',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
         icon: <img src='/assets/skins/face_bunny.png' alt='Hi-Lo' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
         colSpan: 2,
@@ -269,18 +150,223 @@ const games = [
         leaderboardId: 'cyber_hilo'
     },
     {
+        id: 'scratchers',
+        title: 'CYBER SCRATCHERS',
+        category: 'casino',
+        desc: 'Silver Foil Instant Lottery, 100k CP Jackpots',
+        gradient: 'linear-gradient(135deg, #ffd700 0%, #ff8800 100%)',
+        icon: <img src='/assets/skins/face_money.png' alt='Scratchers' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ffd700)'}} />,
+        colSpan: 2,
+        path: '/arcade/scratchers',
+        leaderboardId: 'cyber_scratchers'
+    },
+    {
+        id: 'roulette',
+        title: 'CYBER ROULETTE',
+        category: 'casino',
+        desc: 'Single-Zero European Wheel & 35:1 Payouts',
+        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_money.png' alt='Roulette' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/roulette',
+        leaderboardId: 'cyber_roulette'
+    },
+    {
+        id: 'blackjack',
+        title: 'CYBER 21 BLACKJACK',
+        category: 'casino',
+        desc: '3:2 Payouts, Card Counting HUD & High Stakes',
+        gradient: 'linear-gradient(135deg, #0d2818 0%, #00ff66 100%)',
+        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/blackjack',
+        leaderboardId: 'cyber_21'
+    },
+    {
+        id: 'derby',
+        title: 'CYBER DERBY',
+        category: 'casino',
+        desc: '8-Bro Cyber Velodrome Racing & Exacta Bets',
+        gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        colSpan: 2,
+        path: '/arcade/derby',
+        leaderboardId: 'cyber_derby'
+    },
+    {
+        id: 'slots',
+        title: 'COSMIC SLOTS',
+        category: 'casino',
+        desc: '3-Reel Crypto Tumbler & Vault Jackpots',
+        gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)',
+        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
+        colSpan: 2,
+        leaderboardId: 'cosmic_slots'
+    },
+    {
+        id: 'underworld',
+        title: 'THE UNDERWORLD',
+        category: 'casino',
+        desc: 'High-Stakes Peer-to-Peer Wagers',
+        gradient: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
+        icon: <img src='/assets/skins/face_hoodie.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #4e4376)'}} />,
+        colSpan: 2,
+        path: '/underworld'
+    },
+
+    // ACTION & SKILL
+    {
+        id: 'dozer',
+        title: 'CYBER COIN DOZER',
+        category: 'action',
+        desc: 'Mechanical Neon Pusher, Figurines & Quakes',
+        gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
+        icon: <img src='/assets/skins/face_star.png' alt='Coin Dozer' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        colSpan: 2,
+        path: '/arcade/dozer',
+        leaderboardId: 'cyber_dozer'
+    },
+    {
+        id: 'pinball',
+        title: 'CYBER PINBALL 2088',
+        category: 'action',
+        desc: 'Bumper Chaos, B-R-O Drop Targets & Multiball',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
+        icon: <img src='/assets/skins/face_star.png' alt='Pinball' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        colSpan: 2,
+        path: '/arcade/pinball',
+        leaderboardId: 'cyber_pinball'
+    },
+    {
+        id: 'plinko',
+        title: 'CYBER PLINKO',
+        category: 'action',
+        desc: 'Pegged Gravity 100x High-Multiplier Drops',
+        gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
+        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #f107a3)'}} />,
+        colSpan: 2,
+        path: '/arcade/plinko',
+        leaderboardId: 'cyber_plinko'
+    },
+    {
+        id: 'drift',
+        title: 'NEON DRIFT: 2088',
+        category: 'action',
+        desc: 'Pseudo-3D Synthwave Supercar Racer',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        colSpan: 2,
+        path: '/arcade/drift',
+        leaderboardId: 'neon_drift'
+    },
+    {
+        id: 'merch-defense',
+        title: 'MERCH DEFENSE',
+        category: 'action',
+        desc: 'Branded Cyber Tower Defense',
+        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+        icon: <img src='/assets/skins/face_astro.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00c6ff)'}} />,
+        colSpan: 2,
+        leaderboardId: 'merch_defense'
+    },
+    {
+        id: 'galaxy',
+        title: 'GALAXY DEFENDER',
+        category: 'action',
+        desc: 'Retro Space Shooter & Boss Battles',
+        gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
+        icon: <img src='/assets/skins/face_space.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8E2DE2)'}} />,
+        colSpan: 1,
+        leaderboardId: 'galaxy_defender'
+    },
+    {
         id: 'face-runner',
         title: 'FACE WARP',
-        desc: '3D Tunnel Chaos',
+        category: 'action',
+        desc: 'High-Speed 3D Tunnel Chaos',
         gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
         icon: <img src='/assets/skins/face_rainbow.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px cyan)'}} />,
         colSpan: 2,
         leaderboardId: 'face_runner'
     },
     {
+        id: 'bro-cannon',
+        title: 'BRO CANNON',
+        category: 'action',
+        desc: 'Trajectory Launch Physics & Air Bounces',
+        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
+        icon: <img src='/assets/avatar_ghost.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF512F)'}} />,
+        colSpan: 1,
+        leaderboardId: 'bro_cannon'
+    },
+    {
+        id: 'arena',
+        title: 'THE ARENA',
+        category: 'action',
+        desc: 'Turn-Based RPG Squad Battles',
+        gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0844)'}} />,
+        colSpan: 2,
+        path: '/arena'
+    },
+
+    // RETRO CLASSICS
+    {
+        id: 'brick',
+        title: 'NEON BRICKS',
+        category: 'retro',
+        desc: 'Breakout Pixel Destruction',
+        gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
+        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #da22ff)'}} />,
+        colSpan: 1,
+        leaderboardId: 'neon_bricks'
+    },
+    {
+        id: 'snake',
+        title: 'NEON SNAKE',
+        category: 'retro',
+        desc: 'Retro Grid Slither',
+        gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #38ef7d)'}} />,
+        colSpan: 1,
+        leaderboardId: 'neon_snake'
+    },
+    {
+        id: 'flappy',
+        title: 'FLAPPY BRO',
+        category: 'retro',
+        desc: 'Physics Pipe Dodging',
+        gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
+        icon: <img src='/assets/skins/face_default.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #22C1C3)'}} />,
+        colSpan: 1,
+        leaderboardId: 'flappy_mascot'
+    },
+    {
+        id: 'unboxing',
+        title: 'HYPE DROP',
+        category: 'retro',
+        desc: 'Mystery Crates & Rare Skins',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #7928ca 100%)',
+        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        colSpan: 2,
+        leaderboardId: 'hype_drop'
+    },
+    {
+        id: 'wheel',
+        title: 'CYBER WHEEL',
+        category: 'retro',
+        desc: '10,000 CP Daily Free Spin',
+        gradient: 'linear-gradient(135deg, #ffd700 0%, #ff007f 100%)',
+        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
+        colSpan: 2,
+        path: '/arcade/wheel',
+        leaderboardId: 'cyber_wheel'
+    },
+    {
         id: 'merch-jump',
         title: 'MERCH JUMP',
-        desc: 'Sky High.',
+        category: 'retro',
+        desc: 'Endless Platform Jumping',
         gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
         icon: <img src='/assets/skins/face_bear.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #66a6ff)'}} />,
         colSpan: 1,
@@ -289,7 +375,8 @@ const games = [
     {
         id: 'fishing',
         title: 'CRAZY FISHING',
-        desc: 'Catch the Mer-Logo!',
+        category: 'retro',
+        desc: 'Reel in Rare Cyber Leviathans',
         gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
         icon: <img src='/assets/merchboy_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #0072FF)'}} />,
         colSpan: 1,
@@ -298,119 +385,22 @@ const games = [
     {
         id: 'whack',
         title: 'WHACK-A-MOLE',
-        desc: 'Bonk the moles!',
+        category: 'retro',
+        desc: 'Fast Reflex Mascot Bonking',
         gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)',
         icon: <img src='/assets/mole_normal.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF416C)'}} />,
         colSpan: 1,
         leaderboardId: 'whack_a_mole'
     },
     {
-        id: 'snake',
-        title: 'NEON SNAKE',
-        desc: 'Classic vibes.',
-        gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #38ef7d)'}} />,
-        colSpan: 1,
-        leaderboardId: 'neon_snake'
-    },
-    {
-        id: 'galaxy',
-        title: 'GALAXY DEFENDER',
-        desc: 'Pew pew pew!',
-        gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
-        icon: <img src='/assets/skins/face_space.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8E2DE2)'}} />,
-        colSpan: 1,
-        leaderboardId: 'galaxy_defender'
-    },
-    {
-        id: 'brick',
-        title: 'NEON BRICKS',
-        desc: 'Smash pixels.',
-        gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #da22ff)'}} />,
-        colSpan: 1,
-        leaderboardId: 'neon_bricks'
-    },
-    {
         id: 'memory',
         title: 'MEMORY MATCH',
-        desc: 'Train your brain.',
+        category: 'retro',
+        desc: 'Cyber Deck Pattern Recall',
         gradient: 'linear-gradient(135deg, #f79d00 0%, #64f38c 100%)',
         icon: <img src='/assets/skins/face_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #64f38c)'}} />,
         colSpan: 1,
         leaderboardId: 'memory_match'
-    },
-    {
-        id: 'sub-hunter',
-        title: 'VOID HUNTER',
-        desc: 'Destroy the Subs!',
-        gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        icon: <img src='/assets/avatar_alien.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #302b63)'}} />,
-        colSpan: 1,
-        leaderboardId: 'sub_hunter'
-    },
-    {
-        id: 'flappy',
-        title: 'FLAPPY BRO',
-        desc: 'Don\'t crash.',
-        gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
-        icon: <img src='/assets/skins/face_default.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #22C1C3)'}} />,
-        colSpan: 1,
-        leaderboardId: 'flappy_mascot'
-    },
-    {
-        id: 'bro-cannon',
-        title: 'BRO CANNON',
-        desc: 'Launch for the stars!',
-        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)', // Red/Pink
-        icon: <img src='/assets/avatar_ghost.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF512F)'}} />,
-        colSpan: 1,
-        leaderboardId: 'bro_cannon'
-    },
-    {
-        id: 'beatlab',
-        title: 'BEAT LAB',
-        desc: 'Sonic Studio.',
-        gradient: 'linear-gradient(135deg, #110022, #330066)',
-        icon: <img src='/assets/skins/face_skater.jpg' style={{height:'60px', borderRadius:'50%', objectFit:'contain', filter: 'drop-shadow(0 0 10px #330066)'}} />,
-        colSpan: 1,
-        path: '/beatlab'
-    },
-    {
-        id: 'subslayer',
-        title: 'SUB SLAYER',
-        desc: 'Expense Tracker.',
-        gradient: 'linear-gradient(135deg, #220000, #440000)',
-        icon: <img src='/assets/merchboy_logo_badge.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #440000)'}} />,
-        colSpan: 1,
-        path: '/subslayer'
-    },
-    {
-        id: 'arena',
-        title: 'THE ARENA',
-        desc: 'RPG Squad Glitch Battles',
-        gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0844)'}} />,
-        colSpan: 2,
-        path: '/arena'
-    },
-    {
-        id: 'underworld',
-        title: 'THE UNDERWORLD',
-        desc: 'High-Stakes PvP Wagers',
-        gradient: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
-        icon: <img src='/assets/skins/face_hoodie.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #4e4376)'}} />,
-        colSpan: 2,
-        path: '/underworld'
-    },
-    {
-        id: 'coloring',
-        title: 'COLOR STUDIO',
-        desc: 'Relax and paint.',
-        gradient: 'linear-gradient(135deg, #FF69B4, #8A2BE2)',
-        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8A2BE2)'}} />,
-        colSpan: 2,
-        path: '/coloring'
     }
 ];
 
@@ -424,13 +414,18 @@ const getHighScore = (id, stats) => {
     if (id === 'flappy') return stats.flappyHighScore || 0;
     if (id === 'fishing') return stats.crazyFishingHighScore || 0;
     if (id === 'drift') return stats?.neonDriftHighScore ? `${stats.neonDriftHighScore.toLocaleString()} PTS` : 'READY';
+    if (id === 'crash') return stats?.crashHighScore ? `${stats.crashHighScore}x` : '100x';
+    if (id === 'mines') return stats?.minesHighScore ? `${stats.minesHighScore}x` : 'EXP';
+    if (id === 'scratchers') return stats?.scratchersHighScore ? `${stats.scratchersHighScore.toLocaleString()} CP` : '100k';
+    if (id === 'dozer') return stats?.dozerHighScore ? `${stats.dozerHighScore.toLocaleString()} CP` : 'READY';
+    if (id === 'hilo') return stats?.hiloHighScore ? `${stats.hiloHighScore.toLocaleString()} CP` : '180x';
+    if (id === 'pinball') return stats?.pinballHighScore ? `${stats.pinballHighScore.toLocaleString()} PTS` : 'READY';
     if (id === 'face-runner') return stats.faceRunnerHighScore || 0;
-    if (id === 'sub-hunter') return stats.subHunterHighScore || 0;
     if (id === 'slots') return 'JACKPOT';
     if (id === 'wheel') return stats?.wheelHighScore ? `${stats.wheelHighScore.toLocaleString()} CP` : 'FREE SPIN';
     if (id === 'merch-jump') return stats.merchJumpHighScore || 0;
     if (id === 'bro-cannon') return stats.broCannonHighScore || 0;
-    if (id === 'merch-defense') return stats.merchDefenseHighScore ? WAVE  : 'READY';
+    if (id === 'merch-defense') return stats.merchDefenseHighScore ? `WAVE ${stats.merchDefenseHighScore}` : 'READY';
     return 0;
 };
 
@@ -438,15 +433,13 @@ const containerVariants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: {
-            staggerChildren: 0.05
-        }
+        transition: { staggerChildren: 0.04 }
     }
 };
 
 const itemVariants = {
-    hidden: { y: 30, opacity: 0, scale: 0.9 },
-    show: { y: 0, opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } }
+    hidden: { y: 20, opacity: 0, scale: 0.95 },
+    show: { y: 0, opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 120 } }
 };
 
 const ArcadeHub = () => {
@@ -455,6 +448,9 @@ const ArcadeHub = () => {
     const { playBoop } = useRetroSound();
 
     const equippedSkin = shopState?.equipped?.pocketbro || null;
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('leaderboard'); // 'leaderboard', 'feed', 'plaza', 'pocketbro'
     const [selectedLeaderboard, setSelectedLeaderboard] = useState('crazy_fishing');
     const [greeting, setGreeting] = useState('Welcome');
 
@@ -463,21 +459,7 @@ const ArcadeHub = () => {
         if (hour < 12) setGreeting('Good Morning');
         else if (hour < 18) setGreeting('Good Afternoon');
         else setGreeting('Good Evening');
-
-        // LOOT SPAWN LOGIC (Cassettes)
-        const checkForLoot = () => {
-            const chance = Math.random();
-            if (chance > 0.7) { // 30% Chance
-                // Determine what to drop
-                if (!shopState?.unlocked?.includes('bank_lofi')) {
-                    setLoot({ id: 'bank_lofi', icon: 'ðŸ“¼', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
-                } else if (!shopState?.unlocked?.includes('bank_cyber') && Math.random() > 0.5) {
-                    setLoot({ id: 'bank_cyber', icon: 'ðŸ’¾', x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
-                }
-            }
-        };
-        checkForLoot();
-    }, [shopState?.unlocked]);
+    }, []);
 
     const [loot, setLoot] = useState(null);
     const { setShopState } = useGamification() || {};
@@ -493,16 +475,29 @@ const ArcadeHub = () => {
 
     const displayName = userProfile?.name || 'OPERATOR';
 
+    // Filter games by category and search query
+    const filteredGames = useMemo(() => {
+        return games.filter(g => {
+            const matchesCategory = selectedCategory === 'all' || g.category === selectedCategory;
+            const matchesSearch = searchQuery === '' || 
+                g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                g.desc.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+    }, [selectedCategory, searchQuery]);
+
     return (
         <div className="page-enter" style={{
             textAlign: 'center',
-            padding: '20px',
+            padding: '16px',
+            maxWidth: '1280px',
+            margin: '0 auto',
             width: '100%',
             boxSizing: 'border-box',
             paddingBottom: '120px',
-            position: 'relative' // relative for loot absolute pos
+            position: 'relative'
         }}>
-            {/* LOOT ITEM */}
+            {/* LOOT ITEM POPUP */}
             <AnimatePresence>
                 {loot && (
                     <motion.div
@@ -526,449 +521,332 @@ const ArcadeHub = () => {
                 )}
             </AnimatePresence>
 
-            {/* HERO HEADER */}
-            <div style={{ marginBottom: '40px', marginTop: '20px' }}>
-                <p style={{ color: 'var(--neon-blue)', letterSpacing: '2px', fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '5px' }}>
-                    {greeting.toUpperCase()}, {displayName}
+            {/* HEADER & QUICK HUB BAR */}
+            <div style={{ marginBottom: '24px', marginTop: '10px' }}>
+                <p style={{ color: 'var(--neon-blue)', letterSpacing: '2px', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '4px', fontFamily: 'monospace' }}>
+                    {greeting.toUpperCase()}, {displayName} • SYSTEM ONLINE
                 </p>
                 <h1 style={{
-                    fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-                    textShadow: '0 0 20px var(--neon-pink)',
+                    fontSize: 'clamp(2.2rem, 6vw, 3.8rem)',
+                    textShadow: '0 0 25px rgba(0, 229, 255, 0.5)',
                     margin: '0',
                     fontFamily: '"Orbitron", sans-serif',
-                    animation: 'textGlowPulse 3s infinite ease-in-out'
+                    fontWeight: '900',
+                    letterSpacing: '2px'
                 }}>
-                    ARCADE <span style={{ color: 'var(--neon-pink)' }}>ZONE</span>
+                    CYBER <span style={{ color: 'var(--neon-pink)', textShadow: '0 0 25px rgba(255, 0, 127, 0.6)' }}>ARCADE</span>
                 </h1>
-                <p style={{ fontSize: 'clamp(1rem, 4vw, 1.2rem)', color: '#aaa', marginTop: '10px' }}>
-                    Ready to play? Select a game console below.
-                </p>
-            
-            </div>
-
-            {/* ACTION PORTAL STRIP */}
-            <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                margin: '-15px auto 35px auto',
-                maxWidth: '900px'
-            }}>
-                <button
-                    onClick={() => {
-                        window.dispatchEvent(new CustomEvent('spawn-raid-boss'));
-                        try { playBoop(); } catch(e) {}
-                    }}
-                    style={{
-                        background: 'linear-gradient(135deg, #ff0055, #ff5500)',
-                        color: 'white',
-                        border: '2px solid rgba(255,255,255,0.4)',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: '900',
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        boxShadow: '0 0 20px rgba(255, 0, 85, 0.4)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}
-                >
-                    <span>🚨</span> SUMMON RAID BOSS
-                </button>
-
-                <Link to="/arena" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 8, 68, 0.2)',
-                        border: '1px solid #ff0844',
-                        color: '#ff88aa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>⚔️</span> THE ARENA (RPG)
-                    </div>
-                </Link>
-
-                <Link to="/underworld" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(120, 115, 245, 0.2)',
-                        border: '1px solid #7873f5',
-                        color: '#c4c1ff',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🎲</span> THE UNDERWORLD (WAGERS)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/plinko" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(241, 7, 163, 0.2)',
-                        border: '1px solid #f107a3',
-                        color: '#ff88d2',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🔮</span> CYBER PLINKO (100X)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/wheel" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 215, 0, 0.2)',
-                        border: '1px solid #ffd700',
-                        color: '#ffd700',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🎡</span> CYBER WHEEL (FREE SPIN)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/drift" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 0, 127, 0.2)',
-                        border: '1px solid #ff007f',
-                        color: '#ff88aa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🏎️</span> NEON DRIFT (240 MPH)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/derby" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 255, 102, 0.2)',
-                        border: '1px solid #00ff66',
-                        color: '#66ffaa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🏇</span> CYBER DERBY (EXACTA BETS)
-                    </div>
-                </Link>
-
-                <Link to="/underworld" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 215, 0, 0.2)',
-                        border: '1px solid #ffd700',
-                        color: '#ffd700',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🔓</span> CYBER VAULT JACKPOT
-                    </div>
-                </Link>
-
-                <Link to="/arcade/blackjack" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 255, 102, 0.2)',
-                        border: '1px solid #00ff66',
-                        color: '#66ffaa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🃏</span> CYBER 21 (3:2 PAYOUTS)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/pinball" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 0, 127, 0.2)',
-                        border: '1px solid #ff007f',
-                        color: '#ff66b2',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>⚡</span> CYBER PINBALL (3X MULTI)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 0, 85, 0.2)',
-                        border: '1px solid #ff0055',
-                        color: '#ff6688',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🚀</span> CYBER CRASH (100X MOONSHOT)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/roulette" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 255, 102, 0.2)',
-                        border: '1px solid #00ff66',
-                        color: '#66ffaa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🎡</span> CYBER ROULETTE (35:1)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/mines" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 255, 102, 0.2)',
-                        border: '1px solid #00ff66',
-                        color: '#66ffaa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>💎</span> CYBER MINES (THE GRID)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/scratchers" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(255, 215, 0, 0.2)',
-                        border: '1px solid #ffd700',
-                        color: '#ffe066',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🎟️</span> CYBER SCRATCHERS (LOTTERY)
-                    </div>
-                </Link>
-
-                <Link to="/arcade/dozer" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 229, 255, 0.2)',
-                        border: '1px solid #00e5ff',
-                        color: '#00ffff',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>⚙️</span> CYBER COIN DOZER
-                    </div>
-                </Link>
-
-                <Link to="/arcade/hilo" style={{ textDecoration: 'none' }}>
-                    <div style={{
-                        background: 'rgba(0, 255, 102, 0.2)',
-                        border: '1px solid #00ff66',
-                        color: '#66ffaa',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span>🃏</span> CYBER HI-LO (STREAK)
-                    </div>
-                </Link>
-            </div>
-
-            {/* LIVE TICKER / FEED */}
-            <div style={{ maxWidth: '800px', margin: '0 auto 40px auto' }}>
-                <LiveFeed />
-            </div>
-
-            {/* ONLINE PLAZA */}
-            <OnlinePlaza />
-
-            <div style={{ marginBottom: '40px' }}>
-                <Link to="/shop" style={{
-                    background: 'linear-gradient(90deg, #FFD700, #FFA500)',
-                    color: 'black', padding: '15px 40px',
-                    borderRadius: '50px', textDecoration: 'none', fontWeight: '900',
-                    fontSize: '1.2rem', boxShadow: '0 0 25px rgba(255, 215, 0, 0.4)',
-                    display: 'inline-flex', alignItems: 'center', gap: '10px',
-                    border: '2px solid white'
-                }}>
-                    <span>ðŸ›’</span> VISIT GLOBAL SHOP
-                </Link>
-            </div>
-
-            {/* POCKET BRO BANNER */}
-            <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="glass-panel"
-                style={{
-                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-                    padding: '20px', marginBottom: '50px', maxWidth: '800px', margin: '0 auto 50px auto',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-                    border: '1px solid #555', position: 'relative', overflow: 'hidden'
-                }}
-            >
-                <div style={{ position: 'relative', height: '100px', width: '100px', marginBottom: '10px' }}>
-                    <PocketPet
-                        stage={broStats?.stage || 'EGG'}
-                        type={broStats?.type || 'SOOT'}
-                        mood={getMood()}
-                        isSleeping={broStats?.isSleeping}
-                        skin={equippedSkin}
-                    />
-                </div>
-                <h2 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', color: 'white', zIndex: 2 }}>POCKET BRO LINKED</h2>
-                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', fontSize: '0.8rem', color: '#aaa', marginBottom: '15px', zIndex: 2 }}>
-                    <span>â¤ï¸ {Math.floor(broStats?.happy || 0)}% HAPPY</span>
-                    <span>âš¡ {Math.floor(broStats?.xp || 0)} XP</span>
-                </div>
-                <Link to="/pocketbro" style={{
-                    background: 'var(--neon-blue)', color: 'black', padding: '10px 30px',
-                    borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.9rem',
-                    boxShadow: '0 0 15px var(--neon-blue)', zIndex: 2
-                }}>
-                    ENTER ROOM ðŸšª
-                </Link>
-                {/* BG Effect */}
+                
+                {/* FAST HUB DESTINATION STRIP */}
                 <div style={{
-                    position: 'absolute', inset: 0,
-                    backgroundImage: 'radial-gradient(circle at center, transparent 0%, #000 100%)',
-                    zIndex: 1, opacity: 0.8
-                }}></div>
-            </motion.div>
+                    display: 'flex',
+                    gap: '8px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    marginTop: '15px'
+                }}>
+                    <button
+                        onClick={() => {
+                            window.dispatchEvent(new CustomEvent('spawn-raid-boss'));
+                            try { playBoop(); } catch(e) {}
+                        }}
+                        style={{
+                            background: 'linear-gradient(135deg, #ff0055, #ff5500)',
+                            color: 'white',
+                            border: '1px solid rgba(255,255,255,0.4)',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: '900',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 12px rgba(255, 0, 85, 0.4)',
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                        }}
+                    >
+                        <span>🚨</span> RAID BOSS
+                    </button>
 
+                    <Link to="/bunker" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(0, 229, 255, 0.15)',
+                            border: '1px solid #00e5ff',
+                            color: '#00ffff',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: 'bold',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                        }}>
+                            <span>🍸</span> THE BUNKER
+                        </div>
+                    </Link>
 
+                    <Link to="/underworld" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(255, 215, 0, 0.15)',
+                            border: '1px solid #ffd700',
+                            color: '#ffd700',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: 'bold',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                        }}>
+                            <span>🎲</span> THE UNDERWORLD
+                        </div>
+                    </Link>
 
-            {/* STAGGERED GRID */}
+                    <Link to="/arena" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(255, 8, 68, 0.15)',
+                            border: '1px solid #ff0844',
+                            color: '#ff88aa',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: 'bold',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                        }}>
+                            <span>⚔️</span> THE ARENA
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* SEARCH & CATEGORY FILTER BAR */}
+            <div style={{
+                background: 'rgba(10, 15, 26, 0.85)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(0, 229, 255, 0.25)',
+                borderRadius: '24px',
+                padding: '12px 16px',
+                margin: '0 auto 28px auto',
+                maxWidth: '920px',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+            }}>
+                {/* Search Input */}
+                <div style={{ position: 'relative', width: '100%' }}>
+                    <input
+                        type="text"
+                        placeholder="🔍 Search games by name, genre, or keyword..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            background: 'rgba(0, 0, 0, 0.6)',
+                            border: '1px solid rgba(0, 229, 255, 0.4)',
+                            borderRadius: '16px',
+                            padding: '12px 20px',
+                            color: '#fff',
+                            fontFamily: 'monospace',
+                            fontSize: '0.9rem',
+                            outline: 'none',
+                            boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.8)'
+                        }}
+                    />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery('')}
+                            style={{
+                                position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                                background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1rem'
+                            }}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+
+                {/* Category Pills */}
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+                    {CATEGORIES.map(cat => {
+                        const isSelected = selectedCategory === cat.id;
+                        return (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setSelectedCategory(cat.id)}
+                                style={{
+                                    flex: '1 0 auto',
+                                    background: isSelected ? 'linear-gradient(135deg, #00e5ff, #0072ff)' : 'rgba(255,255,255,0.05)',
+                                    color: isSelected ? '#000' : '#ccc',
+                                    border: isSelected ? '1px solid #00e5ff' : '1px solid rgba(255,255,255,0.1)',
+                                    padding: '8px 16px',
+                                    borderRadius: '14px',
+                                    fontWeight: '900',
+                                    fontSize: '0.8rem',
+                                    fontFamily: 'monospace',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: isSelected ? '0 0 16px rgba(0, 229, 255, 0.5)' : 'none',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                {cat.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* ARCADE CABINETS GRID (FRONT & CENTER) */}
             <motion.div
                 className="dashboard-grid arcade-grid"
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
+                key={selectedCategory + searchQuery}
                 style={{
-                    padding: '10px',
-                    maxWidth: '1200px', margin: '0 auto', width: '100%',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // Wider for cabinets
-                    rowGap: '40px' // More vertical space
+                    padding: '0',
+                    maxWidth: '1200px',
+                    margin: '0 auto 40px auto',
+                    width: '100%',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    rowGap: '32px',
+                    columnGap: '20px'
                 }}
             >
-                {games.map(game => (
-                    <motion.div
-                        key={game.id}
-                        variants={itemVariants}
-                        style={{
-                            gridColumn: 'span 1', // Force single column for cabinets to look uniform
-                            display: 'flex', justifyContent: 'center'
-                        }}
-                    >
-                        <Link to={game.path || `/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent' }}>
-                            <ArcadeCabinet
-                                game={game}
-                                highScore={getHighScore(game.id, stats)}
-                                zoneControl={zoneControl?.[game.id]}
-                            />
-                        </Link>
-                    </motion.div>
-                ))}
-                
-                {/* THE BUTTON (Viral Stunt) */}
-                <motion.div variants={itemVariants} style={{ height: '100%', gridColumn: 'span 1', display: 'flex', justifyContent: 'center' }}>
-                    <TheButton />
-                </motion.div>
-            </motion.div>
-
-            {/* LEADERBOARDS SECTION */}
-            <div style={{
-                marginTop: '80px', padding: '30px',
-                background: 'rgba(15, 15, 27, 0.8)',
-                border: '1px solid #333',
-                maxWidth: '900px', margin: '80px auto 20px auto',
-                borderRadius: '30px', backdropFilter: 'blur(10px)'
-            }}>
-                <h2 style={{ color: 'gold', marginBottom: '30px', fontFamily: '"Orbitron", sans-serif', letterSpacing: '2px' }}>ðŸŒ GLOBAL RANKINGS</h2>
-
-                {/* Game Selector */}
-                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px', scrollbarWidth: 'none' }}>
-                    {games.map(g => (
-                        <button
-                            key={g.id}
-                            onClick={() => setSelectedLeaderboard(g.leaderboardId)}
+                {filteredGames.length > 0 ? (
+                    filteredGames.map(game => (
+                        <motion.div
+                            key={game.id}
+                            variants={itemVariants}
                             style={{
-                                background: selectedLeaderboard === g.leaderboardId ? g.gradient : 'rgba(255,255,255,0.05)',
-                                color: 'white',
-                                border: selectedLeaderboard === g.leaderboardId ? `none` : '1px solid #333',
-                                padding: '10px 20px', borderRadius: '20px',
-                                cursor: 'pointer', fontWeight: 'bold', whiteSpace: 'nowrap',
-                                transition: 'all 0.3s',
-                                boxShadow: selectedLeaderboard === g.leaderboardId ? '0 0 15px rgba(255,255,255,0.2)' : 'none'
+                                display: 'flex',
+                                justifyContent: 'center'
                             }}
                         >
-                            {g.title}
+                            <Link to={game.path || `/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent', width: '100%', maxWidth: '320px' }}>
+                                <ArcadeCabinet
+                                    game={game}
+                                    highScore={getHighScore(game.id, stats)}
+                                    zoneControl={zoneControl?.[game.id]}
+                                />
+                            </Link>
+                        </motion.div>
+                    ))
+                ) : (
+                    <div style={{ gridColumn: '1 / -1', padding: '60px 20px', color: '#888', fontStyle: 'italic', fontFamily: 'monospace' }}>
+                        No games matched your search query. Try another term or reset category!
+                    </div>
+                )}
+            </motion.div>
+
+            {/* COMMUNITY & LEADERBOARD MULTI-TAB PANEL */}
+            <div style={{
+                background: 'rgba(10, 15, 26, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '24px',
+                padding: '20px',
+                maxWidth: '920px',
+                margin: '0 auto 40px auto',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.6)'
+            }}>
+                {/* Secondary Hub Navigation Tabs */}
+                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #222', paddingBottom: '12px', marginBottom: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {[
+                        { id: 'leaderboard', label: '🏆 LEADERBOARDS' },
+                        { id: 'feed', label: '📡 LIVE FEED' },
+                        { id: 'plaza', label: '🌐 ONLINE PLAZA' },
+                        { id: 'pocketbro', label: '👾 POCKET BRO' }
+                    ].map(t => (
+                        <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setActiveTab(t.id)}
+                            style={{
+                                background: activeTab === t.id ? 'rgba(0, 229, 255, 0.2)' : 'transparent',
+                                border: activeTab === t.id ? '1px solid #00e5ff' : 'none',
+                                color: activeTab === t.id ? '#00e5ff' : '#888',
+                                padding: '8px 16px',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                fontSize: '0.82rem',
+                                fontFamily: 'monospace',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {t.label}
                         </button>
                     ))}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <LeaderboardTable gameId={selectedLeaderboard} />
-                </div>
+                {/* TAB 1: LEADERBOARD */}
+                {activeTab === 'leaderboard' && (
+                    <div>
+                        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '16px', scrollbarWidth: 'thin' }}>
+                            {games.filter(g => g.leaderboardId).map(g => (
+                                <button
+                                    key={g.id}
+                                    onClick={() => setSelectedLeaderboard(g.leaderboardId)}
+                                    style={{
+                                        background: selectedLeaderboard === g.leaderboardId ? g.gradient : 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        border: selectedLeaderboard === g.leaderboardId ? '1px solid #fff' : '1px solid #333',
+                                        padding: '6px 14px',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.75rem',
+                                        whiteSpace: 'nowrap',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {g.title}
+                                </button>
+                            ))}
+                        </div>
+                        <LeaderboardTable gameId={selectedLeaderboard} />
+                    </div>
+                )}
+
+                {/* TAB 2: LIVE FEED */}
+                {activeTab === 'feed' && (
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                        <LiveFeed />
+                    </div>
+                )}
+
+                {/* TAB 3: ONLINE PLAZA */}
+                {activeTab === 'plaza' && (
+                    <OnlinePlaza />
+                )}
+
+                {/* TAB 4: POCKET BRO */}
+                {activeTab === 'pocketbro' && (
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '10px'
+                    }}>
+                        <div style={{ position: 'relative', height: '90px', width: '90px', marginBottom: '10px' }}>
+                            <PocketPet
+                                stage={broStats?.stage || 'EGG'}
+                                type={broStats?.type || 'SOOT'}
+                                mood={getMood()}
+                                isSleeping={broStats?.isSleeping}
+                                skin={equippedSkin}
+                            />
+                        </div>
+                        <h3 style={{ fontSize: '1.2rem', margin: '0 0 4px 0', color: 'white' }}>POCKET BRO LINKED</h3>
+                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', fontSize: '0.8rem', color: '#aaa', marginBottom: '15px' }}>
+                            <span>❤️ {Math.floor(broStats?.happy || 0)}% HAPPY</span>
+                            <span>⚡ {Math.floor(broStats?.xp || 0)} XP</span>
+                        </div>
+                        <Link to="/pocketbro" style={{
+                            background: 'var(--neon-blue)', color: 'black', padding: '8px 24px',
+                            borderRadius: '50px', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem',
+                            boxShadow: '0 0 15px var(--neon-blue)'
+                        }}>
+                            ENTER PET ROOM 🚪
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

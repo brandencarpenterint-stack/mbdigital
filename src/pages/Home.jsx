@@ -91,7 +91,7 @@ const Home = () => {
                     transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
                     style={{ display: 'flex', gap: '40px', color: '#aaa', alignItems: 'center' }}
                 >
-                    {[...Array(3)].map((_, i) => (
+                    {[...Array(4)].map((_, i) => (
                         <React.Fragment key={i}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f7931a', display: 'inline-block', boxShadow: '0 0 6px #f7931a' }}></span>
@@ -99,47 +99,17 @@ const Home = () => {
                                 <span style={{ color: '#fff', fontWeight: 'bold' }}>${btcPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 <span style={{ color: btcColor, fontWeight: 'bold' }}>({isBtcUp ? '+' : ''}{priceChange24h.toFixed(2)}%)</span>
                             </span>
-                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
-                                📦 NEW: HypeDrop Mystery Crates are Live! CS:GO Ticker Unboxings
-                            </span>
-                            <span style={{ color: '#00ffcc', fontWeight: 'bold' }}>
-                                🏰 NEW: Merch Defense TD • Deploy Branded Turrets Against Haters
-                            </span>
-                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                                🎰 Cosmic Slots: 100,000 CP High-Roller Vault
-                            </span>
-                            <span style={{ color: '#f107a3', fontWeight: 'bold' }}>
-                                🔮 NEW: Cyber Plinko Pegged Gravity Drops • 100x Multipliers Live!
-                            </span>
-                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
-                                🏎️ NEW: Neon Drift 2088 • Outrun the Void at 240 MPH!
-                            </span>
-                            <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
-                                🏇 NEW: Cyber Derby: Bro Grand Prix • 8-Bro Racing & 100x Exactas!
-                            </span>
-                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                                🃏 NEW: Cyber 21 Blackjack • 3:2 Natural Payouts & Whale Stakes Live!
-                            </span>
-                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
-                                ⚡ NEW: Cyber Pinball 2088 • B-R-O Drop Targets & 3x Multiball Chaos!
-                            </span>
-                            <span style={{ color: '#ff0055', fontWeight: 'bold' }}>
-                                🚀 NEW: Cyber Crash: Moonshot • Bail Out Before the Blast & Ride to 100x!
-                            </span>
-                            <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
-                                🎡 NEW: Cyber Roulette 2088 • European Single-Zero Wheel & 35:1 Straight Ups!
-                            </span>
                             <span style={{ color: '#00e5ff', fontWeight: 'bold' }}>
-                                💎 NEW: Cyber Mines 2088 • 5x5 Holographic Grid, Scout Drones & Exponential Cashouts!
-                            </span>
-                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                                🎟️ NEW: Cyber Scratchers • Silver Foil Lottery, 3 Card Tiers & 100,000 CP Grand Jackpots!
-                            </span>
-                            <span style={{ color: '#00e5ff', fontWeight: 'bold' }}>
-                                ⚙️ NEW: Cyber Coin Dozer 2088 • Mechanical Pusher, Figurine Drops, Laser Shields & Quakes!
+                                🎮 26 CYBER GAMES LIVE
                             </span>
                             <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
-                                🃏 NEW: Cyber Hi-Lo 2088 • Holographic Card Streak, 180x Multipliers & Instant Cashouts!
+                                🪙 1,480+ BROS ONLINE
+                            </span>
+                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                                🏆 100,000 CP HIGH-ROLLER JACKPOTS
+                            </span>
+                            <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
+                                🍸 THE BUNKER SPEAKEASY LOUNGE OPEN
                             </span>
                         </React.Fragment>
                     ))}
@@ -169,302 +139,108 @@ const Home = () => {
                             ENTER ARCADE
                         </h1>
                         <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', marginTop: '12px', letterSpacing: '3px', fontFamily: 'monospace' }}>
-                            16 RETRO GAMES • DAILY QUESTS • HIGH SCORES
+                            26 CYBER TITLES • CASINO HIGH-ROLLERS • DAILY QUESTS • LEADERBOARDS
                         </div>
                     </div>
                 </Link>
             </motion.div>
 
-            {/* FEATURED DROP HIGHLIGHTS: HYPEDROP & MERCH DEFENSE */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px', marginBottom: '25px' }}>
-                <Link to="/arcade/unboxing" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.2), rgba(121, 40, 202, 0.2))',
-                        border: '2px solid rgba(255, 0, 127, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 127, 0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #ff007f)' }} alt="Crate" />
-                        <div>
-                            <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>HOT DROP</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>HYPE DROP: MYSTERY CRATES</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Spin CS:GO style cases & equip rare custom skins!</div>
-                        </div>
+                        {/* PREMIER ARCADE & CASINO SPOTLIGHT (CURATED 4-PACK) */}
+            <div style={{ marginBottom: '35px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', px: '5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00e5ff', boxShadow: '0 0 8px #00e5ff' }}></span>
+                        <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1.5px', fontFamily: '"Orbitron", monospace' }}>
+                            FEATURED TITLES
+                        </span>
                     </div>
-                </Link>
+                    <Link to="/arcade" style={{ color: '#00e5ff', fontSize: '0.8rem', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
+                        VIEW ALL 26 TITLES ➔
+                    </Link>
+                </div>
 
-                <Link to="/arcade/plinko" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(241, 7, 163, 0.2), rgba(123, 47, 247, 0.2))',
-                        border: '2px solid rgba(241, 7, 163, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(241, 7, 163, 0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #f107a3)' }} alt="Plinko" />
-                        <div>
-                            <div style={{ background: '#f107a3', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>100X DROPS</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER PLINKO</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Pegged gravity physics & multi-ball cascades!</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                    {/* 1. Cyber Crash */}
+                    <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
+                        <div className="bento-card" style={{
+                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.25), rgba(255, 215, 0, 0.15))',
+                            border: '1px solid rgba(255, 0, 85, 0.4)',
+                            borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                            transition: 'all 0.2s ease', cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#ff0055'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255, 0, 85, 0.4)'; }}
+                        >
+                            <img src="/assets/skins/face_dino.png" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ff0055' }} alt="Crash" />
+                            <div>
+                                <div style={{ background: '#ff0055', color: '#fff', fontSize: '0.6rem', fontWeight: '900', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginBottom: '3px' }}>100X MOONSHOT</div>
+                                <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '900' }}>CYBER CRASH</h4>
+                                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>Auto-Cashout Pilots</div>
+                            </div>
                         </div>
-                    </div>
-                </Link>
+                    </Link>
 
-                <Link to="/arcade/merch-defense" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 198, 255, 0.2), rgba(0, 114, 255, 0.2))',
-                        border: '2px solid rgba(0, 198, 255, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 198, 255, 0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_astro.png" style={{ width: '55px', height: '55px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px #00c6ff)' }} alt="Defense" />
-                        <div>
-                            <div style={{ background: '#00c6ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>TOWER DEFENSE</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>MERCH DEFENSE</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Astro, Bear & Dino turrets • Stop the haters!</div>
+                    {/* 2. Cyber Coin Dozer */}
+                    <Link to="/arcade/dozer" style={{ textDecoration: 'none' }}>
+                        <div className="bento-card" style={{
+                            background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(255, 0, 127, 0.15))',
+                            border: '1px solid rgba(0, 229, 255, 0.4)',
+                            borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                            transition: 'all 0.2s ease', cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#00e5ff'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.4)'; }}
+                        >
+                            <img src="/assets/skins/face_astro.png" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00e5ff' }} alt="Dozer" />
+                            <div>
+                                <div style={{ background: '#00e5ff', color: '#000', fontSize: '0.6rem', fontWeight: '900', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginBottom: '3px' }}>PHYSICS PUSHER</div>
+                                <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '900' }}>COIN DOZER</h4>
+                                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>Mascot Figurines & Quakes</div>
+                            </div>
                         </div>
-                    </div>
-                </Link>
+                    </Link>
 
-                <Link to="/arcade/derby" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.2), rgba(0, 229, 255, 0.2))',
-                        border: '2px solid rgba(0, 255, 102, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_dino.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66', filter: 'drop-shadow(0 0 10px #00ff66)' }} alt="Derby" />
-                        <div>
-                            <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>8-BRO DERBY</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER DERBY</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Velodrome track racing, tactical nitro & exactas!</div>
+                    {/* 3. Cyber Mines */}
+                    <Link to="/arcade/mines" style={{ textDecoration: 'none' }}>
+                        <div className="bento-card" style={{
+                            background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.25), rgba(0, 229, 255, 0.15))',
+                            border: '1px solid rgba(0, 255, 102, 0.4)',
+                            borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                            transition: 'all 0.2s ease', cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#00ff66'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(0, 255, 102, 0.4)'; }}
+                        >
+                            <img src="/assets/skins/face_bunny.png" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66' }} alt="Mines" />
+                            <div>
+                                <div style={{ background: '#00ff66', color: '#000', fontSize: '0.6rem', fontWeight: '900', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginBottom: '3px' }}>5X5 GRID</div>
+                                <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '900' }}>CYBER MINES</h4>
+                                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>Scout Drones & Multipliers</div>
+                            </div>
                         </div>
-                    </div>
-                </Link>
+                    </Link>
 
-                <Link to="/arcade/blackjack" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(13, 40, 24, 0.5), rgba(0, 255, 102, 0.2))',
-                        border: '2px solid rgba(0, 255, 102, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_money.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ffd700', filter: 'drop-shadow(0 0 10px #ffd700)' }} alt="Blackjack" />
-                        <div>
-                            <div style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>3:2 PAYOUTS</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER 21</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>High-Roller VIP Blackjack, Splits & Charlie Bonus!</div>
+                    {/* 4. Cyber 21 Blackjack */}
+                    <Link to="/arcade/blackjack" style={{ textDecoration: 'none' }}>
+                        <div className="bento-card" style={{
+                            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(0, 255, 102, 0.15))',
+                            border: '1px solid rgba(255, 215, 0, 0.4)',
+                            borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                            transition: 'all 0.2s ease', cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#ffd700'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255, 215, 0, 0.4)'; }}
+                        >
+                            <img src="/assets/skins/face_money.png" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ffd700' }} alt="Blackjack" />
+                            <div>
+                                <div style={{ background: '#ffd700', color: '#000', fontSize: '0.6rem', fontWeight: '900', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginBottom: '3px' }}>3:2 PAYOUTS</div>
+                                <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '900' }}>CYBER 21</h4>
+                                <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>High-Roller VIP Penthouse</div>
+                            </div>
                         </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/pinball" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.3), rgba(0, 229, 255, 0.2))',
-                        border: '2px solid rgba(255, 0, 127, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 127, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ff007f', filter: 'drop-shadow(0 0 10px #ff007f)' }} alt="Pinball" />
-                        <div>
-                            <div style={{ background: '#ff007f', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>SYNTHWAVE PINBALL</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER PINBALL</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Dino & Bunny Bumpers, B-R-O Drop Targets & Multiball!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/crash" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.3), rgba(255, 215, 0, 0.2))',
-                        border: '2px solid rgba(255, 0, 85, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 0, 85, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_dino.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ff0055', filter: 'drop-shadow(0 0 10px #ff0055)' }} alt="Crash" />
-                        <div>
-                            <div style={{ background: '#ff0055', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>100X MOONSHOT</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER CRASH</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Rocket Multipliers, Auto-Cashout & Live Multiplayer Pilots!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/roulette" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.3), rgba(0, 229, 255, 0.2))',
-                        border: '2px solid rgba(0, 255, 102, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_money.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66', filter: 'drop-shadow(0 0 10px #00ff66)' }} alt="Roulette" />
-                        <div>
-                            <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>35:1 PAYOUTS</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER ROULETTE</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Single-Zero Wheel, Neon Felt & High-Roller Inside Bets!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/mines" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(0, 255, 102, 0.2))',
-                        border: '2px solid rgba(0, 229, 255, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 229, 255, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_bunny.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00e5ff', filter: 'drop-shadow(0 0 10px #00e5ff)' }} alt="Mines" />
-                        <div>
-                            <div style={{ background: '#00e5ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>CRYPTO MINES</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER MINES</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>5x5 Holographic Grid, Scout Drones & Exponential Cashouts!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/scratchers" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.2))',
-                        border: '2px solid rgba(255, 215, 0, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 215, 0, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_star.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #ffd700', filter: 'drop-shadow(0 0 10px #ffd700)' }} alt="Scratchers" />
-                        <div>
-                            <div style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>INSTANT LOTTERY</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER SCRATCHERS</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Foil Scratch-Off, 3 Tiers & 100,000 CP Grand Jackpots!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/dozer" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(255, 0, 127, 0.2))',
-                        border: '2px solid rgba(0, 229, 255, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 229, 255, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_astro.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00e5ff', filter: 'drop-shadow(0 0 10px #00e5ff)' }} alt="Dozer" />
-                        <div>
-                            <div style={{ background: '#00e5ff', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>ARCADE PUSHER</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER COIN DOZER</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Mechanical Pusher, Mascot Figurines & Coin Quakes!</div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link to="/arcade/hilo" style={{ textDecoration: 'none' }}>
-                    <div className="bento-card" style={{
-                        background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.3), rgba(0, 229, 255, 0.2))',
-                        border: '2px solid rgba(0, 255, 102, 0.4)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 255, 102, 0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        <img src="/assets/skins/face_bunny.png" style={{ width: '55px', height: '55px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #00ff66', filter: 'drop-shadow(0 0 10px #00ff66)' }} alt="HiLo" />
-                        <div>
-                            <div style={{ background: '#00ff66', color: '#000', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '4px', letterSpacing: '1px' }}>CARD STREAK</div>
-                            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>CYBER HI-LO</h3>
-                            <div style={{ color: '#ccc', fontSize: '0.75rem', marginTop: '2px' }}>Holographic High-Low, 180x Multipliers & Cashouts!</div>
-                        </div>
-                    </div>
-                </Link>
-            </motion.div>
+                    </Link>
+                </div>
+            </div>
 
             {/* SLIM DASHBOARD GRID */}
             <motion.div className="dashboard-grid" variants={container} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
