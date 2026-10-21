@@ -56,15 +56,9 @@ import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
 
-import GlobalLiveTicker from './components/GlobalLiveTicker';
 import CommunityRainDrop from './components/CommunityRainDrop';
 import RivalDuelModal from './components/RivalDuelModal';
-import MultiplayerCursors from './components/MultiplayerCursors';
-import MatrixRain from './components/MatrixRain';
-import GlobalNukeEvent from './components/GlobalNukeEvent';
 import GlobalRaidBoss from './components/GlobalRaidBoss';
-import AttractMode from './components/AttractMode';
-import SingularityEvent from './components/SingularityEvent';
 
 
 import GlobalEventOverlay from './components/GlobalEventOverlay';
@@ -76,20 +70,11 @@ function App() {
     <div className="crt-flicker">
       <div className="crt-overlay" />
       <div className="crt-vignette" />
-      <GlobalLiveTicker />
       <CommunityRainDrop />
       <RivalDuelModal />
       <PageTransition />
       <CosmicBackground />
       <GlobalEventOverlay />
-      
-      
-      <MultiplayerCursors />
-      <MatrixRain />
-      <GlobalNukeEvent />
-      <GlobalRaidBoss />
-      <AttractMode />
-      <SingularityEvent />
       
       <div style={{
         position: 'fixed',

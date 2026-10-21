@@ -20,10 +20,8 @@ import { useNotifications } from '../context/NotificationContext';
 import NotificationList from './NotificationList';
 import PocketCompanion from './PocketCompanion';
 import GlobalRaidBoss from './GlobalRaidBoss';
-import HypeTicker from './HypeTicker';
 
 import useRetroSound from '../hooks/useRetroSound';
-import CursorTrail from './CursorTrail';
 import AaaTopNav from './AaaTopNav';
 import AaaMobileBottomNav from './AaaMobileBottomNav';
 import SponsorStationModal from './SponsorStationModal';
@@ -186,9 +184,7 @@ const Layout = () => {
 
     return (
         <div className="layout-container" style={{ paddingBottom: isFullScreenGame ? 0 : '120px' }}>
-            <CursorTrail />
             <PirateRadioWidget />
-            {!isFullScreenGame && <HypeTicker />}
 
             {!isFullScreenGame && (
                 <AaaTopNav
