@@ -27,6 +27,7 @@ import CursorTrail from './CursorTrail';
 import AaaTopNav from './AaaTopNav';
 import AaaMobileBottomNav from './AaaMobileBottomNav';
 import SponsorStationModal from './SponsorStationModal';
+import QuickResumeOverlay from './QuickResumeOverlay';
 import './Layout.css';
 
 const FACES = [
@@ -260,17 +261,41 @@ const Layout = () => {
             <PocketCompanion />
             <GlobalRaidBoss />
 
-            {/* FLOATING EXIT BUTTON (For Full Screen Games) */}
+            {/* AAA QUICK RESUME & GAME OVERLAY (ESC Guide Menu) */}
+            <QuickResumeOverlay />
+
+            {/* SLEEK CORNER BACK BUTTON (For Full Screen Games) */}
             {isFullScreenGame && (
-                <Link to="/arcade" style={{
-                    position: 'fixed', top: '20px', left: '20px', zIndex: 9999,
-                    background: 'rgba(0,0,0,0.5)', width: '50px', height: '50px',
-                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    textDecoration: 'none', border: '2px solid rgba(255,255,255,0.3)',
-                    backdropFilter: 'blur(5px)', transition: 'all 0.2s',
-                    boxShadow: '0 0 15px rgba(0,0,0,0.3)'
-                }} onClick={() => playClick()}>
-                    <span style={{ fontSize: '1.5rem', filter: 'drop-shadow(0 0 2px black)' }}>🏠</span>
+                <Link
+                    to="/arcade"
+                    onClick={() => playClick()}
+                    style={{
+                        position: 'fixed',
+                        top: '16px',
+                        left: '16px',
+                        zIndex: 9999,
+                        background: 'rgba(8, 12, 22, 0.82)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        padding: '8px 14px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        textDecoration: 'none',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#94a3b8',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        fontFamily: 'monospace',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#00f0ff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; }}
+                    title="Return to Arcade Hub"
+                >
+                    <span>‹</span> ARCADE HUB
                 </Link>
             )}
         </div>
