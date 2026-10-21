@@ -4,6 +4,7 @@ import { usePocketBro, POCKET_BRO_STAGES } from '../context/PocketBroContext';
 import { useGamification } from '../context/GamificationContext';
 import { DECOR_ITEMS } from '../config/DecorItems';
 import PocketPet from './pocket-pet/PocketPet';
+import { PET_ACCESSORIES, getAccessoryById } from '../config/PetAccessories';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
 import { useToast } from '../context/ToastContext';
@@ -32,7 +33,8 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
         removeItem,
         interactWithItem,
         equipDecor,
-        gainExp
+        gainExp,
+        equipAccessory
     } = usePocketBro();
 
     const { shopState, addCoins } = useGamification() || {};
@@ -127,6 +129,10 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                 // Empty tile clicked: Bro walks over!
                 setIsWalking(true);
                 setBroPos({ x, y });
+                // If Gold Cuban Chain equipped: chimes as Bro steps!
+                if (stats.equippedAccessory === 'acc_chain') {
+                    playCollect?.();
+                }
                 setTimeout(() => setIsWalking(false), 400);
             }
         }
@@ -306,6 +312,29 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                         title="Clean Up Crib"
                     >
                         🧹 CLEAN
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsEditing(true);
+                            setActiveTab('wardrobe');
+                            playClick?.();
+                        }}
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.25), rgba(0, 240, 255, 0.25))',
+                            border: '1px solid #ff007f',
+                            color: '#ff88aa',
+                            padding: '6px 14px',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            boxShadow: '0 0 12px rgba(255, 0, 127, 0.4)'
+                        }}
+                    >
+                        🥽 WARDROBE
                     </button>
 
                     <button
@@ -519,6 +548,46 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                                                 }}
                                                 title="Pet PocketBro!"
                                             >
+                                                {/* Netrunner Scanline Effect */}
+                                                {stats.equippedAccessory === 'acc_vr' && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        inset: '-10px',
+                                                        border: '1px solid #00ffcc',
+                                                        borderRadius: '50%',
+                                                        boxShadow: '0 0 15px #00ffcc, inset 0 0 10px #00ffcc',
+                                                        pointerEvents: 'none',
+                                                        animation: 'spin 4s linear infinite',
+                                                        zIndex: -1
+                                                    }} />
+                                                )}
+
+                                                {/* Angelic Aura Glow */}
+                                                {stats.equippedAccessory === 'acc_halo' && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        inset: '-15px',
+                                                        background: 'radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%)',
+                                                        borderRadius: '50%',
+                                                        pointerEvents: 'none',
+                                                        animation: 'breathe 2s ease-in-out infinite',
+                                                        zIndex: -1
+                                                    }} />
+                                                )}
+
+                                                {/* Demon Oni Flame Aura */}
+                                                {stats.equippedAccessory === 'acc_horns' && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        inset: '-15px',
+                                                        background: 'radial-gradient(circle, rgba(255, 0, 85, 0.45) 0%, transparent 70%)',
+                                                        borderRadius: '50%',
+                                                        pointerEvents: 'none',
+                                                        animation: 'jitter 0.2s infinite',
+                                                        zIndex: -1
+                                                    }} />
+                                                )}
+
                                                 <PocketPet
                                                     type={stats.type || 'SOOT'}
                                                     stage={stats.stage}
@@ -527,6 +596,7 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                                                     skin={equippedSkin}
                                                     color={stats.color}
                                                     effect={stats.effect}
+                                                    accessory={stats.equippedAccessory}
                                                 />
 
                                                 {/* Sleeping Zzz Badge */}
@@ -597,6 +667,7 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                             {/* Category Filter Tabs */}
                             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '14px', scrollbarWidth: 'none' }}>
                                 {[
+                                    { id: 'wardrobe', label: '🥽 WARDROBE' },
                                     { id: 'all', label: '🛋️ ALL DECOR' },
                                     { id: 'tech', label: '🕹️ TECH & ARCADES' },
                                     { id: 'living', label: '🛏️ LIVING & PODS' },
@@ -647,6 +718,77 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                             </div>
 
                             {/* Item Carousel Cards */}
+                            {activeTab === 'wardrobe' ? (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                    gap: '12px',
+                                    paddingBottom: '8px'
+                                }}>
+                                    {PET_ACCESSORIES.map(acc => {
+                                        const isEquipped = stats.equippedAccessory === acc.id;
+                                        return (
+                                            <div
+                                                key={acc.id}
+                                                style={{
+                                                    background: isEquipped ? 'rgba(0, 240, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                                                    border: isEquipped ? '2px solid #00f0ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '16px',
+                                                    padding: '12px',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-between',
+                                                    boxShadow: isEquipped ? '0 0 15px rgba(0, 240, 255, 0.35)' : 'none'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                                    <span style={{ fontSize: '2rem' }}>{acc.icon}</span>
+                                                    <div>
+                                                        <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#fff' }}>{acc.name}</div>
+                                                        <div style={{ fontSize: '0.65rem', color: acc.glowColor, fontFamily: 'monospace' }}>{acc.badge}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{
+                                                    background: 'rgba(0,0,0,0.5)',
+                                                    padding: '6px 8px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.68rem',
+                                                    color: acc.glowColor,
+                                                    fontFamily: 'monospace',
+                                                    marginBottom: '10px'
+                                                }}>
+                                                    ⭐ {acc.perk}
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (equipAccessory) equipAccessory(acc.id);
+                                                        playZap?.();
+                                                        triggerConfetti();
+                                                        showToast(`${isEquipped ? 'Unequipped' : 'Equipped'} ${acc.name}!`, 'win');
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        background: isEquipped ? 'linear-gradient(135deg, #ff0055, #ff007f)' : 'linear-gradient(135deg, #00f0ff, #0072ff)',
+                                                        color: isEquipped ? '#fff' : '#000',
+                                                        border: 'none',
+                                                        borderRadius: '10px',
+                                                        padding: '8px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '900',
+                                                        cursor: 'pointer',
+                                                        letterSpacing: '1px'
+                                                    }}
+                                                >
+                                                    {isEquipped ? '✓ EQUIPPED (TAP TO REMOVE)' : '⚡ EQUIP ON BRO'}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
                             <div style={{
                                 display: 'flex',
                                 gap: '12px',
@@ -695,6 +837,7 @@ const CyberCrib = ({ onOpenShop, onOpenBattle, onOpenAdventure }) => {
                                     );
                                 })}
                             </div>
+                            )}
 
                             <div style={{
                                 marginTop: '10px',

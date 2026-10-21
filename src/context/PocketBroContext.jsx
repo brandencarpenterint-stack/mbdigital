@@ -39,7 +39,8 @@ export const PocketBroProvider = ({ children }) => {
                     hygiene: parsed.hygiene || 100,
                     poopCount: parsed.poopCount || 0,
                     unlockedDecor: parsed.unlockedDecor || [],
-                    decor: parsed.decor || { background: null, rug: null, item_left: null, item_right: null }
+                    decor: parsed.decor || { background: null, rug: null, item_left: null, item_right: null },
+                    equippedAccessory: parsed.equippedAccessory || null
                 };
             }
         } catch (e) {
@@ -59,7 +60,8 @@ export const PocketBroProvider = ({ children }) => {
             isSleeping: false,
             lastInteraction: Date.now(),
             unlockedDecor: ['furn_plant', 'rug_retro'],
-            decor: { background: null, rug: null, item_left: null, item_right: null }
+            decor: { background: null, rug: null, item_left: null, item_right: null },
+            equippedAccessory: null
         };
     });
 
@@ -266,6 +268,13 @@ export const PocketBroProvider = ({ children }) => {
         setStats(prev => ({
             ...prev,
             unlockedDecor: [...new Set([...(prev.unlockedDecor || []), itemId])]
+        }));
+    };
+
+    const equipAccessory = (accessoryId) => {
+        setStats(prev => ({
+            ...prev,
+            equippedAccessory: prev.equippedAccessory === accessoryId ? null : accessoryId
         }));
     };
 
@@ -545,7 +554,7 @@ export const PocketBroProvider = ({ children }) => {
     return (
         <PocketBroContext.Provider value={{
             stats, feed, play, sleep, clean,
-            triggerEffect, unlockDecor, equipDecor,
+            triggerEffect, unlockDecor, equipDecor, equipAccessory,
             getMood, isCritical, placeItem, removeItem, interactWithItem,
             debugUpdate, explore, returnFromExplore, speedUpAdventure, consumeItem
         }}>

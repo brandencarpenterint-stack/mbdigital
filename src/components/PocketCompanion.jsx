@@ -217,6 +217,7 @@ const PocketCompanion = () => {
                         skin={equippedSkin}
                         isSleeping={stats.isSleeping}
                         color={stats.color}
+                        accessory={stats.equippedAccessory}
                     />
                 </div>
             </motion.div>

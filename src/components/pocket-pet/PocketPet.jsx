@@ -8,7 +8,7 @@ import DinoRenderer from './DinoRenderer';
 import AlienRenderer from './AlienRenderer';
 import OrbRenderer from './OrbRenderer';
 
-const PocketPet = ({ type = 'SOOT', stage = 'EGG', mood = 'happy', isSleeping = false, isEating = false, skin = null, color = null, effect = null }) => {
+const PocketPet = ({ type = 'SOOT', stage = 'EGG', mood = 'happy', isSleeping = false, isEating = false, skin = null, color = null, effect = null, accessory = null }) => {
 
     // Egg is universal (mostly)
     if (stage === 'EGG') {
@@ -112,6 +112,88 @@ const PocketPet = ({ type = 'SOOT', stage = 'EGG', mood = 'happy', isSleeping = 
             `}</style>
 
             {PetComponent}
+
+            {/* CYBER ACCESSORIES OVERLAY */}
+            {accessory === 'acc_shades' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '26%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 25,
+                    fontSize: '1.5rem',
+                    filter: 'drop-shadow(0 0 6px #00f0ff)',
+                    pointerEvents: 'none',
+                    lineHeight: 1
+                }} title="Cyber Shades">
+                    🕶️
+                </div>
+            )}
+
+            {accessory === 'acc_chain' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '52%',
+                    left: '50%',
+                    transform: 'translateX(-50%) scale(1.15)',
+                    zIndex: 25,
+                    fontSize: '1.3rem',
+                    filter: 'drop-shadow(0 0 8px #ffd700)',
+                    pointerEvents: 'none',
+                    lineHeight: 1
+                }} title="Gold Cuban Chain">
+                    ⛓️
+                </div>
+            )}
+
+            {accessory === 'acc_vr' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '22%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 25,
+                    fontSize: '1.6rem',
+                    filter: 'drop-shadow(0 0 10px #00ffcc)',
+                    pointerEvents: 'none',
+                    lineHeight: 1
+                }} title="VR Netrunner Visor">
+                    🥽
+                </div>
+            )}
+
+            {accessory === 'acc_halo' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '-16px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 25,
+                    fontSize: '1.5rem',
+                    filter: 'drop-shadow(0 0 12px #ffd700)',
+                    animation: 'float 2s ease-in-out infinite',
+                    pointerEvents: 'none',
+                    lineHeight: 1
+                }} title="Celestial Angel Halo">
+                    😇
+                </div>
+            )}
+
+            {accessory === 'acc_horns' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '-12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 25,
+                    fontSize: '1.5rem',
+                    filter: 'drop-shadow(0 0 12px #ff0055)',
+                    pointerEvents: 'none',
+                    lineHeight: 1
+                }} title="Cyber Oni Horns">
+                    😈
+                </div>
+            )}
         </div>
     );
 };

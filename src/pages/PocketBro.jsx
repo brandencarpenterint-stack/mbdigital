@@ -596,6 +596,7 @@ const PocketBro = () => {
                                             isSleeping={false}
                                             stage={stats.stage}
                                             skin={equippedSkin}
+                                            accessory={stats.equippedAccessory}
                                         />
                                     </div>
 
@@ -688,6 +689,7 @@ const PocketBro = () => {
                                             isSleeping={stats.isSleeping}
                                             stage={isEvolving ? prevStage : stats.stage}
                                             skin={equippedSkin}
+                                            accessory={stats.equippedAccessory}
                                         />
                                     </div>
 
