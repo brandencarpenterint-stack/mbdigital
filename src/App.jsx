@@ -47,6 +47,7 @@ const CyberPinball = lazy(() => import('./games/CyberPinball/CyberPinball'));
 const CyberCrash = lazy(() => import('./games/CyberCrash/CyberCrash'));
 const CyberRoulette = lazy(() => import('./games/CyberRoulette/CyberRoulette'));
 const CyberMines = lazy(() => import('./games/CyberMines/CyberMines'));
+const CyberScratchers = lazy(() => import('./games/CyberScratchers/CyberScratchers'));
 import CosmicBackground from './components/CosmicBackground';
 import './crt.css';
 import PageTransition from './components/PageTransition';
@@ -169,6 +170,8 @@ function App() {
             <Route path="roulette" element={<CyberRoulette />} />
             <Route path="arcade/mines" element={<CyberMines />} />
             <Route path="mines" element={<CyberMines />} />
+            <Route path="arcade/scratchers" element={<CyberScratchers />} />
+            <Route path="scratchers" element={<CyberScratchers />} />
           </Route>
         </Routes>
       </Suspense>

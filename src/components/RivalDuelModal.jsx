@@ -9,7 +9,9 @@ const RIVALS = [
     { name: 'NeonViper', skin: '/assets/skins/face_dino.png', game: 'Cyber 21', path: '/arcade/blackjack', wager: 250 },
     { name: 'CyberSamurai', skin: '/assets/skins/face_bunny.png', game: 'Bro Derby', path: '/arcade/derby', wager: 300 },
     { name: 'MoonshotApe', skin: '/assets/skins/face_money.png', game: 'Cyber Crash', path: '/arcade/crash', wager: 500 },
-    { name: 'SpinMaster', skin: '/assets/skins/face_star.png', game: 'Cyber Roulette', path: '/arcade/roulette', wager: 200 }
+    { name: 'SpinMaster', skin: '/assets/skins/face_star.png', game: 'Cyber Roulette', path: '/arcade/roulette', wager: 200 },
+    { name: 'GridHustler', skin: '/assets/skins/face_bunny.png', game: 'Cyber Mines', path: '/arcade/mines', wager: 350 },
+    { name: 'LuckyScratcher', skin: '/assets/skins/face_money.png', game: 'Cyber Scratchers', path: '/arcade/scratchers', wager: 400 }
 ];
 
 const RivalDuelModal = () => {

@@ -714,6 +714,56 @@ const TheBunker = () => {
                 </div>
             </div>
 
+            {/* INTERACTIVE BUNKER CYBER SCRATCHERS KIOSK */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.hash = '#/arcade/scratchers';
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '32%',
+                    left: '8%',
+                    zIndex: 45,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                <div style={{
+                    background: 'linear-gradient(90deg, #ffd700, #ff8800)',
+                    color: '#000',
+                    fontSize: '0.65rem',
+                    fontWeight: '900',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 12px #ffd700',
+                    marginBottom: '4px',
+                    animation: 'pulse 1.5s infinite'
+                }}>
+                    SCRATCHERS KIOSK
+                </div>
+                <div style={{
+                    width: '64px',
+                    height: '96px',
+                    background: 'linear-gradient(145deg, #2b1f04, #0d0a01)',
+                    border: '3px solid #ffd700',
+                    borderRadius: '8px 8px 4px 4px',
+                    boxShadow: '0 0 25px rgba(255,215,0,0.5)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px'
+                }}>
+                    <div style={{ width: '48px', height: '40px', background: '#000', border: '1px solid #ffd700', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+                        🎟️
+                    </div>
+                    <div style={{ width: '46px', height: '12px', background: 'linear-gradient(90deg, #ffd700, #ff3366)', borderRadius: '3px' }} />
+                </div>
+            </div>
+
             {/* INTERACTIVE BUNKER CYBER MINES TERMINAL */}
             <div
                 onClick={(e) => {

@@ -5,6 +5,8 @@ const TICKER_ITEMS = [
     { id: 1, icon: '🏇', text: '@TurboDino won 2,850 CP on Bro Derby Exacta Box!', path: '/arcade/derby', color: '#00ff66' },
     { id: 2, icon: '🚀', text: '@AstroKev bailed out at 18.42x on Cyber Crash (+3,680 CP)!', path: '/arcade/crash', color: '#ff0055' },
     { id: 3, icon: '🎡', text: '@WhaleBro hit Lucky 7 on Cyber Roulette (+3,500 CP)!', path: '/arcade/roulette', color: '#ffd700' },
+    { id: 4, icon: '💎', text: '@ScoutBro cashed out 5 gems on Cyber Mines (+4,200 CP)!', path: '/arcade/mines', color: '#00e5ff' },
+    { id: 5, icon: '🎟️', text: '@LuckyWhale hit Match 3 Gold on Cyber Scratchers (+25,000 CP)!', path: '/arcade/scratchers', color: '#ffd700' },
     { id: 4, icon: '🃏', text: '@CyberBunny hit Natural 21 Blackjack at Whale Penthouse!', path: '/arcade/blackjack', color: '#00e5ff' },
     { id: 5, icon: '⚡', text: '@MatrixBro spelled B-R-O for 3x Pinball Multiball!', path: '/arcade/pinball', color: '#d500f9' },
     { id: 6, icon: '🔓', text: 'Community Vault Pot reached 42,850 CP! 3 Keys crack it all!', path: '/underworld', color: '#ffd700' },

@@ -183,6 +183,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'neon_lottery_alley',
+        name: 'Neon Lottery Alley',
+        icon: '🎟️',
+        durationMinutes: 40,
+        energyCost: 30,
+        minStage: 'BABY',
+        description: 'Scour the glowing scratcher booths and foil kiosks for lucky golden tickets.',
+        lootTable: {
+            minCoins: 300,
+            maxCoins: 900,
+            xp: 350,
+            dropRate: 0.5,
+            items: [
+                { id: 'furn_chest', weight: 40 },
+                { id: 'furn_arcade', weight: 35 },
+                { id: 'rug_retro', weight: 25 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',
