@@ -101,7 +101,7 @@ function App() {
         backgroundSize: '100% 2px, 3px 100%',
         pointerEvents: 'none',
         zIndex: 9999,
-        opacity: 0.4
+        opacity: 0.04
       }} />
 
       {/* TIME OVERLAY */}

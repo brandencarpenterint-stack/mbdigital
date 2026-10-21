@@ -12,7 +12,7 @@
         rgba(0, 0, 0, 0.25) 50%
     );
     background-size: 100% 4px;
-    opacity: 0.15;
+    opacity: 0.03;
 }
 
 .crt-vignette {
@@ -27,7 +27,8 @@
 }
 
 .crt-flicker {
-    animation: crt-flicker 0.15s infinite;
+    /* Smooth AAA display without jitter */
+    opacity: 1;
 }
 
 @keyframes crt-flicker {
@@ -44,8 +45,8 @@
 
 /* ARCADE CURSOR */
 body, html, * {
-    cursor: url('https://cur.cursors-4u.net/games/gam-11/gam1090.cur'), auto !important;
+    cursor: default;
 }
 button:hover, a:hover, [role="button"]:hover, .clickable:hover {
-    cursor: url('https://cur.cursors-4u.net/games/gam-11/gam1090.cur'), pointer !important;
+    cursor: pointer;
 }

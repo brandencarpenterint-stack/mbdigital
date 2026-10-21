@@ -11,6 +11,7 @@ import useRetroSound from '../hooks/useRetroSound';
 import { supabase } from '../lib/supabaseClient';
 import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
+import CinematicGameCard from '../components/CinematicGameCard';
 import SponsorStationModal from '../components/SponsorStationModal';
 import { useToast } from '../context/ToastContext';
 
@@ -743,11 +744,10 @@ const ArcadeHub = () => {
                                 justifyContent: 'center'
                             }}
                         >
-                            <Link to={game.path || `/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent', width: '100%', maxWidth: '320px' }}>
-                                <ArcadeCabinet
+                            <Link to={game.path || `/arcade/${game.id}`} style={{ textDecoration: 'none', WebkitTapHighlightColor: 'transparent', width: '100%', maxWidth: '340px' }}>
+                                <CinematicGameCard
                                     game={game}
                                     highScore={getHighScore(game.id, stats)}
-                                    zoneControl={zoneControl?.[game.id]}
                                 />
                             </Link>
                         </motion.div>
