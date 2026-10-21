@@ -8,6 +8,8 @@ import { DECOR_ITEMS } from '../config/DecorItems'; // Still needed for backgrou
 import { ADVENTURE_LOCATIONS } from '../config/AdventureLocations';
 import PetShopModal from '../components/PetShopModal';
 import PocketRoom from '../components/PocketRoom'; // NEW
+import CyberCrib from '../components/CyberCrib';
+import PocketBroEvolutionTree from '../components/PocketBroEvolutionTree';
 import BattleArenaModal from '../components/BattleArenaModal';
 import { triggerConfetti } from '../utils/confetti';
 
@@ -43,6 +45,7 @@ const PocketBro = () => {
     // EDIT MODE STATE
     const [isEditing, setIsEditing] = useState(false);
     const [selectedDecor, setSelectedDecor] = useState(null);
+    const [viewMode, setViewMode] = useState('crib'); // 'crib', 'tree', 'deck'
 
     // EVOLUTION LOGIC
     const [isEvolving, setIsEvolving] = useState(false);
@@ -199,6 +202,76 @@ const PocketBro = () => {
                     boxShadow: '0 0 20px var(--neon-blue)'
                 }}>
                     POCKET BRO v3.0
+                </div>
+
+                {/* VIEW MODE SWITCHER (CRIB / TREE / DECK) */}
+                <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    marginBottom: '20px',
+                    background: 'rgba(10, 15, 26, 0.85)',
+                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px',
+                    backdropFilter: 'blur(12px)',
+                    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)'
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('crib')}
+                        style={{
+                            background: viewMode === 'crib' ? 'linear-gradient(135deg, #00f0ff, #0072ff)' : 'transparent',
+                            color: viewMode === 'crib' ? '#000' : '#ccc',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '8px 18px',
+                            fontSize: '0.78rem',
+                            fontWeight: '900',
+                            cursor: 'pointer',
+                            boxShadow: viewMode === 'crib' ? '0 0 16px rgba(0, 240, 255, 0.4)' : 'none',
+                            fontFamily: '"Orbitron", sans-serif'
+                        }}
+                    >
+                        🏠 2D CYBER CRIB
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('tree')}
+                        style={{
+                            background: viewMode === 'tree' ? 'linear-gradient(135deg, #a855f7, #ec4899)' : 'transparent',
+                            color: viewMode === 'tree' ? '#000' : '#ccc',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '8px 18px',
+                            fontSize: '0.78rem',
+                            fontWeight: '900',
+                            cursor: 'pointer',
+                            boxShadow: viewMode === 'tree' ? '0 0 16px rgba(168, 85, 247, 0.4)' : 'none',
+                            fontFamily: '"Orbitron", sans-serif'
+                        }}
+                    >
+                        🧬 EVOLUTION TREE
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('deck')}
+                        style={{
+                            background: viewMode === 'deck' ? 'linear-gradient(135deg, #ffd700, #ffaa00)' : 'transparent',
+                            color: viewMode === 'deck' ? '#000' : '#ccc',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '8px 18px',
+                            fontSize: '0.78rem',
+                            fontWeight: '900',
+                            cursor: 'pointer',
+                            boxShadow: viewMode === 'deck' ? '0 0 16px rgba(255, 215, 0, 0.4)' : 'none',
+                            fontFamily: '"Orbitron", sans-serif'
+                        }}
+                    >
+                        📟 RETRO DECK
+                    </button>
                 </div>
 
                 {/* QUICK ARCADE & CASINO PORTALS */}
@@ -398,7 +471,26 @@ const PocketBro = () => {
                     </Link>
                 </div>
 
-                {/* THE DEVICE */}
+                {/* 1. 2D CYBER CRIB VIEW */}
+                {viewMode === 'crib' && (
+                    <div style={{ width: '100%', maxWidth: '980px', marginTop: '10px' }}>
+                        <CyberCrib
+                            onOpenShop={() => setShowShop(true)}
+                            onOpenBattle={() => setShowBattle(true)}
+                            onOpenAdventure={() => setShowMissionSelect(true)}
+                        />
+                    </div>
+                )}
+
+                {/* 2. EVOLUTION TREE VIEW */}
+                {viewMode === 'tree' && (
+                    <div style={{ width: '100%', maxWidth: '980px', marginTop: '10px' }}>
+                        <PocketBroEvolutionTree />
+                    </div>
+                )}
+
+                {/* 3. RETRO DECK (ORIGINAL POCKET DEVICE) */}
+                {viewMode === 'deck' && (
                 <div style={{
                     width: '320px',
                     background: 'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
@@ -822,6 +914,7 @@ const PocketBro = () => {
                     )}
 
                 </div>
+                )}
             </div>
 
             {/* SHOP MODAL */}

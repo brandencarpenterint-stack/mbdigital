@@ -60,6 +60,26 @@ export const DECOR_ITEMS = [
         className: 'bg-magma',
         desc: 'Some like it hot.'
     },
+    {
+        id: 'bg_penthouse',
+        name: 'Night City Penthouse',
+        type: 'background',
+        price: 2500,
+        icon: '🌆',
+        css: { background: 'linear-gradient(180deg, #0d061f 0%, #1a0b36 40%, #2e114d 100%)' },
+        className: 'bg-penthouse',
+        desc: 'Top floor overlooking the neon skyline.'
+    },
+    {
+        id: 'bg_matrix',
+        name: 'Matrix Data Vault',
+        type: 'background',
+        price: 2000,
+        icon: '💻',
+        css: { background: 'linear-gradient(180deg, #021206 0%, #05260c 100%)' },
+        className: 'bg-matrix',
+        desc: 'Cascading digital green telemetry.'
+    },
 
     // --- RUGS (Floor) ---
     {
@@ -139,4 +159,11 @@ export const DECOR_ITEMS = [
     { id: 'furn_duck', name: 'Giant Duck', type: 'furniture', price: 400, icon: '🦆', desc: 'Mega quack.', style: { fontSize: '2rem' } },
     { id: 'furn_robot', name: 'Toy Robot', type: 'furniture', price: 700, icon: '🤖', desc: 'Beep boop.', style: { fontSize: '2rem' } },
     { id: 'furn_konami', name: 'Retro Controller', type: 'furniture', price: 0, icon: '🎮', desc: 'The Classic.', style: { fontSize: '2rem', filter: 'drop-shadow(0 0 5px red)' }, hidden: true },
+    { id: 'furn_turntable', name: 'DJ Synth Decks', type: 'furniture', price: 1800, icon: '🎛️', desc: 'Drop the cyber bassline.', style: { fontSize: '2.4rem', filter: 'drop-shadow(0 0 8px #ff007f)' } },
+    { id: 'furn_hologram', name: 'Holo Projector', type: 'furniture', price: 2200, icon: '🔮', desc: 'Spinning 3D wireframe orb.', style: { fontSize: '2.2rem', filter: 'drop-shadow(0 0 10px #00f0ff)' } },
+    { id: 'furn_whale', name: 'Golden Whale', type: 'furniture', price: 5000, icon: '🐋', desc: 'High-roller syndicate trophy.', style: { fontSize: '2.6rem', filter: 'drop-shadow(0 0 12px #ffd700)' } },
+    { id: 'furn_vending', name: 'BroCola Vending', type: 'furniture', price: 1400, icon: '🥤', desc: 'Infinite neuro-caffeine.', style: { fontSize: '2.4rem' } },
+    { id: 'furn_pod', name: 'Cryo Sleep Pod', type: 'furniture', price: 2800, icon: '🛸', desc: 'Stasis sleep chamber.', style: { fontSize: '2.5rem', filter: 'drop-shadow(0 0 8px #00ff66)' } },
+    { id: 'furn_neon_sign', name: 'Neon Bolt', type: 'furniture', price: 900, icon: '⚡', desc: 'Pulsing hot neon sign.', style: { fontSize: '2.2rem', filter: 'drop-shadow(0 0 12px #ff0055)' } },
+    { id: 'furn_server', name: 'Quantum Mainframe', type: 'furniture', price: 3200, icon: '🖲️', desc: 'Autonomous mining rack.', style: { fontSize: '2.3rem', filter: 'drop-shadow(0 0 6px #00e5ff)' } },
 ];

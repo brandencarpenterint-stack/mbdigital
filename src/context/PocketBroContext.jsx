@@ -342,7 +342,57 @@ export const PocketBroProvider = ({ children }) => {
 
         // 6. Chest Interaction (Daily Bonus?)
         if (itemId === 'furn_chest') {
-            showToast("It's locked securely.", "info");
+            showToast("Stash secure! +100 CP bonus unlocked.", "success");
+            try {
+                const currentCoins = parseInt(localStorage.getItem('arcadeCoins') || '0');
+                localStorage.setItem('arcadeCoins', (currentCoins + 100).toString());
+            } catch (e) { /* ignore */ }
+            triggerEffect('heart', 1000);
+            return;
+        }
+
+        // 7. Cryo Pod Interaction
+        if (itemId === 'furn_pod') {
+            sleep();
+            showToast(stats.isSleeping ? "Cryo-thaw initiated! ☀️" : "Cryo-stasis activated... zzz 🛸", "info");
+            return;
+        }
+
+        // 8. Turntable Interaction (DJ Synth Decks)
+        if (itemId === 'furn_turntable') {
+            play(15);
+            triggerEffect('dance', 2000);
+            showToast("Dropping the cyber bassline! 🎛️ (+Happy)", "success");
+            return;
+        }
+
+        // 9. Vending Machine Interaction
+        if (itemId === 'furn_vending') {
+            feed(15);
+            showToast("Cracked an ice-cold BroCola! 🥤 (+Energy)", "success");
+            return;
+        }
+
+        // 10. Hologram Interaction
+        if (itemId === 'furn_hologram') {
+            triggerEffect('shine', 2000);
+            showToast("3D Wireframe projection engaged! 🔮 (+XP)", "info");
+            setStats(prev => ({ ...prev, xp: prev.xp + 10 }));
+            return;
+        }
+
+        // 11. Golden Whale Trophy
+        if (itemId === 'furn_whale') {
+            triggerEffect('shine', 2000);
+            showToast("HIGH-ROLLER SYNDICATE HONOR! 🐋✨", "win");
+            return;
+        }
+
+        // 12. Quantum Server Rack
+        if (itemId === 'furn_server') {
+            triggerEffect('code_matrix', 1500);
+            showToast("Mining cluster overclocked! 🖲️ (+5 XP)", "info");
+            setStats(prev => ({ ...prev, xp: prev.xp + 5 }));
             return;
         }
 
