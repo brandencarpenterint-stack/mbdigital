@@ -379,6 +379,23 @@ const PocketBro = () => {
                             🪙 DOZER
                         </div>
                     </Link>
+
+                    <Link to="/arcade/hilo" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'rgba(0, 255, 102, 0.15)',
+                            border: '1px solid #00ff66',
+                            color: '#66ffaa',
+                            borderRadius: '16px',
+                            padding: '5px 12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            🃏 HI-LO
+                        </div>
+                    </Link>
                 </div>
 
                 {/* THE DEVICE */}

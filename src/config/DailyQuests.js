@@ -56,6 +56,11 @@ export const DAILY_TEMPLATES = [
     { id: 'dozer_drop_15', desc: 'Drop 15 Arcade Dozer Tokens', target: 15, reward: 120, type: 'dozerCoinsDropped', game: 'dozer' },
     { id: 'dozer_collect_10', desc: 'Push 10 Coins/Items into Win Hopper', target: 10, reward: 160, type: 'dozerCoinsCollected', game: 'dozer' },
 
+    // CYBER HI-LO 2088
+    { id: 'hilo_play_3', desc: 'Play 3 Rounds of Cyber Hi-Lo', target: 3, reward: 120, type: 'hiloRoundsPlayed', game: 'hilo' },
+    { id: 'hilo_guess_8', desc: 'Guess 8 Correct Cards in Cyber Hi-Lo', target: 8, reward: 160, type: 'hiloCorrectGuesses', game: 'hilo' },
+    { id: 'hilo_cashout_1', desc: 'Cash Out at 3.0x+ Multiplier in Hi-Lo', target: 1, reward: 200, type: 'hiloCashouts', game: 'hilo' },
+
     // MERCH DEFENSE
     { id: 'defense_wave_5', desc: 'Survive to Wave 5 in Merch Defense', target: 5, reward: 150, type: 'merchDefenseHighScore', condition: 'gt', game: 'defense' },
 
@@ -91,6 +96,7 @@ export const DAILY_TEMPLATES = [
 ];
 
 export const WEEKLY_TEMPLATES = [
+    { id: 'week_hilo_25', desc: 'WEEKLY: Guess 25 Correct Cards in Cyber Hi-Lo', target: 25, reward: 950, type: 'hiloCorrectGuesses', game: 'hilo', isWeekly: true },
     { id: 'week_dozer_50', desc: 'WEEKLY: Push 50 Coins/Figurines into Win Hopper', target: 50, reward: 950, type: 'dozerCoinsCollected', game: 'dozer', isWeekly: true },
     { id: 'week_scratchers_10', desc: 'WEEKLY: Scratch 10 Cyber Scratchers', target: 10, reward: 900, type: 'scratchersPlayed', game: 'scratchers', isWeekly: true },
     { id: 'week_mines_15', desc: 'WEEKLY: Win 15 Cyber Mines Cashouts', target: 15, reward: 900, type: 'minesWins', game: 'mines', isWeekly: true },

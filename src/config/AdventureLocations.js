@@ -223,6 +223,26 @@ export const ADVENTURE_LOCATIONS = [
         }
     },
     {
+        id: 'neon_hilo_penthouse',
+        name: 'Neon Hi-Lo Penthouse',
+        icon: '🃏',
+        durationMinutes: 65,
+        energyCost: 40,
+        minStage: 'CHILD',
+        description: 'Ascend to the holographic high-roller card streak lounge and predict the next draw.',
+        lootTable: {
+            minCoins: 450,
+            maxCoins: 1400,
+            xp: 550,
+            dropRate: 0.65,
+            items: [
+                { id: 'furn_chest', weight: 45 },
+                { id: 'furn_arcade', weight: 35 },
+                { id: 'rug_retro', weight: 20 }
+            ]
+        }
+    },
+    {
         id: 'deep_space',
         name: 'Deep Space Void',
         icon: '🌌',
