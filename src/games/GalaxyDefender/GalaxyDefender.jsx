@@ -17,7 +17,7 @@ const BULLET_SIZE = 8;
 const ENEMY_SIZE = 40;
 const BOSS_SIZE = 120;
 const BOSS_HP_MAX = 50;
-const MAX_LIVES = 3; // INCREASED LIVES for fun
+const MAX_LIVES = 3;
 
 const GalaxyDefender = () => {
     const { updateStat, incrementStat, shopState, addCoins, userProfile, stats } = useGamification() || { updateStat: () => { }, incrementStat: () => { }, shopState: null };
@@ -26,19 +26,19 @@ const GalaxyDefender = () => {
     const [lives, setLives] = useState(MAX_LIVES);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('galaxyHighScore')) || 0);
 
-    // Sync local high score with global stat on mount
+    // Sync high score
     useEffect(() => {
         if (stats?.galaxyHighScore > highScore) {
             setHighScore(stats.galaxyHighScore);
         }
     }, [stats]);
+
     const [gameOver, setGameOver] = useState(false);
     const [hasRevived, setHasRevived] = useState(false);
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [gameWon, setGameWon] = useState(false);
     const [gameActive, setGameActive] = useState(false);
 
-    // Sync Ref
     const gameActiveRef = useRef(false);
     const bossImgsRef = useRef([]);
 
@@ -47,15 +47,30 @@ const GalaxyDefender = () => {
     // Game State
     const gameState = useRef({
         lane: 2,
+        roll: 0,
+        rollTarget: 0,
         bullets: [],
         enemies: [],
         boss: null,
-        enemyLasers: [], // Boss attacks
+        enemyLasers: [],
+        particles: [],
+        floatingTexts: [],
+        comboCount: 0,
+        lastKillTime: 0,
+        warpSpeed: 0,
         lastEnemySpawn: 0,
         lastShotTime: 0,
         scoreInternal: 0,
-        invincible: 0, // i-frames
-        shake: 0, // screen shake
+        invincible: 0,
+        shake: 0,
+        stars: [],
+        powerups: [],
+        weapon: 'NORMAL',
+        weaponTimer: 0,
+        hasShield: false,
+        level: 1,
+        bossActive: false,
+        lastTime: 0,
         animationId: null
     });
 
@@ -73,7 +88,11 @@ const GalaxyDefender = () => {
             img.src = src;
             return img;
         });
-        return () => cancelAnimationFrame(gameState.current.animationId);
+        return () => {
+            if (gameState.current.animationId) {
+                cancelAnimationFrame(gameState.current.animationId);
+            }
+        };
     }, []);
 
     const startGame = () => {
@@ -91,10 +110,17 @@ const GalaxyDefender = () => {
 
         gameState.current = {
             lane: 2,
+            roll: 0,
+            rollTarget: 0,
             bullets: [],
             enemies: [],
             boss: null,
             enemyLasers: [],
+            particles: [],
+            floatingTexts: [],
+            comboCount: 0,
+            lastKillTime: 0,
+            warpSpeed: 0,
             lastEnemySpawn: 0,
             lastShotTime: 0,
             scoreInternal: 0,
@@ -102,22 +128,26 @@ const GalaxyDefender = () => {
             shake: 0,
             stars: [],
             powerups: [],
-            weapon: 'NORMAL',     // NORMAL, SPREAD, RAPID, LASER
+            weapon: 'NORMAL',
             weaponTimer: 0,
             hasShield: false,
             level: 1,
             bossActive: false,
+            lastTime: 0,
             animationId: null
         };
-        // Init Stars
-        for (let i = 0; i < 50; i++) {
+
+        // Init Starfield
+        for (let i = 0; i < 65; i++) {
             gameState.current.stars.push({
                 x: Math.random() * GAME_WIDTH,
                 y: Math.random() * GAME_HEIGHT,
-                size: Math.random() * 2,
-                speed: 0.5 + Math.random() * 2
+                size: 0.8 + Math.random() * 2,
+                speed: 1.2 + Math.random() * 2.5,
+                color: Math.random() > 0.6 ? '#00f0ff' : (Math.random() > 0.4 ? '#ff007f' : '#ffffff')
             });
         }
+
         gameState.current.animationId = requestAnimationFrame(gameLoop);
     };
 
@@ -128,14 +158,33 @@ const GalaxyDefender = () => {
         if (state.hasShield) {
             state.hasShield = false;
             state.invincible = 60;
-            state.shake = 10;
-            playBeep(); // Shield break sound (placeholder)
+            state.shake = 12;
+            playBeep();
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            // Shield pop particles
+            const px = state.lane * LANE_WIDTH + (LANE_WIDTH / 2);
+            const py = GAME_HEIGHT - 60;
+            for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                state.particles.push({
+                    x: px,
+                    y: py,
+                    vx: Math.cos(angle) * (3 + Math.random() * 3),
+                    vy: Math.sin(angle) * (3 + Math.random() * 3),
+                    size: 3,
+                    color: '#00ffff',
+                    alpha: 1,
+                    decay: 0.04
+                });
+            }
             return;
         }
 
-        state.invincible = 60; // 1 second (approx)
-        state.shake = 10;
+        state.invincible = 75;
+        state.shake = 16;
         playCrash();
+        if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
 
         setLives(prev => {
             const newLives = prev - 1;
@@ -170,15 +219,13 @@ const GalaxyDefender = () => {
             feedService.publish(`saved the Galaxy with score: ${finalScore} 🚀`, 'win', playerName);
         }
 
-        // Gamification
         if (incrementStat) incrementStat('gamesPlayed', 'galaxy');
-        if (addCoins) addCoins(Math.floor(finalScore / 10)); // 1 coin per 10 points
+        if (addCoins) addCoins(Math.floor(finalScore / 10));
     };
 
     const spawnEnemy = (timestamp) => {
         const lane = Math.floor(Math.random() * LANES);
         const x = lane * LANE_WIDTH + (LANE_WIDTH / 2) - (ENEMY_SIZE / 2);
-        // SURVIVAL SCALING (Faster!)
         const speed = 4 + (gameState.current.level * 1.2) + Math.random() * 2;
 
         gameState.current.enemies.push({ x, y: -ENEMY_SIZE, lane, speed });
@@ -196,41 +243,58 @@ const GalaxyDefender = () => {
             }
             state.lastTime = timestamp - (delta % 16);
         }
+
         const ctx = canvasRef.current.getContext('2d');
 
-        // Shake Effect
+        // Screen Shake calculation
         let offsetX = 0;
         let offsetY = 0;
         if (state.shake > 0) {
             offsetX = (Math.random() - 0.5) * state.shake;
             offsetY = (Math.random() - 0.5) * state.shake;
-            state.shake *= 0.9;
+            state.shake *= 0.88;
             if (state.shake < 0.5) state.shake = 0;
         }
 
-        // Clear & Apply Shake
         ctx.save();
         ctx.translate(offsetX, offsetY);
-        ctx.fillStyle = '#000';
+
+        // Dark Deep Space Canvas Fill
+        ctx.fillStyle = '#03050c';
         ctx.fillRect(-20, -20, GAME_WIDTH + 40, GAME_HEIGHT + 40);
 
-        // Draw Starfield
-        ctx.fillStyle = '#fff';
+        // --- STARFIELD WITH HYPERDRIVE WARP ---
+        const isWarping = state.warpSpeed > 0;
+        if (isWarping) state.warpSpeed--;
+
         state.stars.forEach(star => {
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-            ctx.fill();
-            // Update Star
-            star.y += star.speed;
+            const currentSpeed = isWarping ? star.speed * (4 + state.warpSpeed * 0.3) : star.speed;
+
+            if (isWarping) {
+                // Radiant warp speed lines
+                ctx.strokeStyle = star.color || '#00f0ff';
+                ctx.lineWidth = star.size * 1.2;
+                ctx.beginPath();
+                ctx.moveTo(star.x, star.y);
+                ctx.lineTo(star.x, star.y - currentSpeed * 2.5);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = star.color || '#fff';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            star.y += currentSpeed;
             if (star.y > GAME_HEIGHT) {
                 star.y = 0;
                 star.x = Math.random() * GAME_WIDTH;
             }
         });
 
-        // Draw Lanes (Faint)
-        ctx.strokeStyle = '#111';
-        ctx.lineWidth = 2;
+        // Lane Grid (Tactical Holographic Dividers)
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        ctx.lineWidth = 1.5;
         for (let i = 1; i < LANES; i++) {
             ctx.beginPath();
             ctx.moveTo(i * LANE_WIDTH, 0);
@@ -238,17 +302,19 @@ const GalaxyDefender = () => {
             ctx.stroke();
         }
 
-        // --- UPDATE ---
+        // --- UPDATE SIMULATION ---
         if (gameActiveRef.current) {
             if (state.invincible > 0) state.invincible--;
 
-            // 1. Spawning
+            // Ship Banking Roll Interpolation
+            state.roll += (state.rollTarget - state.roll) * 0.18;
+            state.rollTarget *= 0.84;
+
+            // Spawning Logic
             if (!state.boss) {
-                // Level Up / Spawn Boss check
                 const nextBossScore = state.level * 1000;
 
                 if (state.scoreInternal >= nextBossScore) {
-                    // SPAWN BOSS
                     state.boss = {
                         x: GAME_WIDTH / 2 - BOSS_SIZE / 2,
                         y: -BOSS_SIZE,
@@ -256,68 +322,62 @@ const GalaxyDefender = () => {
                         dir: 1,
                         flash: 0,
                         lastAttack: 0,
-                        type: (state.level - 1) % 6 // Matches our 6 boss images
+                        type: (state.level - 1) % 6
                     };
                     state.bossActive = true;
-                    // Clear enemies
                     state.enemies = [];
                 } else {
-                    // Normal Spawning - FASTER SPAWN RATES
-                    const spawnRate = Math.max(250, 900 - (state.level * 150));
-
+                    const spawnRate = Math.max(240, 850 - (state.level * 140));
                     if (timestamp - state.lastEnemySpawn > spawnRate) {
                         spawnEnemy(timestamp);
                     }
                 }
             }
 
-            // 2. Boss Logic
+            // Boss Movement & Attacks
             if (state.boss) {
-                // Entrance
                 if (state.boss.y < 50) {
-                    state.boss.y += 1;
+                    state.boss.y += 1.5;
                 } else {
-                    // Battle phase
-                    state.boss.x += (2 + state.level) * state.boss.dir;
+                    state.boss.x += (2.2 + state.level * 0.8) * state.boss.dir;
                     if (state.boss.x + BOSS_SIZE > GAME_WIDTH || state.boss.x < 0) {
                         state.boss.dir *= -1;
                     }
 
-                    // BOSS SPECIFIC ATTACKS
-                    const fireRate = Math.max(400, 2000 - (state.level * 200));
-
+                    const fireRate = Math.max(380, 1800 - (state.level * 180));
                     if (timestamp - state.boss.lastAttack > fireRate) {
                         const bossCenterX = state.boss.x + BOSS_SIZE / 2;
-                        
+
                         if (state.boss.type === 0) { // Money Boss
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: -3, color: 'gold' });
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 0, color: 'gold' });
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 3, color: 'gold' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: -3, color: '#ffd700' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 0, color: '#ffd700' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 3, color: '#ffd700' });
                         } else if (state.boss.type === 1) { // Astro Boss
-                            state.enemyLasers.push({ x: bossCenterX - 5, y: state.boss.y + BOSS_SIZE, width: 10, height: 40, speed: 10, dx: 0, color: '#00ffff' });
+                            state.enemyLasers.push({ x: bossCenterX - 5, y: state.boss.y + BOSS_SIZE, width: 10, height: 40, speed: 10, dx: 0, color: '#00f0ff' });
                         } else if (state.boss.type === 2) { // Bear Boss
-                            state.enemyLasers.push({ x: bossCenterX - 40, y: state.boss.y + BOSS_SIZE, width: 80, height: 80, speed: 4, dx: 0, color: '#8b4513' });
+                            state.enemyLasers.push({ x: bossCenterX - 35, y: state.boss.y + BOSS_SIZE, width: 70, height: 70, speed: 4.5, dx: 0, color: '#8b4513' });
                         } else if (state.boss.type === 3) { // Cat Boss
-                            state.enemyLasers.push({ x: bossCenterX - 15, y: state.boss.y + BOSS_SIZE, width: 30, height: 30, speed: 8, dx: (Math.random() - 0.5) * 8, color: '#ff69b4' });
+                            state.enemyLasers.push({ x: bossCenterX - 15, y: state.boss.y + BOSS_SIZE, width: 30, height: 30, speed: 8, dx: (Math.random() - 0.5) * 8, color: '#ff007f' });
                         } else if (state.boss.type === 4) { // Pumpkin Boss
-                            for(let i=-2; i<=2; i++) {
-                                state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 6, dx: i * 2.5, color: '#ff8c00' });
+                            for (let i = -2; i <= 2; i++) {
+                                state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 18, height: 18, speed: 6, dx: i * 2.5, color: '#ff8c00' });
                             }
-                        } else { // Merchboy
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: -4, color: 'red' });
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: 0, color: 'white' });
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 40, height: 40, speed: 9, dx: 4, color: '#00aaff' });
+                        } else { // Merchboy Final Boss
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: -4, color: '#ff0055' });
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: 0, color: '#ffffff' });
+                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: 4, color: '#00f0ff' });
                         }
-                        
+
                         state.boss.lastAttack = timestamp;
                     }
                 }
-                // Powerup Spawning (Random chance when no boss)
+
+                // Random Powerup drop during battle
                 if (Math.random() < 0.005 && state.powerups.length === 0) {
                     const typeRoll = Math.random();
                     let type = 'SPREAD';
                     if (typeRoll > 0.6) type = 'RAPID';
-                    if (typeRoll > 0.9) type = 'SHIELD';
+                    if (typeRoll > 0.88) type = 'SHIELD';
 
                     state.powerups.push({
                         x: Math.random() * (GAME_WIDTH - 40),
@@ -328,27 +388,29 @@ const GalaxyDefender = () => {
                 }
             }
 
-            // 3. Move Objects
+            // Move Bullets & Objects
             state.bullets = state.bullets.filter(b => b.y > -20);
-            state.bullets.forEach(b => b.y -= 15);
+            state.bullets.forEach(b => {
+                b.y -= (b.speed || 15);
+                if (b.dx) b.x += b.dx;
+            });
 
             state.enemies.forEach(e => e.y += e.speed);
 
-            state.enemyLasers = state.enemyLasers.filter(l => l.y < GAME_HEIGHT);
+            state.enemyLasers = state.enemyLasers.filter(l => l.y < GAME_HEIGHT + 30);
             state.enemyLasers.forEach(l => {
                 l.y += l.speed;
-                if (l.dx) l.x += l.dx; // Horizontal movement for boss spread
+                if (l.dx) l.x += l.dx;
             });
 
-            // Move Powerups
             state.powerups.forEach(p => p.y += p.speed);
 
-            // 4. Collision: Player Bullets
+            // --- BULLET COLLISIONS ---
             for (let bIdx = state.bullets.length - 1; bIdx >= 0; bIdx--) {
                 const b = state.bullets[bIdx];
                 let hit = false;
 
-                // Boss Hit
+                // Boss Collision
                 if (state.boss) {
                     if (b.x > state.boss.x && b.x < state.boss.x + BOSS_SIZE &&
                         b.y > state.boss.y && b.y < state.boss.y + BOSS_SIZE) {
@@ -356,19 +418,50 @@ const GalaxyDefender = () => {
                         state.boss.flash = 3;
                         hit = true;
                         playCollect();
+                        state.shake = 5;
+
                         if (state.boss.hp <= 0) {
                             incrementStat('bossKills', 1);
-                            // Boss Defeated
                             state.boss = null;
                             state.level++;
-                            state.scoreInternal += 500; // Bonus
+                            state.scoreInternal += 1000;
+                            state.warpSpeed = 40; // Engage hyperdrive warp!
+                            state.shake = 22;
                             playWin();
                             triggerConfetti();
+
+                            // 40-Particle Boss Nova Blast
+                            for (let p = 0; p < 40; p++) {
+                                const angle = Math.random() * Math.PI * 2;
+                                const spd = 3 + Math.random() * 7;
+                                state.particles.push({
+                                    x: GAME_WIDTH / 2,
+                                    y: 110,
+                                    vx: Math.cos(angle) * spd,
+                                    vy: Math.sin(angle) * spd,
+                                    size: 4 + Math.random() * 5,
+                                    color: ['#ffd700', '#ff0055', '#00f0ff', '#ffffff'][Math.floor(Math.random() * 4)],
+                                    alpha: 1,
+                                    decay: 0.025
+                                });
+                            }
+
+                            state.floatingTexts.push({
+                                text: '👑 BOSS ANNIHILATED! HYPERDRIVE ACTIVE!',
+                                x: 30,
+                                y: 220,
+                                life: 48,
+                                maxLife: 48,
+                                color: '#ffd700',
+                                size: 15
+                            });
+
+                            if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
                         }
                     }
                 }
 
-                // Enemy Hit
+                // Enemy Alien Collision
                 if (!hit && !state.boss) {
                     for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
                         const e = state.enemies[eIdx];
@@ -376,19 +469,75 @@ const GalaxyDefender = () => {
                             b.x + BULLET_SIZE > e.x &&
                             b.y < e.y + ENEMY_SIZE &&
                             b.y + BULLET_SIZE > e.y) {
+
                             state.enemies.splice(eIdx, 1);
-                            state.scoreInternal += 50;
+
+                            // Combo Streak System
+                            const now = Date.now();
+                            if (now - state.lastKillTime < 1800) {
+                                state.comboCount = (state.comboCount || 1) + 1;
+                            } else {
+                                state.comboCount = 1;
+                            }
+                            state.lastKillTime = now;
+
+                            const comboBonus = state.comboCount > 1 ? state.comboCount * 25 : 0;
+                            state.scoreInternal += 50 + comboBonus;
                             setScore(state.scoreInternal);
                             playCollect();
                             hit = true;
+
+                            // Screen shake on hit
+                            state.shake = Math.min(10, 3 + state.comboCount);
+
+                            // Floating Combo Text
+                            if (state.comboCount >= 2) {
+                                const comboTitles = {
+                                    2: '🔥 2X DOUBLE KILL!',
+                                    3: '⚡ 3X TRIPLE STREAK!',
+                                    4: '💥 4X MULTI-KILL!',
+                                    5: '🌟 5X ULTRA STREAK!',
+                                    6: '👑 6X UNSTOPPABLE!',
+                                    7: '🌌 7X GODLIKE!'
+                                };
+                                const title = comboTitles[Math.min(7, state.comboCount)] || `⚡ ${state.comboCount}X STREAK!`;
+                                state.floatingTexts.push({
+                                    text: title,
+                                    x: e.x - 20,
+                                    y: e.y - 12,
+                                    life: 34,
+                                    maxLife: 34,
+                                    color: state.comboCount >= 5 ? '#ffd700' : '#00f0ff',
+                                    size: state.comboCount >= 5 ? 15 : 12
+                                });
+                                if (navigator.vibrate) navigator.vibrate(20);
+                            }
+
+                            // 12-Particle Explosion Burst
+                            for (let p = 0; p < 12; p++) {
+                                const angle = Math.random() * Math.PI * 2;
+                                const spd = 2 + Math.random() * 4;
+                                state.particles.push({
+                                    x: e.x + ENEMY_SIZE / 2,
+                                    y: e.y + ENEMY_SIZE / 2,
+                                    vx: Math.cos(angle) * spd,
+                                    vy: Math.sin(angle) * spd,
+                                    size: 3 + Math.random() * 3,
+                                    color: ['#00f0ff', '#ff007f', '#ffd700', '#ffffff'][Math.floor(Math.random() * 4)],
+                                    alpha: 1,
+                                    decay: 0.04
+                                });
+                            }
+
                             break;
                         }
                     }
                 }
+
                 if (hit) state.bullets.splice(bIdx, 1);
             }
 
-            // 5. Collision: Player vs Everything
+            // --- PLAYER HITBOX CHECK ---
             const playerX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
             const playerY = GAME_HEIGHT - 80;
             const pRect = { x: playerX, y: playerY, w: PLAYER_SIZE, h: PLAYER_SIZE };
@@ -396,15 +545,13 @@ const GalaxyDefender = () => {
             // Hit by Enemy
             for (let i = state.enemies.length - 1; i >= 0; i--) {
                 const e = state.enemies[i];
-                // Check Overlap
                 if (e.x < pRect.x + pRect.w && e.x + ENEMY_SIZE > pRect.x &&
                     e.y < pRect.y + pRect.h && e.y + ENEMY_SIZE > pRect.y) {
                     takeDamage();
                     state.enemies.splice(i, 1);
                 }
-                // Enemy reached bottom
                 if (e.y > GAME_HEIGHT) {
-                    state.enemies.splice(i, 1); // Despawn
+                    state.enemies.splice(i, 1);
                 }
             }
 
@@ -421,7 +568,6 @@ const GalaxyDefender = () => {
             // Powerup Collection
             for (let i = state.powerups.length - 1; i >= 0; i--) {
                 const p = state.powerups[i];
-                // Hitbox Check
                 if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
                     p.y < pRect.y + pRect.h && p.y + 30 > pRect.y) {
 
@@ -429,122 +575,183 @@ const GalaxyDefender = () => {
                         state.hasShield = true;
                     } else {
                         state.weapon = p.type;
-                        state.weaponTimer = 600; // 10 seconds
+                        state.weaponTimer = 600;
                     }
 
                     state.powerups.splice(i, 1);
                     playCollect();
                     triggerConfetti();
+                    if (navigator.vibrate) navigator.vibrate(30);
                 } else if (p.y > GAME_HEIGHT) {
                     state.powerups.splice(i, 1);
                 }
             }
 
-        } // END UPDATE IF
+            // Spawn Dual Engine Ion Plasma Exhaust
+            state.particles.push({
+                x: playerX + 15,
+                y: playerY + 44,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: 3 + Math.random() * 3,
+                size: 2.5 + Math.random() * 2,
+                color: '#00f0ff',
+                alpha: 0.8,
+                decay: 0.08
+            });
+            state.particles.push({
+                x: playerX + 35,
+                y: playerY + 44,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: 3 + Math.random() * 3,
+                size: 2.5 + Math.random() * 2,
+                color: '#00f0ff',
+                alpha: 0.8,
+                decay: 0.08
+            });
 
-        // --- DRAW ---
+        } // End Simulation
 
-        // Player
+        // --- DRAW PARTICLES ---
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+            const p = state.particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                state.particles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // --- DRAW FLOATING TEXTS ---
+        for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+            const ft = state.floatingTexts[i];
+            ft.y -= 0.9;
+            ft.life--;
+
+            if (ft.life <= 0) {
+                state.floatingTexts.splice(i, 1);
+                continue;
+            }
+
+            const alpha = ft.life / ft.maxLife;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.font = `900 ${ft.size || 13}px "Orbitron", monospace`;
+            ctx.fillStyle = ft.color || '#00f0ff';
+            ctx.shadowColor = ft.color || '#00f0ff';
+            ctx.shadowBlur = 10;
+            ctx.fillText(ft.text, ft.x, ft.y);
+            ctx.restore();
+        }
+
+        // --- DRAW PLAYER SHIP WITH DYNAMIC BANKING ---
         const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
         const playerYDraw = GAME_HEIGHT - 80;
 
-        if (state.invincible % 10 < 5) { // Flash if invincible
+        if (state.invincible % 10 < 5) {
             ctx.save();
             ctx.translate(playerXDraw + PLAYER_SIZE / 2, playerYDraw + PLAYER_SIZE / 2);
+            ctx.rotate(state.roll);
 
-            // Flames
-            ctx.fillStyle = `rgba(0, 200, 255, ${0.5 + Math.random() * 0.5})`;
-            ctx.beginPath();
-            ctx.moveTo(-15, 20);
-            ctx.lineTo(0, 40 + Math.random() * 10);
-            ctx.lineTo(15, 20);
-            ctx.fill();
-
-            // Ship
             const currentSkin = shopState?.equipped?.galaxy || 'ship_default';
 
             if (currentSkin === 'ship_ufo') {
-                // UFO Skin
                 ctx.fillStyle = '#00ff88';
                 ctx.beginPath();
-                ctx.ellipse(0, 0, 25, 10, 0, 0, Math.PI * 2); // Saucer
+                ctx.ellipse(0, 0, 25, 10, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Dome
                 ctx.fillStyle = 'rgba(200, 255, 255, 0.8)';
                 ctx.beginPath();
                 ctx.arc(0, -5, 12, Math.PI, 0);
                 ctx.fill();
 
-                // Lights
                 ctx.fillStyle = 'yellow';
                 ctx.beginPath();
                 ctx.arc(-15, 0, 3, 0, Math.PI * 2);
                 ctx.arc(15, 0, 3, 0, Math.PI * 2);
                 ctx.fill();
-
             } else if (currentSkin === 'ship_dragon') {
-                // DRAGON
                 ctx.fillStyle = '#00aa00';
-                // Head
                 ctx.beginPath();
                 ctx.moveTo(0, -30);
                 ctx.lineTo(10, -10);
                 ctx.lineTo(-10, -10);
                 ctx.fill();
-                // Wings
+
                 ctx.fillStyle = '#008800';
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(30, 20);
                 ctx.lineTo(10, 20);
-                ctx.lineTo(0, 40); // Tail
+                ctx.lineTo(0, 40);
                 ctx.lineTo(-10, 20);
                 ctx.lineTo(-30, 20);
                 ctx.fill();
-                // Eyes
+
                 ctx.fillStyle = 'red';
                 ctx.beginPath();
                 ctx.arc(-5, -20, 2, 0, Math.PI * 2);
                 ctx.arc(5, -20, 2, 0, Math.PI * 2);
                 ctx.fill();
-
             } else {
-                // Default Ship
-                ctx.fillStyle = '#ccc';
+                // Sleek Neon Fighter Ship
+                ctx.fillStyle = '#0a2239';
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 8;
+
                 ctx.beginPath();
-                ctx.moveTo(0, -30);
-                ctx.lineTo(20, 10);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(-10, 20);
-                ctx.lineTo(-20, 10);
+                ctx.moveTo(0, -28);
+                ctx.lineTo(22, 12);
+                ctx.lineTo(12, 22);
+                ctx.lineTo(-12, 22);
+                ctx.lineTo(-22, 12);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
 
-                // Cockpit
-                ctx.fillStyle = '#00ccff';
+                // Cockpit Core
+                ctx.fillStyle = '#00f0ff';
                 ctx.beginPath();
-                ctx.ellipse(0, -5, 5, 10, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, -4, 4, 9, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            ctx.restore();
-            // Shield Visual
+            // Pulsing Holographic Shield
             if (state.hasShield) {
                 ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 3;
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 12;
                 ctx.beginPath();
-                ctx.arc(0, 0, 40 + Math.sin(Date.now() / 100) * 2, 0, Math.PI * 2);
+                ctx.arc(0, 0, 34 + Math.sin(Date.now() / 90) * 3, 0, Math.PI * 2);
                 ctx.stroke();
+                ctx.shadowBlur = 0;
             }
 
             ctx.restore();
         }
 
-        // Bullets
+        // --- DRAW BULLETS ---
         const currentBullet = shopState?.equipped?.galaxy_bullet || 'bullet_laser';
-
-        ctx.fillStyle = '#ffcc00';
+        ctx.fillStyle = '#00f0ff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 10;
         state.bullets.forEach(b => {
             if (currentBullet === 'bullet_donut') {
                 ctx.font = '20px serif';
@@ -553,43 +760,36 @@ const GalaxyDefender = () => {
                 ctx.font = '20px serif';
                 ctx.fillText('🐱', b.x - 5, b.y + 10);
             } else {
-                ctx.fillRect(b.x, b.y, BULLET_SIZE, 20);
+                ctx.fillRect(b.x, b.y, b.w || BULLET_SIZE, b.h || 20);
             }
         });
+        ctx.shadowBlur = 0;
 
-        // Enemies
-        ctx.fillStyle = '#ff0055';
-        ctx.font = '40px serif';
+        // --- DRAW ENEMIES ---
+        ctx.font = '36px serif';
+        ctx.textAlign = 'center';
         state.enemies.forEach(e => {
-            ctx.fillText('👾', e.x, e.y + 40);
+            ctx.fillText('👾', e.x + ENEMY_SIZE / 2, e.y + 34);
         });
 
-        // Boss Lasers
+        // --- DRAW BOSS LASERS ---
         state.enemyLasers.forEach(l => {
-            if (state.boss && state.boss.type === 'face_money') {
-                ctx.fillStyle = '#00ff00'; ctx.font = '30px serif';
-                ctx.fillText('$', l.x - 5, l.y + 20);
-            } else if (state.boss && state.boss.type === 'face_bear') {
-                ctx.font = '40px serif'; ctx.fillText('🪨', l.x - 10, l.y + 30);
-            } else if (state.boss && state.boss.type === 'face_cat') {
-                ctx.font = '25px serif'; ctx.fillText('🧶', l.x - 5, l.y + 15);
-            } else if (state.boss && state.boss.type === 'face_pumpkin') {
-                ctx.font = '30px serif'; ctx.fillText('👻', l.x - 5, l.y + 20);
-            } else if (state.boss && state.boss.type === 'merchboy_face') {
-                ctx.font = '35px serif'; ctx.fillText('🔥', l.x - 5, l.y + 25);
-            } else {
-                ctx.fillStyle = l.color || '#ff0000';
-                ctx.fillRect(l.x, l.y, l.width, l.height);
-            }
+            ctx.fillStyle = l.color || '#ff0055';
+            ctx.shadowColor = l.color || '#ff0055';
+            ctx.shadowBlur = 8;
+            ctx.fillRect(l.x, l.y, l.width, l.height);
         });
+        ctx.shadowBlur = 0;
 
-        // Powerups
-        // Powerups
+        // --- DRAW POWERUPS ---
         state.powerups.forEach(p => {
             ctx.fillStyle = p.type === 'SHIELD' ? '#00ffff' : 'gold';
+            ctx.shadowColor = p.type === 'SHIELD' ? '#00ffff' : 'gold';
+            ctx.shadowBlur = 10;
             ctx.beginPath();
             ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
 
             ctx.fillStyle = 'black';
             ctx.font = 'bold 12px Arial';
@@ -602,82 +802,82 @@ const GalaxyDefender = () => {
             ctx.fillText(icon, p.x + 15, p.y + 15);
         });
 
-        // Boss
+        // --- DRAW BOSS ---
         if (state.boss) {
-            if (state.boss.flash > 0) {
-                ctx.globalCompositeOperation = 'source-atop';
-                ctx.fillStyle = 'white';
-                state.boss.flash--;
-            }
+            const bossImg = bossImgsRef.current[state.boss.type];
 
-            if (bossImgRef.current && bossImgRef.current.complete) {
-                // Silly Boss Animations based on state.boss.type
-                ctx.save();
-                ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
+            ctx.save();
+            ctx.translate(state.boss.x + BOSS_SIZE / 2, state.boss.y + BOSS_SIZE / 2);
 
-                // Bobbing effect
-                const bob = Math.sin(Date.now() / 200) * 10;
-                ctx.translate(0, bob);
+            const bob = Math.sin(Date.now() / 180) * 8;
+            ctx.translate(0, bob);
+            ctx.rotate(Math.sin(Date.now() / 400) * 0.08);
 
-                // Rotate slightly
-                ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
-
-                ctx.drawImage(bossImgRef.current, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
-                ctx.restore();
+            if (bossImg && bossImg.complete) {
+                ctx.drawImage(bossImg, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
             } else {
-                // Fallback Emoji Boss
                 ctx.font = '80px Arial';
-                ctx.fillText('👹', state.boss.x + 10, state.boss.y + 80);
+                ctx.textAlign = 'center';
+                ctx.fillText('👹', 0, 30);
             }
 
-            // Boss HP
-            const percent = state.boss.hp / BOSS_HP_MAX;
-            ctx.fillStyle = '#333';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE, 10);
-            ctx.fillStyle = percent > 0.5 ? '#00ff00' : 'red';
-            ctx.fillRect(state.boss.x, state.boss.y - 20, BOSS_SIZE * percent, 10);
+            ctx.restore();
+
+            // Boss Health Bar
+            const percent = Math.max(0, state.boss.hp / (BOSS_HP_MAX * state.level));
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 8);
+            ctx.fillStyle = percent > 0.5 ? '#00ff88' : '#ff0055';
+            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE * percent, 8);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 8);
         }
 
         ctx.restore(); // Undo shake
 
-        // ALWAYS loop so rendering continues
         state.animationId = requestAnimationFrame(gameLoop);
     };
 
-    // Controls
-    // Mobile Actions
+    // Mobile & Keyboard Controls
     const moveLeft = () => {
         if (!gameActiveRef.current) return;
-        if (gameState.current.lane > 0) gameState.current.lane--;
+        if (gameState.current.lane > 0) {
+            gameState.current.lane--;
+            gameState.current.rollTarget = -0.32;
+            if (navigator.vibrate) navigator.vibrate(12);
+        }
     };
+
     const moveRight = () => {
         if (!gameActiveRef.current) return;
-        if (gameState.current.lane < LANES - 1) gameState.current.lane++;
+        if (gameState.current.lane < LANES - 1) {
+            gameState.current.lane++;
+            gameState.current.rollTarget = 0.32;
+            if (navigator.vibrate) navigator.vibrate(12);
+        }
     };
+
     const fire = () => {
         if (!gameActiveRef.current) return;
         const state = gameState.current;
         const now = Date.now();
 
-        const fireRate = state.weapon === 'RAPID' ? 100 : 250;
+        const fireRate = state.weapon === 'RAPID' ? 100 : 220;
         if (now - state.lastShotTime > fireRate) {
             const startX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (BULLET_SIZE / 2);
 
-            // Weapon Logic
             if (state.weaponTimer > 0) state.weaponTimer--;
             else state.weapon = 'NORMAL';
 
             if (state.weapon === 'SPREAD') {
-                // Triple Shot
-                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0, w: 8, h: 20 });
-                state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: -2, w: 6, h: 15 });
-                state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 2, w: 6, h: 15 });
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0, w: 8, h: 22 });
+                state.bullets.push({ x: startX - 10, y: GAME_HEIGHT - 80, speed: 15, dx: -2.5, w: 6, h: 18 });
+                state.bullets.push({ x: startX + 10, y: GAME_HEIGHT - 80, speed: 15, dx: 2.5, w: 6, h: 18 });
             } else if (state.weapon === 'RAPID') {
-                // Fast Center
-                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 25, dx: 0, w: 6, h: 25 });
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 25, dx: 0, w: 6, h: 26 });
             } else {
-                // Normal
-                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 15, dx: 0, w: 8, h: 20 });
+                state.bullets.push({ x: startX, y: GAME_HEIGHT - 80, speed: 16, dx: 0, w: 8, h: 22 });
             }
 
             state.lastShotTime = now;
@@ -700,44 +900,36 @@ const GalaxyDefender = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // TOUCH CONTROLS
+    // Touch Swipe Handling
     const touchRef = useRef({ startX: 0, hasMoved: false });
 
     const handleTouchStart = (e) => {
         if (!gameActiveRef.current) return;
         const touch = e.touches[0];
-        touchRef.current = {
-            startX: touch.clientX,
-            hasMoved: false
-        };
+        touchRef.current = { startX: touch.clientX, hasMoved: false };
     };
 
     const handleTouchMove = (e) => {
         if (!gameActiveRef.current) return;
-        if (e.cancelable) e.preventDefault(); // Prevent scrolling
+        if (e.cancelable) e.preventDefault();
 
         const touch = e.touches[0];
         const diffX = touch.clientX - touchRef.current.startX;
-        const SWIPE_THRESHOLD = 40; // Sensitivity
+        const SWIPE_THRESHOLD = 36;
 
         if (Math.abs(diffX) > SWIPE_THRESHOLD) {
             if (diffX > 0) moveRight();
             else moveLeft();
 
-            // Reset startX to allow continuous swiping across multiple lanes
             touchRef.current.startX = touch.clientX;
             touchRef.current.hasMoved = true;
         }
     };
 
-    const handleTouchEnd = (e) => {
+    const handleTouchEnd = () => {
         if (!gameActiveRef.current) return;
-        // If we didn't swipe (didn't move lane), treat as Tap to Shoot
         const wasSwipe = touchRef.current.hasMoved;
-
-        // Reset Ref
         touchRef.current = { startX: 0, hasMoved: false };
-
         if (!wasSwipe) {
             fire();
         }
@@ -746,22 +938,21 @@ const GalaxyDefender = () => {
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: '10px', color: '#00ccff', minHeight: '100vh', touchAction: 'none'
+            padding: '10px', color: '#00f0ff', minHeight: '100vh', touchAction: 'none'
         }}>
-
             <div style={{
                 display: 'flex', justifyContent: 'space-between',
                 width: '100%', maxWidth: '480px',
-                marginBottom: '5px', fontSize: '1rem', fontWeight: 'bold'
+                marginBottom: '8px', fontSize: '1.1rem', fontWeight: '900', fontFamily: 'monospace'
             }}>
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
                     {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>❤️</span>
+                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2, filter: 'drop-shadow(0 0 6px red)' }}>❤️</span>
                     ))}
                 </div>
                 <div style={{ display: 'flex', gap: '20px' }}>
-                    <span>LVL {Math.floor(score / 1000) + 1}</span>
-                    <span>SCORE: {score}</span>
+                    <span style={{ color: '#00f0ff' }}>LVL {Math.floor(score / 1000) + 1}</span>
+                    <span style={{ color: '#ffd700' }}>SCORE: {score}</span>
                 </div>
             </div>
 
@@ -775,27 +966,60 @@ const GalaxyDefender = () => {
                     onTouchEnd={handleTouchEnd}
                     style={{
                         width: '100%', height: 'auto',
-                        border: '4px solid #00ccff',
-                        background: 'radial-gradient(circle, #001133 0%, #000000 100%)',
-                        borderRadius: '10px', boxShadow: '0 0 20px #00ccff40',
-                        touchAction: 'none' // Critical for preventing scrolling
+                        border: '3px solid #00f0ff',
+                        background: '#03050c',
+                        borderRadius: '16px',
+                        boxShadow: '0 0 35px rgba(0, 240, 255, 0.3), 0 20px 40px rgba(0,0,0,0.8)',
+                        touchAction: 'none'
                     }}
                 />
 
                 {!gameActive && !gameOver && !gameWon && (
                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <p style={{ color: 'white', marginBottom: '10px' }}>Use <span style={{ fontWeight: 'bold' }}>ARROWS</span> to move.</p>
-                        <SquishyButton onClick={startGame} style={{ padding: '15px 40px', fontSize: '1.5rem', background: '#00ccff', border: 'none', borderRadius: '10px' }}>
-                            START MISSION
+                        <p style={{ color: '#94a3b8', marginBottom: '14px', fontFamily: 'monospace' }}>
+                            [← / →] TO SHIFT LANES • [SPACE] TO FIRE
+                        </p>
+                        <SquishyButton
+                            onClick={startGame}
+                            style={{
+                                padding: '16px 45px',
+                                fontSize: '1.4rem',
+                                background: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
+                                border: 'none',
+                                borderRadius: '14px',
+                                color: '#000',
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace',
+                                boxShadow: '0 0 25px rgba(0, 240, 255, 0.6)'
+                            }}
+                        >
+                            ENGAGE DEFENSE 🚀
                         </SquishyButton>
                     </div>
                 )}
 
                 {gameOver && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: '#ff0055' }}>GAME OVER</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Final Score: {score}</p>
-                        {/* SPONSOR REWARDED REVIVE */}
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(3, 6, 15, 0.9)',
+                        backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '16px'
+                    }}>
+                        <h2 style={{ fontSize: '2.8rem', color: '#ff0055', fontFamily: '"Orbitron", monospace', margin: '0 0 10px 0', textShadow: '0 0 20px #ff0055' }}>
+                            GAME OVER
+                        </h2>
+                        <p style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff', fontFamily: 'monospace' }}>
+                            Final Score: <strong style={{ color: '#00f0ff' }}>{score}</strong>
+                        </p>
+
                         {!hasRevived && (
                             <button
                                 type="button"
@@ -832,36 +1056,120 @@ const GalaxyDefender = () => {
                                 setHasRevived(true);
                                 setGameOver(false);
                                 setGameActive(true);
+                                gameActiveRef.current = true;
                                 setLives(2);
-                                gameLoopRef.current = requestAnimationFrame(gameLoop);
+                                gameState.current.invincible = 90;
+                                gameState.current.animationId = requestAnimationFrame(gameLoop);
                             }}
                         />
 
-                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: '#00ccff', border: 'none', borderRadius: '5px' }}>Retry</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                        <SquishyButton
+                            onClick={startGame}
+                            style={{
+                                marginBottom: '12px',
+                                padding: '12px 36px',
+                                background: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                color: '#000',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Retry Mission
+                        </SquishyButton>
+                        <Link to="/arcade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginTop: '6px' }}>
+                            ← Back to Base
+                        </Link>
                     </div>
                 )}
 
                 {gameWon && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h2 style={{ fontSize: '3rem', color: '#00ffaa' }}>VICTORY!</h2>
-                        <p style={{ fontSize: '1.5rem', marginBottom: '10px', color: '#fff' }}>GALAXY SAVED</p>
-                        <SquishyButton onClick={startGame} style={{ marginBottom: '10px', padding: '10px 30px', background: 'gold', color: 'black', border: 'none', borderRadius: '5px' }}>Play Again</SquishyButton>
-                        <Link to="/arcade" style={{ color: 'white', textDecoration: 'underline' }}>Exit</Link>
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(3, 6, 15, 0.92)',
+                        backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '16px'
+                    }}>
+                        <h2 style={{ fontSize: '3rem', color: '#00ffaa', fontFamily: '"Orbitron", monospace', textShadow: '0 0 25px #00ffaa' }}>
+                            VICTORY!
+                        </h2>
+                        <p style={{ fontSize: '1.4rem', marginBottom: '16px', color: '#fff', fontFamily: 'monospace' }}>
+                            GALAXY SAVED
+                        </p>
+                        <SquishyButton
+                            onClick={startGame}
+                            style={{
+                                marginBottom: '12px',
+                                padding: '12px 36px',
+                                background: 'gold',
+                                color: 'black',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Defend Again
+                        </SquishyButton>
+                        <Link to="/arcade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>
+                            ← Exit to Base
+                        </Link>
                     </div>
                 )}
             </div>
 
-            {/* MOBILE CONTROLS */}
-            <div style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%', paddingBottom: '20px' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <SquishyButton onClick={moveLeft} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>⬅️</SquishyButton>
-                    <SquishyButton onClick={moveRight} style={{ width: '60px', height: '60px', fontSize: '2rem', background: '#333', border: '2px solid #00ccff', borderRadius: '15px' }}>➡️</SquishyButton>
+            {/* TOUCH ACTION BUTTONS */}
+            <div style={{ marginTop: '16px', display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%', paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <SquishyButton
+                        onClick={moveLeft}
+                        style={{
+                            width: '65px',
+                            height: '65px',
+                            fontSize: '1.8rem',
+                            background: 'rgba(0, 240, 255, 0.1)',
+                            border: '2px solid #00f0ff',
+                            borderRadius: '16px'
+                        }}
+                    >
+                        ⬅️
+                    </SquishyButton>
+                    <SquishyButton
+                        onClick={moveRight}
+                        style={{
+                            width: '65px',
+                            height: '65px',
+                            fontSize: '1.8rem',
+                            background: 'rgba(0, 240, 255, 0.1)',
+                            border: '2px solid #00f0ff',
+                            borderRadius: '16px'
+                        }}
+                    >
+                        ➡️
+                    </SquishyButton>
                 </div>
-                <SquishyButton onClick={fire} style={{ width: '80px', height: '80px', fontSize: '1.5rem', background: 'red', border: '4px solid orange', borderRadius: '50%', boxShadow: '0 0 15px orange' }}>🔥</SquishyButton>
+                <SquishyButton
+                    onClick={fire}
+                    style={{
+                        width: '85px',
+                        height: '85px',
+                        fontSize: '1.6rem',
+                        background: 'linear-gradient(135deg, #ff0055 0%, #ff5500 100%)',
+                        border: '3px solid #ffd700',
+                        borderRadius: '50%',
+                        boxShadow: '0 0 20px rgba(255, 85, 0, 0.5)'
+                    }}
+                >
+                    🔥
+                </SquishyButton>
             </div>
-
-            <p style={{ marginTop: '10px', color: '#666' }}>Defeat the Head at 500 Points!</p>
         </div>
     );
 };
