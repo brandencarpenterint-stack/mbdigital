@@ -26,7 +26,6 @@ const GalaxyDefender = () => {
     const [lives, setLives] = useState(MAX_LIVES);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('galaxyHighScore')) || 0);
 
-    // Sync high score
     useEffect(() => {
         if (stats?.galaxyHighScore > highScore) {
             setHighScore(stats.galaxyHighScore);
@@ -42,9 +41,9 @@ const GalaxyDefender = () => {
     const gameActiveRef = useRef(false);
     const bossImgsRef = useRef([]);
 
-    const { playBeep, playCrash, playCollect, playWin } = useRetroSound();
+    const { playBeep, playCrash, playCollect, playWin, playFire, playZap } = useRetroSound();
 
-    // Game State
+    // Game Simulation State
     const gameState = useRef({
         lane: 2,
         roll: 0,
@@ -76,12 +75,12 @@ const GalaxyDefender = () => {
 
     useEffect(() => {
         const skins = [
-            '/assets/skins/face_money.png',   // 0: Money
-            '/assets/skins/face_astro.png',   // 1: Astro
-            '/assets/skins/face_bear.png',    // 2: Bear
-            '/assets/skins/face_cat.png',     // 3: Cat
-            '/assets/skins/face_pumpkin.png', // 4: Pumpkin
-            '/assets/merchboy_face.png'       // 5: Final Boss
+            '/assets/skins/face_money.png',
+            '/assets/skins/face_astro.png',
+            '/assets/skins/face_bear.png',
+            '/assets/skins/face_cat.png',
+            '/assets/skins/face_pumpkin.png',
+            '/assets/merchboy_face.png'
         ];
         bossImgsRef.current = skins.map(src => {
             const img = new Image();
@@ -137,7 +136,6 @@ const GalaxyDefender = () => {
             animationId: null
         };
 
-        // Init Starfield
         for (let i = 0; i < 65; i++) {
             gameState.current.stars.push({
                 x: Math.random() * GAME_WIDTH,
@@ -159,10 +157,9 @@ const GalaxyDefender = () => {
             state.hasShield = false;
             state.invincible = 60;
             state.shake = 12;
-            playBeep();
+            playZap();
             if (navigator.vibrate) navigator.vibrate(30);
 
-            // Shield pop particles
             const px = state.lane * LANE_WIDTH + (LANE_WIDTH / 2);
             const py = GAME_HEIGHT - 60;
             for (let i = 0; i < 15; i++) {
@@ -216,7 +213,7 @@ const GalaxyDefender = () => {
             if (updateStat) updateStat('galaxyHighScore', finalScore);
 
             const playerName = userProfile?.name || 'Pilot';
-            feedService.publish(`saved the Galaxy with score: ${finalScore} 🚀`, 'win', playerName);
+            feedService.publish(`saved the Galaxy with score: ${finalScore} in Galaxy Defender`, 'win', playerName);
         }
 
         if (incrementStat) incrementStat('gamesPlayed', 'galaxy');
@@ -246,7 +243,6 @@ const GalaxyDefender = () => {
 
         const ctx = canvasRef.current.getContext('2d');
 
-        // Screen Shake calculation
         let offsetX = 0;
         let offsetY = 0;
         if (state.shake > 0) {
@@ -259,11 +255,11 @@ const GalaxyDefender = () => {
         ctx.save();
         ctx.translate(offsetX, offsetY);
 
-        // Dark Deep Space Canvas Fill
-        ctx.fillStyle = '#03050c';
+        // Dark OLED Space
+        ctx.fillStyle = '#050711';
         ctx.fillRect(-20, -20, GAME_WIDTH + 40, GAME_HEIGHT + 40);
 
-        // --- STARFIELD WITH HYPERDRIVE WARP ---
+        // Starfield with warp effect
         const isWarping = state.warpSpeed > 0;
         if (isWarping) state.warpSpeed--;
 
@@ -271,7 +267,6 @@ const GalaxyDefender = () => {
             const currentSpeed = isWarping ? star.speed * (4 + state.warpSpeed * 0.3) : star.speed;
 
             if (isWarping) {
-                // Radiant warp speed lines
                 ctx.strokeStyle = star.color || '#00f0ff';
                 ctx.lineWidth = star.size * 1.2;
                 ctx.beginPath();
@@ -292,9 +287,9 @@ const GalaxyDefender = () => {
             }
         });
 
-        // Lane Grid (Tactical Holographic Dividers)
+        // Tactical lane guide lines
         ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
         for (let i = 1; i < LANES; i++) {
             ctx.beginPath();
             ctx.moveTo(i * LANE_WIDTH, 0);
@@ -306,11 +301,9 @@ const GalaxyDefender = () => {
         if (gameActiveRef.current) {
             if (state.invincible > 0) state.invincible--;
 
-            // Ship Banking Roll Interpolation
             state.roll += (state.rollTarget - state.roll) * 0.18;
             state.rollTarget *= 0.84;
 
-            // Spawning Logic
             if (!state.boss) {
                 const nextBossScore = state.level * 1000;
 
@@ -348,31 +341,30 @@ const GalaxyDefender = () => {
                     if (timestamp - state.boss.lastAttack > fireRate) {
                         const bossCenterX = state.boss.x + BOSS_SIZE / 2;
 
-                        if (state.boss.type === 0) { // Money Boss
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: -3, color: '#ffd700' });
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 0, color: '#ffd700' });
-                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 20, height: 20, speed: 7, dx: 3, color: '#ffd700' });
-                        } else if (state.boss.type === 1) { // Astro Boss
-                            state.enemyLasers.push({ x: bossCenterX - 5, y: state.boss.y + BOSS_SIZE, width: 10, height: 40, speed: 10, dx: 0, color: '#00f0ff' });
-                        } else if (state.boss.type === 2) { // Bear Boss
-                            state.enemyLasers.push({ x: bossCenterX - 35, y: state.boss.y + BOSS_SIZE, width: 70, height: 70, speed: 4.5, dx: 0, color: '#8b4513' });
-                        } else if (state.boss.type === 3) { // Cat Boss
-                            state.enemyLasers.push({ x: bossCenterX - 15, y: state.boss.y + BOSS_SIZE, width: 30, height: 30, speed: 8, dx: (Math.random() - 0.5) * 8, color: '#ff007f' });
-                        } else if (state.boss.type === 4) { // Pumpkin Boss
+                        if (state.boss.type === 0) {
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 14, height: 14, speed: 7, dx: -3, color: '#ffd700', shape: 'disc' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 14, height: 14, speed: 7, dx: 0, color: '#ffd700', shape: 'disc' });
+                            state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 14, height: 14, speed: 7, dx: 3, color: '#ffd700', shape: 'disc' });
+                        } else if (state.boss.type === 1) {
+                            state.enemyLasers.push({ x: bossCenterX - 4, y: state.boss.y + BOSS_SIZE, width: 8, height: 35, speed: 10, dx: 0, color: '#00f0ff', shape: 'beam' });
+                        } else if (state.boss.type === 2) {
+                            state.enemyLasers.push({ x: bossCenterX - 24, y: state.boss.y + BOSS_SIZE, width: 48, height: 48, speed: 4.5, dx: 0, color: '#ff6600', shape: 'meteor' });
+                        } else if (state.boss.type === 3) {
+                            state.enemyLasers.push({ x: bossCenterX - 8, y: state.boss.y + BOSS_SIZE, width: 16, height: 24, speed: 8, dx: (Math.random() - 0.5) * 8, color: '#ff007f', shape: 'plasma' });
+                        } else if (state.boss.type === 4) {
                             for (let i = -2; i <= 2; i++) {
-                                state.enemyLasers.push({ x: bossCenterX - 10, y: state.boss.y + BOSS_SIZE, width: 18, height: 18, speed: 6, dx: i * 2.5, color: '#ff8c00' });
+                                state.enemyLasers.push({ x: bossCenterX - 7, y: state.boss.y + BOSS_SIZE, width: 14, height: 20, speed: 6, dx: i * 2.5, color: '#a855f7', shape: 'plasma' });
                             }
-                        } else { // Merchboy Final Boss
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: -4, color: '#ff0055' });
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: 0, color: '#ffffff' });
-                            state.enemyLasers.push({ x: bossCenterX - 20, y: state.boss.y + BOSS_SIZE, width: 35, height: 35, speed: 9, dx: 4, color: '#00f0ff' });
+                        } else {
+                            state.enemyLasers.push({ x: bossCenterX - 12, y: state.boss.y + BOSS_SIZE, width: 24, height: 32, speed: 9, dx: -4, color: '#ff0055', shape: 'beam' });
+                            state.enemyLasers.push({ x: bossCenterX - 12, y: state.boss.y + BOSS_SIZE, width: 24, height: 32, speed: 9, dx: 0, color: '#ffffff', shape: 'beam' });
+                            state.enemyLasers.push({ x: bossCenterX - 12, y: state.boss.y + BOSS_SIZE, width: 24, height: 32, speed: 9, dx: 4, color: '#00f0ff', shape: 'beam' });
                         }
 
                         state.boss.lastAttack = timestamp;
                     }
                 }
 
-                // Random Powerup drop during battle
                 if (Math.random() < 0.005 && state.powerups.length === 0) {
                     const typeRoll = Math.random();
                     let type = 'SPREAD';
@@ -388,7 +380,6 @@ const GalaxyDefender = () => {
                 }
             }
 
-            // Move Bullets & Objects
             state.bullets = state.bullets.filter(b => b.y > -20);
             state.bullets.forEach(b => {
                 b.y -= (b.speed || 15);
@@ -405,12 +396,11 @@ const GalaxyDefender = () => {
 
             state.powerups.forEach(p => p.y += p.speed);
 
-            // --- BULLET COLLISIONS ---
+            // Bullet Collisions
             for (let bIdx = state.bullets.length - 1; bIdx >= 0; bIdx--) {
                 const b = state.bullets[bIdx];
                 let hit = false;
 
-                // Boss Collision
                 if (state.boss) {
                     if (b.x > state.boss.x && b.x < state.boss.x + BOSS_SIZE &&
                         b.y > state.boss.y && b.y < state.boss.y + BOSS_SIZE) {
@@ -425,12 +415,11 @@ const GalaxyDefender = () => {
                             state.boss = null;
                             state.level++;
                             state.scoreInternal += 1000;
-                            state.warpSpeed = 40; // Engage hyperdrive warp!
+                            state.warpSpeed = 40;
                             state.shake = 22;
                             playWin();
                             triggerConfetti();
 
-                            // 40-Particle Boss Nova Blast
                             for (let p = 0; p < 40; p++) {
                                 const angle = Math.random() * Math.PI * 2;
                                 const spd = 3 + Math.random() * 7;
@@ -447,13 +436,13 @@ const GalaxyDefender = () => {
                             }
 
                             state.floatingTexts.push({
-                                text: '👑 BOSS ANNIHILATED! HYPERDRIVE ACTIVE!',
-                                x: 30,
+                                text: 'BOSS DEFEATED • HYPERDRIVE ACTIVE',
+                                x: 40,
                                 y: 220,
                                 life: 48,
                                 maxLife: 48,
                                 color: '#ffd700',
-                                size: 15
+                                size: 14
                             });
 
                             if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
@@ -461,7 +450,6 @@ const GalaxyDefender = () => {
                     }
                 }
 
-                // Enemy Alien Collision
                 if (!hit && !state.boss) {
                     for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
                         const e = state.enemies[eIdx];
@@ -472,7 +460,6 @@ const GalaxyDefender = () => {
 
                             state.enemies.splice(eIdx, 1);
 
-                            // Combo Streak System
                             const now = Date.now();
                             if (now - state.lastKillTime < 1800) {
                                 state.comboCount = (state.comboCount || 1) + 1;
@@ -487,33 +474,30 @@ const GalaxyDefender = () => {
                             playCollect();
                             hit = true;
 
-                            // Screen shake on hit
                             state.shake = Math.min(10, 3 + state.comboCount);
 
-                            // Floating Combo Text
                             if (state.comboCount >= 2) {
                                 const comboTitles = {
-                                    2: '🔥 2X DOUBLE KILL!',
-                                    3: '⚡ 3X TRIPLE STREAK!',
-                                    4: '💥 4X MULTI-KILL!',
-                                    5: '🌟 5X ULTRA STREAK!',
-                                    6: '👑 6X UNSTOPPABLE!',
-                                    7: '🌌 7X GODLIKE!'
+                                    2: '2X COMBO',
+                                    3: '3X STREAK',
+                                    4: '4X MULTI-KILL',
+                                    5: '5X ULTRA',
+                                    6: '6X UNSTOPPABLE',
+                                    7: '7X GODLIKE'
                                 };
-                                const title = comboTitles[Math.min(7, state.comboCount)] || `⚡ ${state.comboCount}X STREAK!`;
+                                const title = comboTitles[Math.min(7, state.comboCount)] || `${state.comboCount}X STREAK`;
                                 state.floatingTexts.push({
                                     text: title,
-                                    x: e.x - 20,
+                                    x: e.x - 10,
                                     y: e.y - 12,
                                     life: 34,
                                     maxLife: 34,
                                     color: state.comboCount >= 5 ? '#ffd700' : '#00f0ff',
-                                    size: state.comboCount >= 5 ? 15 : 12
+                                    size: state.comboCount >= 5 ? 14 : 12
                                 });
                                 if (navigator.vibrate) navigator.vibrate(20);
                             }
 
-                            // 12-Particle Explosion Burst
                             for (let p = 0; p < 12; p++) {
                                 const angle = Math.random() * Math.PI * 2;
                                 const spd = 2 + Math.random() * 4;
@@ -537,12 +521,10 @@ const GalaxyDefender = () => {
                 if (hit) state.bullets.splice(bIdx, 1);
             }
 
-            // --- PLAYER HITBOX CHECK ---
             const playerX = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
             const playerY = GAME_HEIGHT - 80;
             const pRect = { x: playerX, y: playerY, w: PLAYER_SIZE, h: PLAYER_SIZE };
 
-            // Hit by Enemy
             for (let i = state.enemies.length - 1; i >= 0; i--) {
                 const e = state.enemies[i];
                 if (e.x < pRect.x + pRect.w && e.x + ENEMY_SIZE > pRect.x &&
@@ -555,7 +537,6 @@ const GalaxyDefender = () => {
                 }
             }
 
-            // Hit by Boss Laser
             for (let i = state.enemyLasers.length - 1; i >= 0; i--) {
                 const l = state.enemyLasers[i];
                 if (l.x < pRect.x + pRect.w && l.x + l.width > pRect.x &&
@@ -565,7 +546,6 @@ const GalaxyDefender = () => {
                 }
             }
 
-            // Powerup Collection
             for (let i = state.powerups.length - 1; i >= 0; i--) {
                 const p = state.powerups[i];
                 if (p.x < pRect.x + pRect.w && p.x + 30 > pRect.x &&
@@ -587,7 +567,6 @@ const GalaxyDefender = () => {
                 }
             }
 
-            // Spawn Dual Engine Ion Plasma Exhaust
             state.particles.push({
                 x: playerX + 15,
                 y: playerY + 44,
@@ -609,7 +588,7 @@ const GalaxyDefender = () => {
                 decay: 0.08
             });
 
-        } // End Simulation
+        }
 
         // --- DRAW PARTICLES ---
         for (let i = state.particles.length - 1; i >= 0; i--) {
@@ -656,7 +635,7 @@ const GalaxyDefender = () => {
             ctx.restore();
         }
 
-        // --- DRAW PLAYER SHIP WITH DYNAMIC BANKING ---
+        // --- DRAW PLAYER SHIP ---
         const playerXDraw = state.lane * LANE_WIDTH + (LANE_WIDTH / 2) - (PLAYER_SIZE / 2);
         const playerYDraw = GAME_HEIGHT - 80;
 
@@ -683,31 +662,7 @@ const GalaxyDefender = () => {
                 ctx.arc(-15, 0, 3, 0, Math.PI * 2);
                 ctx.arc(15, 0, 3, 0, Math.PI * 2);
                 ctx.fill();
-            } else if (currentSkin === 'ship_dragon') {
-                ctx.fillStyle = '#00aa00';
-                ctx.beginPath();
-                ctx.moveTo(0, -30);
-                ctx.lineTo(10, -10);
-                ctx.lineTo(-10, -10);
-                ctx.fill();
-
-                ctx.fillStyle = '#008800';
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(30, 20);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(0, 40);
-                ctx.lineTo(-10, 20);
-                ctx.lineTo(-30, 20);
-                ctx.fill();
-
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(-5, -20, 2, 0, Math.PI * 2);
-                ctx.arc(5, -20, 2, 0, Math.PI * 2);
-                ctx.fill();
             } else {
-                // Sleek Neon Fighter Ship
                 ctx.fillStyle = '#0a2239';
                 ctx.strokeStyle = '#00f0ff';
                 ctx.lineWidth = 2;
@@ -725,17 +680,15 @@ const GalaxyDefender = () => {
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Cockpit Core
                 ctx.fillStyle = '#00f0ff';
                 ctx.beginPath();
                 ctx.ellipse(0, -4, 4, 9, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // Pulsing Holographic Shield
             if (state.hasShield) {
                 ctx.strokeStyle = '#00ffff';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2.5;
                 ctx.shadowColor = '#00ffff';
                 ctx.shadowBlur = 12;
                 ctx.beginPath();
@@ -747,59 +700,112 @@ const GalaxyDefender = () => {
             ctx.restore();
         }
 
-        // --- DRAW BULLETS ---
-        const currentBullet = shopState?.equipped?.galaxy_bullet || 'bullet_laser';
-        ctx.fillStyle = '#00f0ff';
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 10;
+        // --- DRAW BULLETS (VECTOR PHOTON BOLTS) ---
         state.bullets.forEach(b => {
-            if (currentBullet === 'bullet_donut') {
-                ctx.font = '20px serif';
-                ctx.fillText('🍩', b.x - 5, b.y + 10);
-            } else if (currentBullet === 'bullet_cat') {
-                ctx.font = '20px serif';
-                ctx.fillText('🐱', b.x - 5, b.y + 10);
-            } else {
-                ctx.fillRect(b.x, b.y, b.w || BULLET_SIZE, b.h || 20);
-            }
-        });
-        ctx.shadowBlur = 0;
+            ctx.save();
+            ctx.fillStyle = '#00f0ff';
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 12;
 
-        // --- DRAW ENEMIES ---
-        ctx.font = '36px serif';
-        ctx.textAlign = 'center';
+            // Core beam
+            ctx.fillRect(b.x, b.y, b.w || BULLET_SIZE, b.h || 20);
+
+            // White hot center
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(b.x + 2, b.y + 2, (b.w || BULLET_SIZE) - 4, (b.h || 20) - 4);
+            ctx.restore();
+        });
+
+        // --- DRAW PROCEDURAL VECTOR ALIEN SCOUTS (NO EMOJIS) ---
         state.enemies.forEach(e => {
-            ctx.fillText('👾', e.x + ENEMY_SIZE / 2, e.y + 34);
+            ctx.save();
+            ctx.translate(e.x + ENEMY_SIZE / 2, e.y + ENEMY_SIZE / 2);
+
+            // Alien Drone Chassis
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = '#1c0512';
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 2;
+
+            // Angular Scout Wings
+            ctx.beginPath();
+            ctx.moveTo(0, 16);
+            ctx.lineTo(16, -6);
+            ctx.lineTo(8, -14);
+            ctx.lineTo(-8, -14);
+            ctx.lineTo(-16, -6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Wing tip blasters
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillRect(-14, -6, 3, 8);
+            ctx.fillRect(11, -6, 3, 8);
+
+            // Pulsing bio-plasma eye
+            const pulse = Math.sin(Date.now() / 110) * 1.5;
+            ctx.fillStyle = '#ff0055';
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(0, 1, 4 + pulse, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
         });
 
-        // --- DRAW BOSS LASERS ---
+        // --- DRAW BOSS LASERS (VECTOR PLASMA BEAMS) ---
         state.enemyLasers.forEach(l => {
+            ctx.save();
             ctx.fillStyle = l.color || '#ff0055';
             ctx.shadowColor = l.color || '#ff0055';
-            ctx.shadowBlur = 8;
-            ctx.fillRect(l.x, l.y, l.width, l.height);
-        });
-        ctx.shadowBlur = 0;
-
-        // --- DRAW POWERUPS ---
-        state.powerups.forEach(p => {
-            ctx.fillStyle = p.type === 'SHIELD' ? '#00ffff' : 'gold';
-            ctx.shadowColor = p.type === 'SHIELD' ? '#00ffff' : 'gold';
             ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
 
-            ctx.fillStyle = 'black';
-            ctx.font = 'bold 12px Arial';
+            if (l.shape === 'disc') {
+                ctx.beginPath();
+                ctx.arc(l.x + l.width / 2, l.y + l.height / 2, l.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(l.x + l.width / 2, l.y + l.height / 2, l.width / 4, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (l.shape === 'meteor') {
+                ctx.beginPath();
+                ctx.arc(l.x + l.width / 2, l.y + l.height / 2, l.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillRect(l.x, l.y, l.width, l.height);
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(l.x + 2, l.y + 2, Math.max(1, l.width - 4), Math.max(1, l.height - 4));
+            }
+            ctx.restore();
+        });
+
+        // --- DRAW POWERUPS (ILLUMINATED CYBER ORBS) ---
+        state.powerups.forEach(p => {
+            ctx.save();
+            const color = p.type === 'SHIELD' ? '#00ffff' : '#ffd700';
+            ctx.fillStyle = 'rgba(10, 15, 25, 0.9)';
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 12;
+
+            ctx.beginPath();
+            ctx.arc(p.x + 15, p.y + 15, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Tactical glyph
+            ctx.fillStyle = color;
+            ctx.font = '900 11px "Orbitron", monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            let icon = 'P';
-            if (p.type === 'SPREAD') icon = '⚡';
-            if (p.type === 'RAPID') icon = '🚀';
-            if (p.type === 'SHIELD') icon = '🛡️';
-            ctx.fillText(icon, p.x + 15, p.y + 15);
+            const label = p.type === 'SPREAD' ? '3X' : (p.type === 'RAPID' ? 'RPM' : 'DEF');
+            ctx.fillText(label, p.x + 15, p.y + 15);
+            ctx.restore();
         });
 
         // --- DRAW BOSS ---
@@ -816,36 +822,41 @@ const GalaxyDefender = () => {
             if (bossImg && bossImg.complete) {
                 ctx.drawImage(bossImg, -BOSS_SIZE / 2, -BOSS_SIZE / 2, BOSS_SIZE, BOSS_SIZE);
             } else {
-                ctx.font = '80px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('👹', 0, 30);
+                ctx.fillStyle = '#ff0055';
+                ctx.shadowColor = '#ff0055';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.moveTo(0, 50);
+                ctx.lineTo(50, -40);
+                ctx.lineTo(-50, -40);
+                ctx.closePath();
+                ctx.fill();
             }
 
             ctx.restore();
 
             // Boss Health Bar
             const percent = Math.max(0, state.boss.hp / (BOSS_HP_MAX * state.level));
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 8);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 7);
             ctx.fillStyle = percent > 0.5 ? '#00ff88' : '#ff0055';
-            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE * percent, 8);
-            ctx.strokeStyle = '#fff';
+            ctx.fillRect(state.boss.x, state.boss.y - 18, BOSS_SIZE * percent, 7);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 1;
-            ctx.strokeRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 8);
+            ctx.strokeRect(state.boss.x, state.boss.y - 18, BOSS_SIZE, 7);
         }
 
-        ctx.restore(); // Undo shake
+        ctx.restore();
 
         state.animationId = requestAnimationFrame(gameLoop);
     };
 
-    // Mobile & Keyboard Controls
     const moveLeft = () => {
         if (!gameActiveRef.current) return;
         if (gameState.current.lane > 0) {
             gameState.current.lane--;
             gameState.current.rollTarget = -0.32;
-            if (navigator.vibrate) navigator.vibrate(12);
+            if (navigator.vibrate) navigator.vibrate(10);
         }
     };
 
@@ -854,7 +865,7 @@ const GalaxyDefender = () => {
         if (gameState.current.lane < LANES - 1) {
             gameState.current.lane++;
             gameState.current.rollTarget = 0.32;
-            if (navigator.vibrate) navigator.vibrate(12);
+            if (navigator.vibrate) navigator.vibrate(10);
         }
     };
 
@@ -881,7 +892,7 @@ const GalaxyDefender = () => {
             }
 
             state.lastShotTime = now;
-            playBeep();
+            playFire();
         }
     };
 
@@ -900,7 +911,6 @@ const GalaxyDefender = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // Touch Swipe Handling
     const touchRef = useRef({ startX: 0, hasMoved: false });
 
     const handleTouchStart = (e) => {
@@ -938,24 +948,52 @@ const GalaxyDefender = () => {
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: '10px', color: '#00f0ff', minHeight: '100vh', touchAction: 'none'
+            padding: '16px', color: '#00f0ff', minHeight: '100vh', touchAction: 'none'
         }}>
+            {/* STUDIO TELEMETRY HEADER */}
             <div style={{
-                display: 'flex', justifyContent: 'space-between',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 width: '100%', maxWidth: '480px',
-                marginBottom: '8px', fontSize: '1.1rem', fontWeight: '900', fontFamily: 'monospace'
+                marginBottom: '10px',
+                padding: '10px 16px',
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '14px',
+                fontFamily: '"Orbitron", monospace',
+                fontSize: '0.85rem'
             }}>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                    {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2, filter: 'drop-shadow(0 0 6px red)' }}>❤️</span>
-                    ))}
+                {/* HOLOGRAPHIC SHIELD PIPS */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.68rem', color: '#64748b', letterSpacing: '1px' }}>HULL</span>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        {Array.from({ length: MAX_LIVES }).map((_, i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    borderRadius: '3px',
+                                    background: i < lives ? '#00f0ff' : 'rgba(255, 255, 255, 0.1)',
+                                    boxShadow: i < lives ? '0 0 8px #00f0ff' : 'none',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    <span style={{ color: '#00f0ff' }}>LVL {Math.floor(score / 1000) + 1}</span>
-                    <span style={{ color: '#ffd700' }}>SCORE: {score}</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ color: '#00f0ff', fontSize: '0.75rem' }}>
+                        WAVE <strong style={{ color: '#fff' }}>{Math.floor(score / 1000) + 1}</strong>
+                    </span>
+                    <span style={{ color: '#ffd700', fontSize: '0.9rem' }}>
+                        {score.toLocaleString()} <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>PTS</span>
+                    </span>
                 </div>
             </div>
 
+            {/* CONSOLE STAGE */}
             <div style={{ position: 'relative', width: '100%', maxWidth: '480px' }}>
                 <canvas
                     ref={canvasRef}
@@ -966,34 +1004,35 @@ const GalaxyDefender = () => {
                     onTouchEnd={handleTouchEnd}
                     style={{
                         width: '100%', height: 'auto',
-                        border: '3px solid #00f0ff',
-                        background: '#03050c',
-                        borderRadius: '16px',
-                        boxShadow: '0 0 35px rgba(0, 240, 255, 0.3), 0 20px 40px rgba(0,0,0,0.8)',
+                        border: '1px solid rgba(0, 240, 255, 0.35)',
+                        background: '#050711',
+                        borderRadius: '20px',
+                        boxShadow: '0 0 60px rgba(0, 240, 255, 0.18), 0 25px 50px rgba(0,0,0,0.85)',
                         touchAction: 'none'
                     }}
                 />
 
                 {!gameActive && !gameOver && !gameWon && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <p style={{ color: '#94a3b8', marginBottom: '14px', fontFamily: 'monospace' }}>
-                            [← / →] TO SHIFT LANES • [SPACE] TO FIRE
-                        </p>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '85%' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontFamily: '"Inter", sans-serif', letterSpacing: '0.5px' }}>
+                            USE [← / →] TO DRIFT LANES • [SPACE] TO FIRE
+                        </div>
                         <SquishyButton
                             onClick={startGame}
                             style={{
-                                padding: '16px 45px',
-                                fontSize: '1.4rem',
+                                padding: '16px 42px',
+                                fontSize: '1.1rem',
                                 background: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
                                 border: 'none',
                                 borderRadius: '14px',
                                 color: '#000',
                                 fontWeight: '900',
                                 fontFamily: '"Orbitron", monospace',
-                                boxShadow: '0 0 25px rgba(0, 240, 255, 0.6)'
+                                boxShadow: '0 0 30px rgba(0, 240, 255, 0.5)',
+                                letterSpacing: '1px'
                             }}
                         >
-                            ENGAGE DEFENSE 🚀
+                            ENGAGE DEFENSE
                         </SquishyButton>
                     </div>
                 )}
@@ -1005,19 +1044,23 @@ const GalaxyDefender = () => {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        background: 'rgba(3, 6, 15, 0.9)',
-                        backdropFilter: 'blur(10px)',
+                        background: 'rgba(5, 7, 17, 0.92)',
+                        backdropFilter: 'blur(16px)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: '16px'
+                        borderRadius: '20px',
+                        padding: '20px'
                     }}>
-                        <h2 style={{ fontSize: '2.8rem', color: '#ff0055', fontFamily: '"Orbitron", monospace', margin: '0 0 10px 0', textShadow: '0 0 20px #ff0055' }}>
-                            GAME OVER
+                        <div style={{ fontSize: '0.75rem', color: '#ff0055', fontFamily: '"Orbitron", monospace', letterSpacing: '2px', marginBottom: '6px' }}>
+                            SYSTEM FAILURE
+                        </div>
+                        <h2 style={{ fontSize: '2.5rem', color: '#fff', fontFamily: '"Orbitron", monospace', margin: '0 0 12px 0' }}>
+                            MISSION OVER
                         </h2>
-                        <p style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff', fontFamily: 'monospace' }}>
-                            Final Score: <strong style={{ color: '#00f0ff' }}>{score}</strong>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '24px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                            Final Score: <strong style={{ color: '#00f0ff' }}>{score.toLocaleString()}</strong>
                         </p>
 
                         {!hasRevived && (
@@ -1025,24 +1068,21 @@ const GalaxyDefender = () => {
                                 type="button"
                                 onClick={() => setShowSponsorModal(true)}
                                 style={{
-                                    marginBottom: '14px',
-                                    padding: '12px 24px',
-                                    background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25) 0%, rgba(0, 229, 255, 0.25) 100%)',
+                                    marginBottom: '16px',
+                                    padding: '12px 28px',
+                                    background: 'rgba(0, 255, 136, 0.12)',
                                     border: '1.5px solid #00ff88',
-                                    borderRadius: '10px',
-                                    color: '#fff',
+                                    borderRadius: '12px',
+                                    color: '#00ff88',
                                     fontWeight: '900',
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.85rem',
+                                    fontFamily: '"Orbitron", monospace',
+                                    fontSize: '0.78rem',
                                     cursor: 'pointer',
-                                    boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
+                                    boxShadow: '0 0 20px rgba(0, 255, 136, 0.25)',
+                                    letterSpacing: '1px'
                                 }}
                             >
-                                <span>📺</span>
-                                <span>FREE REVIVE (WATCH SPOT ❤️❤️)</span>
+                                SECOND CHANCE REVIVE (+2 LIVES)
                             </button>
                         )}
 
@@ -1051,7 +1091,7 @@ const GalaxyDefender = () => {
                             onClose={() => setShowSponsorModal(false)}
                             rewardTitle="2 EXTRA LIVES REVIVE"
                             rewardIcon="❤️"
-                            rewardDescription="Complete the 10-second sponsor spot to revive with 2 lives and continue defending!"
+                            rewardDescription="Watch the brief sponsor spot to restore hull integrity and resume battle!"
                             onRewarded={() => {
                                 setHasRevived(true);
                                 setGameOver(false);
@@ -1067,18 +1107,20 @@ const GalaxyDefender = () => {
                             onClick={startGame}
                             style={{
                                 marginBottom: '12px',
-                                padding: '12px 36px',
+                                padding: '14px 40px',
                                 background: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
                                 border: 'none',
-                                borderRadius: '8px',
+                                borderRadius: '12px',
                                 color: '#000',
-                                fontWeight: 'bold'
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace',
+                                letterSpacing: '1px'
                             }}
                         >
-                            Retry Mission
+                            RETRY MISSION
                         </SquishyButton>
-                        <Link to="/arcade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginTop: '6px' }}>
-                            ← Back to Base
+                        <Link to="/arcade" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.85rem', marginTop: '8px', fontFamily: '"Inter", sans-serif' }}>
+                            ← Return to Arcade Hub
                         </Link>
                     </div>
                 )}
@@ -1090,85 +1132,125 @@ const GalaxyDefender = () => {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        background: 'rgba(3, 6, 15, 0.92)',
-                        backdropFilter: 'blur(10px)',
+                        background: 'rgba(5, 7, 17, 0.94)',
+                        backdropFilter: 'blur(16px)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: '16px'
+                        borderRadius: '20px'
                     }}>
-                        <h2 style={{ fontSize: '3rem', color: '#00ffaa', fontFamily: '"Orbitron", monospace', textShadow: '0 0 25px #00ffaa' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#00ffaa', fontFamily: '"Orbitron", monospace', letterSpacing: '2px', marginBottom: '6px' }}>
+                            SECTOR SECURED
+                        </div>
+                        <h2 style={{ fontSize: '2.5rem', color: '#fff', fontFamily: '"Orbitron", monospace', margin: '0 0 16px 0' }}>
                             VICTORY!
                         </h2>
-                        <p style={{ fontSize: '1.4rem', marginBottom: '16px', color: '#fff', fontFamily: 'monospace' }}>
-                            GALAXY SAVED
-                        </p>
                         <SquishyButton
                             onClick={startGame}
                             style={{
                                 marginBottom: '12px',
-                                padding: '12px 36px',
-                                background: 'gold',
-                                color: 'black',
+                                padding: '14px 40px',
+                                background: '#ffd700',
+                                color: '#000',
                                 border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 'bold'
+                                borderRadius: '12px',
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace'
                             }}
                         >
-                            Defend Again
+                            DEFEND NEXT SECTOR
                         </SquishyButton>
-                        <Link to="/arcade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>
-                            ← Exit to Base
+                        <Link to="/arcade" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.85rem' }}>
+                            ← Exit to Hub
                         </Link>
                     </div>
                 )}
             </div>
 
-            {/* TOUCH ACTION BUTTONS */}
-            <div style={{ marginTop: '16px', display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%', paddingBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <SquishyButton
+            {/* PRECISION FROSTED GLASS CONTROLS (NO RAW EMOJIS) */}
+            <div style={{
+                marginTop: '16px',
+                display: 'flex',
+                gap: '24px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                maxWidth: '480px'
+            }}>
+                <div style={{ display: 'flex', gap: '14px' }}>
+                    <button
+                        type="button"
                         onClick={moveLeft}
                         style={{
-                            width: '65px',
-                            height: '65px',
-                            fontSize: '1.8rem',
-                            background: 'rgba(0, 240, 255, 0.1)',
-                            border: '2px solid #00f0ff',
-                            borderRadius: '16px'
+                            width: '64px',
+                            height: '64px',
+                            background: 'rgba(15, 23, 42, 0.8)',
+                            backdropFilter: 'blur(12px)',
+                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                            borderRadius: '16px',
+                            color: '#00f0ff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)'
                         }}
                     >
-                        ⬅️
-                    </SquishyButton>
-                    <SquishyButton
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
                         onClick={moveRight}
                         style={{
-                            width: '65px',
-                            height: '65px',
-                            fontSize: '1.8rem',
-                            background: 'rgba(0, 240, 255, 0.1)',
-                            border: '2px solid #00f0ff',
-                            borderRadius: '16px'
+                            width: '64px',
+                            height: '64px',
+                            background: 'rgba(15, 23, 42, 0.8)',
+                            backdropFilter: 'blur(12px)',
+                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                            borderRadius: '16px',
+                            color: '#00f0ff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)'
                         }}
                     >
-                        ➡️
-                    </SquishyButton>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
                 </div>
-                <SquishyButton
+
+                <button
+                    type="button"
                     onClick={fire}
                     style={{
-                        width: '85px',
-                        height: '85px',
-                        fontSize: '1.6rem',
-                        background: 'linear-gradient(135deg, #ff0055 0%, #ff5500 100%)',
-                        border: '3px solid #ffd700',
+                        width: '74px',
+                        height: '74px',
+                        background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.25) 0%, rgba(255, 85, 0, 0.35) 100%)',
+                        backdropFilter: 'blur(12px)',
+                        border: '2px solid #ff0055',
                         borderRadius: '50%',
-                        boxShadow: '0 0 20px rgba(255, 85, 0, 0.5)'
+                        color: '#ff0055',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 25px rgba(255, 0, 85, 0.4)'
                     }}
                 >
-                    🔥
-                </SquishyButton>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="22" y1="12" x2="18" y2="12"></line>
+                        <line x1="6" y1="12" x2="2" y2="12"></line>
+                        <line x1="12" y1="6" x2="12" y2="2"></line>
+                        <line x1="12" y1="22" x2="12" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         </div>
     );

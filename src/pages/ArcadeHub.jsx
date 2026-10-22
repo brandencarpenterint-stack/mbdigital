@@ -1,3 +1,10 @@
+import {
+    EmblemCrash, EmblemMines, EmblemHiLo, EmblemScratchers,
+    EmblemBlackjack, EmblemRoulette, EmblemDerby, EmblemSlots,
+    EmblemUnderworld, EmblemDozer, EmblemPinball, EmblemPlinko,
+    EmblemDrift, EmblemDefense, EmblemGalaxy, EmblemFlappy,
+    EmblemWheel, EmblemBricks, EmblemSnake, EmblemUnboxing, EmblemArena
+} from '../components/GameEmblems';
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -124,7 +131,7 @@ const games = [
         category: 'casino',
         desc: 'Rocket Multipliers & 100x Auto-Cashouts',
         gradient: 'linear-gradient(135deg, #ff0055 0%, #ffd700 100%)',
-        icon: <img src='/assets/skins/face_dino.png' alt='Crash' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0055)'}} />,
+        icon: <EmblemCrash />,
         colSpan: 2,
         path: '/arcade/crash',
         leaderboardId: 'cyber_crash'
@@ -135,7 +142,7 @@ const games = [
         category: 'casino',
         desc: '5x5 Grid, Scout Drones & Exponential Gems',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #ffd700 100%)',
-        icon: <img src='/assets/skins/face_bunny.png' alt='Mines' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        icon: <EmblemMines />,
         colSpan: 2,
         path: '/arcade/mines',
         leaderboardId: 'cyber_mines'
@@ -146,7 +153,7 @@ const games = [
         category: 'casino',
         desc: 'Card Streak Guessing, Up to 180x Multipliers',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_bunny.png' alt='Hi-Lo' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        icon: <EmblemHiLo />,
         colSpan: 2,
         path: '/arcade/hilo',
         leaderboardId: 'cyber_hilo'
@@ -157,7 +164,7 @@ const games = [
         category: 'casino',
         desc: 'Silver Foil Instant Lottery, 100k CP Jackpots',
         gradient: 'linear-gradient(135deg, #ffd700 0%, #ff8800 100%)',
-        icon: <img src='/assets/skins/face_money.png' alt='Scratchers' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ffd700)'}} />,
+        icon: <EmblemScratchers />,
         colSpan: 2,
         path: '/arcade/scratchers',
         leaderboardId: 'cyber_scratchers'
@@ -168,7 +175,7 @@ const games = [
         category: 'casino',
         desc: 'Single-Zero European Wheel & 35:1 Payouts',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_money.png' alt='Roulette' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        icon: <EmblemRoulette />,
         colSpan: 2,
         path: '/arcade/roulette',
         leaderboardId: 'cyber_roulette'
@@ -179,7 +186,7 @@ const games = [
         category: 'casino',
         desc: '3:2 Payouts, Card Counting HUD & High Stakes',
         gradient: 'linear-gradient(135deg, #0d2818 0%, #00ff66 100%)',
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        icon: <EmblemBlackjack />,
         colSpan: 2,
         path: '/arcade/blackjack',
         leaderboardId: 'cyber_21'
@@ -190,7 +197,7 @@ const games = [
         category: 'casino',
         desc: '8-Bro Cyber Velodrome Racing & Exacta Bets',
         gradient: 'linear-gradient(135deg, #00ff66 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00ff66)'}} />,
+        icon: <EmblemDerby />,
         colSpan: 2,
         path: '/arcade/derby',
         leaderboardId: 'cyber_derby'
@@ -201,7 +208,7 @@ const games = [
         category: 'casino',
         desc: '3-Reel Crypto Tumbler & Vault Jackpots',
         gradient: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)',
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
+        icon: <EmblemSlots />,
         colSpan: 2,
         leaderboardId: 'cosmic_slots'
     },
@@ -211,7 +218,7 @@ const games = [
         category: 'casino',
         desc: 'High-Stakes Peer-to-Peer Wagers',
         gradient: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
-        icon: <img src='/assets/skins/face_hoodie.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #4e4376)'}} />,
+        icon: <EmblemUnderworld />,
         colSpan: 2,
         path: '/underworld'
     },
@@ -223,7 +230,7 @@ const games = [
         category: 'action',
         desc: 'Mechanical Neon Pusher, Figurines & Quakes',
         gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
-        icon: <img src='/assets/skins/face_star.png' alt='Coin Dozer' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        icon: <EmblemDozer />,
         colSpan: 2,
         path: '/arcade/dozer',
         leaderboardId: 'cyber_dozer'
@@ -234,7 +241,7 @@ const games = [
         category: 'action',
         desc: 'Bumper Chaos, B-R-O Drop Targets & Multiball',
         gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
-        icon: <img src='/assets/skins/face_star.png' alt='Pinball' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00e5ff)'}} />,
+        icon: <EmblemPinball />,
         colSpan: 2,
         path: '/arcade/pinball',
         leaderboardId: 'cyber_pinball'
@@ -245,7 +252,7 @@ const games = [
         category: 'action',
         desc: 'Pegged Gravity 100x High-Multiplier Drops',
         gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
-        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #f107a3)'}} />,
+        icon: <EmblemPlinko />,
         colSpan: 2,
         path: '/arcade/plinko',
         leaderboardId: 'cyber_plinko'
@@ -256,7 +263,7 @@ const games = [
         category: 'action',
         desc: 'Pseudo-3D Synthwave Supercar Racer',
         gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        icon: <EmblemDrift />,
         colSpan: 2,
         path: '/arcade/drift',
         leaderboardId: 'neon_drift'
@@ -267,7 +274,7 @@ const games = [
         category: 'action',
         desc: 'Branded Cyber Tower Defense',
         gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
-        icon: <img src='/assets/skins/face_astro.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #00c6ff)'}} />,
+        icon: <EmblemDefense />,
         colSpan: 2,
         leaderboardId: 'merch_defense'
     },
@@ -277,7 +284,7 @@ const games = [
         category: 'action',
         desc: 'Retro Space Shooter & Boss Battles',
         gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
-        icon: <img src='/assets/skins/face_space.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #8E2DE2)'}} />,
+        icon: <EmblemGalaxy />,
         colSpan: 1,
         leaderboardId: 'galaxy_defender'
     },
@@ -307,7 +314,7 @@ const games = [
         category: 'action',
         desc: 'Turn-Based RPG Squad Battles',
         gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff0844)'}} />,
+        icon: <EmblemArena />,
         colSpan: 2,
         path: '/arena'
     },
@@ -319,7 +326,7 @@ const games = [
         category: 'retro',
         desc: 'Breakout Pixel Destruction',
         gradient: 'linear-gradient(135deg, #da22ff 0%, #9733ee 100%)',
-        icon: <img src='/assets/skins/face_gamer.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #da22ff)'}} />,
+        icon: <EmblemBricks />,
         colSpan: 1,
         leaderboardId: 'neon_bricks'
     },
@@ -329,7 +336,7 @@ const games = [
         category: 'retro',
         desc: 'Retro Grid Slither',
         gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-        icon: <img src='/assets/skins/face_dino.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #38ef7d)'}} />,
+        icon: <EmblemSnake />,
         colSpan: 1,
         leaderboardId: 'neon_snake'
     },
@@ -339,7 +346,7 @@ const games = [
         category: 'retro',
         desc: 'Physics Pipe Dodging',
         gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
-        icon: <img src='/assets/skins/face_default.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #22C1C3)'}} />,
+        icon: <EmblemFlappy />,
         colSpan: 1,
         leaderboardId: 'flappy_mascot'
     },
@@ -349,7 +356,7 @@ const games = [
         category: 'retro',
         desc: 'Mystery Crates & Rare Skins',
         gradient: 'linear-gradient(135deg, #ff007f 0%, #7928ca 100%)',
-        icon: <img src='/assets/skins/face_star.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #ff007f)'}} />,
+        icon: <EmblemUnboxing />,
         colSpan: 2,
         leaderboardId: 'hype_drop'
     },
@@ -359,7 +366,7 @@ const games = [
         category: 'retro',
         desc: '10,000 CP Daily Free Spin',
         gradient: 'linear-gradient(135deg, #ffd700 0%, #ff007f 100%)',
-        icon: <img src='/assets/skins/face_money.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px gold)'}} />,
+        icon: <EmblemWheel />,
         colSpan: 2,
         path: '/arcade/wheel',
         leaderboardId: 'cyber_wheel'

@@ -601,33 +601,62 @@ const FlappyMascot = () => {
     }, []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', color: '#00f0ff' }}>
-            <h1 style={{ fontFamily: '"Orbitron", monospace', fontSize: '2.5rem', margin: '10px 0', textShadow: '0 0 20px rgba(0, 240, 255, 0.6)', letterSpacing: '2px' }}>
-                FLAPPY BRO
-            </h1>
-
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '400px',
-                marginBottom: '10px',
-                fontSize: '1.2rem',
-                color: '#fff',
-                fontWeight: '900',
-                fontFamily: 'monospace'
-            }}>
-                <span style={{
-                    transform: `scale(${scoreScale})`,
-                    transition: 'transform 0.15s ease-out',
-                    display: 'inline-block',
-                    color: '#00f0ff',
-                    textShadow: '0 0 10px #00f0ff'
+        <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '16px', color: '#00f0ff', minHeight: '100vh', touchAction: 'none'
+        }}>
+            {/* RETURN BUTTON */}
+            <Link to="/arcade" style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 100, textDecoration: 'none' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '8px 16px',
+                    background: 'rgba(15, 23, 42, 0.75)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '30px',
+                    color: '#e2e8f0',
+                    fontSize: '0.78rem',
+                    fontFamily: '"Orbitron", monospace',
+                    letterSpacing: '1px',
+                    transition: 'all 0.2s ease'
                 }}>
-                    SCORE: {score}
-                </span>
-                <span style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
-                    🪙 {coins?.toLocaleString() || 0}
-                </span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    <span>ARCADE</span>
+                </div>
+            </Link>
+
+            {/* STUDIO TELEMETRY HEADER */}
+            <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                width: '100%', maxWidth: '400px',
+                marginBottom: '10px',
+                padding: '10px 16px',
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '14px',
+                fontFamily: '"Orbitron", monospace',
+                fontSize: '0.85rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00f0ff', boxShadow: '0 0 8px #00f0ff' }}></span>
+                    <span style={{ fontSize: '0.75rem', color: '#fff', letterSpacing: '1px' }}>FLAPPY BRO</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span style={{
+                        transform: `scale(${scoreScale})`,
+                        transition: 'transform 0.15s ease-out',
+                        display: 'inline-block',
+                        color: '#00f0ff',
+                        fontSize: '0.9rem'
+                    }}>
+                        {score} <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>PTS</span>
+                    </span>
+                    <span style={{ color: '#ffd700', fontSize: '0.85rem' }}>
+                        🪙 {coins?.toLocaleString() || 0}
+                    </span>
+                </div>
             </div>
 
             <div style={{ position: 'relative' }}>
@@ -829,12 +858,7 @@ const FlappyMascot = () => {
                 </Link>
             </div>
 
-            {/* HOME BUTTON */}
-            <Link to="/arcade" style={{ position: 'absolute', top: '15px', left: '15px', zIndex: 100 }}>
-                <SquishyButton style={{ borderRadius: '50px', padding: '8px 16px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                    🏠 BASE
-                </SquishyButton>
-            </Link>
+
         </div>
     );
 };
