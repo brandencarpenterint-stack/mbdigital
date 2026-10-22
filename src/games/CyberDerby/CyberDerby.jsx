@@ -492,10 +492,31 @@ const CyberDerby = () => {
                     ctx.stroke();
 
                     // Label
-                    ctx.fillStyle = d === TRACK_LENGTH ? '#ffd700' : 'rgba(0, 229, 255, 0.6)';
-                    ctx.font = d === TRACK_LENGTH ? 'bold 14px Orbitron' : '10px Orbitron';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(d === TRACK_LENGTH ? '🏁 1100M FINISH' : d + 'M', screenX, TRACK_TOP - 8);
+                    if (d === TRACK_LENGTH) {
+                        const bW = 24;
+                        const bH = 10;
+                        const bX = screenX - bW / 2;
+                        const bY = TRACK_TOP - 20;
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(bX, bY, bW, bH);
+                        ctx.fillStyle = '#fff';
+                        for (let rIdx = 0; rIdx < 2; rIdx++) {
+                            for (let cIdx = 0; cIdx < 4; cIdx++) {
+                                if ((rIdx + cIdx) % 2 === 0) {
+                                    ctx.fillRect(bX + cIdx * 6, bY + rIdx * 5, 6, 5);
+                                }
+                            }
+                        }
+                        ctx.fillStyle = '#ffd700';
+                        ctx.font = 'bold 11px Orbitron';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('FINISH // 1100M', screenX, TRACK_TOP - 24);
+                    } else {
+                        ctx.fillStyle = 'rgba(0, 229, 255, 0.6)';
+                        ctx.font = '10px Orbitron';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(d + 'M', screenX, TRACK_TOP - 8);
+                    }
                 }
             }
 
@@ -534,18 +555,29 @@ const CyberDerby = () => {
                         ctx.fill();
                         ctx.shadowBlur = 0;
                     } else if (h.type === 'slick') {
-                        // Yellow banana oil slick
-                        ctx.fillStyle = '#ffd700';
-                        ctx.shadowColor = '#ffaa00';
-                        ctx.shadowBlur = 8;
+                        // High-voltage EMP Disruption Slick
+                        ctx.save();
+                        ctx.shadowColor = '#ff0055';
+                        ctx.shadowBlur = 12;
+                        const slickGrad = ctx.createRadialGradient(hx, hy, 2, hx, hy, 16);
+                        slickGrad.addColorStop(0, 'rgba(255, 0, 85, 0.95)');
+                        slickGrad.addColorStop(0.6, 'rgba(255, 170, 0, 0.7)');
+                        slickGrad.addColorStop(1, 'rgba(255, 0, 85, 0)');
+                        ctx.fillStyle = slickGrad;
                         ctx.beginPath();
-                        ctx.ellipse(hx, hy, 14, 8, 0, 0, Math.PI * 2);
+                        ctx.ellipse(hx, hy, 16, 9, 0, 0, Math.PI * 2);
                         ctx.fill();
-                        ctx.fillStyle = '#000';
-                        ctx.font = '12px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('🍌', hx, hy + 4);
+
                         ctx.shadowBlur = 0;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(hx - 7, hy + 2);
+                        ctx.lineTo(hx - 2, hy - 4);
+                        ctx.lineTo(hx + 3, hy + 3);
+                        ctx.lineTo(hx + 8, hy - 2);
+                        ctx.stroke();
+                        ctx.restore();
                     }
                 }
             });
@@ -646,8 +678,21 @@ const CyberDerby = () => {
                 ctx.fillText('[#' + r.num + '] ' + r.name, rx, ry - 22);
 
                 if (r.id === selectedRacer.id) {
+                    ctx.save();
                     ctx.fillStyle = '#ffd700';
-                    ctx.fillText('⭐ YOUR PICK', rx, ry - 33);
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 8;
+                    ctx.font = '900 10px Orbitron, monospace';
+                    ctx.fillText('[ TARGET LOCKED ]', rx, ry - 34);
+
+                    ctx.beginPath();
+                    ctx.moveTo(rx, ry - 28);
+                    ctx.lineTo(rx + 4, ry - 24);
+                    ctx.lineTo(rx, ry - 20);
+                    ctx.lineTo(rx - 4, ry - 24);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
                 }
                 ctx.shadowBlur = 0;
             });
@@ -687,39 +732,63 @@ const CyberDerby = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '15px',
-                background: 'rgba(15, 15, 30, 0.7)',
+                marginBottom: '18px',
+                background: 'rgba(15, 15, 30, 0.75)',
                 padding: '12px 20px',
-                borderRadius: '12px',
-                border: '1px solid rgba(0, 229, 255, 0.2)',
-                backdropFilter: 'blur(8px)'
+                borderRadius: '16px',
+                border: '1px solid rgba(0, 229, 255, 0.25)',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
                 <Link to="/arcade" style={{
                     color: '#00e5ff',
                     textDecoration: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                    display: 'flex',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 229, 255, 0.08)',
+                    border: '1px solid rgba(0, 229, 255, 0.3)'
                 }}>
-                    ◄ ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#ffd700' }}>
-                        🏆 BEST DERBY WIN: <span style={{ fontWeight: 'bold' }}>{(stats?.derbyHighScore || 0).toLocaleString()} CP</span>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{
+                        fontSize: '0.8rem',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        letterSpacing: '0.5px'
+                    }}>
+                        HIGH RECORD: <span style={{ fontWeight: '900', color: '#ffd700' }}>{(stats?.derbyHighScore || 0).toLocaleString()} CP</span>
                     </div>
                     <div style={{
-                        background: 'rgba(255, 215, 0, 0.12)',
-                        border: '1px solid #ffd700',
+                        background: 'rgba(255, 215, 0, 0.08)',
+                        border: '1px solid rgba(255, 215, 0, 0.3)',
                         padding: '6px 14px',
-                        borderRadius: '20px',
-                        fontWeight: 'bold',
+                        borderRadius: '10px',
+                        fontWeight: '800',
                         color: '#ffd700',
-                        fontSize: '0.95rem'
+                        fontSize: '0.9rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px'
                     }}>
-                        🪙 {(coins || 0).toLocaleString()} CP
+                        <span style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#ffd700',
+                            boxShadow: '0 0 8px #ffd700'
+                        }} />
+                        {(coins || 0).toLocaleString()} CP
                     </div>
                 </div>
             </div>

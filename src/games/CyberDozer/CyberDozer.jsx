@@ -547,20 +547,23 @@ const CyberDozer = () => {
                 ctx.fillRect(LEFT_GUTTER - 6, 60, 6, FRONT_LIP - 60);
                 ctx.fillRect(RIGHT_GUTTER, 60, 6, FRONT_LIP - 60);
 
-                ctx.fillStyle = '#00ff66';
-                ctx.font = '900 10px monospace';
+                ctx.fillStyle = '#00ffcc';
+                ctx.shadowColor = '#00ffcc';
+                ctx.shadowBlur = 8;
+                ctx.font = '900 10px "Orbitron", monospace';
                 ctx.textAlign = 'center';
                 ctx.save();
                 ctx.translate(LEFT_GUTTER / 2, TABLE_HEIGHT / 2);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillText('⚡ SHIELDS ACTIVE ⚡', 0, 0);
+                ctx.fillText('[ ION BARRIER ACTIVE ]', 0, 0);
                 ctx.restore();
 
                 ctx.save();
                 ctx.translate(RIGHT_GUTTER + 20, TABLE_HEIGHT / 2);
                 ctx.rotate(Math.PI / 2);
-                ctx.fillText('⚡ SHIELDS ACTIVE ⚡', 0, 0);
+                ctx.fillText('[ ION BARRIER ACTIVE ]', 0, 0);
                 ctx.restore();
+                ctx.shadowBlur = 0;
             }
 
             // Mechanical Moving Pusher Shelf
@@ -645,15 +648,61 @@ const CyberDozer = () => {
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // Icon / Value Text
-                    if (c.type.icon) {
-                        ctx.font = `${Math.floor(c.radius * 1.0)}px sans-serif`;
+                    // Precision Vector Icon / Value Stamp
+                    if (c.type.id === 'diamond') {
+                        // Faceted Vector Gem
+                        ctx.save();
+                        ctx.shadowColor = '#00ffcc';
+                        ctx.shadowBlur = 8;
+                        const gr = c.radius * 0.55;
+                        ctx.fillStyle = '#00ffcc';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -gr);
+                        ctx.lineTo(gr, 0);
+                        ctx.lineTo(0, gr);
+                        ctx.lineTo(-gr, 0);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -gr);
+                        ctx.lineTo(gr * 0.4, 0);
+                        ctx.lineTo(0, gr * 0.4);
+                        ctx.lineTo(-gr * 0.4, 0);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    } else if (c.type.id === 'frenzy') {
+                        // High-Voltage Plasma Bolt
+                        ctx.save();
+                        ctx.shadowColor = '#ffe600';
+                        ctx.shadowBlur = 10;
+                        const fr = c.radius * 0.6;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.moveTo(1, -fr);
+                        ctx.lineTo(-fr * 0.5, 0);
+                        ctx.lineTo(0, 0);
+                        ctx.lineTo(-fr * 0.3, fr);
+                        ctx.lineTo(fr * 0.6, -fr * 0.1);
+                        ctx.lineTo(fr * 0.1, -fr * 0.1);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    } else if (c.type.icon) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = '900 10px "Orbitron", monospace';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText(c.type.icon, 0, 0);
+                        ctx.fillText(c.type.name ? c.type.name[0] : '★', 0, 0);
                     } else {
                         ctx.fillStyle = '#000';
-                        ctx.font = '900 9px monospace';
+                        ctx.font = '900 9px "Orbitron", monospace';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText('CP', 0, 0);
@@ -733,20 +782,23 @@ const CyberDozer = () => {
             <div className="relative z-10 w-full max-w-[760px] flex items-center justify-between mb-3 px-1">
                 <Link
                     to="/arcade"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 hover:border-cyan-400/60 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
                 >
-                    <span>◄</span> ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                     <div className="px-3 py-1.5 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-black flex items-center gap-1.5 shadow-lg">
-                        <span>🪙</span>
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00e5ff]" />
                         <span>{tokens} TOKENS</span>
                         <span className="text-[10px] text-cyan-400 font-normal">({regenTimer}s)</span>
                     </div>
 
                     <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-1.5 shadow-lg">
-                        <span>💰</span>
+                        <span className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffd700]" />
                         <span>{(coins ?? 0).toLocaleString()} CP</span>
                     </div>
                 </div>
@@ -757,7 +809,12 @@ const CyberDozer = () => {
                 {/* Header Title Banner */}
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl animate-spin" style={{ animationDuration: '6s' }}>⚙️</span>
+                        <div className="w-6 h-6 text-cyan-400 animate-spin" style={{ animationDuration: '10s' }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
                         <h1 className="text-xl sm:text-2xl font-black italic tracking-wider bg-gradient-to-r from-cyan-400 via-yellow-300 to-pink-500 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(0,229,255,0.6)]">
                             CYBER COIN DOZER 2088
                         </h1>

@@ -222,18 +222,35 @@ const CyberScratchers = () => {
             ctx.stroke();
         }
 
-        // Centered Holographic Stamp
-        ctx.fillStyle = '#1e293b';
-        ctx.font = '900 18px "Courier New", monospace';
+        // Centered Holographic Quantum Seal
+        ctx.save();
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = selectedTier.color;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = selectedTier.color;
+        ctx.shadowBlur = 12;
+
+        const boxW = w * 0.76;
+        const boxH = 54;
+        const boxX = (w - boxW) / 2;
+        const boxY = h / 2 - 27;
+
+        ctx.beginPath();
+        ctx.roundRect(boxX, boxY, boxW, boxH, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 13px "Orbitron", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 8;
-        ctx.fillText('⚡ SCRATCH TO REVEAL ⚡', w / 2, h / 2 - 10);
+        ctx.fillText('// SCRATCH TO DECRYPT //', w / 2, h / 2 - 8);
 
-        ctx.font = '700 11px "Courier New", monospace';
+        ctx.font = '800 10px "Orbitron", monospace';
         ctx.fillStyle = selectedTier.color;
-        ctx.fillText(`TOP PRIZE: +${selectedTier.maxPrize.toLocaleString()} CP`, w / 2, h / 2 + 16);
+        ctx.fillText(`TOP PRIZE: +${selectedTier.maxPrize.toLocaleString()} CP`, w / 2, h / 2 + 12);
+        ctx.restore();
     };
 
     // Scratch Action (destination-out clear)
@@ -374,14 +391,17 @@ const CyberScratchers = () => {
             <div className="relative z-10 w-full max-w-[760px] flex items-center justify-between mb-3 px-1">
                 <Link
                     to="/arcade"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-yellow-500/30 text-yellow-400 hover:text-yellow-300 hover:border-yellow-400/60 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
                 >
-                    <span>◄</span> ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-1.5 shadow-lg">
-                        <span>🪙</span>
+                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-2 shadow-lg">
+                        <span className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffd700]" />
                         <span>{(coins ?? 0).toLocaleString()} CP</span>
                     </div>
                 </div>
@@ -392,7 +412,13 @@ const CyberScratchers = () => {
                 {/* Header Title */}
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl animate-bounce">🎟️</span>
+                        <div className="w-7 h-7 text-yellow-400 animate-pulse">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                                <circle cx="12" cy="12" r="2"/>
+                                <path d="M6 12h.01M18 12h.01"/>
+                            </svg>
+                        </div>
                         <h1 className="text-xl sm:text-2xl font-black italic tracking-wider bg-gradient-to-r from-yellow-400 via-amber-300 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]">
                             CYBER SCRATCHERS: HIGH-ROLLER
                         </h1>

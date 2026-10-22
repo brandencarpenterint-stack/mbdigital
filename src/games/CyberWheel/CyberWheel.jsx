@@ -133,21 +133,52 @@ const CyberWheel = () => {
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, 42, 0, 2 * Math.PI);
-        ctx.fillStyle = '#111';
+        ctx.arc(cx, cy, 44, 0, 2 * Math.PI);
+        // Outer brushed metallic ring
+        const hubGrad = ctx.createRadialGradient(cx - 10, cy - 10, 5, cx, cy, 44);
+        hubGrad.addColorStop(0, '#2d3748');
+        hubGrad.addColorStop(0.7, '#1a202c');
+        hubGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = hubGrad;
         ctx.fill();
         ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 4;
         ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.stroke();
         ctx.shadowBlur = 0;
 
+        // Inner glowing reactor ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.7)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // High-tech center core
+        const coreGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 22);
+        coreGrad.addColorStop(0, '#ffffff');
+        coreGrad.addColorStop(0.3, '#00ffcc');
+        coreGrad.addColorStop(1, '#052b2f');
+        ctx.fillStyle = coreGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Reticle ticks
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy);
+        ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy + 12);
+        ctx.stroke();
+
+        // Central gold pip
         ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 22px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🎰', cx, cy);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+        ctx.fill();
+
         ctx.restore();
 
         ctx.save();
@@ -290,25 +321,62 @@ const CyberWheel = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '20px',
-                borderBottom: '1px solid #222',
-                paddingBottom: '12px'
+                marginBottom: '24px',
+                padding: '12px 20px',
+                background: 'rgba(15, 15, 28, 0.7)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 215, 0, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
-                <Link to="/arcade" style={{ textDecoration: 'none', color: '#00ffcc', fontWeight: 'bold' }}>
-                    ◄ ARCADE
+                <Link to="/arcade" style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 255, 204, 0.08)',
+                    border: '1px solid rgba(0, 255, 204, 0.3)',
+                    color: '#00ffcc',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
                 </Link>
                 <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ffd700', textShadow: '0 0 15px gold', letterSpacing: '2px' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ffd700', textShadow: '0 0 20px rgba(255, 215, 0, 0.6)', letterSpacing: '3px', fontWeight: '900' }}>
                         CYBER WHEEL
                     </h1>
-                    <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>
-                        HIGH ROLLER PRIZE WHEEL • 10,000 CP JACKPOT
+                    <div style={{ fontSize: '0.65rem', color: '#00ffcc', letterSpacing: '2px', opacity: 0.8, textTransform: 'uppercase' }}>
+                        HIGH ROLLER APEX • 10,000 CP JACKPOT
                     </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: '#ffd700', fontWeight: '900', fontSize: '1.1rem' }}>
-                        🪙 {coins.toLocaleString()} CP
-                    </div>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.9rem'
+                }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffd700',
+                        boxShadow: '0 0 8px #ffd700'
+                    }} />
+                    {coins.toLocaleString()} CP
                 </div>
             </div>
 

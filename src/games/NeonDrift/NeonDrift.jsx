@@ -366,15 +366,73 @@ const NeonDrift = () => {
                             try { playWin(); } catch(e) {}
                         }
                     } else {
-                        ctx.fillStyle = col.type === 'COIN' ? '#ffd700' : '#00ffcc';
-                        ctx.beginPath();
-                        ctx.arc(cx, cy - 20, size / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#000';
-                        ctx.font = 'bold ' + Math.max(8, Math.round(size / 2)) + 'px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(col.type === 'COIN' ? '🪙' : '⚡', cx, cy - 20);
+                        const r = size / 2;
+                        ctx.save();
+                        ctx.translate(cx, cy - 20);
+
+                        if (col.type === 'COIN') {
+                            // Glowing Golden Cyber-Coin
+                            ctx.shadowColor = '#ffd700';
+                            ctx.shadowBlur = Math.min(20, r * 1.2);
+
+                            const rimGrad = ctx.createLinearGradient(-r, -r, r, r);
+                            rimGrad.addColorStop(0, '#fff3a8');
+                            rimGrad.addColorStop(0.5, '#ffd700');
+                            rimGrad.addColorStop(1, '#b8860b');
+                            ctx.fillStyle = rimGrad;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, r, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.shadowBlur = 0;
+                            const innerGrad = ctx.createRadialGradient(-r * 0.2, -r * 0.2, r * 0.1, 0, 0, r * 0.78);
+                            innerGrad.addColorStop(0, '#ffe875');
+                            innerGrad.addColorStop(0.8, '#d49400');
+                            innerGrad.addColorStop(1, '#8c6000');
+                            ctx.fillStyle = innerGrad;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, r * 0.78, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+                            ctx.lineWidth = Math.max(1, r * 0.12);
+                            ctx.beginPath();
+                            ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
+                            ctx.stroke();
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = '900 ' + Math.max(7, Math.round(r * 0.65)) + 'px "Orbitron", sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText('C', 0, 0.5);
+                        } else {
+                            // Glowing Plasma Nitro Core
+                            ctx.shadowColor = '#00ffcc';
+                            ctx.shadowBlur = Math.min(22, r * 1.4);
+
+                            const auraGrad = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r);
+                            auraGrad.addColorStop(0, '#ffffff');
+                            auraGrad.addColorStop(0.3, '#00ffcc');
+                            auraGrad.addColorStop(1, '#003844');
+                            ctx.fillStyle = auraGrad;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, r, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = '#ffffff';
+                            ctx.beginPath();
+                            const s = r * 0.65;
+                            ctx.moveTo(s * 0.1, -s);
+                            ctx.lineTo(-s * 0.45, s * 0.05);
+                            ctx.lineTo(0, s * 0.05);
+                            ctx.lineTo(-s * 0.15, s);
+                            ctx.lineTo(s * 0.5, -s * 0.1);
+                            ctx.lineTo(s * 0.05, -s * 0.1);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        ctx.restore();
                     }
                 }
             });
@@ -525,25 +583,64 @@ const NeonDrift = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '15px',
-                borderBottom: '1px solid #222',
-                paddingBottom: '10px'
+                marginBottom: '18px',
+                padding: '12px 20px',
+                background: 'rgba(15, 15, 28, 0.7)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 0, 127, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
-                <Link to="/arcade" onClick={stopEngineAudio} style={{ textDecoration: 'none', color: '#00ffcc', fontWeight: 'bold' }}>
-                    ◄ ARCADE
+                <Link to="/arcade" onClick={stopEngineAudio} style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 255, 204, 0.08)',
+                    border: '1px solid rgba(0, 255, 204, 0.3)',
+                    color: '#00ffcc',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                    transition: 'all 0.2s'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
                 </Link>
                 <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ff007f', textShadow: '0 0 15px #ff007f', letterSpacing: '2px' }}>
-                        NEON DRIFT: 2088
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#ff007f', textShadow: '0 0 20px rgba(255, 0, 127, 0.6)', letterSpacing: '3px', fontWeight: '900' }}>
+                        NEON DRIFT
                     </h1>
-                    <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>
-                        OUTRUN THE VOID • PSEUDO-3D SYNTHWAVE RACER
+                    <div style={{ fontSize: '0.65rem', color: '#00ffcc', letterSpacing: '2px', opacity: 0.8, textTransform: 'uppercase' }}>
+                        Studio Velocity 2088
                     </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: '#ffd700', fontWeight: 'bold', fontSize: '1rem' }}>
-                        🪙 {coins.toLocaleString()} CP
-                    </div>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.9rem',
+                    letterSpacing: '0.5px'
+                }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffd700',
+                        boxShadow: '0 0 8px #ffd700'
+                    }} />
+                    {coins.toLocaleString()} CP
                 </div>
             </div>
 
@@ -593,11 +690,17 @@ const NeonDrift = () => {
                         {nitroLeft > 0 && (
                             <div style={{
                                 position: 'absolute', top: '80px', left: '20px',
-                                background: '#ff007f', color: '#fff', padding: '4px 12px',
-                                borderRadius: '15px', fontSize: '0.75rem', fontWeight: 'bold',
-                                boxShadow: '0 0 15px #ff007f'
+                                background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.9), rgba(0, 255, 204, 0.9))',
+                                color: '#000', padding: '6px 16px',
+                                borderRadius: '20px', fontSize: '0.8rem', fontWeight: '900',
+                                letterSpacing: '1px',
+                                boxShadow: '0 0 25px rgba(0, 255, 204, 0.6)',
+                                display: 'flex', alignItems: 'center', gap: '8px'
                             }}>
-                                ⚡ NITRO BOOST: {nitroLeft}S
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                </svg>
+                                NITRO OVERDRIVE: {nitroLeft}S
                             </div>
                         )}
 
@@ -732,7 +835,7 @@ const NeonDrift = () => {
 
             {/* TOUCH CONTROLS FOR MOBILE */}
             <div style={{
-                marginTop: '15px', display: 'flex', gap: '15px', justifyContent: 'center', width: '100%', maxWidth: '640px'
+                marginTop: '18px', display: 'flex', gap: '12px', justifyContent: 'center', width: '100%', maxWidth: '640px'
             }}>
                 <button
                     onTouchStart={() => stateRef.current.keyLeft = true}
@@ -740,21 +843,52 @@ const NeonDrift = () => {
                     onMouseDown={() => stateRef.current.keyLeft = true}
                     onMouseUp={() => stateRef.current.keyLeft = false}
                     style={{
-                        flex: 1, padding: '18px', background: 'rgba(255,255,255,0.06)',
-                        border: '1px solid #333', borderRadius: '12px', color: '#fff', fontSize: '1.3rem', fontWeight: 'bold'
+                        flex: 1, padding: '16px',
+                        background: 'rgba(20, 20, 35, 0.85)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(0, 255, 204, 0.25)',
+                        borderRadius: '14px',
+                        color: '#00ffcc',
+                        fontSize: '1rem',
+                        fontWeight: '800',
+                        letterSpacing: '1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                     }}
                 >
-                    ◀ STEER
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    STEER LEFT
                 </button>
 
                 <button
                     onClick={activateNitro}
                     style={{
-                        flex: 1, padding: '18px', background: 'linear-gradient(135deg, #ff007f, #7928ca)',
-                        border: 'none', borderRadius: '12px', color: '#fff', fontSize: '1rem', fontWeight: '900', boxShadow: '0 0 15px rgba(255, 0, 127, 0.4)'
+                        flex: 1, padding: '16px',
+                        background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.9), rgba(121, 40, 202, 0.9))',
+                        border: '1px solid rgba(255, 0, 127, 0.4)',
+                        borderRadius: '14px',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        fontWeight: '900',
+                        letterSpacing: '1.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 25px rgba(255, 0, 127, 0.5)'
                     }}
                 >
-                    ⚡ NITRO
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    NITRO
                 </button>
 
                 <button
@@ -763,11 +897,27 @@ const NeonDrift = () => {
                     onMouseDown={() => stateRef.current.keyRight = true}
                     onMouseUp={() => stateRef.current.keyRight = false}
                     style={{
-                        flex: 1, padding: '18px', background: 'rgba(255,255,255,0.06)',
-                        border: '1px solid #333', borderRadius: '12px', color: '#fff', fontSize: '1.3rem', fontWeight: 'bold'
+                        flex: 1, padding: '16px',
+                        background: 'rgba(20, 20, 35, 0.85)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(0, 255, 204, 0.25)',
+                        borderRadius: '14px',
+                        color: '#00ffcc',
+                        fontSize: '1rem',
+                        fontWeight: '800',
+                        letterSpacing: '1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                     }}
                 >
-                    STEER ▶
+                    STEER RIGHT
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
                 </button>
             </div>
         </div>

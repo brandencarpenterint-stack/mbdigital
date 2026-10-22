@@ -596,10 +596,49 @@ const NeonBrickBreaker = () => {
             }
         });
 
-        // Powerups
-        ctx.font = '24px serif';
-        ctx.textAlign = 'center';
-        state.powerups.forEach(p => ctx.fillText('⚡', p.x, p.y));
+        // Powerups (Procedural Glowing Cyber Capsule)
+        state.powerups.forEach(p => {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+
+            // Outer pulse glow
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 16;
+
+            // Pill/Capsule body
+            const capW = 16;
+            const capH = 26;
+            const grad = ctx.createLinearGradient(-capW / 2, -capH / 2, capW / 2, capH / 2);
+            grad.addColorStop(0, '#00f0ff');
+            grad.addColorStop(0.5, '#7928ca');
+            grad.addColorStop(1, '#ff007f');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(-capW / 2, -capH / 2, capW, capH, 8);
+            ctx.fill();
+
+            // Glass specular sheen on top half
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.roundRect(-capW / 2 + 2, -capH / 2 + 2, capW - 4, capH / 2 - 2, [6, 6, 2, 2]);
+            ctx.fill();
+
+            // Center bright vector lightning bolt
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(1, -7);
+            ctx.lineTo(-4, 0);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-2, 7);
+            ctx.lineTo(5, -1);
+            ctx.lineTo(1, -1);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        });
 
         // Paddle
         const currentSkin = shopState?.equipped?.brick || 'paddle_default';
@@ -827,8 +866,24 @@ const NeonBrickBreaker = () => {
 
             {/* SHOP TOGGLE */}
             {!gameActive && (
-                <button className="shop-toggle-btn" onClick={() => setIsShopOpen(!isShopOpen)}>
-                    🛒
+                <button
+                    className="shop-toggle-btn"
+                    onClick={() => setIsShopOpen(!isShopOpen)}
+                    title="Armory & Skins"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, #ff007f, #7928ca)',
+                        boxShadow: '0 0 25px rgba(255, 0, 127, 0.5)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
                 </button>
             )}
 
@@ -854,9 +909,23 @@ const NeonBrickBreaker = () => {
                                 <div style={{ fontSize: '0.8rem', color: '#888' }}>{isUnlocked ? (isEquipped ? 'EQUIPPED' : 'OWNED') : `${item.price}`}</div>
                             </div>
                             {isUnlocked ? (
-                                <div style={{ fontSize: '1.2rem' }}>{isEquipped ? '✅' : '🛡️'}</div>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: '900',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    background: isEquipped ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                                    color: isEquipped ? '#00ffaa' : '#aaa',
+                                    border: isEquipped ? '1px solid #00ffaa' : '1px solid #444',
+                                    letterSpacing: '1px'
+                                }}>
+                                    {isEquipped ? 'ACTIVE' : 'EQUIP'}
+                                </div>
                             ) : (
-                                <div style={{ fontSize: '1.2rem' }}>🔒</div>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
                             )}
                         </div>
                     );
@@ -873,25 +942,92 @@ const NeonBrickBreaker = () => {
                                 <div style={{ fontSize: '0.8rem', color: '#888' }}>{isUnlocked ? (isEquipped ? 'EQUIPPED' : 'OWNED') : `${item.price}`}</div>
                             </div>
                             {isUnlocked ? (
-                                <div style={{ fontSize: '1.2rem' }}>{isEquipped ? '✅' : '🔮'}</div>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: '900',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    background: isEquipped ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                                    color: isEquipped ? '#00ffaa' : '#aaa',
+                                    border: isEquipped ? '1px solid #00ffaa' : '1px solid #444',
+                                    letterSpacing: '1px'
+                                }}>
+                                    {isEquipped ? 'ACTIVE' : 'EQUIP'}
+                                </div>
                             ) : (
-                                <div style={{ fontSize: '1.2rem' }}>🔒</div>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
                             )}
                         </div>
                     );
                 })}
             </div>
 
-            {/* HUD */}
+            {/* STUDIO CONSOLE HUD */}
             <div style={{
-                position: 'absolute', top: 10, width: '100%',
-                display: 'flex', justifyContent: 'space-between', padding: '0 30px',
-                color: 'var(--neon-pink)', fontSize: '1.2rem', zIndex: 10,
-                textShadow: '0 0 10px var(--neon-pink)', fontWeight: 'bold'
+                position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+                width: 'calc(100% - 32px)', maxWidth: '580px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '10px 18px',
+                background: 'rgba(15, 15, 25, 0.85)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(0, 240, 255, 0.3)',
+                borderRadius: '14px',
+                zIndex: 20,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
             }}>
-                <span>SCORE: {score}</span>
-                <span style={{ color: 'white' }}>LVL {level}</span>
-                <span style={{ color: 'var(--neon-green)' }}>LIVES: {lives}</span>
+                <Link to="/arcade" style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#00ffcc',
+                    fontWeight: '800',
+                    fontSize: '0.8rem',
+                    letterSpacing: '1px'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
+                </Link>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>LEVEL</div>
+                        <div style={{ color: '#fff', fontWeight: '900', fontSize: '1rem' }}>{level}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>SCORE</div>
+                        <div style={{ color: 'var(--neon-pink)', fontWeight: '900', fontSize: '1rem', textShadow: '0 0 10px rgba(255,0,127,0.5)' }}>{score}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>LIVES</div>
+                        <div style={{ color: '#00ffaa', fontWeight: '900', fontSize: '1rem' }}>{lives}</div>
+                    </div>
+                </div>
+
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.25)',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.8rem'
+                }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffd700' }} />
+                    {coins.toLocaleString()} CP
+                </div>
             </div>
 
             <div style={{
@@ -953,15 +1089,47 @@ const NeonBrickBreaker = () => {
                                 PLAY ARCADE
                             </SquishyButton>
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <Link to="/arcade/brick-maker">
-                                    <button style={{ padding: '10px', background: '#333', color: 'white', border: '1px solid #555', cursor: 'pointer', fontFamily: 'inherit' }}>
-                                        🛠️ LEVEL EDITOR
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                                <Link to="/arcade/brick-maker" style={{ textDecoration: 'none' }}>
+                                    <button style={{
+                                        padding: '10px 18px',
+                                        background: 'rgba(255, 255, 255, 0.08)',
+                                        color: '#fff',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                        borderRadius: '10px',
+                                        cursor: 'pointer',
+                                        fontFamily: 'inherit',
+                                        fontWeight: '700',
+                                        fontSize: '0.85rem',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                                        </svg>
+                                        LEVEL EDITOR
                                     </button>
                                 </Link>
                                 {localStorage.getItem('merchboy_custom_brick') && (
-                                    <button onClick={() => startGame('custom')} style={{ padding: '10px', background: 'var(--neon-blue)', color: 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'inherit' }}>
-                                        ▶️ PLAY CUSTOM
+                                    <button onClick={() => startGame('custom')} style={{
+                                        padding: '10px 18px',
+                                        background: 'var(--neon-blue)',
+                                        color: '#000',
+                                        border: 'none',
+                                        borderRadius: '10px',
+                                        cursor: 'pointer',
+                                        fontWeight: '900',
+                                        fontFamily: 'inherit',
+                                        fontSize: '0.85rem',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <polygon points="5 3 19 12 5 21 5 3" />
+                                        </svg>
+                                        PLAY CUSTOM
                                     </button>
                                 )}
                             </div>

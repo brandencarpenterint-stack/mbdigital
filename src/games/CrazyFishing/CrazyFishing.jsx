@@ -908,6 +908,171 @@ const CrazyFishing = () => {
     };
 
     // Helper    // Draw Boat based on Skin
+    // Professional Procedural Boat Renderer (Zero OS Emoji Artifacts)
+    const drawVessel = (ctx, CX, CY, sId) => {
+        ctx.save();
+        const id = sId || 'default';
+        if (id.includes('ufo')) {
+            // Neon Sci-Fi Hover Saucer
+            ctx.shadowColor = '#00ffcc';
+            ctx.shadowBlur = 15;
+            // Tractor Beam glow under
+            const beamGrad = ctx.createLinearGradient(CX, CY + 10, CX, CY + 60);
+            beamGrad.addColorStop(0, 'rgba(0, 255, 204, 0.5)');
+            beamGrad.addColorStop(1, 'rgba(0, 255, 204, 0)');
+            ctx.fillStyle = beamGrad;
+            ctx.beginPath();
+            ctx.moveTo(CX - 35, CY + 10);
+            ctx.lineTo(CX + 35, CY + 10);
+            ctx.lineTo(CX + 60, CY + 60);
+            ctx.lineTo(CX - 60, CY + 60);
+            ctx.closePath();
+            ctx.fill();
+
+            // Lower Hull
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.ellipse(CX, CY + 12, 65, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ring lights
+            ctx.fillStyle = '#00ffcc';
+            for (let i = -45; i <= 45; i += 18) {
+                ctx.beginPath();
+                ctx.arc(CX + i, CY + 12, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Glass Cockpit Dome
+            ctx.fillStyle = 'rgba(0, 229, 255, 0.45)';
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(CX, CY, 32, 22, 0, Math.PI, 0);
+            ctx.fill();
+            ctx.stroke();
+        } else if (id.includes('pirate')) {
+            // Dark Mahogany Pirate Cutter with Skull Crest
+            ctx.fillStyle = '#3e2723';
+            ctx.beginPath();
+            ctx.moveTo(CX - 85, CY - 5);
+            ctx.lineTo(CX + 85, CY - 5);
+            ctx.lineTo(CX + 60, CY + 32);
+            ctx.lineTo(CX - 60, CY + 32);
+            ctx.closePath();
+            ctx.fill();
+
+            // Deck Railing & Planks
+            ctx.strokeStyle = '#8d6e63';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Black Pirate Ensign Mast
+            ctx.strokeStyle = '#271c19';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(CX + 50, CY - 5);
+            ctx.lineTo(CX + 50, CY - 55);
+            ctx.stroke();
+
+            // Flag
+            ctx.fillStyle = '#111';
+            ctx.beginPath();
+            ctx.moveTo(CX + 50, CY - 55);
+            ctx.lineTo(CX + 15, CY - 40);
+            ctx.lineTo(CX + 50, CY - 25);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(CX + 35, CY - 40, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (id.includes('viking')) {
+            // Nordic Dragon Longship with Bronze Shields
+            ctx.fillStyle = '#5d4037';
+            ctx.beginPath();
+            ctx.moveTo(CX - 90, CY - 18);
+            ctx.quadraticCurveTo(CX - 75, CY + 30, CX, CY + 30);
+            ctx.quadraticCurveTo(CX + 75, CY + 30, CX + 90, CY - 18);
+            ctx.lineTo(CX + 75, CY - 5);
+            ctx.quadraticCurveTo(CX, CY + 18, CX - 75, CY - 5);
+            ctx.closePath();
+            ctx.fill();
+
+            // Round Shields along sides
+            const shieldColors = ['#d84315', '#ffd700', '#1565c0'];
+            for (let i = -50; i <= 50; i += 25) {
+                ctx.fillStyle = shieldColors[Math.abs(i) % shieldColors.length];
+                ctx.beginPath();
+                ctx.arc(CX + i, CY + 8, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(CX + i, CY + 8, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (id.includes('duck')) {
+            // Yellow Racing Skiff
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.ellipse(CX, CY + 14, 70, 22, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Orange beak bow
+            ctx.fillStyle = '#ff6d00';
+            ctx.beginPath();
+            ctx.moveTo(CX + 60, CY + 8);
+            ctx.lineTo(CX + 85, CY + 14);
+            ctx.lineTo(CX + 60, CY + 20);
+            ctx.closePath();
+            ctx.fill();
+        } else if (id.includes('banana')) {
+            // Curved Hydrofoil Banana Craft
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.moveTo(CX - 80, CY - 10);
+            ctx.quadraticCurveTo(CX, CY + 38, CX + 80, CY - 10);
+            ctx.quadraticCurveTo(CX, CY + 18, CX - 80, CY - 10);
+            ctx.fill();
+            ctx.strokeStyle = '#f57f17';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        } else if (id.includes('cloud')) {
+            // Hover Cloud
+            ctx.fillStyle = '#e2e8f0';
+            ctx.shadowColor = '#94a3b8';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(CX - 35, CY + 12, 22, 0, Math.PI * 2);
+            ctx.arc(CX, CY + 8, 28, 0, Math.PI * 2);
+            ctx.arc(CX + 35, CY + 12, 22, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (id.includes('invisible')) {
+            // Invisible boat - draws nothing
+        } else {
+            // Default Classic Wooden Cutter Boat
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.moveTo(CX - 90, CY - 10);
+            ctx.lineTo(CX + 90, CY - 10);
+            ctx.lineTo(CX + 65, CY + 30);
+            ctx.lineTo(CX - 65, CY + 30);
+            ctx.closePath();
+            ctx.fill();
+
+            // White racing waterline
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(CX - 75, CY + 15, 150, 4);
+
+            // Wood rim
+            ctx.strokeStyle = '#5c2d0c';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        ctx.restore();
+    };
+
     const drawCasting = (ctx, state) => {
         // Sky & Water
         ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -927,33 +1092,7 @@ const CrazyFishing = () => {
         // Map global IDs (boat_duck) to local logic if needed, or just update cases
         const skinId = skinRef.current;
 
-        switch (skinId) {
-            case 'boat_duck': case 'duck': ctx.font = '100px serif'; ctx.fillText('🦆', CX - 50, CY + 30); break;
-            case 'boat_ufo': case 'ufo': ctx.font = '100px serif'; ctx.fillText('🛸', CX - 50, CY + 30); break;
-            case 'boat_pirate': case 'pirate': ctx.font = '100px serif'; ctx.fillText('🏴‍☠️', CX - 50, CY + 10); ctx.fillStyle = '#5C4033'; ctx.fillRect(CX - 70, CY + 10, 140, 40); break;
-            case 'boat_banana': case 'banana': ctx.font = '100px serif'; ctx.fillText('🍌', CX - 50, CY + 10); break;
-            case 'boat_viking': case 'viking': ctx.font = '100px serif'; ctx.fillText('🛶', CX - 50, CY + 10); ctx.font = '40px serif'; ctx.fillText('🛡️', CX - 30, CY + 30); ctx.fillText('🛡️', CX + 30, CY + 30); break;
-
-            // MEME SKINS
-            case 'boat_box': case 'box': ctx.font = '100px serif'; ctx.fillText('📦', CX - 50, CY + 20); break;
-            case 'boat_trash': case 'trash': ctx.font = '100px serif'; ctx.fillText('🗑️', CX - 50, CY + 20); break;
-            case 'boat_toilet': case 'toilet': ctx.font = '100px serif'; ctx.fillText('🚽', CX - 50, CY + 20); break;
-            case 'boat_tub': case 'tub': ctx.font = '100px serif'; ctx.fillText('🛁', CX - 50, CY + 20); break;
-            case 'boat_chair': case 'chair': ctx.font = '100px serif'; ctx.fillText('💺', CX - 50, CY + 20); break;
-            case 'boat_pizza': case 'pizza_raft': ctx.font = '120px serif'; ctx.fillText('🍕', CX - 60, CY + 40); break;
-            case 'boat_carpet': case 'carpet': ctx.font = '120px serif'; ctx.fillText('🧞', CX - 60, CY + 40);
-                ctx.fillStyle = 'purple'; ctx.fillRect(CX - 60, CY, 120, 10); break;
-            case 'boat_cloud': case 'cloud': ctx.font = '100px serif'; ctx.fillText('☁️', CX - 50, CY + 20); break;
-            case 'boat_invisible': case 'invisible': /* Draws nothing */ break;
-            case 'boat_balloon': case 'balloon':
-                // Draw Balloon string going UP
-                ctx.strokeStyle = 'white'; ctx.beginPath(); ctx.moveTo(CX, CY - 30); ctx.lineTo(CX, CY - 150); ctx.stroke();
-                ctx.font = '80px serif'; ctx.fillText('🎈', CX - 25, CY - 150);
-                break;
-            default: // Default Boat
-                ctx.fillStyle = '#8B4513';
-                ctx.beginPath(); ctx.moveTo(CX - 100, CY - 20); ctx.lineTo(CX + 100, CY - 20); ctx.lineTo(CX + 70, CY + 30); ctx.lineTo(CX - 70, CY + 30); ctx.fill();
-        }
+        drawVessel(ctx, CX, CY, skinId);
 
         // Character Position adjustments
         let charY = CY - 30;
@@ -1110,32 +1249,7 @@ const CrazyFishing = () => {
         const CX = GAME_WIDTH / 2;
         const CY = GAME_HEIGHT - 100;
 
-        // Draw Boat (Skin Logic)
-        ctx.font = '100px serif';
-        switch (skinRef.current) {
-            case 'duck': ctx.fillText('🦆', CX - 50, CY + 30); break;
-            case 'ufo': ctx.fillText('🛸', CX - 50, CY + 30); break;
-            case 'pirate': ctx.fillText('🏴‍☠️', CX - 50, CY + 10); ctx.fillStyle = '#5C4033'; ctx.fillRect(CX - 70, CY + 10, 140, 40); break;
-            case 'banana': ctx.fillText('🍌', CX - 50, CY + 10); break;
-            case 'viking': ctx.fillText('🛶', CX - 50, CY + 10); ctx.font = '40px serif'; ctx.fillText('🛡️', CX - 30, CY + 30); ctx.fillText('🛡️', CX + 30, CY + 30); break;
-            case 'box': ctx.fillText('📦', CX - 50, CY + 20); break;
-            case 'trash': ctx.fillText('🗑️', CX - 50, CY + 20); break;
-            case 'toilet': ctx.fillText('🚽', CX - 50, CY + 20); break;
-            case 'tub': ctx.fillText('🛁', CX - 50, CY + 20); break;
-            case 'chair': ctx.fillText('💺', CX - 50, CY + 20); break;
-            case 'pizza_raft': ctx.font = '120px serif'; ctx.fillText('🍕', CX - 60, CY + 40); break;
-            case 'carpet': ctx.font = '120px serif'; ctx.fillText('🧞', CX - 60, CY + 40);
-                ctx.fillStyle = 'purple'; ctx.fillRect(CX - 60, CY, 120, 10); break;
-            case 'cloud': ctx.fillText('☁️', CX - 50, CY + 20); break;
-            case 'invisible': break;
-            case 'balloon':
-                ctx.strokeStyle = 'white'; ctx.beginPath(); ctx.moveTo(CX, CY - 30); ctx.lineTo(CX, CY - 150); ctx.stroke();
-                ctx.font = '80px serif'; ctx.fillText('🎈', CX - 25, CY - 150);
-                break;
-            default:
-                ctx.fillStyle = '#8B4513';
-                ctx.beginPath(); ctx.moveTo(CX - 100, CY - 20); ctx.lineTo(CX + 100, CY - 20); ctx.lineTo(CX + 70, CY + 30); ctx.lineTo(CX - 70, CY + 30); ctx.fill();
-        }
+        drawVessel(ctx, CX, CY, skinRef.current);
 
         // Character Logic
         let charY = CY - 30;
