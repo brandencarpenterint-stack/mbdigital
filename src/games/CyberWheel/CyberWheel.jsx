@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,23 +10,65 @@ import SquishyButton from '../../components/SquishyButton';
 
 const WHEEL_RADIUS = 210;
 const SEGMENTS = [
-    { label: '10,000 CP', sub: 'JACKPOT', value: 10000, color: '#ffd700', text: '#000', icon: '👑' },
-    { label: '100 CP', sub: 'COINS', value: 100, color: '#00ffcc', text: '#000', icon: '🪙' },
-    { label: '250 CP', sub: 'COINS', value: 250, color: '#9d4edd', text: '#fff', icon: '🪙' },
-    { label: 'CRATE DROP', sub: 'FREE CASE', value: 500, color: '#ff007f', text: '#fff', icon: '📦' },
-    { label: '500 CP', sub: 'COINS', value: 500, color: '#ff8800', text: '#000', icon: '🪙' },
-    { label: 'THE VOID', sub: 'UNLUCKY', value: 0, color: '#1a1a28', text: '#ff0055', icon: '💀' },
-    { label: '1,000 CP', sub: 'BIG WIN', value: 1000, color: '#00c6ff', text: '#000', icon: '💎' },
-    { label: '50 CP', sub: 'COINS', value: 50, color: '#ffffff', text: '#000', icon: '🪙' },
-    { label: '2,500 CP', sub: 'HIGH ROLLER', value: 2500, color: '#e0aaff', text: '#000', icon: '💎' },
-    { label: '150 CP', sub: 'COINS', value: 150, color: '#06d6a0', text: '#000', icon: '🪙' },
-    { label: '750 CP', sub: 'COINS', value: 750, color: '#ff4d6d', text: '#fff', icon: '🪙' },
-    { label: 'MYSTERY', sub: '300 CP', value: 300, color: '#7209b7', text: '#fff', icon: '🎁' }
+    { label: '10,000 CP', sub: 'DEFCON JACKPOT', value: 10000, color: '#ffd700', text: '#000', type: 'CROWN' },
+    { label: '100 CP', sub: 'CYBER COINS', value: 100, color: '#00ffcc', text: '#000', type: 'COIN' },
+    { label: '250 CP', sub: 'CYBER COINS', value: 250, color: '#9d4edd', text: '#fff', type: 'COIN' },
+    { label: 'CRATE DROP', sub: 'TACTICAL CASE', value: 500, color: '#ff007f', text: '#fff', type: 'CRATE' },
+    { label: '500 CP', sub: 'CYBER COINS', value: 500, color: '#ff8800', text: '#000', type: 'COIN' },
+    { label: 'THE VOID', sub: 'DEFCON HAZARD', value: 0, color: '#1a1a28', text: '#ff0055', type: 'HAZARD' },
+    { label: '1,000 CP', sub: 'HIGH ROLLER', value: 1000, color: '#00c6ff', text: '#000', type: 'DIAMOND' },
+    { label: '50 CP', sub: 'CYBER COINS', value: 50, color: '#ffffff', text: '#000', type: 'COIN' },
+    { label: '2,500 CP', sub: 'MEGA BOUNTY', value: 2500, color: '#e0aaff', text: '#000', type: 'DIAMOND' },
+    { label: '150 CP', sub: 'CYBER COINS', value: 150, color: '#06d6a0', text: '#000', type: 'COIN' },
+    { label: '750 CP', sub: 'CYBER COINS', value: 750, color: '#ff4d6d', text: '#fff', type: 'COIN' },
+    { label: 'MYSTERY', sub: 'BLACK-BOX 300', value: 300, color: '#7209b7', text: '#fff', type: 'CRATE' }
 ];
 
+const renderPrizeIcon = (type, size = 18, color = 'currentColor') => {
+    if (type === 'CROWN') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+            </svg>
+        );
+    }
+    if (type === 'DIAMOND') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+                <polygon points="6 3 18 3 22 9 12 22 2 9 6 3" />
+            </svg>
+        );
+    }
+    if (type === 'CRATE') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="9" y1="21" x2="9" y2="9" />
+            </svg>
+        );
+    }
+    if (type === 'HAZARD') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+        );
+    }
+    // Default COIN
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="3" fill={color} />
+        </svg>
+    );
+};
+
 const CyberWheel = () => {
-    const { coins, addCoins, updateStat, incrementStat, userProfile, stats } = useGamification() || {};
-    const { playAirhorn, playWin, playCollect, playCrash, playBoop } = useRetroSound();
+    const { coins = 0, addCoins, updateStat, incrementStat, userProfile } = useGamification() || {};
+    const { playAirhorn, playWin, playCollect, playCrash } = useRetroSound();
 
     const canvasRef = useRef(null);
     const audioCtxRef = useRef(null);
@@ -59,7 +102,7 @@ const CyberWheel = () => {
 
             osc.start();
             osc.stop(ctx.currentTime + 0.05);
-        } catch(e) {}
+        } catch (e) { }
     };
 
     const drawWheel = (angle) => {
@@ -94,18 +137,71 @@ const CyberWheel = () => {
 
             ctx.save();
             ctx.rotate(segAngle + arc / 2);
+
+            // Draw Vector Shape Pip at outer edge
+            const px = WHEEL_RADIUS - 16;
+            const py = 0;
+            ctx.fillStyle = seg.text;
+            ctx.strokeStyle = seg.text;
+
+            if (seg.type === 'CROWN') {
+                ctx.beginPath();
+                ctx.moveTo(px - 5, py + 4);
+                ctx.lineTo(px + 5, py + 4);
+                ctx.lineTo(px + 4, py - 4);
+                ctx.lineTo(px + 1.5, py);
+                ctx.lineTo(px, py - 5);
+                ctx.lineTo(px - 1.5, py);
+                ctx.lineTo(px - 4, py - 4);
+                ctx.closePath();
+                ctx.fill();
+            } else if (seg.type === 'DIAMOND') {
+                ctx.beginPath();
+                ctx.moveTo(px, py - 5);
+                ctx.lineTo(px + 4.5, py);
+                ctx.lineTo(px, py + 5);
+                ctx.lineTo(px - 4.5, py);
+                ctx.closePath();
+                ctx.fill();
+            } else if (seg.type === 'CRATE') {
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(px - 4, py - 4, 8, 8);
+                ctx.beginPath();
+                ctx.moveTo(px - 4, py); ctx.lineTo(px + 4, py);
+                ctx.stroke();
+            } else if (seg.type === 'HAZARD') {
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(px - 4.5, py + 4);
+                ctx.lineTo(px + 4.5, py + 4);
+                ctx.lineTo(px, py - 4.5);
+                ctx.closePath();
+                ctx.stroke();
+            } else {
+                // COIN
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(px, py, 4, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(px, py, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw Label text offset from vector pip
             ctx.textAlign = 'right';
             ctx.fillStyle = seg.text;
-            ctx.font = 'bold 13px "Orbitron", monospace';
-            ctx.fillText(seg.icon + ' ' + seg.label, WHEEL_RADIUS - 22, 5);
+            ctx.font = 'bold 12px "Orbitron", monospace';
+            ctx.fillText(seg.label, WHEEL_RADIUS - 26, 4);
 
-            ctx.font = '9px monospace';
+            ctx.font = '8px monospace';
             ctx.fillStyle = seg.text === '#000' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)';
-            ctx.fillText(seg.sub, WHEEL_RADIUS - 22, 17);
+            ctx.fillText(seg.sub, WHEEL_RADIUS - 26, 16);
 
             ctx.restore();
         }
 
+        // Outer Neon Ring
         ctx.strokeStyle = '#ff007f';
         ctx.lineWidth = 8;
         ctx.shadowColor = '#ff007f';
@@ -115,6 +211,7 @@ const CyberWheel = () => {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
+        // Metallic Pegs on perimeter
         for (let i = 0; i < numSegments; i++) {
             const pegAngle = i * arc;
             const px = Math.cos(pegAngle) * WHEEL_RADIUS;
@@ -131,10 +228,10 @@ const CyberWheel = () => {
 
         ctx.restore();
 
+        // Metallic Center Hub
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, 44, 0, 2 * Math.PI);
-        // Outer brushed metallic ring
         const hubGrad = ctx.createRadialGradient(cx - 10, cy - 10, 5, cx, cy, 44);
         hubGrad.addColorStop(0, '#2d3748');
         hubGrad.addColorStop(0.7, '#1a202c');
@@ -155,7 +252,7 @@ const CyberWheel = () => {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // High-tech center core
+        // Center Core
         const coreGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 22);
         coreGrad.addColorStop(0, '#ffffff');
         coreGrad.addColorStop(0.3, '#00ffcc');
@@ -181,6 +278,7 @@ const CyberWheel = () => {
 
         ctx.restore();
 
+        // Top Tactical Pointer Needle
         ctx.save();
         ctx.fillStyle = '#ffd700';
         ctx.shadowColor = '#ffd700';
@@ -202,160 +300,141 @@ const CyberWheel = () => {
     const spinWheel = () => {
         if (isSpinning) return;
 
-        const isFree = freeSpinsLeft > 0;
-        if (!isFree && coins < SPIN_COST) {
-            try { playCrash(); } catch(e) {}
-            return;
-        }
-
-        if (isFree) {
-            setFreeSpinsLeft(0);
+        if (freeSpinsLeft > 0) {
+            setFreeSpinsLeft(prev => prev - 1);
         } else {
+            if (coins < SPIN_COST) return;
             if (addCoins) addCoins(-SPIN_COST);
-        }
-
-        if (incrementStat) {
-            incrementStat('wheelSpins', 1);
-            incrementStat('gamesPlayedCount', 1);
         }
 
         setIsSpinning(true);
         setLastWin(null);
 
-        const rand = Math.random();
-        let targetIndex = 0;
-        if (rand < 0.02) targetIndex = 0;
-        else if (rand < 0.06) targetIndex = 8;
-        else if (rand < 0.14) targetIndex = 6;
-        else if (rand < 0.22) targetIndex = 3;
-        else if (rand < 0.32) targetIndex = 4;
-        else if (rand < 0.44) targetIndex = 2;
-        else if (rand < 0.58) targetIndex = 9;
-        else if (rand < 0.74) targetIndex = 1;
-        else if (rand < 0.88) targetIndex = 7;
-        else targetIndex = 5;
+        const totalSpins = 5 + Math.random() * 4;
+        const targetAngle = currentAngle + totalSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
 
+        const duration = 4000;
+        const startTime = performance.now();
+        const startAngle = currentAngle;
+
+        let lastPegPassed = -1;
         const numSegments = SEGMENTS.length;
         const arc = (2 * Math.PI) / numSegments;
-        const segmentCenter = targetIndex * arc + arc / 2;
-        const targetWheelAngle = (3 * Math.PI / 2) - segmentCenter;
 
-        const extraSpins = (5 + Math.floor(Math.random() * 3)) * (2 * Math.PI);
-        const finalAngle = extraSpins + targetWheelAngle;
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
 
-        const duration = 5500;
-        const startTime = performance.now();
-        const startAngle = currentAngle % (2 * Math.PI);
-        const totalDistance = finalAngle - startAngle;
+            const newAngle = startAngle + (targetAngle - startAngle) * easeOut;
+            setCurrentAngle(newAngle);
 
-        let lastPegIndex = -1;
-
-        const animate = (time) => {
-            const elapsed = time - startTime;
-            const progress = Math.min(1, elapsed / duration);
-            const ease = 1 - Math.pow(1 - progress, 5);
-            const angle = startAngle + totalDistance * ease;
-            setCurrentAngle(angle);
-
-            const currentPeg = Math.floor((angle / arc) % numSegments);
-            if (currentPeg !== lastPegIndex) {
-                lastPegIndex = currentPeg;
+            const normalizedAngle = (newAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            const currentPeg = Math.floor(normalizedAngle / arc);
+            if (currentPeg !== lastPegPassed) {
                 playTickSound();
+                lastPegPassed = currentPeg;
             }
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
                 setIsSpinning(false);
-                handleSpinOutcome(SEGMENTS[targetIndex]);
+
+                const finalAngle = (newAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                const pointerAngle = (3 * Math.PI / 2);
+                let relativeAngle = pointerAngle - finalAngle;
+                relativeAngle = (relativeAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+
+                const winningIndex = Math.floor(relativeAngle / arc);
+                const wonItem = SEGMENTS[winningIndex];
+
+                setLastWin(wonItem);
+                setSpinHistory(prev => [wonItem, ...prev.slice(0, 4)]);
+
+                if (wonItem.value > 0) {
+                    if (addCoins) addCoins(wonItem.value);
+                    if (wonItem.value >= 1000) {
+                        playAirhorn?.();
+                        triggerConfetti?.();
+                    } else {
+                        playWin?.();
+                    }
+                    if (incrementStat) incrementStat('wheelWins', 1);
+                } else {
+                    playCrash?.();
+                }
+
+                if (updateStat && incrementStat) {
+                    incrementStat('wheelSpinsCount', 1);
+                }
+
+                feedService.broadcast({
+                    type: wonItem.value >= 1000 ? 'JACKPOT' : 'PLAY',
+                    game: 'Cyber Wheel',
+                    user: userProfile?.name || 'HighRoller',
+                    amount: wonItem.value,
+                    action: wonItem.value > 0 ? `won ${wonItem.label}` : 'hit the Void'
+                });
             }
         };
 
         requestAnimationFrame(animate);
     };
 
-    const handleSpinOutcome = (wonSegment) => {
-        setLastWin(wonSegment);
-        setSpinHistory(h => [wonSegment, ...h.slice(0, 5)]);
-
-        if (wonSegment.value > 0) {
-            if (addCoins) addCoins(wonSegment.value);
-
-            if (wonSegment.value >= 1000) {
-                try {
-                    playAirhorn();
-                    triggerConfetti();
-                } catch(e) {}
-                feedService.publish({
-                    text: '👑 ' + (userProfile?.name || 'HighRoller') + ' won ' + wonSegment.label + ' on the CYBER WHEEL!',
-                    type: 'jackpot'
-                });
-            } else {
-                try { playWin(); } catch(e) {}
-            }
-        } else {
-            try { playCrash(); } catch(e) {}
-        }
-
-        const currentHS = stats?.wheelHighScore || 0;
-        if (wonSegment.value > currentHS && updateStat) {
-            updateStat('wheelHighScore', wonSegment.value);
-        }
-    };
-
     return (
-        <div className="page-enter" style={{
+        <div style={{
             minHeight: '100vh',
-            background: '#070710',
-            color: 'white',
+            background: 'radial-gradient(circle at center, #111124 0%, #06060c 100%)',
+            color: '#fff',
             fontFamily: '"Orbitron", monospace',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             padding: '20px',
-            paddingBottom: '100px'
+            boxSizing: 'border-box'
         }}>
+            {/* Top Navigation Strip */}
             <div style={{
                 width: '100%',
-                maxWidth: '850px',
+                maxWidth: '900px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '24px',
-                padding: '12px 20px',
-                background: 'rgba(15, 15, 28, 0.7)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 215, 0, 0.25)',
-                borderRadius: '16px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+                marginBottom: '20px'
             }}>
-                <Link to="/arcade" style={{
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    borderRadius: '10px',
-                    background: 'rgba(0, 255, 204, 0.08)',
-                    border: '1px solid rgba(0, 255, 204, 0.3)',
-                    color: '#00ffcc',
-                    fontWeight: '800',
-                    fontSize: '0.85rem',
-                    letterSpacing: '1px'
-                }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="15 18 9 12 15 6" />
+                <Link
+                    to="/arcade"
+                    style={{
+                        color: '#94a3b8',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        fontWeight: '700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
                     </svg>
                     ARCADE
                 </Link>
+
                 <div style={{ textAlign: 'center' }}>
                     <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ffd700', textShadow: '0 0 20px rgba(255, 215, 0, 0.6)', letterSpacing: '3px', fontWeight: '900' }}>
                         CYBER WHEEL
                     </h1>
                     <div style={{ fontSize: '0.65rem', color: '#00ffcc', letterSpacing: '2px', opacity: 0.8, textTransform: 'uppercase' }}>
-                        HIGH ROLLER APEX • 10,000 CP JACKPOT
+                        HIGH ROLLER APEX &bull; 10,000 CP JACKPOT
                     </div>
                 </div>
+
                 <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -376,10 +455,11 @@ const CyberWheel = () => {
                         background: '#ffd700',
                         boxShadow: '0 0 8px #ffd700'
                     }} />
-                    {coins.toLocaleString()} CP
+                    {(coins || 0).toLocaleString()} CP
                 </div>
             </div>
 
+            {/* Main Stage */}
             <div style={{
                 display: 'flex',
                 gap: '30px',
@@ -423,8 +503,19 @@ const CyberWheel = () => {
                         <div style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '1px' }}>
                             STATUS
                         </div>
-                        <div style={{ color: freeSpinsLeft > 0 ? '#00ffcc' : '#ffd700', fontWeight: '900', fontSize: '1.2rem', marginTop: '4px' }}>
-                            {freeSpinsLeft > 0 ? '🎁 FREE DAILY SPIN' : `HIGH ROLLER (${SPIN_COST} CP)`}
+                        <div style={{ color: freeSpinsLeft > 0 ? '#00ffcc' : '#ffd700', fontWeight: '900', fontSize: '1.2rem', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            {freeSpinsLeft > 0 ? (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ffcc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 12 20 22 4 22 4 12" />
+                                        <rect x="2" y="7" width="20" height="5" />
+                                        <line x1="12" y1="22" x2="12" y2="7" />
+                                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                                    </svg>
+                                    FREE DAILY SPIN
+                                </>
+                            ) : `HIGH ROLLER (${SPIN_COST} CP)`}
                         </div>
                     </div>
 
@@ -435,7 +526,7 @@ const CyberWheel = () => {
                             background: 'linear-gradient(135deg, #ffd700, #ff007f)',
                             color: '#000',
                             padding: '18px',
-                            fontSize: '1.3rem',
+                            fontSize: '1.15rem',
                             fontWeight: '900',
                             letterSpacing: '2px',
                             boxShadow: '0 0 30px rgba(255, 215, 0, 0.4)'
@@ -457,7 +548,9 @@ const CyberWheel = () => {
                                     marginTop: '5px'
                                 }}
                             >
-                                <div style={{ fontSize: '1.8rem' }}>{lastWin.icon}</div>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', color: lastWin.value > 0 ? '#00ffcc' : '#ff0055' }}>
+                                    {renderPrizeIcon(lastWin.type, 26, lastWin.value > 0 ? '#00ffcc' : '#ff0055')}
+                                </div>
                                 <div style={{ color: '#fff', fontWeight: '900', fontSize: '1.1rem' }}>
                                     {lastWin.label}
                                 </div>
@@ -472,13 +565,24 @@ const CyberWheel = () => {
                         <div style={{ color: '#888', fontSize: '0.75rem', marginBottom: '8px' }}>
                             RECENT SPINS
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {spinHistory.length === 0 ? (
                                 <div style={{ color: '#555', fontSize: '0.7rem' }}>No spins yet...</div>
                             ) : (
                                 spinHistory.map((s, idx) => (
-                                    <span key={idx} style={{ background: s.color, color: s.text, padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                        {s.icon} {s.label}
+                                    <span key={idx} style={{
+                                        background: s.color,
+                                        color: s.text,
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.68rem',
+                                        fontWeight: 'bold',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                    }}>
+                                        {renderPrizeIcon(s.type, 12, s.text)}
+                                        {s.label}
                                     </span>
                                 ))
                             )}

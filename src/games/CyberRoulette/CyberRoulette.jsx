@@ -211,7 +211,7 @@ const CyberRoulette = () => {
                 playAirhorn();
                 triggerConfetti();
             }
-            setMessageFeed(`🎉 NUMBER ${num} HIT! YOU WON +${win.toLocaleString()} CP!`);
+            setMessageFeed(`NUMBER ${num} HIT! YOU WON +${win.toLocaleString()} CP!`);
             showToast(`Winning Number: ${num}! Won +${win} CP!`, 'success');
 
             if (incrementStat) incrementStat('rouletteWins', 1);
@@ -612,7 +612,14 @@ const CyberRoulette = () => {
                         disabled={isSpinning || totalBet === 0}
                         className="w-full py-4 bg-gradient-to-r from-emerald-500 via-cyan-500 to-yellow-400 text-black font-black text-lg tracking-wider uppercase rounded-2xl shadow-[0_0_30px_rgba(0,255,102,0.6)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                     >
-                        <span>🎡</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="12" r="3" />
+                            <line x1="12" y1="2" x2="12" y2="9" />
+                            <line x1="12" y1="15" x2="12" y2="22" />
+                            <line x1="2" y1="12" x2="9" y2="12" />
+                            <line x1="15" y1="12" x2="22" y2="12" />
+                        </svg>
                         <span>{isSpinning ? 'BALL IN PLAY...' : (totalBet > 0 ? `SPIN THE WHEEL (${totalBet.toLocaleString()} CP)` : 'PLACE BETS TO SPIN')}</span>
                     </SquishyButton>
                 </div>

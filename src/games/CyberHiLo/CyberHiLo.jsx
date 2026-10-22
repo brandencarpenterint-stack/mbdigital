@@ -191,7 +191,7 @@ const CyberHiLo = () => {
                     triggerConfetti();
                 }
 
-                showToast(`🎯 CORRECT! Multiplier increased to ${newMult}x!`, 'success');
+                showToast(`CORRECT! Multiplier increased to ${newMult}x!`, 'success');
 
                 if (incrementStat) incrementStat('hiloCorrectGuesses', 1);
             } else {
@@ -200,7 +200,7 @@ const CyberHiLo = () => {
                 playCrash();
                 setRoundResult('loss');
                 setInRound(false);
-                showToast(`💥 BUSTED! The card was ${drawn.rank.label} of ${drawn.suit.name}. Better luck next run!`, 'error');
+                showToast(`BUSTED! The card was ${drawn.rank.label} of ${drawn.suit.name}. Better luck next run!`, 'error');
             }
 
             setIsFlipping(false);
@@ -216,7 +216,7 @@ const CyberHiLo = () => {
         const newCard = getRandomCard();
         setCurrentCard(newCard);
         setCardHistory(prev => [newCard, ...prev.slice(1)]);
-        showToast('🔀 Card Swapped! Streak preserved.', 'info');
+        showToast('CARD SWAPPED: Streak preserved.', 'info');
     };
 
     // Cash Out Current Pot
@@ -235,7 +235,7 @@ const CyberHiLo = () => {
         setRoundResult('cashout');
         setInRound(false);
 
-        showToast(`💰 CASHED OUT! Won +${payout.toLocaleString()} CP (${multiplier}x)!`, 'success');
+        showToast(`CASHED OUT! Won +${payout.toLocaleString()} CP (${multiplier}x)!`, 'success');
 
         if (incrementStat) {
             incrementStat('hiloCashouts', 1);
@@ -291,7 +291,10 @@ const CyberHiLo = () => {
                 {/* Header Title Banner */}
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 mb-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl animate-pulse">🃏</span>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                            <rect x="3" y="3" width="14" height="18" rx="2" />
+                            <path d="M7 7h6M7 11h6M7 15h4" />
+                        </svg>
                         <h1 className="text-xl sm:text-2xl font-black italic tracking-wider bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(0,229,255,0.6)]">
                             CYBER HI-LO 2088: NEON STREAK
                         </h1>
@@ -355,7 +358,10 @@ const CyberHiLo = () => {
                             </div>
                         ) : (
                             <div className="w-full h-full bg-slate-950 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center text-slate-500 font-mono text-center p-4">
-                                <span className="text-4xl mb-2">🃏</span>
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mb-2">
+                                    <rect x="3" y="3" width="14" height="18" rx="2" />
+                                    <path d="M7 7h6M7 11h6M7 15h4" />
+                                </svg>
                                 <span className="text-xs font-bold">PLACE BET & DEAL FIRST CARD</span>
                             </div>
                         )}
@@ -398,7 +404,16 @@ const CyberHiLo = () => {
                                     disabled={skipsRemaining <= 0 || isFlipping}
                                     className="py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-mono font-bold text-xs uppercase rounded-xl transition-all disabled:opacity-40 active:scale-95"
                                 >
-                                    🔀 SKIP ({skipsRemaining} LEFT)
+                                    <span className="flex items-center justify-center gap-1.5">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="16 3 21 3 21 8" />
+                                            <line x1="4" y1="20" x2="21" y2="3" />
+                                            <polyline points="21 16 21 21 16 21" />
+                                            <line x1="15" y1="15" x2="21" y2="21" />
+                                            <line x1="4" y1="4" x2="9" y2="9" />
+                                        </svg>
+                                        SKIP ({skipsRemaining} LEFT)
+                                    </span>
                                 </button>
 
                                 {/* CASH OUT BUTTON */}
@@ -408,7 +423,13 @@ const CyberHiLo = () => {
                                     disabled={multiplier <= 1.0 || isFlipping}
                                     className="py-3 bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black font-mono font-black text-xs uppercase rounded-xl shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:brightness-110 transition-all disabled:opacity-40 active:scale-95 animate-pulse"
                                 >
-                                    💰 CASH OUT (+{currentPayout.toLocaleString()} CP)
+                                    <span className="flex items-center justify-center gap-1.5">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="2" y="6" width="20" height="12" rx="2" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                        CASH OUT (+{currentPayout.toLocaleString()} CP)
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -439,7 +460,14 @@ const CyberHiLo = () => {
                                 disabled={(coins ?? 0) < bet}
                                 className="w-full py-4 bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-500 text-black font-black text-sm uppercase rounded-2xl shadow-[0_0_25px_rgba(0,229,255,0.6)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 mt-1"
                             >
-                                🃏 DEAL & START STREAK ({bet} CP)
+                                <span className="flex items-center justify-center gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="4" y="2" width="16" height="20" rx="3" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                    DEAL & START STREAK ({bet} CP)
+                                </span>
                             </SquishyButton>
                         </div>
                     )}
@@ -449,11 +477,11 @@ const CyberHiLo = () => {
                         <div className={`w-full mt-3 p-3 rounded-2xl border text-center font-mono font-black text-xs ${roundResult === 'cashout' ? 'bg-emerald-950/60 border-emerald-400 text-emerald-300 shadow-[0_0_20px_#00ff66]' : 'bg-red-950/60 border-red-500 text-red-400'}`}>
                             {roundResult === 'cashout' ? (
                                 <div>
-                                    🎉 CASHED OUT AT {multiplier.toFixed(2)}x! WON +{currentPayout.toLocaleString()} CP!
+                                    CASHED OUT AT {multiplier.toFixed(2)}x! WON +{currentPayout.toLocaleString()} CP!
                                 </div>
                             ) : (
                                 <div>
-                                    💥 STREAK BUSTED! BETTER LUCK NEXT RUN!
+                                    STREAK BUSTED! BETTER LUCK NEXT RUN!
                                 </div>
                             )}
                         </div>

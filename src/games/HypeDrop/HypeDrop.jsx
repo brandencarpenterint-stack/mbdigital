@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+/* eslint-disable react/prop-types */
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useGamification } from '../../context/GamificationContext';
 import { useToast } from '../../context/ToastContext';
@@ -21,18 +22,17 @@ const CRATES = [
         cost: 75,
         tag: 'STARTER DROP',
         color: '#00e5ff',
-        icon: '📦',
         desc: 'Classic street drip & bonus cash.',
         pool: [
             { id: 'face_default', name: 'OG Bro', rarity: 'COMMON', img: '/assets/skins/face_default.png', type: 'skin' },
-            { id: 'coins_50', name: '50 Coins', rarity: 'COMMON', coins: 50, icon: '🪙', type: 'coins' },
-            { id: 'coins_100', name: '100 Coins', rarity: 'COMMON', coins: 100, icon: '🪙', type: 'coins' },
+            { id: 'coins_50', name: '50 Coins', rarity: 'COMMON', coins: 50, type: 'coins' },
+            { id: 'coins_100', name: '100 Coins', rarity: 'COMMON', coins: 100, type: 'coins' },
             { id: 'face_frog', name: 'Pepe Frog', rarity: 'RARE', img: '/assets/skins/face_frog.png', type: 'skin' },
             { id: 'face_hoodie', name: 'Hype Hoodie', rarity: 'RARE', img: '/assets/skins/face_hoodie.png', type: 'skin' },
             { id: 'face_cat', name: 'Neko Cat', rarity: 'EPIC', img: '/assets/skins/face_cat.png', type: 'skin' },
             { id: 'face_pumpkin', name: 'Spooky Bro', rarity: 'EPIC', img: '/assets/skins/face_pumpkin.png', type: 'skin' },
             { id: 'face_money', name: 'Money Face', rarity: 'LEGENDARY', img: '/assets/skins/face_money.png', type: 'skin' },
-            { id: 'coins_500', name: '500 Coin Stash', rarity: 'LEGENDARY', coins: 500, icon: '💰', type: 'coins' }
+            { id: 'coins_500', name: '500 Coin Stash', rarity: 'LEGENDARY', coins: 500, type: 'coins' }
         ]
     },
     {
@@ -41,18 +41,17 @@ const CRATES = [
         cost: 250,
         tag: 'POPULAR DROP',
         color: '#d500f9',
-        icon: '🌌',
         desc: 'Outer-space rarities & big jackpots.',
         pool: [
             { id: 'face_bunny', name: 'Bunny Bro', rarity: 'COMMON', img: '/assets/skins/face_bunny.png', type: 'skin' },
-            { id: 'coins_150', name: '150 Coins', rarity: 'COMMON', coins: 150, icon: '🪙', type: 'coins' },
+            { id: 'coins_150', name: '150 Coins', rarity: 'COMMON', coins: 150, type: 'coins' },
             { id: 'face_bear', name: 'Bear Bro', rarity: 'RARE', img: '/assets/skins/face_bear.png', type: 'skin' },
             { id: 'face_bunny_blue', name: 'Cyan Bunny', rarity: 'RARE', img: '/assets/skins/face_bunny_blue.png', type: 'skin' },
             { id: 'face_dino', name: 'Dino Bro', rarity: 'EPIC', img: '/assets/skins/face_dino.png', type: 'skin' },
             { id: 'face_space', name: 'Cosmic Bro', rarity: 'EPIC', img: '/assets/skins/face_space.png', type: 'skin' },
             { id: 'face_astro', name: 'Astro Pilot', rarity: 'LEGENDARY', img: '/assets/skins/face_astro.png', type: 'skin' },
             { id: 'face_rainbow', name: 'Prism Rainbow', rarity: 'LEGENDARY', img: '/assets/skins/face_rainbow.png', type: 'skin' },
-            { id: 'coins_1500', name: '1,500 Jackpot', rarity: 'LEGENDARY', coins: 1500, icon: '💎', type: 'coins' }
+            { id: 'coins_1500', name: '1,500 Jackpot', rarity: 'LEGENDARY', coins: 1500, type: 'coins' }
         ]
     },
     {
@@ -61,28 +60,107 @@ const CRATES = [
         cost: 750,
         tag: 'ULTRA LUXURY',
         color: '#ffd700',
-        icon: '👑',
         desc: 'Top-tier cosmetics & 5,000 Coin payouts.',
         pool: [
             { id: 'face_bunny_hoodie', name: 'Street Bunny', rarity: 'COMMON', img: '/assets/skins/face_bunny_hoodie.png', type: 'skin' },
-            { id: 'coins_500', name: '500 Coins', rarity: 'COMMON', coins: 500, icon: '🪙', type: 'coins' },
+            { id: 'coins_500', name: '500 Coins', rarity: 'COMMON', coins: 500, type: 'coins' },
             { id: 'face_gamer', name: 'Gamer Bro', rarity: 'RARE', img: '/assets/skins/face_gamer.png', type: 'skin' },
-            { id: 'coins_1000', name: '1,000 Coins', rarity: 'RARE', coins: 1000, icon: '💰', type: 'coins' },
+            { id: 'coins_1000', name: '1,000 Coins', rarity: 'RARE', coins: 1000, type: 'coins' },
             { id: 'face_star', name: 'Gold Star', rarity: 'EPIC', img: '/assets/skins/face_star.png', type: 'skin' },
             { id: 'face_astro', name: 'Astro Pilot', rarity: 'EPIC', img: '/assets/skins/face_astro.png', type: 'skin' },
             { id: 'face_money', name: 'Holo Money Face', rarity: 'LEGENDARY', img: '/assets/skins/face_money.png', type: 'skin' },
-            { id: 'coins_5000', name: '5,000 Ultra Jackpot', rarity: 'LEGENDARY', coins: 5000, icon: '👑', type: 'coins' }
+            { id: 'coins_5000', name: '5,000 Ultra Jackpot', rarity: 'LEGENDARY', coins: 5000, type: 'coins' }
         ]
     }
 ];
+
+const renderCrateIcon = (crateId, color, size = 32) => {
+    if (crateId === 'cosmic') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
+                <circle cx="12" cy="12" r="3" fill={color} />
+            </svg>
+        );
+    }
+    if (crateId === 'highroller') {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="7" width="18" height="14" rx="2" />
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5" fill={color} />
+                <circle cx="12" cy="14" r="2" fill={color} />
+            </svg>
+        );
+    }
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <path d="M3 9h18M9 21V9M15 21V9" />
+            <circle cx="12" cy="6" r="1.5" fill={color} />
+        </svg>
+    );
+};
+
+const renderDropItemIcon = (item, size = 65) => {
+    if (item.type === 'skin') {
+        return (
+            <img
+                src={item.img}
+                style={{
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    objectFit: 'contain',
+                    filter: `drop-shadow(0 0 10px ${RARITY[item.rarity]?.color || '#ffd700'})`,
+                    margin: '10px 0'
+                }}
+                alt={item.name}
+            />
+        );
+    }
+    const coins = item.coins || 0;
+    if (coins >= 5000) {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '10px 0' }}>
+                <path d="M5 8h14l-3 10H2L5 8z" fill="rgba(255,215,0,0.3)" />
+                <path d="M8 4h14l-3 4H5L8 4z" fill="rgba(255,215,0,0.5)" />
+                <path d="M19 8l3-4v10l-3 4V8z" fill="rgba(255,215,0,0.2)" />
+            </svg>
+        );
+    }
+    if (coins >= 1500) {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="rgba(0, 229, 255, 0.3)" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '10px 0' }}>
+                <polygon points="6 3 18 3 22 9 12 22 2 9 6 3" />
+                <line x1="12" y1="22" x2="12" y2="9" />
+                <line x1="2" y1="9" x2="22" y2="9" />
+            </svg>
+        );
+    }
+    if (coins >= 500) {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '10px 0' }}>
+                <ellipse cx="12" cy="7" rx="9" ry="3" fill="rgba(255,215,0,0.2)" />
+                <path d="M21 7v5c0 1.66-4 3-9 3s-9-1.34-9-3V7" />
+                <path d="M21 12v5c0 1.66-4 3-9 3s-9-1.34-9-3v-5" />
+            </svg>
+        );
+    }
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#00ffcc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '10px 0' }}>
+            <circle cx="12" cy="12" r="9" fill="rgba(0,255,204,0.15)" />
+            <circle cx="12" cy="12" r="4" stroke="#00ffcc" fill="#00ffcc" />
+        </svg>
+    );
+};
 
 const ITEM_CARD_WIDTH = 150;
 const WINNER_INDEX = 45;
 const TOTAL_SPIN_ITEMS = 60;
 
 const HypeDrop = () => {
-    const { coins, spendCoins, addCoins, incrementStat, userProfile, updateProfile } = useGamification() || {};
-    const { showToast } = useToast() || { showToast: () => {} };
+    const { coins = 0, spendCoins, addCoins, incrementStat, userProfile, updateProfile } = useGamification() || {};
+    const { showToast } = useToast() || { showToast: () => { } };
     const { playWin, playCrash, playCollect } = useRetroSound();
 
     const [selectedCrate, setSelectedCrate] = useState(CRATES[0]);
@@ -225,7 +303,7 @@ const HypeDrop = () => {
             triggerConfetti();
             playWin();
             setTimeout(() => setIsShake(false), 900);
-            feedService.publish(`just unboxed a ${winner.rarity} ${winner.name}! 📦🔥`, 'win', userProfile?.name || 'Player');
+            feedService.publish(`just unboxed a ${winner.rarity} ${winner.name}!`, 'win', userProfile?.name || 'Player');
         } else {
             playCollect();
         }
@@ -254,7 +332,7 @@ const HypeDrop = () => {
             flexDirection: 'column',
             alignItems: 'center'
         }} className={isShake ? 'shake-viewport' : ''}>
-            
+
             <div style={{
                 width: '100%',
                 maxWidth: '1000px',
@@ -326,7 +404,7 @@ const HypeDrop = () => {
                     HYPE DROP: CASE UNBOXING
                 </h1>
                 <p style={{ color: '#aaa', margin: '8px 0 0 0', fontSize: '0.9rem', letterSpacing: '1px' }}>
-                    CS:GO STYLE MYSTERY CRATES // UNBOX LEGENDARY SKINS & JACKPOTS
+                    MYSTERY CRATES // UNBOX LEGENDARY SKINS & JACKPOTS
                 </p>
             </div>
 
@@ -353,7 +431,9 @@ const HypeDrop = () => {
                                 boxShadow: isSelected ? `0 0 25px ${crate.color}40` : 'none'
                             }}
                         >
-                            <div style={{ fontSize: '2rem', marginBottom: '4px' }}>{crate.icon}</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                                {renderCrateIcon(crate.id, crate.color, 36)}
+                            </div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: crate.color }}>{crate.name}</div>
                             <div style={{ fontSize: '0.75rem', color: '#ffd700', fontWeight: '800', marginTop: '4px' }}>{crate.cost} CP</div>
                         </div>
@@ -455,21 +535,7 @@ const HypeDrop = () => {
                                         {rInfo.name}
                                     </div>
 
-                                    {item.type === 'skin' ? (
-                                        <img
-                                            src={item.img}
-                                            style={{
-                                                width: '65px',
-                                                height: '65px',
-                                                objectFit: 'contain',
-                                                filter: `drop-shadow(0 0 10px ${rInfo.color})`,
-                                                margin: '10px 0'
-                                            }}
-                                            alt={item.name}
-                                        />
-                                    ) : (
-                                        <div style={{ fontSize: '2.8rem', margin: '5px 0' }}>{item.icon}</div>
-                                    )}
+                                    {renderDropItemIcon(item, 65)}
 
                                     <div style={{
                                         fontSize: '0.75rem',
@@ -519,69 +585,40 @@ const HypeDrop = () => {
                 </label>
             </div>
 
-            <div style={{ width: '100%', maxWidth: '850px', marginBottom: '35px' }}>
-                <h3 style={{ fontSize: '1rem', color: '#888', marginBottom: '15px', letterSpacing: '2px', textAlign: 'center' }}>
-                    CONTAINED IN {selectedCrate.name}
-                </h3>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-                    gap: '12px'
-                }}>
-                    {selectedCrate.pool.map((item, i) => {
-                        const rInfo = RARITY[item.rarity] || RARITY.COMMON;
-                        return (
-                            <div
-                                key={i}
-                                style={{
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: `1px solid ${rInfo.border}`,
-                                    borderRadius: '12px',
-                                    padding: '12px 8px',
-                                    textAlign: 'center',
-                                    position: 'relative',
-                                    boxShadow: `inset 0 0 10px ${rInfo.color}15`
-                                }}
-                            >
-                                <span style={{
-                                    position: 'absolute', top: '6px', right: '6px',
-                                    fontSize: '0.55rem', color: rInfo.color, fontWeight: 'bold'
-                                }}>
-                                    {rInfo.name}
-                                </span>
-                                {item.type === 'skin' ? (
-                                    <img src={item.img} style={{ width: '45px', height: '45px', objectFit: 'contain', margin: '8px 0' }} alt={item.name} />
-                                ) : (
-                                    <div style={{ fontSize: '1.8rem', margin: '4px 0' }}>{item.icon}</div>
-                                )}
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#eee' }}>{item.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
+            {/* Recent Drops Reel */}
             {recentPulls.length > 0 && (
-                <div style={{ width: '100%', maxWidth: '850px', background: 'rgba(0,0,0,0.5)', padding: '16px 20px', borderRadius: '16px', border: '1px solid #222' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>RECENT UNBOXINGS</div>
-                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '6px' }}>
-                        {recentPulls.map((pull, idx) => {
-                            const rInfo = RARITY[pull.rarity] || RARITY.COMMON;
+                <div style={{ width: '100%', maxWidth: '850px' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>
+                        RECENT UNBOXINGS:
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
+                        {recentPulls.map((item, idx) => {
+                            const rInfo = RARITY[item.rarity] || RARITY.COMMON;
                             return (
                                 <div
                                     key={idx}
                                     style={{
-                                        display: 'flex', alignItems: 'center', gap: '8px',
-                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${rInfo.border}`,
-                                        padding: '6px 12px', borderRadius: '20px', flexShrink: 0
+                                        background: rInfo.bg,
+                                        border: `1px solid ${rInfo.border}`,
+                                        borderRadius: '10px',
+                                        padding: '8px 12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        flexShrink: 0
                                     }}
                                 >
-                                    {pull.type === 'skin' ? (
-                                        <img src={pull.img} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                                    {item.type === 'skin' ? (
+                                        <img src={item.img} style={{ width: '28px', height: '28px', objectFit: 'contain' }} alt={item.name} />
                                     ) : (
-                                        <span>{pull.icon}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            {renderDropItemIcon(item, 24)}
+                                        </div>
                                     )}
-                                    <span style={{ fontSize: '0.75rem', color: rInfo.color, fontWeight: 'bold' }}>{pull.name}</span>
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'white' }}>{item.name}</div>
+                                        <div style={{ fontSize: '0.65rem', color: rInfo.color }}>{item.rarity}</div>
+                                    </div>
                                 </div>
                             );
                         })}
@@ -589,6 +626,7 @@ const HypeDrop = () => {
                 </div>
             )}
 
+            {/* Reward Winning Modal */}
             {showRewardModal && winnerItem && (
                 <div
                     style={{
@@ -623,26 +661,11 @@ const HypeDrop = () => {
                             color: RARITY[winnerItem.rarity]?.color || 'white',
                             marginBottom: '10px'
                         }}>
-                            ★ {winnerItem.rarity} UNBOXED! ★
+                            &bull; {winnerItem.rarity} UNBOXED! &bull;
                         </div>
 
-                        <div style={{ margin: '20px 0' }}>
-                            {winnerItem.type === 'skin' ? (
-                                <img
-                                    src={winnerItem.img}
-                                    style={{
-                                        width: '130px',
-                                        height: '130px',
-                                        objectFit: 'contain',
-                                        filter: `drop-shadow(0 0 25px ${RARITY[winnerItem.rarity]?.color || 'gold'})`
-                                    }}
-                                    alt={winnerItem.name}
-                                />
-                            ) : (
-                                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 25px gold)' }}>
-                                    {winnerItem.icon}
-                                </div>
-                            )}
+                        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                            {renderDropItemIcon(winnerItem, 130)}
                         </div>
 
                         <h2 style={{ fontSize: '1.8rem', margin: '0 0 10px 0', color: 'white' }}>
@@ -668,7 +691,7 @@ const HypeDrop = () => {
                                         fontSize: '1rem'
                                     }}
                                 >
-                                    EQUIP AS AVATAR ✨
+                                    EQUIP AS AVATAR
                                 </SquishyButton>
                             )}
 
@@ -685,7 +708,7 @@ const HypeDrop = () => {
                                     fontSize: '1rem'
                                 }}
                             >
-                                OPEN ANOTHER ({selectedCrate.cost} COINS) 📦
+                                OPEN ANOTHER ({selectedCrate.cost} COINS)
                             </SquishyButton>
 
                             <button
