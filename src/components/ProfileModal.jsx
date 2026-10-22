@@ -386,11 +386,16 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                 {/* HEAD */}
                 {isReadOnly && (
                     <div style={{
-                        background: 'repeating-linear-gradient(45deg, #FFD700 0px, #FFD700 10px, #000 10px, #000 20px)',
-                        color: 'white', textAlign: 'center', fontWeight: 'bold', padding: '2px',
-                        marginBottom: '10px', fontSize: '0.8rem', textShadow: '0 0 2px black'
+                        background: 'linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(255, 150, 0, 0.3), rgba(255, 215, 0, 0.15))',
+                        border: '1px solid rgba(255, 215, 0, 0.4)',
+                        color: '#ffd700', textAlign: 'center', fontWeight: '900', padding: '6px 12px',
+                        marginBottom: '15px', fontSize: '0.75rem', letterSpacing: '2px', borderRadius: '8px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                     }}>
-                        ⚠ VIEWING REMOTE PROFILE ⚠
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        SPECTATOR MODE &bull; VIEWING REMOTE PROFILE
                     </div>
                 )}
 
@@ -509,8 +514,12 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                             <label style={{ display: 'block', marginBottom: '10px', color: '#aaa', fontWeight: 'bold', fontSize: '0.8rem' }}>CLOUD SYNC</label>
                                             {session ? (
                                                 <div style={{ textAlign: 'center' }}>
-                                                    <div style={{ color: '#00ff00', marginBottom: '10px', fontSize: '0.9rem' }}>
-                                                        ✅ SYNCED AS {session.user.email}
+                                                    <div style={{
+                                                        color: '#00ff88', marginBottom: '10px', fontSize: '0.85rem', fontWeight: 'bold',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                                                    }}>
+                                                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff88', boxShadow: '0 0 8px #00ff88' }} />
+                                                        SYNCED AS {session.user.email}
                                                     </div>
                                                     <SquishyButton onClick={logout} style={{ background: '#333', fontSize: '0.8rem', padding: '5px 10px' }}>
                                                         LOGOUT
@@ -590,7 +599,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                     // Max level check
                                                     if (!nextStageKey) return (
                                                         <div style={{ marginTop: '10px', fontSize: '0.7rem', color: 'gold', textAlign: 'center' }}>
-                                                            MAX LEVEL EVOLUTION REACHED 🌟
+                                                            MAX LEVEL EVOLUTION REACHED
                                                         </div>
                                                     );
 
@@ -613,43 +622,148 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                 })()}
 
                                                 {isReadOnly && (
-                                                    <div style={{ marginTop: '10px' }}>
+                                                    <div style={{ marginTop: '14px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                                         <SquishyButton
                                                             onClick={handleVibe}
-                                                            style={{ fontSize: '0.8rem', padding: '8px 15px', background: 'var(--neon-pink)' }}
+                                                            style={{
+                                                                fontSize: '0.75rem', padding: '8px 14px', background: 'var(--neon-pink)',
+                                                                display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold'
+                                                            }}
                                                         >
-                                                            ✨ VIBE WITH THEM
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                                            </svg>
+                                                            VIBE
                                                         </SquishyButton>
                                                         <SquishyButton
                                                             onClick={handleChallenge}
-                                                            style={{ fontSize: '0.8rem', padding: '8px 15px', background: '#e53e3e', marginLeft: '10px' }}
+                                                            style={{
+                                                                fontSize: '0.75rem', padding: '8px 14px', background: '#e53e3e',
+                                                                display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold'
+                                                            }}
                                                         >
-                                                            ⚔️ CHALLENGE
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+                                                                <line x1="13" y1="19" x2="19" y2="13" />
+                                                                <line x1="16" y1="16" x2="20" y2="20" />
+                                                                <line x1="19" y1="21" x2="21" y2="19" />
+                                                            </svg>
+                                                            CHALLENGE
                                                         </SquishyButton>
                                                         <SquishyButton
                                                             onClick={() => setActiveTab('ROOM')}
-                                                            style={{ fontSize: '0.8rem', padding: '8px 15px', background: 'var(--neon-green)', marginLeft: '10px', color: 'black' }}
+                                                            style={{
+                                                                fontSize: '0.75rem', padding: '8px 14px', background: 'var(--neon-green)', color: 'black',
+                                                                display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold'
+                                                            }}
                                                         >
-                                                            🏠 VISIT ROOM
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                                <polyline points="9 22 9 12 15 12 15 22" />
+                                                            </svg>
+                                                            VISIT ROOM
                                                         </SquishyButton>
                                                     </div>
                                                 )}
 
                                                 {/* Controls: Only for owner */}
-                                                {/* Controls: Only for owner */}
                                                 {!isReadOnly && (
-                                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                                        <button onClick={() => setIsEditing(true)} style={{ background: 'transparent', border: 'none', color: 'var(--neon-blue)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
-                                                            EDIT PROFILE ✏️
+                                                    <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                                                        <button
+                                                            onClick={() => setIsEditing(true)}
+                                                            style={{
+                                                                background: 'rgba(0, 240, 255, 0.08)',
+                                                                border: '1px solid rgba(0, 240, 255, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: '#00f0ff',
+                                                                cursor: 'pointer',
+                                                                padding: '6px 12px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '700',
+                                                                letterSpacing: '0.5px',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px',
+                                                                transition: 'all 0.15s ease'
+                                                            }}
+                                                        >
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M12 20h9" />
+                                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                                            </svg>
+                                                            EDIT PROFILE
                                                         </button>
-                                                        <button onClick={() => { setIsDecorating(true); setLocalStickers(displayProfile.placedStickers || []); }} style={{ background: 'transparent', border: 'none', color: 'var(--neon-pink)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
-                                                            DECORATE 🎨
+                                                        <button
+                                                            onClick={() => { setIsDecorating(true); setLocalStickers(displayProfile.placedStickers || []); }}
+                                                            style={{
+                                                                background: 'rgba(255, 0, 128, 0.08)',
+                                                                border: '1px solid rgba(255, 0, 128, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: 'var(--neon-pink)',
+                                                                cursor: 'pointer',
+                                                                padding: '6px 12px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '700',
+                                                                letterSpacing: '0.5px',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px',
+                                                                transition: 'all 0.15s ease'
+                                                            }}
+                                                        >
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M12 2a14.5 14.5 0 0 0 0 20 10 10 0 0 0 0-20" />
+                                                            </svg>
+                                                            STICKERS
                                                         </button>
-                                                        <button onClick={() => setShowShareCard(true)} style={{ background: 'transparent', border: 'none', color: 'var(--neon-gold)', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
-                                                            SHARE STATS 📤
+                                                        <button
+                                                            onClick={() => setShowShareCard(true)}
+                                                            style={{
+                                                                background: 'rgba(255, 215, 0, 0.08)',
+                                                                border: '1px solid rgba(255, 215, 0, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: '#ffd700',
+                                                                cursor: 'pointer',
+                                                                padding: '6px 12px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '700',
+                                                                letterSpacing: '0.5px',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px',
+                                                                transition: 'all 0.15s ease'
+                                                            }}
+                                                        >
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                                                <polyline points="16 6 12 2 8 6" />
+                                                                <line x1="12" y1="2" x2="12" y2="15" />
+                                                            </svg>
+                                                            SHARE CARD
                                                         </button>
-                                                        <button onClick={() => setShowRoastModal(true)} style={{ background: 'transparent', border: 'none', color: '#ff0055', cursor: 'pointer', padding: '5px 0 0 0', fontSize: '0.8rem', textDecoration: 'underline' }}>
-                                                            ROAST ME 🔥
+                                                        <button
+                                                            onClick={() => setShowRoastModal(true)}
+                                                            style={{
+                                                                background: 'rgba(255, 68, 68, 0.08)',
+                                                                border: '1px solid rgba(255, 68, 68, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: '#ff4444',
+                                                                cursor: 'pointer',
+                                                                padding: '6px 12px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '700',
+                                                                letterSpacing: '0.5px',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px',
+                                                                transition: 'all 0.15s ease'
+                                                            }}
+                                                        >
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                                                            </svg>
+                                                            AI ROAST
                                                         </button>
                                                     </div>
                                                 )}
@@ -752,7 +866,17 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                 fontFamily: '"Press Start 2P", cursive',
                                                 letterSpacing: '2px'
                                             }}>
-                                                <span>🏆 TROPHY HALL</span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                                        <path d="M4 22h16" />
+                                                        <path d="M10 14.66V17c0 .55-.45 1-1 1H7" />
+                                                        <path d="M14 14.66V17c0 .55.45 1 1 1h2" />
+                                                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                                                    </svg>
+                                                    TROPHY HALL
+                                                </span>
                                                 <div style={{
                                                     fontSize: '0.8rem', background: 'rgba(255, 215, 0, 0.1)',
                                                     border: '1px solid var(--neon-gold)',
@@ -811,10 +935,27 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                                     >
                                                                         <div style={{ marginBottom: '10px' }}>
                                                                             <div style={{
-                                                                                fontSize: '2rem', marginBottom: '5px',
-                                                                                filter: isUnlocked ? 'drop-shadow(0 0 8px gold)' : 'none'
+                                                                                marginBottom: '8px',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                height: '36px'
                                                                             }}>
-                                                                                {isUnlocked ? '🏆' : '🔒'}
+                                                                                {isUnlocked ? (
+                                                                                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.7))' }}>
+                                                                                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                                                                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                                                                        <path d="M4 22h16" />
+                                                                                        <path d="M10 14.66V17c0 .55-.45 1-1 1H7" />
+                                                                                        <path d="M14 14.66V17c0 .55.45 1 1 1h2" />
+                                                                                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                                                                                    </svg>
+                                                                                ) : (
+                                                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                                                    </svg>
+                                                                                )}
                                                                             </div>
                                                                             <div style={{
                                                                                 fontWeight: 'bold', fontSize: '0.65rem',
@@ -835,7 +976,7 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                                                 color: 'var(--neon-blue)', background: 'rgba(0, 200, 255, 0.1)',
                                                                                 padding: '3px 8px', borderRadius: '10px', border: '1px solid rgba(0, 200, 255, 0.3)'
                                                                             }}>
-                                                                                🎁 {ach.reward}
+                                                                                +{ach.reward} CP
                                                                             </div>
                                                                         )}
                                                                     </motion.div>
@@ -1102,7 +1243,13 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                     {!isRoomEditing && (
                                         <div style={{ marginTop: '20px', background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
                                             <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#ff0055', letterSpacing: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span>GUESTBOOK ✍️</span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff0055" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 20h9" />
+                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                                    </svg>
+                                                    GUESTBOOK
+                                                </span>
                                                 {isReadOnly && (
                                                     <div style={{ position: 'relative' }}>
                                                         <SquishyButton onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ fontSize: '0.7rem', padding: '5px 10px', background: '#ff0055' }}>

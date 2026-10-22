@@ -65,11 +65,62 @@ const SettingsPage = () => {
             fontFamily: '"Orbitron", sans-serif'
         }}>
             {/* Header */}
-            <header style={{ display: 'flex', alignItems: 'center', marginBottom: '40px' }}>
-                <Link to="/" style={{ color: '#888', textDecoration: 'none', fontSize: '1.5rem', marginRight: '20px' }}>
-                    ⬅
+            <header style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '35px',
+                padding: '14px 22px',
+                background: 'rgba(15, 15, 28, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(0, 240, 255, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+            }}>
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '10px',
+                        color: '#00f0ff',
+                        fontSize: '0.75rem',
+                        fontWeight: '900',
+                        letterSpacing: '1px',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    DASHBOARD
                 </Link>
-                <h1 style={{ margin: 0, textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>SYSTEM SETTINGS</h1>
+                <h1 style={{
+                    margin: 0,
+                    fontSize: '1.3rem',
+                    fontWeight: '900',
+                    letterSpacing: '3px',
+                    color: '#fff',
+                    textShadow: '0 0 15px rgba(0, 240, 255, 0.6)'
+                }}>
+                    SYSTEM SETTINGS
+                </h1>
+                <div style={{
+                    fontSize: '0.7rem',
+                    letterSpacing: '1px',
+                    color: '#00ff88',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 255, 136, 0.1)',
+                    border: '1px solid rgba(0, 255, 136, 0.3)'
+                }}>
+                    BUILD 3.0.1
+                </div>
             </header>
 
             <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -110,16 +161,51 @@ const SettingsPage = () => {
                                         onChange={(e) => setNewName(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
                                         placeholder={userProfile?.name}
-                                        style={{ background: '#222', border: '1px solid #555', color: 'white', padding: '5px 10px', borderRadius: '5px', width: '100%', fontFamily: 'inherit' }}
+                                        style={{ background: '#222', border: '1px solid #555', color: 'white', padding: '8px 12px', borderRadius: '8px', width: '100%', fontFamily: 'inherit' }}
                                     />
-                                    <button onClick={handleNameSave} style={{ background: 'var(--neon-green)', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>💾</button>
+                                    <button
+                                        onClick={handleNameSave}
+                                        title="Save Codename"
+                                        style={{
+                                            background: 'var(--neon-green)',
+                                            color: '#000',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            padding: '0 14px',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    </button>
                                 </div>
                             ) : (
                                 <div
                                     onClick={() => { setIsEditingName(true); setNewName(userProfile?.name); }}
                                     style={{ fontSize: '1.5rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                                 >
-                                    {userProfile?.name} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>✎</span>
+                                    {userProfile?.name}
+                                    <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        background: 'rgba(255, 255, 255, 0.08)',
+                                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                                        color: '#00f0ff',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
+                                            <path d="M12 20h9" />
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                        </svg>
+                                        EDIT
+                                    </span>
                                 </div>
                             )}
                             <div style={{ fontSize: '0.8rem', color: 'var(--neon-gold)', marginTop: '5px' }}>{levelInfo.rank} CLASS</div>
@@ -189,7 +275,23 @@ const SettingsPage = () => {
                                 >
                                     <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>{item.icon}</div>
                                     <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{item.name}</div>
-                                    {!isOwned && <div style={{ fontSize: '0.6rem', color: 'gold' }}>🔒 {item.price} CP</div>}
+                                    {!isOwned && (
+                                        <div style={{
+                                            fontSize: '0.65rem',
+                                            color: '#ffd700',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            marginTop: '4px'
+                                        }}>
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                            </svg>
+                                            <span>{item.price} CP</span>
+                                        </div>
+                                    )}
                                     {isActive && <div style={{ fontSize: '0.6rem', fontWeight: '900', marginTop: '2px' }}>ACTIVE</div>}
                                 </div>
                             );
@@ -199,23 +301,29 @@ const SettingsPage = () => {
 
                 {/* 2. AUDIO */}
                 <section className="glass-panel" style={{ padding: '25px', border: '1px solid rgba(0, 243, 255, 0.3)' }}>
-                    <h2 style={{ marginTop: 0, color: 'var(--neon-blue)', fontSize: '1.2rem', borderBottom: '1px solid rgba(0,255,255,0.1)', paddingBottom: '10px' }}>
-                        AUDIO
+                    <h2 style={{ marginTop: 0, color: 'var(--neon-blue)', fontSize: '1.2rem', borderBottom: '1px solid rgba(0,255,255,0.1)', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                        </svg>
+                        AUDIO SETTINGS
                     </h2>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                             <div style={{ fontWeight: 'bold' }}>MASTER SOUND</div>
-                            <div style={{ fontSize: '0.8rem', color: '#888' }}>Enable sound effects</div>
+                            <div style={{ fontSize: '0.8rem', color: '#888' }}>Enable high-fidelity retro arcade FX</div>
                         </div>
                         <SquishyButton
                             onClick={() => { toggleSound(); playBeep(); }}
                             style={{
                                 background: soundEnabled ? 'var(--neon-green)' : '#333',
                                 color: soundEnabled ? 'black' : '#888',
-                                width: '60px', borderRadius: '30px', padding: '10px'
+                                minWidth: '80px', borderRadius: '30px', padding: '10px 18px',
+                                fontWeight: '900', letterSpacing: '1px'
                             }}
                         >
-                            {soundEnabled ? 'ON' : 'OFF'}
+                            {soundEnabled ? 'ENABLED' : 'MUTED'}
                         </SquishyButton>
                     </div>
                 </section>
@@ -229,7 +337,25 @@ const SettingsPage = () => {
                     {session ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <div style={{ fontSize: '1rem', color: '#00ff00', fontWeight: 'bold' }}>✅ ONLINE</div>
+                                <div style={{
+                                    fontSize: '0.9rem',
+                                    color: '#00ff88',
+                                    fontWeight: '900',
+                                    letterSpacing: '1px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}>
+                                    <span style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        background: '#00ff88',
+                                        boxShadow: '0 0 10px #00ff88',
+                                        display: 'inline-block'
+                                    }} />
+                                    CLOUD SYNC ACTIVE
+                                </div>
                                 <div style={{ fontSize: '0.8rem', color: '#aaa' }}>Synced as <span style={{ color: 'white' }}>{session.user.email}</span></div>
                             </div>
                             <SquishyButton
@@ -278,7 +404,14 @@ const SettingsPage = () => {
                 {/* 4. MONETIZATION & ADS ENGINE */}
                 <section className="glass-panel" style={{ padding: '25px', border: '1px solid #ffd700', background: 'rgba(255, 215, 0, 0.03)' }}>
                     <h2 style={{ marginTop: 0, color: '#ffd700', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,215,0,0.2)', paddingBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span>💰 MONETIZATION & ADS ENGINE</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                                <path d="M12 6v2m0 8v2" />
+                            </svg>
+                            MONETIZATION & ADS ENGINE
+                        </span>
                         <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '6px', background: adService.isRealAdsConfigured() ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 215, 0, 0.2)', color: adService.isRealAdsConfigured() ? '#00ff88' : '#ffd700' }}>
                             {adService.isRealAdsConfigured() ? 'LIVE MONETIZATION' : 'DEV SIMULATION'}
                         </span>
