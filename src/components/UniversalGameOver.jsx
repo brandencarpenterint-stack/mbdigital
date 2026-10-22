@@ -135,7 +135,7 @@ const UniversalGameOver = ({
                 <div style={{ background: 'rgba(0,255,204,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px', border: '1px solid rgba(0,255,204,0.2)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '1.2rem' }}>
                         <span style={{ color: '#00ffcc' }}>+ {xpEarned} XP</span>
-                        <span style={{ color: 'gold' }}>+ {displayCoins} 🪙</span>
+                        <span style={{ color: '#ffd700', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffd700', boxShadow: '0 0 8px #ffd700' }} />+ {displayCoins.toLocaleString()} CP</span>
                     </div>
 
                     <div style={{ textAlign: 'left', fontSize: '0.7rem', color: '#888', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
@@ -184,17 +184,20 @@ const UniversalGameOver = ({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px',
+                                gap: '10px',
                                 boxShadow: onRevive
                                     ? '0 0 20px rgba(255, 0, 85, 0.3)'
                                     : '0 0 20px rgba(0, 255, 136, 0.3)'
                             }}
                         >
-                            <span>📺</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                                <polyline points="17 2 12 7 7 2" />
+                            </svg>
                             <span>
                                 {onRevive
-                                    ? 'WATCH SPONSOR SPOT (1 FREE REVIVE ❤️)'
-                                    : `WATCH SPONSOR SPOT (+${Math.max(1000, finalCoins)} CP 🪙)`}
+                                    ? 'WATCH SPONSOR SPOT (1 FREE REVIVE)'
+                                    : `WATCH SPONSOR SPOT (+${Math.max(1000, finalCoins).toLocaleString()} CP)`}
                             </span>
                         </button>
                     </motion.div>
@@ -230,18 +233,23 @@ const UniversalGameOver = ({
 
                 <button 
                     onClick={() => {
-                        const text = encodeURIComponent(`I just scored ${score} on ${gameName} at Merchboy Digital! Think you can beat me? 🕹️🔥 #MerchboyArcade`);
+                        const text = encodeURIComponent(`I just scored ${score} on ${gameName} at MBDigital! Think you can beat me? #MBDigitalArcade`);
                         const url = encodeURIComponent(window.location.origin);
                         window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
                     }}
                     style={{
-                        width: '100%', padding: '15px', background: '#1DA1F2', color: '#fff',
-                        border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold',
+                        width: '100%', padding: '14px', background: '#000', color: '#fff',
+                        border: '1px solid rgba(255, 255, 255, 0.25)', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '800',
+                        fontFamily: '"Orbitron", sans-serif',
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: '10px', boxShadow: '0 5px 15px rgba(29, 161, 242, 0.4)', marginTop: '15px'
+                        gap: '10px', boxShadow: '0 5px 20px rgba(0, 0, 0, 0.5)', marginTop: '15px',
+                        letterSpacing: '1px'
                     }}
                 >
-                    🐦 BRAG ON X (TWITTER)
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    SHARE RECORD ON X
                 </button>
 
             </motion.div>
