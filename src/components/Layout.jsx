@@ -27,6 +27,7 @@ import AaaMobileBottomNav from './AaaMobileBottomNav';
 import SponsorStationModal from './SponsorStationModal';
 import QuickResumeOverlay from './QuickResumeOverlay';
 import AchievementsCodexModal from './AchievementsCodexModal';
+import PentagonClearanceModal from './PentagonClearanceModal';
 import './Layout.css';
 
 const FACES = [
@@ -40,11 +41,17 @@ const Layout = () => {
     // const [showProfile, setShowProfile] = useState(false); // REPLACED BY GLOBAL CONTEXT
     const [showDaily, setShowDaily] = useState(false);
     const [showAchievements, setShowAchievements] = useState(false);
+    const [showClearance, setShowClearance] = useState(false);
 
     useEffect(() => {
         const handleOpenAchievements = () => setShowAchievements(true);
+        const handleOpenClearance = () => setShowClearance(true);
+        window.addEventListener('open-clearance', handleOpenClearance);
         window.addEventListener('open-achievements', handleOpenAchievements);
-        return () => window.removeEventListener('open-achievements', handleOpenAchievements);
+        return () => {
+            window.removeEventListener('open-achievements', handleOpenAchievements);
+            window.removeEventListener('open-clearance', handleOpenClearance);
+        };
     }, []);
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [showQuests, setShowQuests] = useState(false);
@@ -248,6 +255,11 @@ const Layout = () => {
             <AchievementsCodexModal
                 isOpen={showAchievements}
                 onClose={() => setShowAchievements(false)}
+            />
+
+            <PentagonClearanceModal
+                isOpen={showClearance}
+                onClose={() => setShowClearance(false)}
             />
 
             {/* GLOBAL PROFILE MODAL -> USES VIEWED PROFILE */}

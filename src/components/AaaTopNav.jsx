@@ -358,6 +358,35 @@ const AaaTopNav = ({ onOpenStash, onOpenQuests, onOpenSponsor }) => {
                     )}
                 </button>
 
+                {/* 4.5 Pentagon Clearance Pill */}
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('open-clearance'));
+                        playClick?.();
+                    }}
+                    style={{
+                        background: 'rgba(0, 240, 255, 0.08)',
+                        border: '1px solid rgba(0, 240, 255, 0.3)',
+                        color: '#00f0ff',
+                        borderRadius: '12px',
+                        padding: '6px 10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: '800',
+                        fontFamily: '"Orbitron", monospace'
+                    }}
+                    title="Open Pentagon Defense Clearance Dossier"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span style={{ fontSize: '0.68rem' }}>{level >= 20 ? 'BLACK-OPS' : level >= 10 ? 'TOP-SECRET' : level >= 5 ? 'SECRET' : 'CONFIDENTIAL'}</span>
+                </button>
+
                 {/* 5. Operator Profile Pill */}
                 <Link
                     to="/profile"

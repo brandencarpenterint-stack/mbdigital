@@ -22,6 +22,7 @@ import './Home.css';
 import ArcadeCabinet from '../components/ArcadeCabinet';
 import CinematicGameCard from '../components/CinematicGameCard';
 import SponsorStationModal from '../components/SponsorStationModal';
+import PentagonJackpotTicker from '../components/PentagonJackpotTicker';
 import { useToast } from '../context/ToastContext';
 
 const OnlinePlaza = () => {
@@ -642,8 +643,34 @@ const ArcadeHub = () => {
                     >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg> SPONSOR (+1,500 CP)
                     </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            window.dispatchEvent(new CustomEvent('open-clearance'));
+                            try { playBoop(); } catch (e) { }
+                        }}
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 255, 136, 0.2))',
+                            border: '1px solid #00f0ff',
+                            color: '#00f0ff',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: 'bold',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 14px rgba(0, 240, 255, 0.35)',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> CLEARANCE DOSSIER
+                    </button>
                 </div>
             </div>
+
+            {/* DEFCON 1 MEGA PROGRESSIVE CYBER JACKPOT MATRIX */}
+            <PentagonJackpotTicker onOpenClearance={() => window.dispatchEvent(new CustomEvent('open-clearance'))} />
 
             {/* SEARCH & CATEGORY FILTER BAR */}
             <div style={{
