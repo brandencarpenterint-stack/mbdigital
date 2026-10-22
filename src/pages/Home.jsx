@@ -240,16 +240,16 @@ const Home = () => {
                                 <span style={{ color: btcColor, fontWeight: 'bold' }}>({isBtcUp ? '+' : ''}{priceChange24h.toFixed(2)}%)</span>
                             </span>
                             <span style={{ color: '#00e5ff', fontWeight: 'bold' }}>
-                                🎮 26 CYBER GAMES LIVE
+                                26 ARCADE TITLES LIVE
                             </span>
                             <span style={{ color: '#00ff66', fontWeight: 'bold' }}>
-                                🪙 1,480+ BROS ONLINE
+                                1,480+ OPERATORS ONLINE
                             </span>
                             <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                                🏆 100,000 CP HIGH-ROLLER JACKPOTS
+                                100,000 CP VAULT JACKPOT
                             </span>
                             <span style={{ color: '#ff007f', fontWeight: 'bold' }}>
-                                🍸 THE BUNKER SPEAKEASY LOUNGE OPEN
+                                THE BUNKER MULTIPLAYER OPEN
                             </span>
                         </React.Fragment>
                     ))}
@@ -313,7 +313,13 @@ const Home = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: 'auto', transform: 'translateZ(10px)' }}>
                             <div style={{ background: 'rgba(0,0,0,0.5)', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.8rem', color: '#888', letterSpacing: '1px' }}>FUNDS</span>
-                                <span style={{ fontSize: '1.2rem', color: '#ffd700', fontWeight: 'bold' }}>🪙 {coins}</span>
+                                <span style={{ fontSize: '1.2rem', color: '#ffd700', fontWeight: '900', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 6v12M8 10h8" />
+                                    </svg>
+                                    {coins.toLocaleString()} CP
+                                </span>
                             </div>
                         </div>
                     </TiltCard>

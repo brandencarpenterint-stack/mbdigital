@@ -131,7 +131,13 @@ const DailyQuestModal = ({ onClose }) => {
                                     </div>
 
                                     <div style={{ fontSize: '0.7rem', color: '#888' }}>
-                                        {Math.min(q.progress, q.target)} / {q.target} • Reward: <span style={{ color: 'gold' }}>{q.reward} 🪙</span>
+                                        {Math.min(q.progress, q.target)} / {q.target} • Reward: <span style={{ color: '#ffd700', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                            +{q.reward} CP
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <path d="M12 6v12M8 10h8" />
+                                            </svg>
+                                        </span>
                                     </div>
                                 </div>
 

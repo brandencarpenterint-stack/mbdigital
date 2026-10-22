@@ -197,7 +197,13 @@ const BroCard = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div className="stat-box" style={boxStyle}>
                                 <div style={labelStyle}>BALANCE</div>
-                                <div style={valStyle}>🪙 {coins.toLocaleString()}</div>
+                                <div style={{ ...valStyle, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 6v12M8 10h8" />
+                                    </svg>
+                                    {coins.toLocaleString()} CP
+                                </div>
                             </div>
                             <div className="stat-box" style={boxStyle}>
                                 <div style={labelStyle}>SAVED (YTD)</div>

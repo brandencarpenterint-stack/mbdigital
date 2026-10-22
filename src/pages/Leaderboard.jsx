@@ -179,7 +179,13 @@ const Leaderboard = () => {
 
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }}>{p.xp.toLocaleString()} XP</div>
-                                <div style={{ color: 'gold', fontSize: '0.8rem' }}>🪙 {p.coins.toLocaleString()}</div>
+                                <div style={{ color: '#ffd700', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                                    <span>{p.coins.toLocaleString()} CP</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 6v12M8 10h8" />
+                                    </svg>
+                                </div>
                             </div>
                         </TiltCard>
                     </motion.div>

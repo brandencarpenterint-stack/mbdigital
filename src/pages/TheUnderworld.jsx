@@ -248,7 +248,7 @@ const TheUnderworld = () => {
                                         fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 20px #ff0055'
                                     }}
                                 >
-                                    CONFIRM WAGER & DEDUCT {wagerAmount} 🪙
+                                    CONFIRM WAGER & DEDUCT {wagerAmount} CP
                                 </button>
                             </div>
                         </motion.div>
@@ -288,8 +288,12 @@ const TheUnderworld = () => {
                                 </div>
                                 
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '2rem', color: 'var(--neon-gold)', fontWeight: 'bold', textShadow: '0 0 10px var(--neon-gold)', marginBottom: '10px' }}>
-                                        {wager.wager.toLocaleString()} 🪙
+                                    <div style={{ fontSize: '1.8rem', color: 'var(--neon-gold)', fontWeight: '900', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                                        <span>{wager.wager.toLocaleString()} CP</span>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="M12 6v12M8 10h8" />
+                                        </svg>
                                     </div>
                                     <button
                                         onClick={() => handleAcceptWager(wager)}

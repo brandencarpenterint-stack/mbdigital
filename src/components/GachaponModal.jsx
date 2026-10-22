@@ -146,7 +146,13 @@ const GachaponModal = ({ onClose }) => {
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                                             <div style={{ background: '#333', padding: '10px 20px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <span style={{ color: '#aaa' }}>BALANCE:</span>
-                                                <span style={{ color: 'gold', fontWeight: 'bold' }}>{coins} 🪙</span>
+                                                <span style={{ color: 'gold', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                    {coins} CP
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <path d="M12 6v12M8 10h8" />
+                                                    </svg>
+                                                </span>
                                             </div>
                                             <SquishyButton
                                                 onClick={handleSpin}
@@ -157,7 +163,7 @@ const GachaponModal = ({ onClose }) => {
                                                     opacity: coins >= 100 ? 1 : 0.5
                                                 }}
                                             >
-                                                INSERT 100 🪙
+                                                INSERT 100 CP
                                             </SquishyButton>
                                         </div>
                                     )}

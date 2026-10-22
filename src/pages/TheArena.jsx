@@ -54,7 +54,7 @@ const TheArena = () => {
         setCurrentMob(mob);
         setMobHp(mob.hp);
         setGameState('FIGHTING');
-        log(`⚠ ENGAGING ${mob.name} (Lvl ${mob.level})!`);
+        log(`>> ENGAGING ${mob.name} (Lvl ${mob.level})!`);
     };
 
     // COMBAT TICK - AUTOMATED
@@ -90,8 +90,8 @@ const TheArena = () => {
     const handleVictory = () => {
         playWin();
         const gainedUsers = Math.floor(currentMob.reward / 10);
-        log(`🏆 VICTORY! DEFEATED ${currentMob.name}.`);
-        log(`+${currentMob.reward} Coins | +${gainedUsers} Fans`);
+        log(`>> VICTORY! DEFEATED ${currentMob.name}.`);
+        log(`+${currentMob.reward} CP | +${gainedUsers} Fans`);
         addCoins(currentMob.reward);
         addFollowers(gainedUsers);
         setGameState('VICTORY');
@@ -108,14 +108,53 @@ const TheArena = () => {
             display: 'flex', flexDirection: 'column'
         }}>
             {/* HEADER */}
-            <div style={{ padding: '20px', borderBottom: '1px solid #333', background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Link to="/" style={{ textDecoration: 'none', color: '#fff', fontSize: '1.5rem' }}>⬅ HUB</Link>
+            <div style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid rgba(255, 0, 85, 0.3)',
+                background: 'rgba(10, 5, 15, 0.85)',
+                backdropFilter: 'blur(16px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 25px rgba(0, 0, 0, 0.6)'
+            }}>
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '10px',
+                        color: '#00f0ff',
+                        fontSize: '0.75rem',
+                        fontWeight: '900',
+                        letterSpacing: '1px'
+                    }}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
+                </Link>
                 <div>
-                    <span style={{ color: '#ff0055', fontSize: '1.5rem', fontWeight: '900', textShadow: '0 0 10px #ff0055' }}>GLITCH ARENA</span>
+                    <span style={{ color: '#ff0055', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '3px', textShadow: '0 0 15px rgba(255, 0, 85, 0.8)' }}>GLITCH ARENA</span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#888', display: 'flex', gap: '20px' }}>
-                    <span>TOTAL FANS: <span style={{ color: '#ffd700' }}>{(followers || 0).toLocaleString()}</span></span>
-                    <span>SQUAD POWER: <span style={{ color: hackActive ? '#ff0000' : '#00ffcc' }}>{Math.floor(totalDmg)} DPS {hackActive && '(HACKED)'}</span></span>
+                <div style={{ fontSize: '0.75rem', color: '#888', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    <span>TOTAL FANS: <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{(followers || 0).toLocaleString()}</span></span>
+                    <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        background: hackActive ? 'rgba(255, 0, 0, 0.15)' : 'rgba(0, 255, 204, 0.15)',
+                        border: `1px solid ${hackActive ? '#ff0000' : '#00ffcc'}`,
+                        color: hackActive ? '#ff0000' : '#00ffcc',
+                        fontWeight: '900'
+                    }}>
+                        {Math.floor(totalDmg)} DPS {hackActive && '(OVERCLOCKED)'}
+                    </span>
                 </div>
             </div>
 
@@ -127,7 +166,23 @@ const TheArena = () => {
 
                     {/* LEADER */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', padding: '10px', background: 'linear-gradient(90deg, #333, transparent)', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '2rem' }}>👾</div>
+                        <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '10px',
+                            background: 'rgba(0, 255, 204, 0.1)',
+                            border: '1px solid #00ffcc',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 10px rgba(0, 255, 204, 0.3)'
+                        }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ffcc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h1v3a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3h1a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z" />
+                                <circle cx="9" cy="11" r="1" fill="#00ffcc" />
+                                <circle cx="15" cy="11" r="1" fill="#00ffcc" />
+                            </svg>
+                        </div>
                         <div>
                             <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>POCKET BRO</div>
                             <div style={{ fontSize: '0.7rem', color: '#00ffcc' }}>LEADER (Lvl {petStats?.level || 1})</div>
@@ -150,10 +205,23 @@ const TheArena = () => {
                                 </div>
                                 <button
                                     onClick={() => fireMember(r.id)}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', opacity: 0.7 }}
-                                    title="Fire Member"
+                                    style={{
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                        borderRadius: '6px',
+                                        color: '#ef4444',
+                                        cursor: 'pointer',
+                                        padding: '4px 6px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                    title="Dismiss Member"
                                 >
-                                    ✖
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
                                 </button>
                             </div>
                         ))
@@ -178,13 +246,25 @@ const TheArena = () => {
                             <div style={{ textAlign: 'center', zIndex: 10 }}>
                                 <motion.div
                                     animate={{
-                                        x: [0, -10, 10, -5, 5, 0],
+                                        x: [0, -8, 8, -4, 4, 0],
                                         filter: ["hue-rotate(0deg)", "hue-rotate(90deg)", "hue-rotate(0deg)"]
                                     }}
                                     transition={{ duration: 0.5, repeat: Infinity }}
-                                    style={{ fontSize: '8rem', marginBottom: '20px', filter: 'drop-shadow(0 0 20px red)' }}
+                                    style={{
+                                        marginBottom: '20px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        filter: 'drop-shadow(0 0 35px #ff0055)'
+                                    }}
                                 >
-                                    👹
+                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#ff0055" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                        <circle cx="9" cy="11" r="1.5" fill="#ff0055" />
+                                        <circle cx="15" cy="11" r="1.5" fill="#ff0055" />
+                                        <path d="M8 16c1.5-1 3-1 4 0 1-1 2.5-1 4 0" />
+                                        <path d="M2 12h2m16 0h2" />
+                                    </svg>
                                 </motion.div>
                                 <h2 style={{ color: 'red', textShadow: '0 0 10px red' }}>{currentMob.name}</h2>
 
@@ -220,7 +300,11 @@ const TheArena = () => {
                                 }}
                             >
                                 <div style={{ fontWeight: 'bold', color: mob.boss ? 'red' : 'white' }}>{mob.name}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#888' }}>Lvl {mob.level} • {mob.reward} CP</div>
+                                <div style={{ fontSize: '0.75rem', color: '#ffd700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px' }}>
+                                    <span style={{ color: '#888' }}>Lvl {mob.level}</span>
+                                    <span style={{ color: '#555' }}>•</span>
+                                    <span>{mob.reward} CP</span>
+                                </div>
                             </button>
                         ))}
                     </div>

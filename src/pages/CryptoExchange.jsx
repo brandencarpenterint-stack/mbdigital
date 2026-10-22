@@ -49,7 +49,28 @@ const CryptoExchange = () => {
         }}>
             {/* HEADER */}
             <div style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #222', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
-                <Link to="/" style={{ textDecoration: 'none', fontSize: '1.2rem', color: '#00ffcc', fontWeight: 'bold' }}>◄ TERMINAL</Link>
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '10px',
+                        color: '#00ffcc',
+                        fontSize: '0.75rem',
+                        fontWeight: '900',
+                        letterSpacing: '1px'
+                    }}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    TERMINAL
+                </Link>
                 <div style={{ textAlign: 'center' }}>
                     <h1 style={{ margin: 0, fontSize: '1.4rem', color: '#f7931a', textShadow: '0 0 12px rgba(247, 147, 26, 0.6)', letterSpacing: '2px' }}>
                         ₿ LIVE BITCOIN ORACLE
@@ -60,7 +81,20 @@ const CryptoExchange = () => {
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: '#ffd700', fontWeight: 'bold', fontSize: '1rem' }}>🪙 {coins.toFixed(0)} CP</div>
+                    <div style={{
+                        color: '#ffd700',
+                        fontWeight: '900',
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                    }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v12M8 10h8" />
+                        </svg>
+                        {coins.toFixed(0)} CP
+                    </div>
                 </div>
             </div>
 
@@ -70,7 +104,12 @@ const CryptoExchange = () => {
                     
                     {loading && chartData.length === 0 ? (
                         <div style={{ textAlign: 'center', color: '#f7931a', padding: '100px', fontSize: '1.1rem' }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '15px' }}>🛰️</div>
+                            <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f7931a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 3s linear infinite' }}>
+                                    <circle cx="12" cy="12" r="10" strokeDasharray="30" strokeDashoffset="10" />
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                </svg>
+                            </div>
                             SYNCING GLOBAL BLOCKCHAIN NODES...
                         </div>
                     ) : (

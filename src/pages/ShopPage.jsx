@@ -92,12 +92,23 @@ const ShopPage = () => {
                     </h1>
 
                     <div style={{
-                        background: 'rgba(0,0,0,0.5)', border: '1px solid var(--neon-gold)',
-                        padding: '8px 18px', borderRadius: '4px', color: 'var(--neon-gold)', fontWeight: 'bold',
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        boxShadow: '0 0 10px rgba(255, 215, 0, 0.2)'
+                        background: 'rgba(15, 15, 25, 0.75)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 215, 0, 0.35)',
+                        padding: '8px 18px',
+                        borderRadius: '10px',
+                        color: 'var(--neon-gold)',
+                        fontWeight: '900',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
                     }}>
-                        <span>🪙</span> <span style={{ fontSize: '1.2rem' }}>{coins.toLocaleString()}</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 6px #ffd700)' }}>
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v12M8 10h8" />
+                        </svg>
+                        <span style={{ fontSize: '1.15rem', letterSpacing: '1px' }}>{coins.toLocaleString()} CP</span>
                     </div>
                 </div>
 

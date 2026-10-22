@@ -135,7 +135,7 @@ const Coloring = () => {
                         <h2 style={{ fontSize: '2rem', color: 'var(--neon-pink)', textShadow: '0 0 10px var(--neon-pink)', margin: 0 }}>COLORING STUDIO</h2>
                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '10px' }}>
                             <p style={{ color: '#aaa', fontSize: '0.9rem', margin: 0 }}>
-                                WALLET: <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold' }}>{coins.toLocaleString()} 🪙</span>
+                                WALLET: <span style={{ color: 'var(--neon-gold)', fontWeight: 'bold' }}>{coins.toLocaleString()} CP</span>
                             </p>
                             <p style={{ color: '#aaa', fontSize: '0.9rem', margin: 0 }}>
                                 PLAY TIME: <span style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>{playTimeMins} MINS ⏱️</span>
@@ -170,7 +170,7 @@ const Coloring = () => {
                                     boxShadow: '0 0 20px rgba(255,215,0,0.4)',
                                     display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap'
                                 }}>
-                                    UNLOCK 🪙 2500
+                                    UNLOCK 2,500 CP
                                 </SquishyButton>
                             </div>
                         </div>
@@ -240,7 +240,7 @@ const Coloring = () => {
                                         color: isOwned ? 'var(--neon-green)' : (template.type === 'time' ? 'var(--neon-blue)' : 'var(--neon-gold)'),
                                         marginTop: '5px', fontSize: '0.8rem', fontWeight: 'bold'
                                     }}>
-                                        {isOwned ? 'OWNED' : (template.type === 'time' ? `⏱️ ${template.unlockTime} MINS` : `🪙 ${template.cost}`)}
+                                        {isOwned ? 'OWNED' : (template.type === 'time' ? `⏱️ ${template.unlockTime} MINS` : `${template.cost} CP`)}
                                     </div>
                                 </div>
                             );
@@ -257,7 +257,7 @@ const Coloring = () => {
                             border: '1px solid #555',
                             fontSize: '0.9rem'
                         }}>
-                            ⬅ BACK TO GALLERY
+                            ← BACK TO GALLERY
                         </SquishyButton>
                         <div style={{ color: '#888' }}>
                             EDITING: <span style={{ color: 'white' }}>{selectedTemplate.title.toUpperCase()}</span>

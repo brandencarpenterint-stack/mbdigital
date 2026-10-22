@@ -272,15 +272,27 @@ const CyberVault = () => {
                     CURRENT UNCLAIMED ACCUMULATION
                 </div>
                 <div style={{
-                    fontSize: 'clamp(2.4rem, 6vw, 4rem)',
-                    fontWeight: '900',
-                    background: 'linear-gradient(135deg, #ffd700, #ff8800, #ff007f)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0 0 25px rgba(255, 215, 0, 0.5))',
-                    letterSpacing: '2px'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    filter: 'drop-shadow(0 0 25px rgba(255, 215, 0, 0.5))'
                 }}>
-                    🪙 {jackpot.toLocaleString()} CP
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 12px #ffd700)' }}>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v2m0 8v2" />
+                    </svg>
+                    <span style={{
+                        fontSize: 'clamp(2.4rem, 6vw, 4rem)',
+                        fontWeight: '900',
+                        background: 'linear-gradient(135deg, #ffd700, #ff8800, #ff007f)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        letterSpacing: '2px'
+                    }}>
+                        {jackpot.toLocaleString()} CP
+                    </span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#00ffcc', marginTop: '4px' }}>
                     ▲ Pot grows with every arcade bet across Plinko, Slots, Derby & Wheel
@@ -307,7 +319,25 @@ const CyberVault = () => {
                     fontSize: '0.85rem',
                     color: vaultDoorOpen ? '#00ff66' : '#ff0055'
                 }}>
-                    <span>{vaultDoorOpen ? '🔓 STATUS: COMPROMISED / UNLOCKED' : '🔒 STATUS: TITANIUM LOCKDOWN ACTIVE'}</span>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: '900',
+                        letterSpacing: '1px',
+                        color: vaultDoorOpen ? '#00ff66' : '#ff0055'
+                    }}>
+                        <span style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: vaultDoorOpen ? '#00ff66' : '#ff0055',
+                            boxShadow: `0 0 10px ${vaultDoorOpen ? '#00ff66' : '#ff0055'}`,
+                            display: 'inline-block'
+                        }} />
+                        <span>{vaultDoorOpen ? 'STATUS: COMPROMISED / UNLOCKED' : 'STATUS: TITANIUM LOCKDOWN ACTIVE'}</span>
+                    </div>
                 </div>
 
                 {/* Tumbler Reels Grid */}
@@ -397,7 +427,24 @@ const CyberVault = () => {
                         letterSpacing: '1px'
                     }}
                 >
-                    {isCracking ? '⚙️ DECRYPTING TUMBLERS...' : '🔓 ATTEMPT VAULT CRACK (150 CP)'}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {isCracking ? (
+                            <>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" />
+                                </svg>
+                                DECRYPTING TUMBLERS...
+                            </>
+                        ) : (
+                            <>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                                </svg>
+                                ATTEMPT VAULT CRACK (150 CP)
+                            </>
+                        )}
+                    </span>
                 </SquishyButton>
             </div>
 
