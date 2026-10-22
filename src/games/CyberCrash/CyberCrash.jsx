@@ -12,13 +12,13 @@ import { motion } from 'framer-motion';
 const CANVAS_WIDTH = 700;
 const CANVAS_HEIGHT = 420;
 
-// Character skins for cockpit selection & bots
-const BRO_PILOTS = [
-    { id: 'dino', name: 'Turbo Dino', skin: '/assets/skins/face_dino.png', color: '#00ff66' },
-    { id: 'bunny', name: 'Cyber Bunny', skin: '/assets/skins/face_bunny.png', color: '#ff007f' },
-    { id: 'money', name: 'Whale Bro', skin: '/assets/skins/face_money.png', color: '#ffd700' },
-    { id: 'star', name: 'Super Star', skin: '/assets/skins/face_star.png', color: '#00e5ff' },
-    { id: 'cat', name: 'Astro Neko', skin: '/assets/skins/face_cat.png', color: '#d500f9' }
+// High-tech starship classes (Vector Iconography, 0 Photos)
+const CYBER_SHIPS = [
+    { id: 'viper', name: 'Viper-X Interceptor', callsign: 'VIPER', color: '#00f0ff', perk: 'Agile Thrusters' },
+    { id: 'valkyrie', name: 'Valkyrie-9 Starfighter', callsign: 'VALK', color: '#ff007f', perk: 'Plasma Shield' },
+    { id: 'apex', name: 'Apex-Gold Cruiser', callsign: 'APEX', color: '#ffd700', perk: 'Hyper Overdrive' },
+    { id: 'phantom', name: 'Phantom-Z Stealth', callsign: 'PHNTM', color: '#00ff66', perk: 'Quantum Phase' },
+    { id: 'solaris', name: 'Solaris Titan', callsign: 'SOLAR', color: '#a855f7', perk: 'Fusion Core' }
 ];
 
 const BOT_NAMES = ['VaporPilot', 'MatrixHustler', 'CryptoKev', 'ZeroG_Bro', 'NeonRider'];
@@ -33,10 +33,9 @@ const CyberCrash = () => {
     const engineOscRef = useRef(null);
     const engineGainRef = useRef(null);
     const animIdRef = useRef(null);
-    const pilotImagesRef = useRef({});
 
-    // Game Loop & Round State
-    const [gameState, setGameState] = useState('waiting'); // 'waiting', 'countdown', 'flying', 'crashed'
+    // Game Loop & Round State: 'ready', 'countdown', 'flying', 'crashed', 'cashed_out'
+    const [gameState, setGameState] = useState('ready');
     const [multiplier, setMultiplier] = useState(1.00);
     const [wager, setWager] = useState(100);
     const [autoCashout, setAutoCashout] = useState(2.00);
@@ -48,12 +47,12 @@ const CyberCrash = () => {
     const [cashedOut, setCashedOut] = useState(false);
     const [cashedOutMultiplier, setCashedOutMultiplier] = useState(null);
     const [cashedOutAmount, setCashedOutAmount] = useState(0);
-    const [selectedPilot, setSelectedPilot] = useState(BRO_PILOTS[0]);
-    const [roundHistory, setRoundHistory] = useState([1.85, 3.42, 1.12, 12.50, 2.10, 1.45, 5.80, 1.05]);
-    const [countdown, setCountdown] = useState(5);
+    const [selectedShip, setSelectedShip] = useState(CYBER_SHIPS[0]);
+    const [roundHistory, setRoundHistory] = useState([2.15, 1.42, 8.50, 1.18, 3.20, 1.05, 14.80, 2.75]);
+    const [countdown, setCountdown] = useState(3);
     const [bots, setBots] = useState([]);
 
-    // Physics & flight refs
+    // Physics & flight telemetry refs
     const flightRef = useRef({
         startTime: 0,
         crashPoint: 2.0,
@@ -63,7 +62,7 @@ const CyberCrash = () => {
         shake: 0
     });
 
-    // Initialize Starfield
+    // Initialize Starfield with Depth Layers
     useEffect(() => {
         const stars = [];
         for (let i = 0; i < 90; i++) {
@@ -76,17 +75,6 @@ const CyberCrash = () => {
             });
         }
         flightRef.current.stars = stars;
-    }, []);
-
-    // Preload pilot skins
-    useEffect(() => {
-        BRO_PILOTS.forEach(p => {
-            const img = new Image();
-            img.src = p.skin;
-            img.onload = () => {
-                pilotImagesRef.current[p.id] = img;
-            };
-        });
     }, []);
 
     // Web Audio Engine Sound Synthesis
@@ -119,7 +107,6 @@ const CyberCrash = () => {
     const updateEngineSound = (mult) => {
         if (!engineOscRef.current || !audioCtxRef.current) return;
         const ctx = audioCtxRef.current;
-        // Pitch rises smoothly from 80Hz up to 600Hz as multiplier increases
         const freq = Math.min(650, 80 + (mult - 1) * 35);
         engineOscRef.current.frequency.setTargetAtTime(freq, ctx.currentTime, 0.05);
     };
@@ -152,26 +139,24 @@ const CyberCrash = () => {
         } catch (e) {}
     };
 
-    // Generate Provably-Fair Crash Point
+    // Provably-fair crash point calculation
     const generateCrashPoint = () => {
         const rand = Math.random();
-        // 4% instant crash at 1.00x - 1.05x
-        if (rand < 0.04) return 1.00 + Math.random() * 0.05;
-        // Exponential distribution with 96% RTP
-        const e = 100 / (100 - rand * 96);
+        if (rand < 0.03) return 1.00 + Math.random() * 0.05; // 3% instant bust
+        const e = 100 / (100 - rand * 96); // 96% RTP exponential curve
         return Math.max(1.01, parseFloat(e.toFixed(2)));
     };
 
-    // Generate simulated online bots
+    // Generate simulated network wingmen
     const generateBots = () => {
         return BOT_NAMES.map((name, i) => {
-            const pilot = BRO_PILOTS[i % BRO_PILOTS.length];
+            const ship = CYBER_SHIPS[i % CYBER_SHIPS.length];
             const botWager = [50, 100, 250, 500, 1000][Math.floor(Math.random() * 5)];
-            const targetCashout = parseFloat((1.2 + Math.random() * 3.5).toFixed(2));
+            const targetCashout = parseFloat((1.3 + Math.random() * 4.0).toFixed(2));
             return {
                 id: 'bot_' + i,
                 name,
-                pilot,
+                ship,
                 wager: botWager,
                 targetCashout,
                 cashedOut: false,
@@ -180,46 +165,10 @@ const CyberCrash = () => {
         });
     };
 
-    // Start New Countdown
-    const startCountdown = () => {
-        setGameState('countdown');
-        setCountdown(4);
-        setMultiplier(1.00);
-        setCashedOut(false);
-        setCashedOutMultiplier(null);
-        setCashedOutAmount(0);
+    // Player-triggered Moonshot Launch
+    const handleLaunch = () => {
+        if (gameState !== 'ready') return;
 
-        const newBots = generateBots();
-        setBots(newBots);
-
-        let count = 4;
-        const timer = setInterval(() => {
-            count -= 1;
-            setCountdown(count);
-            playBeep(count === 0 ? 880 : 440);
-
-            if (count <= 0) {
-                clearInterval(timer);
-                launchRocket();
-            }
-        }, 1000);
-    };
-
-    // Launch Rocket Round
-    const launchRocket = () => {
-        setGameState('flying');
-        const crash = generateCrashPoint();
-        flightRef.current.crashPoint = crash;
-        flightRef.current.startTime = Date.now();
-        flightRef.current.currentMultiplier = 1.00;
-        flightRef.current.particles = [];
-        flightRef.current.shake = 0;
-
-        startEngineSound();
-    };
-
-    // Place Bet
-    const handlePlaceBet = () => {
         if (wager <= 0) {
             showToast('Enter a valid wager!', 'error');
             return;
@@ -229,15 +178,50 @@ const CyberCrash = () => {
             return;
         }
 
+        // Deduct Wager & setup round
         if (addCoins) addCoins(-wager);
         setHasBet(true);
+        setCashedOut(false);
+        setCashedOutMultiplier(null);
+        setCashedOutAmount(0);
+        setMultiplier(1.00);
+        setBots(generateBots());
         playCollect();
-        showToast(`Bet placed: ${wager} CP on ${selectedPilot.name}!`, 'info');
 
         if (incrementStat) {
             incrementStat('crashGames', 1);
             incrementStat('gamesPlayedCount', 1);
         }
+
+        // 3-2-1 Rapid Countdown
+        setGameState('countdown');
+        let count = 3;
+        setCountdown(count);
+        playBeep(440);
+
+        const timer = setInterval(() => {
+            count -= 1;
+            setCountdown(count);
+            playBeep(count === 0 ? 880 : 440);
+
+            if (count <= 0) {
+                clearInterval(timer);
+                igniteFlight();
+            }
+        }, 800);
+    };
+
+    // Ignite rocket flight
+    const igniteFlight = () => {
+        setGameState('flying');
+        const crash = generateCrashPoint();
+        flightRef.current.crashPoint = crash;
+        flightRef.current.startTime = Date.now();
+        flightRef.current.currentMultiplier = 1.00;
+        flightRef.current.particles = [];
+        flightRef.current.shake = 0;
+
+        startEngineSound();
     };
 
     // Bail Out / Cashout
@@ -259,9 +243,8 @@ const CyberCrash = () => {
             triggerConfetti();
         }
 
-        showToast(`🚀 BAILED OUT AT ${currentMult.toFixed(2)}x! Won +${winAmount} CP!`, 'success');
+        showToast(`🚀 BAILED OUT AT ${currentMult.toFixed(2)}x! Won +${winAmount.toLocaleString()} CP!`, 'success');
 
-        // Stats & Global Feed
         if (incrementStat) incrementStat('crashWins', 1);
         const currentHS = stats?.crashHighScore || 0;
         if (currentMult > currentHS && updateStat) {
@@ -269,21 +252,12 @@ const CyberCrash = () => {
         }
 
         feedService.broadcast('arcade_win', {
-            player: userProfile?.name || 'CyberBro',
+            player: userProfile?.name || 'CyberPilot',
             game: 'Cyber Crash',
             coinsWon: winAmount,
-            avatar: selectedPilot.skin
+            avatar: userProfile?.avatar || '/assets/skins/face_default.png'
         });
     };
-
-    // Auto-start countdown on mount
-    useEffect(() => {
-        startCountdown();
-        return () => {
-            stopEngineSound();
-            if (animIdRef.current) cancelAnimationFrame(animIdRef.current);
-        };
-    }, []);
 
     // 60FPS Flight Physics & Canvas Rendering Loop
     useEffect(() => {
@@ -291,39 +265,37 @@ const CyberCrash = () => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        const loop = () => {
-            const flight = flightRef.current;
-
+        const render = () => {
             // Clear Canvas
-            ctx.fillStyle = '#060714';
+            ctx.fillStyle = '#05070e';
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-            // Screen Shake
+            // Screen Shake Effect
             ctx.save();
-            if (flight.shake > 0) {
-                const sx = (Math.random() - 0.5) * flight.shake;
-                const sy = (Math.random() - 0.5) * flight.shake;
+            if (flightRef.current.shake > 0) {
+                const sx = (Math.random() - 0.5) * flightRef.current.shake;
+                const sy = (Math.random() - 0.5) * flightRef.current.shake;
                 ctx.translate(sx, sy);
-                flight.shake *= 0.92;
-                if (flight.shake < 0.2) flight.shake = 0;
+                flightRef.current.shake *= 0.88;
+                if (flightRef.current.shake < 0.2) flightRef.current.shake = 0;
             }
 
-            // Starfield Simulation
-            const speedFactor = gameState === 'flying' ? Math.min(8, 1 + (flight.currentMultiplier - 1) * 1.5) : 1;
-            flight.stars.forEach(st => {
-                st.x -= st.speed * speedFactor;
-                st.y += (st.speed * 0.4) * speedFactor;
+            // Draw Parallax Starfield
+            flightRef.current.stars.forEach(st => {
+                ctx.fillStyle = st.color;
+                ctx.fillRect(st.x, st.y, st.size, st.size);
+                if (gameState === 'flying') {
+                    st.x -= st.speed * (flightRef.current.currentMultiplier * 0.8);
+                    st.y += st.speed * 0.4;
+                } else {
+                    st.x -= st.speed * 0.2;
+                }
                 if (st.x < 0) st.x = CANVAS_WIDTH;
                 if (st.y > CANVAS_HEIGHT) st.y = 0;
-
-                ctx.fillStyle = st.color;
-                ctx.beginPath();
-                ctx.arc(st.x, st.y, st.size, 0, Math.PI * 2);
-                ctx.fill();
             });
 
-            // Cyberpunk Grid Lines
-            ctx.strokeStyle = 'rgba(0, 229, 255, 0.08)';
+            // Draw Neon Cyber Grid Radar
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
             ctx.lineWidth = 1;
             for (let y = 60; y < CANVAS_HEIGHT; y += 60) {
                 ctx.beginPath();
@@ -338,23 +310,25 @@ const CyberCrash = () => {
                 ctx.stroke();
             }
 
-            // FLIGHT LOGIC
+            const flight = flightRef.current;
+
+            // In-flight math update
             if (gameState === 'flying') {
                 const elapsedSec = (Date.now() - flight.startTime) / 1000;
-                // Realistic exponential curve
-                const currentMult = parseFloat((1.00 + Math.pow(elapsedSec, 1.85) * 0.07).toFixed(2));
+                // Exponential acceleration curve
+                const currentMult = parseFloat((1.00 + Math.pow(elapsedSec * 0.55, 1.85)).toFixed(2));
                 flight.currentMultiplier = currentMult;
                 setMultiplier(currentMult);
                 updateEngineSound(currentMult);
 
-                // Auto-Cashout Check for Player
-                if (hasBet && !cashedOut && autoCashoutEnabled && currentMult >= autoCashout) {
+                // Auto Cashout Check
+                if (autoCashoutEnabled && !cashedOut && hasBet && currentMult >= autoCashout) {
                     handleCashout();
                 }
 
-                // Check Bots Cashouts
-                setBots(prevBots =>
-                    prevBots.map(b => {
+                // Simulated Bots Cashouts
+                setBots(prev =>
+                    prev.map(b => {
                         if (!b.cashedOut && currentMult >= b.targetCashout) {
                             return {
                                 ...b,
@@ -371,18 +345,18 @@ const CyberCrash = () => {
                     setGameState('crashed');
                     stopEngineSound();
                     playCrash();
-                    flight.shake = 18;
+                    flight.shake = 22;
 
                     // Spawn Explosion Particles
-                    for (let p = 0; p < 45; p++) {
+                    for (let p = 0; p < 50; p++) {
                         const angle = Math.random() * Math.PI * 2;
-                        const spd = Math.random() * 8 + 2;
+                        const spd = Math.random() * 9 + 3;
                         flight.particles.push({
                             x: CANVAS_WIDTH * 0.72,
                             y: CANVAS_HEIGHT * 0.32,
                             vx: Math.cos(angle) * spd,
                             vy: Math.sin(angle) * spd,
-                            color: ['#ff0055', '#ff9900', '#ffff00', '#00e5ff'][Math.floor(Math.random() * 4)],
+                            color: ['#ff0055', '#ff9900', '#ffd700', '#00f0ff'][Math.floor(Math.random() * 4)],
                             radius: Math.random() * 6 + 2,
                             life: 1.0,
                             decay: Math.random() * 0.025 + 0.015
@@ -397,10 +371,10 @@ const CyberCrash = () => {
                     }
                     setHasBet(false);
 
-                    // Auto restart countdown after 3 seconds
+                    // Reset to ready state after brief delay
                     setTimeout(() => {
-                        startCountdown();
-                    }, 3200);
+                        setGameState('ready');
+                    }, 2800);
                 }
             }
 
@@ -419,49 +393,31 @@ const CyberCrash = () => {
                 ctx.save();
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
-                ctx.quadraticCurveTo(startX + (targetX - startX) * 0.45, startY, targetX, targetY);
-
-                // Gradient stroke
-                const grad = ctx.createLinearGradient(startX, startY, targetX, targetY);
-                grad.addColorStop(0, '#00e5ff');
-                grad.addColorStop(0.5, '#d500f9');
-                grad.addColorStop(1, '#ff007f');
-
-                ctx.strokeStyle = grad;
-                ctx.lineWidth = 4;
-                ctx.shadowColor = '#00e5ff';
+                ctx.quadraticCurveTo(
+                    startX + (targetX - startX) * 0.55,
+                    startY,
+                    targetX,
+                    targetY
+                );
+                ctx.strokeStyle = gameState === 'crashed' ? 'rgba(255, 0, 85, 0.6)' : selectedShip.color;
+                ctx.lineWidth = 3.5;
+                ctx.shadowColor = gameState === 'crashed' ? '#ff0055' : selectedShip.color;
                 ctx.shadowBlur = 15;
                 ctx.stroke();
 
-                // Path Under-fill Gradient
+                // Gradient area under curve
                 ctx.lineTo(targetX, startY);
                 ctx.lineTo(startX, startY);
                 ctx.closePath();
-                const fillGrad = ctx.createLinearGradient(startX, startY, startX, targetY);
-                fillGrad.addColorStop(0, 'rgba(0, 229, 255, 0.0)');
-                fillGrad.addColorStop(1, 'rgba(213, 0, 249, 0.15)');
-                ctx.fillStyle = fillGrad;
+                const areaGrad = ctx.createLinearGradient(0, targetY, 0, startY);
+                areaGrad.addColorStop(0, gameState === 'crashed' ? 'rgba(255, 0, 85, 0.25)' : 'rgba(0, 240, 255, 0.2)');
+                areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = areaGrad;
                 ctx.fill();
                 ctx.restore();
-
-                // Spawn Jet Exhaust Particles
-                if (gameState === 'flying') {
-                    for (let ep = 0; ep < 3; ep++) {
-                        flight.particles.push({
-                            x: targetX - 18,
-                            y: targetY + 12,
-                            vx: -Math.random() * 4 - 2,
-                            vy: Math.random() * 3 + 1,
-                            color: ['#00e5ff', '#ff007f', '#ffd700', '#ffffff'][Math.floor(Math.random() * 4)],
-                            radius: Math.random() * 4 + 1.5,
-                            life: 1.0,
-                            decay: 0.04
-                        });
-                    }
-                }
             }
 
-            // Draw & Update Particles (Exhaust & Explosion)
+            // Particle Updates & Drawing
             for (let i = flight.particles.length - 1; i >= 0; i--) {
                 const p = flight.particles[i];
                 p.x += p.vx;
@@ -483,116 +439,130 @@ const CyberCrash = () => {
                 }
             }
 
-            // Draw Rocket & Pilot Cockpit
+            // Draw Cyber Starship
             if (gameState === 'flying') {
                 ctx.save();
                 ctx.translate(targetX, targetY);
-                const angle = -0.45; // 25 deg upward tilt
+                const angle = -0.42; // ~24 deg upward trajectory
                 ctx.rotate(angle);
 
-                // Rocket Body
-                ctx.fillStyle = '#0f172a';
-                ctx.strokeStyle = '#00e5ff';
-                ctx.lineWidth = 2;
-                ctx.shadowColor = '#00e5ff';
-                ctx.shadowBlur = 10;
+                // Rocket Chassis
+                ctx.fillStyle = '#080d1a';
+                ctx.strokeStyle = selectedShip.color;
+                ctx.lineWidth = 2.2;
+                ctx.shadowColor = selectedShip.color;
+                ctx.shadowBlur = 12;
 
                 ctx.beginPath();
-                ctx.moveTo(28, 0); // Nose cone
-                ctx.lineTo(-18, -12); // Top wing
-                ctx.lineTo(-14, 0);
-                ctx.lineTo(-18, 12); // Bottom wing
+                ctx.moveTo(30, 0); // Nose cone
+                ctx.lineTo(-20, -14); // Top wing
+                ctx.lineTo(-14, 0); // Fuselage mid
+                ctx.lineTo(-20, 14); // Bottom wing
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
 
-                // Neon Wing Accents
-                ctx.strokeStyle = '#ff007f';
-                ctx.beginPath();
-                ctx.moveTo(-18, -12);
-                ctx.lineTo(-4, -5);
-                ctx.moveTo(-18, 12);
-                ctx.lineTo(-4, 5);
-                ctx.stroke();
-
-                // Cockpit Bubble & Pilot Skin Avatar
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(4, 0, 11, 0, Math.PI * 2);
-                ctx.clip();
-                const pilotImg = pilotImagesRef.current[selectedPilot.id];
-                if (pilotImg && pilotImg.complete) {
-                    ctx.drawImage(pilotImg, -7, -11, 22, 22);
-                } else {
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fill();
-                }
-                ctx.restore();
-
-                // Cockpit Glass Border
-                ctx.strokeStyle = '#38bdf8';
+                // Cyber Wing Accents
+                ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(4, 0, 11, 0, Math.PI * 2);
+                ctx.moveTo(-18, -12);
+                ctx.lineTo(-2, -5);
+                ctx.moveTo(-18, 12);
+                ctx.lineTo(-2, 5);
                 ctx.stroke();
 
-                // Engine Thruster Flame
-                const flameLen = 14 + Math.random() * 8;
+                // Holographic Plasma Core (NO Photos - Pure Futuristic Reactor)
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(4, 0, 9, 0, Math.PI * 2);
+                ctx.fillStyle = selectedShip.color;
+                ctx.shadowColor = selectedShip.color;
+                ctx.shadowBlur = 16;
+                ctx.fill();
+
+                // Core inner pulse
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(4, 0, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Engine Thruster Flame Trail
+                const flameLen = 16 + Math.random() * 10;
                 ctx.fillStyle = '#ff0055';
                 ctx.beginPath();
-                ctx.moveTo(-18, -4);
-                ctx.lineTo(-18 - flameLen, 0);
-                ctx.lineTo(-18, 4);
+                ctx.moveTo(-20, -5);
+                ctx.lineTo(-20 - flameLen, 0);
+                ctx.lineTo(-20, 5);
                 ctx.closePath();
                 ctx.fill();
 
-                ctx.fillStyle = '#00e5ff';
+                ctx.fillStyle = '#ffd700';
                 ctx.beginPath();
-                ctx.moveTo(-18, -2);
-                ctx.lineTo(-18 - flameLen * 0.6, 0);
-                ctx.lineTo(-18, 2);
+                ctx.moveTo(-20, -2);
+                ctx.lineTo(-20 - (flameLen * 0.6), 0);
+                ctx.lineTo(-20, 2);
                 ctx.closePath();
                 ctx.fill();
 
                 ctx.restore();
+
+                // Spawn Rocket Trail Particles
+                if (Math.random() > 0.25) {
+                    flight.particles.push({
+                        x: targetX - 25,
+                        y: targetY + (Math.random() - 0.5) * 8,
+                        vx: -Math.random() * 4 - 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        color: selectedShip.color,
+                        radius: Math.random() * 4 + 1.5,
+                        life: 0.8,
+                        decay: 0.04
+                    });
+                }
             }
 
-            // BIG CENTRAL MULTIPLIER DISPLAY
+            // Center HUD Typography
             ctx.save();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+            ctx.font = '900 24px "Orbitron", monospace';
 
-            if (gameState === 'waiting' || gameState === 'countdown') {
-                ctx.font = '900 16px "Courier New", monospace';
-                ctx.fillStyle = '#38bdf8';
-                ctx.fillText('NEXT MOONSHOT IN', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 25);
-
-                ctx.font = '900 52px "Courier New", monospace';
-                ctx.fillStyle = '#ffd700';
-                ctx.shadowColor = '#ffd700';
+            if (gameState === 'ready') {
+                ctx.fillStyle = '#00f0ff';
+                ctx.shadowColor = '#00f0ff';
                 ctx.shadowBlur = 15;
-                ctx.fillText(countdown > 0 ? countdown + 's' : 'BLASTOFF!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
-            } else if (gameState === 'flying') {
-                const multText = flight.currentMultiplier.toFixed(2) + 'x';
-                ctx.font = '900 64px "Courier New", monospace';
+                ctx.fillText('MOONSHOT READY', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);
 
-                // Color shifts as multiplier rises
-                let textColor = '#00e5ff';
-                if (flight.currentMultiplier >= 10.0) textColor = '#ffd700';
-                else if (flight.currentMultiplier >= 5.0) textColor = '#ff007f';
-                else if (flight.currentMultiplier >= 2.0) textColor = '#00ff66';
-
-                ctx.fillStyle = textColor;
-                ctx.shadowColor = textColor;
-                ctx.shadowBlur = 20;
-                ctx.fillText(multText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 10);
-
-                ctx.font = '700 13px "Courier New", monospace';
+                ctx.font = '800 13px "Orbitron", monospace';
                 ctx.fillStyle = '#94a3b8';
                 ctx.shadowBlur = 0;
-                ctx.fillText('CURRENT PAYOUT RATIO', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 35);
+                ctx.fillText('SET WAGER & HIT LAUNCH MOONSHOT', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 15);
+            } else if (gameState === 'countdown') {
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 20;
+                ctx.fillText('IGNITION SEQUENCE', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 25);
+
+                ctx.font = '900 56px "Orbitron", monospace';
+                ctx.fillStyle = '#00ff88';
+                ctx.shadowColor = '#00ff88';
+                ctx.fillText(countdown > 0 ? countdown.toString() : 'BLASTOFF!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
+            } else if (gameState === 'flying') {
+                ctx.font = '900 68px "Orbitron", monospace';
+                const multText = multiplier.toFixed(2) + 'x';
+                ctx.fillStyle = cashedOut ? '#00ff88' : '#ffffff';
+                ctx.shadowColor = cashedOut ? '#00ff88' : selectedShip.color;
+                ctx.shadowBlur = 25;
+                ctx.fillText(multText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 10);
+
+                ctx.font = '800 12px "Orbitron", monospace';
+                ctx.fillStyle = cashedOut ? '#00ff88' : '#00f0ff';
+                ctx.shadowBlur = 0;
+                ctx.fillText(cashedOut ? `SECURED AT ${cashedOutMultiplier.toFixed(2)}x (+${cashedOutAmount} CP)` : 'CURRENT PAYOUT RATIO', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 42);
             } else if (gameState === 'crashed') {
-                ctx.font = '900 54px "Courier New", monospace';
+                ctx.font = '900 48px "Orbitron", monospace';
                 ctx.fillStyle = '#ff0055';
                 ctx.shadowColor = '#ff0055';
                 ctx.shadowBlur = 25;
@@ -600,52 +570,54 @@ const CyberCrash = () => {
             }
 
             ctx.restore();
-            ctx.restore(); // Restore shake translation
+            ctx.restore(); // Restore shake
 
-            animIdRef.current = requestAnimationFrame(loop);
+            animIdRef.current = requestAnimationFrame(render);
         };
 
-        animIdRef.current = requestAnimationFrame(loop);
+        animIdRef.current = requestAnimationFrame(render);
+
         return () => {
             if (animIdRef.current) cancelAnimationFrame(animIdRef.current);
+            stopEngineSound();
         };
-    }, [gameState, selectedPilot]);
+    }, [gameState, multiplier, cashedOut, cashedOutMultiplier, cashedOutAmount, countdown, selectedShip]);
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans flex flex-col items-center py-6 px-3 relative overflow-hidden select-none">
-            {/* Ambient Cosmic Background */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-black pointer-events-none" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#00ffff08_1px,transparent_1px),linear-gradient(to_bottom,#00ffff08_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+        <div className="page-enter min-h-screen bg-slate-950 text-white font-sans pb-28 pt-4 px-3 sm:px-6 relative overflow-hidden">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-            {/* Top Navigation & Status Bar */}
-            <div className="relative z-10 w-full max-w-[760px] flex items-center justify-between mb-3 px-1">
-                <Link
-                    to="/arcade"
-                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 hover:border-cyan-400/60 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
-                >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    ARCADE HUB
-                </Link>
+            <div className="max-w-4xl mx-auto flex flex-col items-center relative z-10">
+                {/* Header Back & Title */}
+                <div className="w-full flex items-center justify-between mb-4">
+                    <Link
+                        to="/arcade"
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-xs font-mono font-bold text-cyan-400 transition-all shadow-md active:scale-95"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        <span>ARCADE HUB</span>
+                    </Link>
 
-                <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-2 shadow-lg">
-                        <span className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffd700]" />
+                    <div className="flex items-center gap-2 bg-black/60 px-3.5 py-1.5 rounded-full border border-yellow-500/30 text-yellow-400 font-mono text-xs font-bold shadow-[0_0_15px_rgba(255,215,0,0.15)]">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v12M8 10h8" />
+                        </svg>
                         <span>{(coins ?? 0).toLocaleString()} CP</span>
                     </div>
                 </div>
-            </div>
 
-            {/* Main Cyber Crash Cabinet */}
-            <div className="relative z-10 w-full max-w-[760px] bg-slate-900/90 backdrop-blur-xl border-2 border-cyan-500/40 rounded-3xl p-4 sm:p-6 shadow-[0_0_60px_rgba(0,229,255,0.25)] flex flex-col items-center">
-                {/* Header Title & Marquee */}
-                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 text-cyan-400 animate-pulse">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Banner & Ship Class Selector */}
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-cyan-950/80 border border-cyan-400/50 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_#00e5ff]">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-                                <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
                                 <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
                                 <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
                             </svg>
@@ -655,17 +627,18 @@ const CyberCrash = () => {
                         </h1>
                     </div>
 
-                    {/* Pilot Selection Avatars */}
+                    {/* Ship Class Selection Tabs */}
                     <div className="flex items-center gap-1.5 bg-black/60 p-1.5 rounded-2xl border border-slate-800">
-                        <span className="text-[10px] text-slate-400 font-mono px-1">PILOT:</span>
-                        {BRO_PILOTS.map(p => (
+                        <span className="text-[10px] text-slate-400 font-mono px-1">SHIP:</span>
+                        {CYBER_SHIPS.map(ship => (
                             <button
-                                key={p.id}
-                                onClick={() => setSelectedPilot(p)}
-                                className={`w-7 h-7 rounded-xl overflow-hidden border-2 transition-all p-0.5 ${selectedPilot.id === p.id ? 'border-cyan-400 scale-110 shadow-[0_0_10px_#00e5ff]' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                title={p.name}
+                                key={ship.id}
+                                onClick={() => setSelectedShip(ship)}
+                                disabled={gameState === 'flying' || gameState === 'countdown'}
+                                className={`px-2 py-1 rounded-xl text-xs font-mono font-bold transition-all border ${selectedShip.id === ship.id ? 'border-cyan-400 bg-cyan-950/80 text-cyan-300 shadow-[0_0_10px_#00e5ff]' : 'border-transparent text-slate-400 hover:text-white'} disabled:opacity-50`}
+                                title={ship.name}
                             >
-                                <img src={p.skin} alt={p.name} className="w-full h-full object-cover rounded-lg" />
+                                {ship.callsign}
                             </button>
                         ))}
                     </div>
@@ -673,7 +646,7 @@ const CyberCrash = () => {
 
                 {/* Round Multiplier History Ticker */}
                 <div className="w-full flex items-center gap-2 overflow-x-auto pb-2 mb-3 font-mono text-xs scrollbar-none">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold shrink-0">HISTORY:</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold shrink-0">RECENT:</span>
                     {roundHistory.map((rh, idx) => (
                         <div
                             key={idx}
@@ -685,7 +658,7 @@ const CyberCrash = () => {
                 </div>
 
                 {/* Canvas Display Viewport */}
-                <div className="relative w-full aspect-[700/420] max-h-[420px] rounded-2xl overflow-hidden border border-cyan-500/30 bg-black shadow-inner flex items-center justify-center">
+                <div className="relative w-full aspect-[700/420] max-h-[420px] rounded-2xl overflow-hidden border-2 border-cyan-500/40 bg-black shadow-[0_0_30px_rgba(0,240,255,0.15)] flex items-center justify-center">
                     <canvas
                         ref={canvasRef}
                         width={CANVAS_WIDTH}
@@ -695,7 +668,7 @@ const CyberCrash = () => {
 
                     {/* Cashed Out Banner Overlay */}
                     {cashedOut && (
-                        <div className="absolute top-4 left-4 bg-emerald-500/90 text-black px-4 py-2 rounded-xl font-mono font-black text-xs sm:text-sm shadow-[0_0_20px_#00ff66] flex items-center gap-2 animate-bounce">
+                        <div className="absolute top-4 left-4 bg-emerald-500/90 text-black px-4 py-2 rounded-xl font-mono font-black text-xs sm:text-sm shadow-[0_0_20px_#00ff66] flex items-center gap-2">
                             <span>✅ BAILED OUT:</span>
                             <span>{cashedOutMultiplier.toFixed(2)}x (+{cashedOutAmount} CP)</span>
                         </div>
@@ -717,7 +690,7 @@ const CyberCrash = () => {
                                 max={coins ?? 100000}
                                 value={wager}
                                 onChange={(e) => setWager(Math.max(10, parseInt(e.target.value) || 0))}
-                                disabled={hasBet || gameState === 'flying'}
+                                disabled={gameState === 'flying' || gameState === 'countdown'}
                                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-cyan-400 font-mono font-bold text-sm focus:outline-none focus:border-cyan-400 disabled:opacity-50"
                             />
                         </div>
@@ -727,7 +700,7 @@ const CyberCrash = () => {
                                     key={amt}
                                     type="button"
                                     onClick={() => setWager(amt)}
-                                    disabled={hasBet || gameState === 'flying'}
+                                    disabled={gameState === 'flying' || gameState === 'countdown'}
                                     className="py-1 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-mono text-[10px] font-bold rounded-lg border border-slate-700 disabled:opacity-40"
                                 >
                                     +{amt}
@@ -758,7 +731,7 @@ const CyberCrash = () => {
                                 max="100.0"
                                 value={autoCashout}
                                 onChange={(e) => setAutoCashout(Math.max(1.05, parseFloat(e.target.value) || 1.05))}
-                                disabled={!autoCashoutEnabled}
+                                disabled={!autoCashoutEnabled || gameState === 'flying' || gameState === 'countdown'}
                                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-yellow-400 font-mono font-bold text-sm focus:outline-none focus:border-yellow-400 disabled:opacity-40"
                             />
                         </div>
@@ -768,7 +741,8 @@ const CyberCrash = () => {
                                     key={target}
                                     type="button"
                                     onClick={() => { setAutoCashout(target); setAutoCashoutEnabled(true); }}
-                                    className="py-1 bg-slate-800/80 hover:bg-slate-700 text-yellow-300/80 font-mono text-[10px] font-bold rounded-lg border border-slate-700"
+                                    disabled={gameState === 'flying' || gameState === 'countdown'}
+                                    className="py-1 bg-slate-800/80 hover:bg-slate-700 text-yellow-300/80 font-mono text-[10px] font-bold rounded-lg border border-slate-700 disabled:opacity-40"
                                 >
                                     {target.toFixed(1)}x
                                 </button>
@@ -784,7 +758,7 @@ const CyberCrash = () => {
                                 onClick={handleCashout}
                                 className="w-full h-full min-h-[75px] bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 text-black font-black text-lg tracking-wider uppercase rounded-2xl shadow-[0_0_30px_rgba(0,255,102,0.8)] active:scale-95 transition-all flex flex-col items-center justify-center animate-pulse"
                             >
-                                <span className="flex items-center gap-2">
+                                <span className="flex items-center gap-2 font-mono">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                                     </svg>
@@ -794,23 +768,26 @@ const CyberCrash = () => {
                                     +{(wager * multiplier).toFixed(0)} CP ({multiplier.toFixed(2)}x)
                                 </span>
                             </button>
-                        ) : hasBet ? (
-                            <div className="w-full h-full min-h-[75px] bg-cyan-950/60 border border-cyan-500/40 rounded-2xl flex flex-col items-center justify-center font-mono">
-                                <span className="text-xs text-cyan-300 font-bold">BET ACTIVE: {wager} CP</span>
-                                <span className="text-[11px] text-slate-400 mt-1">
-                                    {cashedOut ? `WON +${cashedOutAmount} CP` : 'WAITING FOR BLASTOFF...'}
-                                </span>
+                        ) : gameState === 'flying' ? (
+                            <div className="w-full h-full min-h-[75px] bg-cyan-950/40 border border-cyan-500/30 rounded-2xl flex flex-col items-center justify-center font-mono text-cyan-300 text-xs font-bold">
+                                <span>ROCKET IN FLIGHT</span>
+                                <span className="text-[11px] text-slate-400 mt-1">WAITING FOR NEXT ROUND</span>
+                            </div>
+                        ) : gameState === 'countdown' ? (
+                            <div className="w-full h-full min-h-[75px] bg-amber-950/60 border border-amber-500/40 rounded-2xl flex flex-col items-center justify-center font-mono text-amber-300 font-bold">
+                                <span className="text-sm">IGNITION IN {countdown}s</span>
+                                <span className="text-[10px] text-slate-400 mt-1">STAND BY FOR BLASTOFF</span>
                             </div>
                         ) : (
                             <SquishyButton
-                                onClick={handlePlaceBet}
-                                disabled={gameState === 'flying' || (coins ?? 0) < wager}
+                                onClick={handleLaunch}
+                                disabled={(coins ?? 0) < wager}
                                 className="w-full h-full min-h-[75px] bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-yellow-400 text-black font-black text-base uppercase rounded-2xl shadow-[0_0_25px_rgba(0,229,255,0.6)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                                     <polygon points="5 3 19 12 5 21 5 3"/>
                                 </svg>
-                                <span>PLACE BET ({wager} CP)</span>
+                                <span>LAUNCH MOONSHOT ({wager} CP)</span>
                             </SquishyButton>
                         )}
                     </div>
@@ -849,23 +826,20 @@ const CyberCrash = () => {
                 <RewardedSponsorModal
                     isOpen={showSponsorModal}
                     onClose={() => setShowSponsorModal(false)}
-                    rewardTitle={`+${Math.floor(lostWager / 2)} CP CASHBACK`}
-                    rewardIcon="🛡️"
-                    rewardDescription={`Complete the sponsor spot to recover 50% of your lost wager (+${Math.floor(lostWager / 2)} CP)!`}
-                    onRewarded={() => {
-                        const refund = Math.floor(lostWager / 2);
-                        addCoins?.(refund);
+                    rewardCP={Math.floor(lostWager / 2)}
+                    onRewardGranted={(amount) => {
+                        if (addCoins) addCoins(amount);
                         setHasClaimedInsurance(true);
-                        setLostWager(0);
+                        showToast(`Sponsor Insurance Credited! +${amount} CP!`, 'success');
                     }}
                 />
 
-                {/* Live Online Ghost Pilots Table */}
+                {/* Live Online Wingmen Status Table */}
                 <div className="w-full mt-4 bg-black/60 border border-slate-800 rounded-2xl p-3">
                     <div className="flex justify-between items-center mb-2 font-mono text-xs text-slate-400">
                         <span className="font-bold flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                            LIVE MOONSHOT PILOTS ({bots.length + (hasBet ? 1 : 0)})
+                            NETWORK SQUADRON PILOTS ({bots.length + (hasBet ? 1 : 0)})
                         </span>
                         <span>STATUS</span>
                     </div>
@@ -874,8 +848,8 @@ const CyberCrash = () => {
                         {hasBet && (
                             <div className="flex items-center justify-between p-2 rounded-xl bg-cyan-950/40 border border-cyan-500/50">
                                 <div className="flex items-center gap-2">
-                                    <img src={selectedPilot.skin} alt="You" className="w-5 h-5 rounded-full object-cover border border-cyan-400" />
-                                    <span className="font-bold text-cyan-300">YOU ({selectedPilot.name})</span>
+                                    <div className="w-3 h-3 rounded-full" style={{ background: selectedShip.color }} />
+                                    <span className="font-bold text-cyan-300">YOU ({selectedShip.callsign})</span>
                                 </div>
                                 <div>
                                     {cashedOut ? (
@@ -892,7 +866,7 @@ const CyberCrash = () => {
                         {bots.map(bot => (
                             <div key={bot.id} className="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
                                 <div className="flex items-center gap-2">
-                                    <img src={bot.pilot.skin} alt={bot.name} className="w-5 h-5 rounded-full object-cover" />
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: bot.ship.color }} />
                                     <span className="text-slate-300 font-semibold truncate max-w-[90px]">{bot.name}</span>
                                 </div>
                                 <div>

@@ -2,9 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const GENRE_COLORS = {
-    casino: { bg: 'rgba(255, 215, 0, 0.15)', text: '#ffd700', border: 'rgba(255, 215, 0, 0.3)' },
-    action: { bg: 'rgba(0, 240, 255, 0.15)', text: '#00f0ff', border: 'rgba(0, 240, 255, 0.3)' },
-    retro: { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', border: 'rgba(168, 85, 247, 0.3)' },
+    casino: { bg: 'rgba(255, 215, 0, 0.15)', text: '#ffd700', border: 'rgba(255, 215, 0, 0.35)' },
+    action: { bg: 'rgba(0, 240, 255, 0.15)', text: '#00f0ff', border: 'rgba(0, 240, 255, 0.35)' },
+    retro: { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', border: 'rgba(168, 85, 247, 0.35)' },
     default: { bg: 'rgba(255, 255, 255, 0.1)', text: '#fff', border: 'rgba(255, 255, 255, 0.2)' }
 };
 
@@ -18,7 +18,7 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
             style={{
                 width: '100%',
                 maxWidth: '340px',
-                background: 'linear-gradient(180deg, rgba(18, 24, 38, 0.85) 0%, rgba(9, 12, 20, 0.95) 100%)',
+                background: 'linear-gradient(180deg, rgba(16, 20, 32, 0.9) 0%, rgba(8, 10, 18, 0.98) 100%)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: '20px',
                 overflow: 'hidden',
@@ -38,10 +38,10 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
                 e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
             }}
         >
-            {/* 16:9 Cover Art Header */}
+            {/* Cyber Arcade Marquee Header */}
             <div style={{
                 position: 'relative',
-                height: '145px',
+                height: '120px',
                 width: '100%',
                 background: game.gradient || 'linear-gradient(135deg, #1e293b, #0f172a)',
                 display: 'flex',
@@ -49,29 +49,41 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
                 justifyContent: 'center',
                 overflow: 'hidden'
             }}>
-                {/* Subtle vignette */}
+                {/* Perspective Cyber Grid Floor */}
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.55) 100%)'
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)',
+                    backgroundSize: '20px 20px',
+                    opacity: 0.5,
+                    pointerEvents: 'none'
+                }} />
+
+                {/* Deep Ambient Vignette */}
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(circle at center, transparent 35%, rgba(5, 7, 15, 0.7) 100%)',
+                    pointerEvents: 'none'
                 }} />
 
                 {/* Top-Left Category Badge */}
                 <div style={{
                     position: 'absolute',
-                    top: '12px',
+                    top: '10px',
                     left: '12px',
                     background: genreStyle.bg,
                     color: genreStyle.text,
                     border: `1px solid ${genreStyle.border}`,
-                    borderRadius: '8px',
-                    padding: '3px 8px',
-                    fontSize: '0.65rem',
-                    fontWeight: '800',
+                    borderRadius: '6px',
+                    padding: '2px 8px',
+                    fontSize: '0.62rem',
+                    fontWeight: '900',
                     letterSpacing: '1px',
                     fontFamily: 'monospace',
                     zIndex: 2,
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                    backdropFilter: 'blur(6px)'
                 }}>
                     {game.category || 'ARCADE'}
                 </div>
@@ -80,31 +92,47 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
                 {highScore > 0 && (
                     <div style={{
                         position: 'absolute',
-                        top: '12px',
+                        top: '10px',
                         right: '12px',
-                        background: 'rgba(0, 0, 0, 0.7)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        border: '1px solid rgba(0, 255, 136, 0.3)',
                         color: '#00ff88',
-                        borderRadius: '8px',
-                        padding: '3px 8px',
-                        fontSize: '0.65rem',
+                        borderRadius: '6px',
+                        padding: '2px 8px',
+                        fontSize: '0.62rem',
                         fontWeight: 'bold',
                         fontFamily: 'monospace',
-                        zIndex: 2
+                        zIndex: 2,
+                        backdropFilter: 'blur(6px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                     }}>
-                        🏆 {highScore.toLocaleString()}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        {highScore.toLocaleString()}
                     </div>
                 )}
 
-                {/* Central Visual / Icon */}
+                {/* Central Studio Vector Emblem inside Frosted Cyber Pod */}
                 <motion.div
-                    whileHover={{ scale: 1.12, rotate: 3 }}
+                    whileHover={{ scale: 1.1, rotate: 2 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                     style={{
-                        fontSize: '3.5rem',
                         position: 'relative',
                         zIndex: 1,
-                        filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.6))'
+                        width: '68px',
+                        height: '68px',
+                        borderRadius: '18px',
+                        background: 'rgba(5, 8, 18, 0.65)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.05)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2.5rem'
                     }}
                 >
                     {game.icon || '🎮'}
@@ -113,21 +141,21 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
 
             {/* Content Body */}
             <div style={{
-                padding: '16px',
+                padding: '14px 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 flex: 1,
                 justifyContent: 'space-between',
-                background: 'rgba(10, 14, 22, 0.95)'
+                background: 'rgba(8, 12, 20, 0.95)'
             }}>
                 <div>
                     <h3 style={{
                         margin: '0 0 6px 0',
-                        fontSize: '1.05rem',
-                        fontWeight: '800',
+                        fontSize: '1rem',
+                        fontWeight: '900',
                         color: '#f8fafc',
-                        fontFamily: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
-                        letterSpacing: '0.3px',
+                        fontFamily: '"Orbitron", sans-serif',
+                        letterSpacing: '1px',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
@@ -137,7 +165,7 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
 
                     <p style={{
                         margin: 0,
-                        fontSize: '0.78rem',
+                        fontSize: '0.75rem',
                         color: '#94a3b8',
                         lineHeight: '1.4',
                         display: '-webkit-box',
@@ -152,29 +180,30 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
 
                 {/* Bottom Action Footer */}
                 <div style={{
-                    marginTop: '14px',
-                    paddingTop: '12px',
+                    marginTop: '12px',
+                    paddingTop: '10px',
                     borderTop: '1px solid rgba(255, 255, 255, 0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
                     <span style={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.65rem',
                         color: '#64748b',
                         fontFamily: 'monospace',
-                        fontWeight: 'bold'
+                        fontWeight: '900',
+                        letterSpacing: '0.5px'
                     }}>
                         INSTANT PLAY
                     </span>
 
                     <span style={{
-                        background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 114, 255, 0.2))',
+                        background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 114, 255, 0.25))',
                         border: '1px solid rgba(0, 240, 255, 0.4)',
                         color: '#00f0ff',
                         padding: '4px 12px',
                         borderRadius: '8px',
-                        fontSize: '0.75rem',
+                        fontSize: '0.72rem',
                         fontWeight: '900',
                         letterSpacing: '0.5px',
                         display: 'flex',

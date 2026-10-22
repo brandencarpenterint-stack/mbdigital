@@ -13,9 +13,9 @@ const ITEM_TYPES = {
     GOLD_COIN: { id: 'gold', name: 'Gold Cyber Coin', radius: 15, color: '#ffd700', value: 50, weight: 20, stroke: '#fff8e1' },
     GIANT_COIN: { id: 'giant', name: 'Giant Mega Token', radius: 25, color: '#ff007f', value: 200, weight: 5, stroke: '#ffe4e6' },
     DIAMOND: { id: 'diamond', name: 'Cyber Gem', radius: 16, color: '#00ff66', icon: '💎', value: 350, weight: 4 },
-    DINO_FIG: { id: 'dino', name: 'Turbo Dino Figurine', radius: 22, skin: '/assets/skins/face_dino.png', value: 1000, weight: 2 },
-    BUNNY_FIG: { id: 'bunny', name: 'Cyber Bunny Figurine', radius: 22, skin: '/assets/skins/face_bunny.png', value: 1500, weight: 2 },
-    WHALE_BAR: { id: 'whale', name: 'Whale Gold Ingot', radius: 24, skin: '/assets/skins/face_money.png', value: 5000, weight: 1 },
+    CROWN_PRIZE: { id: 'crown', name: 'Imperial Cyber Crown', radius: 22, color: '#ffd700', icon: '👑', isPrize: 'crown', value: 1000, weight: 2 },
+    QUANTUM_GEM: { id: 'quantum', name: 'Quantum Prism Gem', radius: 22, color: '#00e5ff', icon: '💠', isPrize: 'quantum', value: 1500, weight: 2 },
+    GOLD_BULLION: { id: 'bullion', name: 'Solid 999.9 Gold Bullion', radius: 24, color: '#ffb300', icon: '🧈', isPrize: 'bullion', value: 5000, weight: 1 },
     FRENZY_ORB: { id: 'frenzy', name: 'Frenzy Core', radius: 18, color: '#ffea00', icon: '⚡', value: 100, weight: 1, isFrenzy: true }
 };
 
@@ -298,15 +298,7 @@ const CyberDozer = () => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        // Load skin images for figurines
-        const loadedSkins = {};
-        Object.values(ITEM_TYPES).forEach(item => {
-            if (item.skin) {
-                const img = new Image();
-                img.src = item.skin;
-                loadedSkins[item.id] = img;
-            }
-        });
+        // Figurines and prizes rendered via dynamic vector shaders
 
         let lastTime = performance.now();
 
@@ -468,7 +460,7 @@ const CyberDozer = () => {
                             player: userProfile?.name || 'CoinMaster',
                             game: 'Cyber Coin Dozer',
                             coinsWon: totalPrize,
-                            avatar: collectedThisFrame[0].type.skin || '/assets/skins/face_star.png'
+                            avatar: userProfile?.avatar || '/assets/skins/face_default.png'
                         });
                     }
                 }
@@ -609,22 +601,86 @@ const CyberDozer = () => {
                 ctx.translate(c.x, c.y);
                 ctx.rotate(c.rotation);
 
-                if (c.type.skin && loadedSkins[c.type.id] && loadedSkins[c.type.id].complete) {
-                    // Figurine Mascot Coin
+                if (c.type.isPrize === 'crown') {
+                    // Royal Cyber Crown Prize
                     ctx.beginPath();
                     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ffd700';
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
                     ctx.fill();
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 2.5;
                     ctx.stroke();
 
-                    ctx.save();
+                    // Crown Silhouette
+                    ctx.fillStyle = '#ffd700';
                     ctx.beginPath();
-                    ctx.arc(0, 0, c.radius - 2, 0, Math.PI * 2);
-                    ctx.clip();
-                    ctx.drawImage(loadedSkins[c.type.id], -c.radius, -c.radius, c.radius * 2, c.radius * 2);
-                    ctx.restore();
+                    ctx.moveTo(-12, 8);
+                    ctx.lineTo(12, 8);
+                    ctx.lineTo(14, -6);
+                    ctx.lineTo(6, 0);
+                    ctx.lineTo(0, -10);
+                    ctx.lineTo(-6, 0);
+                    ctx.lineTo(-14, -6);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Crown Jewels
+                    ctx.fillStyle = '#ff007f';
+                    ctx.beginPath(); ctx.arc(-14, -6, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#00e5ff';
+                    ctx.beginPath(); ctx.arc(0, -10, 2.5, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#ff007f';
+                    ctx.beginPath(); ctx.arc(14, -6, 2, 0, Math.PI*2); ctx.fill();
+                } else if (c.type.isPrize === 'quantum') {
+                    // Quantum Prism Gem Prize
+                    ctx.beginPath();
+                    ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 229, 255, 0.2)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#00e5ff';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+
+                    // Prism Diamond
+                    const r = c.radius * 0.7;
+                    ctx.fillStyle = '#00e5ff';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -r);
+                    ctx.lineTo(r, 0);
+                    ctx.lineTo(0, r);
+                    ctx.lineTo(-r, 0);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -r);
+                    ctx.lineTo(r * 0.5, 0);
+                    ctx.lineTo(0, r * 0.5);
+                    ctx.lineTo(-r * 0.5, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (c.type.isPrize === 'bullion') {
+                    // Solid 999.9 Gold Bullion Ingot
+                    ctx.beginPath();
+                    ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 179, 0, 0.2)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Ingot Bar
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillRect(-14, -8, 28, 16);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(-12, -6, 24, 12);
+
+                    ctx.fillStyle = '#422006';
+                    ctx.font = 'bold 7px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('999.9', 0, 3);
                 } else {
                     // Metallic Coin
                     ctx.beginPath();
@@ -888,18 +944,14 @@ const CyberDozer = () => {
                             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
                             COLLECTED PRIZES & FIGURINES
                         </span>
-                        <span className="text-yellow-400">WHALE INGOT = 5,000 CP</span>
+                        <span className="text-yellow-400">GOLD BULLION = 5,000 CP</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {collectedPrizes.length > 0 ? (
                             collectedPrizes.slice(0, 4).map((p, idx) => (
                                 <div key={idx} className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-2">
-                                    {p.skin ? (
-                                        <img src={p.skin} alt={p.name} className="w-6 h-6 rounded-full object-cover border border-yellow-400" />
-                                    ) : (
-                                        <span className="text-base">{p.icon}</span>
-                                    )}
+                                    <span className="text-lg">{p.icon}</span>
                                     <div className="overflow-hidden">
                                         <div className="text-[10px] text-slate-300 truncate">{p.name}</div>
                                         <div className="text-[11px] text-yellow-400 font-black">+{p.value} CP</div>

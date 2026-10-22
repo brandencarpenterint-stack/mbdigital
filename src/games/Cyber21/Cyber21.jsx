@@ -25,10 +25,10 @@ export const RANKS = [
     { rank: '8', val: 8 },
     { rank: '9', val: 9 },
     { rank: '10', val: 10 },
-    { rank: 'J', val: 10, isFace: true, skin: '/assets/skins/face_gamer.png', name: 'Gamer Jack' },
-    { rank: 'Q', val: 10, isFace: true, skin: '/assets/skins/face_bunny.png', name: 'Bunny Queen' },
-    { rank: 'K', val: 10, isFace: true, skin: '/assets/skins/face_dino.png', name: 'Don Dino King' },
-    { rank: 'A', val: 11, isAce: true, skin: '/assets/skins/face_star.png', name: 'Star Ace' }
+    { rank: 'J', val: 10, isFace: true, faceType: 'jack', name: 'Cyber Jack' },
+    { rank: 'Q', val: 10, isFace: true, faceType: 'queen', name: 'Cyber Queen' },
+    { rank: 'K', val: 10, isFace: true, faceType: 'king', name: 'Cyber King' },
+    { rank: 'A', val: 11, isAce: true, faceType: 'ace', name: 'Cyber Ace' }
 ];
 
 export const TABLES = {
@@ -51,7 +51,7 @@ export const createDeck = (deckCount = 4) => {
                     suitColor: suit.color,
                     isFace: rank.isFace,
                     isAce: rank.isAce,
-                    skin: rank.skin,
+                    faceType: rank.faceType,
                     name: rank.name || `${rank.rank} of ${suit.name}`
                 });
             }
@@ -632,18 +632,53 @@ const Cyber21 = () => {
 
                 {/* Center Graphic */}
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                    {card.isFace || card.isAce ? (
-                        <img
-                            src={card.skin}
-                            alt={card.rank}
-                            style={{
-                                width: '42px',
-                                height: '42px',
-                                borderRadius: '50%',
-                                border: '1px solid ' + card.suitColor,
-                                objectFit: 'cover'
-                            }}
-                        />
+                    {card.rank === 'J' ? (
+                        <div style={{
+                            width: '42px', height: '42px', borderRadius: '50%',
+                            border: '1px solid ' + card.suitColor,
+                            background: card.suitColor + '18',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={card.suitColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2" fill={card.suitColor + '33'} />
+                            </svg>
+                        </div>
+                    ) : card.rank === 'Q' ? (
+                        <div style={{
+                            width: '42px', height: '42px', borderRadius: '50%',
+                            border: '1px solid ' + card.suitColor,
+                            background: card.suitColor + '18',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={card.suitColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 19h16l-2-10-4 4-2-7-2 7-4-4-2 10z" fill={card.suitColor + '33'} />
+                                <circle cx="12" cy="6" r="1.5" fill={card.suitColor} />
+                            </svg>
+                        </div>
+                    ) : card.rank === 'K' ? (
+                        <div style={{
+                            width: '42px', height: '42px', borderRadius: '50%',
+                            border: '1px solid ' + card.suitColor,
+                            background: card.suitColor + '18',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={card.suitColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M2 19h20l-3-12-5 6-2-8-2 8-5-6-3 12z" fill={card.suitColor + '33'} />
+                                <line x1="2" y1="21" x2="22" y2="21" strokeWidth="2" />
+                            </svg>
+                        </div>
+                    ) : card.rank === 'A' ? (
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{
+                                position: 'absolute', width: '36px', height: '36px',
+                                border: '1px solid ' + card.suitColor + '66', transform: 'rotate(45deg)',
+                                boxShadow: '0 0 10px ' + card.suitColor + '33', borderRadius: '4px',
+                                background: card.suitColor + '15'
+                            }} />
+                            <span style={{ fontSize: '1.7rem', color: card.suitColor, textShadow: '0 0 10px ' + card.suitColor, position: 'relative', zIndex: 1 }}>
+                                {card.suit}
+                            </span>
+                        </div>
                     ) : (
                         <div style={{ fontSize: '1.8rem', color: card.suitColor, textShadow: '0 0 10px ' + card.suitColor }}>
                             {card.suit}
@@ -832,17 +867,30 @@ const Cyber21 = () => {
                 {/* CROUPIER BOT / DEALER */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '12px' }}>
-                        <img
-                            src="/assets/skins/face_money.png"
-                            alt="Dealer"
-                            style={{
-                                width: '50px',
-                                height: '50px',
-                                borderRadius: '50%',
-                                border: '2px solid #ffd700',
-                                boxShadow: '0 0 15px rgba(255, 215, 0, 0.4)'
-                            }}
-                        />
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '14px',
+                            background: 'linear-gradient(135deg, #090d16, #1e1b4b)',
+                            border: '2px solid #ffd700',
+                            boxShadow: '0 0 16px rgba(255, 215, 0, 0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative'
+                        }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="10" rx="3" fill="rgba(255, 215, 0, 0.15)" />
+                                <circle cx="12" cy="5" r="2" />
+                                <path d="M12 7v4" />
+                                <line x1="7" y1="15" x2="17" y2="15" stroke="#00e5ff" strokeWidth="2" />
+                            </svg>
+                            <span style={{
+                                position: 'absolute', bottom: -2, right: -2, width: '10px', height: '10px',
+                                borderRadius: '50%', background: '#00ff66', border: '2px solid #000',
+                                boxShadow: '0 0 6px #00ff66'
+                            }} />
+                        </div>
                         <div style={{
                             background: 'rgba(0,0,0,0.7)',
                             border: '1px solid #ffd700',
@@ -852,7 +900,8 @@ const Cyber21 = () => {
                             color: '#ffd700',
                             maxWidth: '400px'
                         }}>
-                            💬 {croupierMsg}
+                            <span style={{ color: '#00e5ff', fontWeight: 'bold', marginRight: '6px' }}>[AI CROUPIER]</span>
+                            {croupierMsg}
                         </div>
                     </div>
 

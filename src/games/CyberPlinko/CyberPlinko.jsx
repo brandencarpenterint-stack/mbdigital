@@ -32,13 +32,11 @@ const RISK_MODES = {
 };
 
 const AVATARS = [
-    { id: 'star', name: 'Star Bro', src: '/assets/skins/face_star.png' },
-    { id: 'money', name: 'Money Bro', src: '/assets/skins/face_money.png' },
-    { id: 'astro', name: 'Astro Bro', src: '/assets/skins/face_astro.png' },
-    { id: 'dino', name: 'Dino Bro', src: '/assets/skins/face_dino.png' },
-    { id: 'bear', name: 'Bear Bro', src: '/assets/skins/face_bear.png' },
-    { id: 'cat', name: 'Cat Bro', src: '/assets/skins/face_cat.png' },
-    { id: 'gamer', name: 'Gamer Bro', src: '/assets/skins/face_gamer.png' }
+    { id: 'pulsar', name: 'Cyan Pulsar', color: '#00e5ff', icon: '💠', glow: 'rgba(0, 229, 255, 0.8)' },
+    { id: 'supernova', name: 'Solar Nova', color: '#ffd700', icon: '⚡', glow: 'rgba(255, 215, 0, 0.8)' },
+    { id: 'plasma', name: 'Magenta Flux', color: '#ff007f', icon: '🔥', glow: 'rgba(255, 0, 127, 0.8)' },
+    { id: 'singularity', name: 'Void Vortex', color: '#a855f7', icon: '🔮', glow: 'rgba(168, 85, 247, 0.8)' },
+    { id: 'matrix', name: 'Hyper Matrix', color: '#00ff66', icon: '🧪', glow: 'rgba(0, 255, 102, 0.8)' }
 ];
 
 const PENTATONIC = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
@@ -359,28 +357,22 @@ const CyberPlinko = () => {
                 ctx.translate(b.x, b.y);
                 ctx.rotate(b.rotation);
 
-                ctx.shadowColor = '#00ffcc';
-                ctx.shadowBlur = 10;
+                const chipColor = b.chipColor || '#00e5ff';
+                const ballGrad = ctx.createRadialGradient(-BALL_RADIUS * 0.3, -BALL_RADIUS * 0.3, 1, 0, 0, BALL_RADIUS);
+                ballGrad.addColorStop(0, '#ffffff');
+                ballGrad.addColorStop(0.4, chipColor);
+                ballGrad.addColorStop(1, '#050510');
+
+                ctx.fillStyle = ballGrad;
                 ctx.beginPath();
                 ctx.arc(0, 0, BALL_RADIUS, 0, Math.PI * 2);
-                ctx.clip();
+                ctx.fill();
 
-                const img = avatarImagesRef.current[b.avatarId];
-                if (img && img.complete) {
-                    ctx.drawImage(img, -BALL_RADIUS, -BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
-                } else {
-                    ctx.fillStyle = '#ffd700';
-                    ctx.fill();
-                }
+                ctx.strokeStyle = chipColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
                 ctx.restore();
-
-                // Ball outer ring
-                ctx.strokeStyle = '#00ffcc';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, BALL_RADIUS, 0, Math.PI * 2);
-                ctx.stroke();
             }
 
             engine.animId = requestAnimationFrame(loop);
@@ -418,7 +410,7 @@ const CyberPlinko = () => {
                     vx: (Math.random() - 0.5) * 1.5,
                     vy: 1.0,
                     rotation: 0,
-                    avatarId: selectedAvatar.id,
+                    avatarId: selectedAvatar.id, chipColor: selectedAvatar.color,
                     bet: bet
                 });
                 try { playBoop(); } catch(e) {}
@@ -602,10 +594,10 @@ const CyberPlinko = () => {
                         </div>
                     </div>
 
-                    {/* AVATAR SELECTOR */}
+                    {/* CHIP CORE SELECTOR */}
                     <div>
                         <div style={{ color: '#888', fontSize: '0.75rem', marginBottom: '8px', letterSpacing: '1px' }}>
-                            SELECT BRO CHIP
+                            SELECT QUANTUM CORE
                         </div>
                         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
                             {AVATARS.map(a => {
@@ -615,18 +607,23 @@ const CyberPlinko = () => {
                                         key={a.id}
                                         onClick={() => setSelectedAvatar(a)}
                                         style={{
-                                            width: '44px',
-                                            height: '44px',
-                                            borderRadius: '50%',
-                                            border: isSel ? '3px solid #ff007f' : '2px solid #333',
-                                            boxShadow: isSel ? '0 0 12px #ff007f' : 'none',
+                                            padding: '8px 12px',
+                                            borderRadius: '12px',
+                                            border: isSel ? '2px solid ' + a.color : '1px solid #333',
+                                            background: isSel ? a.color + '22' : 'rgba(255,255,255,0.03)',
+                                            boxShadow: isSel ? '0 0 12px ' + a.glow : 'none',
                                             cursor: 'pointer',
-                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
                                             flexShrink: 0,
-                                            background: '#111'
+                                            transition: 'all 0.15s ease'
                                         }}
                                     >
-                                        <img src={a.src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={a.name} />
+                                        <span style={{ fontSize: '1.2rem' }}>{a.icon}</span>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: isSel ? '#fff' : '#888' }}>
+                                            {a.name}
+                                        </span>
                                     </div>
                                 );
                             })}

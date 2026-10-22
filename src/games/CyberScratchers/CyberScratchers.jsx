@@ -9,18 +9,18 @@ import SquishyButton from '../../components/SquishyButton';
 
 const CARD_TIERS = [
     {
-        id: 'street',
-        name: 'Street Hustle',
-        cost: 50,
+        id: 'tier1',
+        name: 'Neon Quickie',
+        cost: 100,
         color: '#00e5ff',
         maxPrize: 5000,
         rows: 3,
         cols: 3,
         symbols: [
-            { id: 'pizza', name: 'Neon Pizza', icon: '🍕', value: 100 },
-            { id: 'coin', name: 'Cyber Coin', icon: '🪙', value: 250 },
-            { id: 'dino', name: 'Turbo Dino', icon: '🦖', skin: '/assets/skins/face_dino.png', value: 1000 },
-            { id: 'gold', name: 'Gold Bar', icon: '🏆', value: 5000 }
+            { id: 'cherry', name: 'Cyber Cherry', icon: '🍒', value: 100 },
+            { id: 'horseshoe', name: 'Neon Horseshoe', icon: '🧲', value: 250 },
+            { id: 'triple7', name: 'Neon 777', icon: '🎰', value: 1000 },
+            { id: 'gold', name: 'Gold Bullion', icon: '🏆', value: 5000 }
         ]
     },
     {
@@ -33,9 +33,9 @@ const CARD_TIERS = [
         cols: 4,
         symbols: [
             { id: 'dice', name: 'Cyber Dice', icon: '🎲', value: 500 },
-            { id: 'bunny', name: 'Cyber Bunny', icon: '🐰', skin: '/assets/skins/face_bunny.png', value: 2500 },
+            { id: 'star', name: 'Quantum Star', icon: '⭐', value: 2500 },
             { id: 'diamond', name: 'Neon Diamond', icon: '💎', value: 10000 },
-            { id: 'key', name: 'Vault Key', icon: '🗝️', value: 25000 }
+            { id: 'key', name: 'Titanium Key', icon: '🗝️', value: 25000 }
         ]
     },
     {
@@ -47,10 +47,10 @@ const CARD_TIERS = [
         rows: 4,
         cols: 4,
         symbols: [
-            { id: 'chip', name: 'VIP Chip', icon: '🎰', value: 2500 },
-            { id: 'star', name: 'Star Bro', icon: '⭐', skin: '/assets/skins/face_star.png', value: 25000 },
-            { id: 'crown', name: 'Cyber Crown', icon: '👑', value: 50000 },
-            { id: 'whale', name: 'Whale Bro', icon: '💰', skin: '/assets/skins/face_money.png', value: 100000 }
+            { id: 'chip', name: 'VIP Chip', icon: '💎', value: 2500 },
+            { id: 'crown', name: 'Cyber Crown', icon: '👑', value: 25000 },
+            { id: 'bullion', name: 'Vault Bullion', icon: '🏆', value: 50000 },
+            { id: 'grand777', name: 'Grand 777 Jackpot', icon: '🎰', value: 100000 }
         ]
     }
 ];
@@ -340,7 +340,7 @@ const CyberScratchers = () => {
                     player: userProfile?.name || 'LuckyScratcher',
                     game: 'Cyber Scratchers',
                     coinsWon: win,
-                    avatar: selectedTier.symbols[3].skin || '/assets/skins/face_money.png'
+                    avatar: userProfile?.avatar || '/assets/skins/face_default.png'
                 });
             }
 
@@ -479,11 +479,7 @@ const CyberScratchers = () => {
                                                 key={idx}
                                                 className={`rounded-xl border flex flex-col items-center justify-center p-1 font-mono transition-all ${isWinningSymbol && revealed ? 'bg-yellow-500/30 border-yellow-400 shadow-[0_0_12px_#ffd700] animate-pulse' : 'bg-slate-900 border-slate-800'}`}
                                             >
-                                                {sym.skin ? (
-                                                    <img src={sym.skin} alt={sym.name} className="w-7 h-7 rounded-full object-cover border border-slate-700" />
-                                                ) : (
-                                                    <span className="text-xl">{sym.icon}</span>
-                                                )}
+                                                <span className="text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">{sym.icon}</span>
                                                 <span className="text-[9px] text-yellow-300 font-bold mt-0.5">
                                                     +{sym.value.toLocaleString()}
                                                 </span>

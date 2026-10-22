@@ -11,11 +11,11 @@ import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 const TOTAL_TILES = 25;
 const MINE_PRESETS = [1, 3, 5, 10, 15, 24];
 
-const SCOUT_MASCOTS = [
-    { id: 'dino', name: 'Turbo Dino', skin: '/assets/skins/face_dino.png', perk: 'Thermal Sniffer' },
-    { id: 'bunny', name: 'Cyber Bunny', skin: '/assets/skins/face_bunny.png', perk: 'EMP Pulse' },
-    { id: 'money', name: 'Whale Bro', skin: '/assets/skins/face_money.png', perk: 'Gold Radar' },
-    { id: 'star', name: 'Super Star', skin: '/assets/skins/face_star.png', perk: 'Quantum Probe' }
+const SCOUT_DRONES = [
+    { id: 'thermal', name: 'Thermal Scanner', perk: 'Infrared Sight', color: '#ff0055' },
+    { id: 'emp', name: 'EMP Radar', perk: 'Magnetic Sweep', color: '#00f0ff' },
+    { id: 'quantum', name: 'Quantum Sensor', perk: 'Subatomic Ping', color: '#ffd700' },
+    { id: 'sonar', name: 'Acoustic Sonar', perk: 'Grid Echo', color: '#00ff66' }
 ];
 
 // 98% RTP Math Formula for Mines Multiplier
@@ -38,7 +38,7 @@ const CyberMines = () => {
     // Game Configuration State
     const [wager, setWager] = useState(100);
     const [minesCount, setMinesCount] = useState(3);
-    const [selectedMascot, setSelectedMascot] = useState(SCOUT_MASCOTS[0]);
+    const [selectedMascot, setSelectedMascot] = useState(SCOUT_DRONES[0]);
 
     // Active Round State
     const [isPlaying, setIsPlaying] = useState(false);
@@ -256,7 +256,7 @@ const CyberMines = () => {
                 player: userProfile?.name || 'CyberMiner',
                 game: 'Cyber Mines',
                 coinsWon: winAmount,
-                avatar: selectedMascot.skin
+                avatar: userProfile?.avatar || '/assets/skins/face_default.png'
             });
         }
 
@@ -454,16 +454,16 @@ const CyberMines = () => {
                             </div>
 
                             <div className="flex items-center gap-2 mb-2">
-                                {SCOUT_MASCOTS.map(m => (
+                                {SCOUT_DRONES.map(d => (
                                     <button
-                                        key={m.id}
+                                        key={d.id}
                                         type="button"
-                                        onClick={() => setSelectedMascot(m)}
+                                        onClick={() => setSelectedMascot(d)}
                                         disabled={isPlaying}
-                                        className={`w-8 h-8 rounded-xl overflow-hidden border-2 p-0.5 transition-all ${selectedMascot.id === m.id ? 'border-cyan-400 scale-110 shadow-[0_0_10px_#00e5ff]' : 'border-transparent opacity-50 hover:opacity-100'} disabled:opacity-40`}
-                                        title={m.name}
+                                        className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition-all border ${selectedMascot.id === d.id ? 'border-cyan-400 bg-cyan-950/80 text-cyan-300 shadow-[0_0_10px_#00e5ff]' : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'} disabled:opacity-40`}
+                                        title={d.name}
                                     >
-                                        <img src={m.skin} alt={m.name} className="w-full h-full object-cover rounded-lg" />
+                                        {d.name.split(' ')[0]}
                                     </button>
                                 ))}
                             </div>
@@ -474,7 +474,7 @@ const CyberMines = () => {
                                 disabled={!isPlaying || !scoutAvailable || gameOver}
                                 className="w-full py-2 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-400/60 text-cyan-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-30 transition-all shadow-md active:scale-95"
                             >
-                                <span>🔍</span>
+                                <span>🎯</span>
                                 <span>{scoutAvailable ? 'SCAN 1 SAFE TILE (FREE)' : 'DRONE DEPLETED'}</span>
                             </button>
                         </div>

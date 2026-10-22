@@ -8,14 +8,14 @@ import { feedService } from '../../utils/feed';
 import SquishyButton from '../../components/SquishyButton';
 
 export const RACERS = [
-    { id: 'r1', name: 'Turbo Dino', num: 1, skin: '/assets/skins/face_dino.png', color: '#00ff66', odds: 2.8, speed: 90, accel: 86, chaos: 25, archetype: 'SPEED DEMON', quote: 'Rawr means full throttle!' },
-    { id: 'r2', name: 'Cyber Bunny', num: 2, skin: '/assets/skins/face_bunny.png', color: '#ff007f', odds: 3.5, speed: 84, accel: 96, chaos: 20, archetype: 'ROCKET START', quote: 'Hop ahead, leave\'em in dust.' },
-    { id: 'r3', name: 'Gamer Bro 3K', num: 3, skin: '/assets/skins/face_gamer.png', color: '#00e5ff', odds: 4.2, speed: 86, accel: 82, chaos: 40, archetype: 'TACTICIAN', quote: 'Calculated optimal trajectory.' },
-    { id: 'r4', name: 'Golden Money', num: 4, skin: '/assets/skins/face_money.png', color: '#ffd700', odds: 5.5, speed: 82, accel: 80, chaos: 55, archetype: 'WEALTH SURGE', quote: 'Money buys horsepower, baby!' },
-    { id: 'r5', name: 'Astro Pilot', num: 5, skin: '/assets/skins/face_astro.png', color: '#9d4edd', odds: 9.0, speed: 88, accel: 74, chaos: 70, archetype: 'WARP THRUST', quote: 'Igniting hyper-drive!' },
-    { id: 'r6', name: 'Neko Cat', num: 6, skin: '/assets/skins/face_cat.png', color: '#ff5e7e', odds: 14.0, speed: 80, accel: 76, chaos: 65, archetype: 'NINE LIVES', quote: 'Purrfect draft on the inside.' },
-    { id: 'r7', name: 'Spooky Pumpkin', num: 7, skin: '/assets/skins/face_pumpkin.png', color: '#ff7700', odds: 25.0, speed: 78, accel: 84, chaos: 85, archetype: 'CHAOS WILDCARD', quote: 'Tricks, treats & turbo!' },
-    { id: 'r8', name: 'Void Titan Dino', num: 8, skin: '/assets/skins/face_dino_dark.jpg', color: '#ff0033', odds: 50.0, speed: 95, accel: 62, chaos: 92, archetype: 'MEGABOSS', quote: 'UNSTOPPABLE VOID FREIGHT.' }
+    { id: 'r1', name: 'Neon Viper', num: 1, craftIcon: '⚡', color: '#00ff66', odds: 2.8, speed: 90, accel: 86, chaos: 25, archetype: 'SPEED DEMON', quote: 'Apex aerodynamics and nitro thrust.' },
+    { id: 'r2', name: 'Cyber Valkyrie', num: 2, craftIcon: '🚀', color: '#ff007f', odds: 3.5, speed: 84, accel: 96, chaos: 20, archetype: 'ROCKET START', quote: 'Twin-turbine launch system engaged.' },
+    { id: 'r3', name: 'Quantum Apex', num: 3, craftIcon: '💠', color: '#00e5ff', odds: 4.2, speed: 86, accel: 82, chaos: 40, archetype: 'TACTICIAN', quote: 'Optimal velocity trajectory locked.' },
+    { id: 'r4', name: 'Solar Midas', num: 4, craftIcon: '👑', color: '#ffd700', odds: 5.5, speed: 82, accel: 80, chaos: 55, archetype: 'WEALTH SURGE', quote: 'Gold-plated fusion overdrive.' },
+    { id: 'r5', name: 'Warp Spectre', num: 5, craftIcon: '🔮', color: '#9d4edd', odds: 9.0, speed: 88, accel: 74, chaos: 70, archetype: 'WARP THRUST', quote: 'Hyper-drive distortion barrier.' },
+    { id: 'r6', name: 'Plasma Fury', num: 6, craftIcon: '🔥', color: '#ff5e7e', odds: 14.0, speed: 80, accel: 76, chaos: 65, archetype: 'INFERNO', quote: 'Overclocked turbo injectors.' },
+    { id: 'r7', name: 'Ghost Reaper', num: 7, craftIcon: '💀', color: '#ff7700', odds: 25.0, speed: 78, accel: 84, chaos: 85, archetype: 'CHAOS WILDCARD', quote: 'Unpredictable slipstream drafting.' },
+    { id: 'r8', name: 'Void Titan', num: 8, craftIcon: '🛸', color: '#ff0033', odds: 50.0, speed: 95, accel: 62, chaos: 92, archetype: 'MEGABOSS', quote: 'UNSTOPPABLE GRAV FREIGHT.' }
 ];
 
 export const TRACK_LENGTH = 1100; // meters
@@ -645,24 +645,29 @@ const CyberDerby = () => {
                 ctx.arc(-20, 0, r.nitroTimer > 0 ? 8 : 4, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Bro Face Circle Avatar
-                const img = skinImagesRef.current[r.id];
+                // Aerodynamic Hover-Pod Chassis
                 const avatarRadius = 16;
-                ctx.save();
                 ctx.beginPath();
                 ctx.arc(0, 0, avatarRadius, 0, Math.PI * 2);
-                ctx.clip();
-                if (img && img.complete) {
-                    ctx.drawImage(img, -avatarRadius, -avatarRadius, avatarRadius * 2, avatarRadius * 2);
-                } else {
-                    ctx.fillStyle = r.color;
-                    ctx.fill();
-                }
-                ctx.restore();
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+                ctx.fill();
+                ctx.strokeStyle = r.color;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
 
-                // Avatar Border Ring
+                // Cockpit Neon Number
+                ctx.fillStyle = r.color;
+                ctx.font = '900 12px "Orbitron", monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(r.num.toString(), 0, 0);
+
+                // Front Laser Wings
                 ctx.strokeStyle = r.color;
                 ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(12, -7); ctx.lineTo(18, 0); ctx.lineTo(12, 7);
+                ctx.stroke();
                 ctx.beginPath();
                 ctx.arc(0, 0, avatarRadius, 0, Math.PI * 2);
                 ctx.stroke();

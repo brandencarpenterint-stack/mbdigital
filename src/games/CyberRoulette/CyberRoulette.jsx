@@ -225,7 +225,7 @@ const CyberRoulette = () => {
                     player: userProfile?.name || 'HighRoller',
                     game: 'Cyber Roulette',
                     coinsWon: win,
-                    avatar: '/assets/skins/face_money.png'
+                    avatar: userProfile?.avatar || '/assets/skins/face_default.png'
                 });
             }
         } else {

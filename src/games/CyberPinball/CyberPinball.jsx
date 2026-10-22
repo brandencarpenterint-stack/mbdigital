@@ -13,9 +13,9 @@ export const GRAVITY = 0.22;
 export const BALL_RADIUS = 9;
 
 export const BUMPERS = [
-    { id: 'b_dino', x: 170, y: 240, radius: 28, score: 150, color: '#00ff66', skin: '/assets/skins/face_dino.png', name: 'Dino Bumper' },
-    { id: 'b_bunny', x: 310, y: 240, radius: 28, score: 150, color: '#ff007f', skin: '/assets/skins/face_bunny.png', name: 'Bunny Bumper' },
-    { id: 'b_star', x: 240, y: 150, radius: 34, score: 300, color: '#ffd700', skin: '/assets/skins/face_star.png', name: 'Super Star Bumper' }
+    { id: 'b_alpha', x: 170, y: 240, radius: 28, score: 150, color: '#00ff66', name: 'Alpha Reactor Bumper', type: 'alpha' },
+    { id: 'b_beta', x: 310, y: 240, radius: 28, score: 150, color: '#ff007f', name: 'Plasma Vortex Bumper', type: 'beta' },
+    { id: 'b_nova', x: 240, y: 150, radius: 34, score: 300, color: '#ffd700', name: 'Supernova Core Bumper', type: 'nova' }
 ];
 
 export const SLINGSHOTS = [
@@ -67,14 +67,7 @@ const CyberPinball = () => {
         multiplier: 1
     });
 
-    // Load Character Skin Images
-    useEffect(() => {
-        BUMPERS.forEach(b => {
-            const img = new Image();
-            img.src = b.skin;
-            bumperImagesRef.current[b.id] = img;
-        });
-    }, []);
+    // Neon bumpers rendered with high-energy vector shaders
 
     // Web Audio Synthesizer
     const getAudioCtx = () => {
@@ -636,20 +629,32 @@ const CyberPinball = () => {
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Character Face Photo Skin
-                const img = bumperImagesRef.current[bump.id];
+                // Concentric Neon Kinetic Core
                 const innerRadius = bump.radius - 4;
-                ctx.save();
                 ctx.beginPath();
                 ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-                ctx.clip();
-                if (img && img.complete) {
-                    ctx.drawImage(img, -innerRadius, -innerRadius, innerRadius * 2, innerRadius * 2);
-                } else {
-                    ctx.fillStyle = bump.color;
-                    ctx.fill();
-                }
-                ctx.restore();
+                ctx.fillStyle = bump.color + '15';
+                ctx.fill();
+                ctx.strokeStyle = bump.color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Center Reactor Node
+                ctx.beginPath();
+                ctx.arc(0, 0, innerRadius * 0.45, 0, Math.PI * 2);
+                ctx.fillStyle = bump.color;
+                ctx.shadowColor = bump.color;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Dynamic Cross Reticle
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-innerRadius * 0.7, 0); ctx.lineTo(innerRadius * 0.7, 0);
+                ctx.moveTo(0, -innerRadius * 0.7); ctx.lineTo(0, innerRadius * 0.7);
+                ctx.stroke();
 
                 ctx.restore();
             });

@@ -252,7 +252,7 @@ const CyberHiLo = () => {
                 player: userProfile?.name || 'StreakMaster',
                 game: 'Cyber Hi-Lo',
                 coinsWon: payout,
-                avatar: currentCard?.suit?.color ? '/assets/skins/face_star.png' : '/assets/skins/face_money.png'
+                avatar: userProfile?.avatar || '/assets/skins/face_default.png'
             });
         }
     };
