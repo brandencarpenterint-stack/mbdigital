@@ -5,6 +5,7 @@ import './Home.css';
 import TiltCard from '../components/TiltCard';
 import TheButton from '../components/TheButton';
 import CinematicGameCard from '../components/CinematicGameCard';
+import { EmblemCrash, EmblemDozer, EmblemMines, EmblemBlackjack } from '../components/GameEmblems';
 import SponsorStationModal from '../components/SponsorStationModal';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
@@ -25,7 +26,7 @@ const FEATURED_GAMES = [
         id: 'crash',
         title: 'CYBER CRASH 2088',
         desc: 'Rocket multiplier cashout action. Lock in profits before the crash.',
-        icon: '🚀',
+        icon: <EmblemCrash />,
         category: 'casino',
         gradient: 'linear-gradient(135deg, #ff0055 0%, #ff5500 100%)',
         path: '/arcade/crash'
@@ -34,7 +35,7 @@ const FEATURED_GAMES = [
         id: 'dozer',
         title: 'COIN DOZER 3D',
         desc: 'Physics coin pusher with giant drops, quakes and rare figurines.',
-        icon: '🪙',
+        icon: <EmblemDozer />,
         category: 'action',
         gradient: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
         path: '/arcade/dozer'
@@ -43,7 +44,7 @@ const FEATURED_GAMES = [
         id: 'mines',
         title: 'CYBER MINES',
         desc: '5x5 grid scout drone challenge. Uncover gems and cash out multipliers.',
-        icon: '💣',
+        icon: <EmblemMines />,
         category: 'casino',
         gradient: 'linear-gradient(135deg, #00ff88 0%, #00b4d8 100%)',
         path: '/arcade/mines'
@@ -52,7 +53,7 @@ const FEATURED_GAMES = [
         id: 'blackjack',
         title: 'CYBER 21 VIP',
         desc: 'High-roller penthouse blackjack with 3:2 payouts and double down.',
-        icon: '🃏',
+        icon: <EmblemBlackjack />,
         category: 'casino',
         gradient: 'linear-gradient(135deg, #ffd700 0%, #ff8800 100%)',
         path: '/arcade/blackjack'

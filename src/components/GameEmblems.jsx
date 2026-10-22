@@ -259,3 +259,69 @@ export const EmblemArena = () => (
         </svg>
     </BaseEmblem>
 );
+
+export const EmblemFaceRunner = () => (
+    <BaseEmblem color="#00f260">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00f260" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" stroke="#0575e6" strokeWidth="1.5" />
+            <polygon points="12 4 19 12 12 20 5 12" fill="rgba(0, 242, 96, 0.2)" />
+            <polyline points="9 10 12 7 15 10" stroke="#00f260" strokeWidth="2" />
+            <line x1="12" y1="7" x2="12" y2="17" stroke="#00f260" strokeWidth="2" />
+        </svg>
+    </BaseEmblem>
+);
+
+export const EmblemBroCannon = () => (
+    <BaseEmblem color="#FF512F">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF512F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 18h16" stroke="#DD2476" strokeWidth="2" />
+            <circle cx="8" cy="18" r="3" fill="rgba(255, 81, 47, 0.25)" />
+            <path d="M7 15l10-8 3 4-10 8z" fill="rgba(221, 36, 118, 0.3)" />
+            <circle cx="19" cy="8" r="1.5" fill="#ffd700" />
+        </svg>
+    </BaseEmblem>
+);
+
+export const EmblemMerchJump = () => (
+    <BaseEmblem color="#66a6ff">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#66a6ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 20h16" stroke="#89f7fe" strokeWidth="2" />
+            <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="#66a6ff" strokeWidth="2.5" />
+            <circle cx="12" cy="4" r="2" fill="#89f7fe" />
+        </svg>
+    </BaseEmblem>
+);
+
+export const EmblemFishing = () => (
+    <BaseEmblem color="#00C6FF">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00C6FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 4l-4 4m0 0l-6 6" stroke="#0072FF" strokeWidth="2" />
+            <path d="M6 16c2 0 4 2 4 4" />
+            <path d="M14 8c4-2 6 0 6 3s-4 4-6 3" fill="rgba(0, 198, 255, 0.25)" />
+            <circle cx="18" cy="10" r="1" fill="#fff" />
+        </svg>
+    </BaseEmblem>
+);
+
+export const EmblemWhack = () => (
+    <BaseEmblem color="#FF416C">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF416C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="5" width="8" height="12" rx="2" fill="rgba(255, 65, 108, 0.25)" stroke="#FF4B2B" strokeWidth="2" />
+            <line x1="11" y1="11" x2="21" y2="11" stroke="#FF416C" strokeWidth="3" strokeLinecap="round" />
+            <line x1="2" y1="2" x2="5" y2="5" stroke="#ffd700" strokeWidth="2" />
+            <line x1="2" y1="20" x2="5" y2="17" stroke="#ffd700" strokeWidth="2" />
+        </svg>
+    </BaseEmblem>
+);
+
+export const EmblemMemory = () => (
+    <BaseEmblem color="#64f38c">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64f38c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="8" height="12" rx="2" fill="rgba(100, 243, 140, 0.2)" stroke="#f79d00" strokeWidth="1.5" />
+            <rect x="13" y="8" width="8" height="12" rx="2" fill="rgba(100, 243, 140, 0.3)" stroke="#64f38c" strokeWidth="2" />
+            <circle cx="17" cy="14" r="2" fill="#64f38c" />
+            <circle cx="7" cy="10" r="1.5" fill="#f79d00" />
+        </svg>
+    </BaseEmblem>
+);
+

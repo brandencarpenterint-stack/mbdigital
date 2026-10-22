@@ -3,7 +3,9 @@ import {
     EmblemBlackjack, EmblemRoulette, EmblemDerby, EmblemSlots,
     EmblemUnderworld, EmblemDozer, EmblemPinball, EmblemPlinko,
     EmblemDrift, EmblemDefense, EmblemGalaxy, EmblemFlappy,
-    EmblemWheel, EmblemBricks, EmblemSnake, EmblemUnboxing, EmblemArena
+    EmblemWheel, EmblemBricks, EmblemSnake, EmblemUnboxing, EmblemArena,
+    EmblemFaceRunner, EmblemBroCannon, EmblemMerchJump, EmblemFishing,
+    EmblemWhack, EmblemMemory
 } from '../components/GameEmblems';
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useMemo } from 'react';
@@ -294,7 +296,7 @@ const games = [
         category: 'action',
         desc: 'High-Speed 3D Tunnel Chaos',
         gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
-        icon: <img src='/assets/skins/face_rainbow.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px cyan)'}} />,
+        icon: <EmblemFaceRunner />,
         colSpan: 2,
         leaderboardId: 'face_runner'
     },
@@ -304,7 +306,7 @@ const games = [
         category: 'action',
         desc: 'Trajectory Launch Physics & Air Bounces',
         gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
-        icon: <img src='/assets/avatar_ghost.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF512F)'}} />,
+        icon: <EmblemBroCannon />,
         colSpan: 1,
         leaderboardId: 'bro_cannon'
     },
@@ -377,7 +379,7 @@ const games = [
         category: 'retro',
         desc: 'Endless Platform Jumping',
         gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
-        icon: <img src='/assets/skins/face_bear.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #66a6ff)'}} />,
+        icon: <EmblemMerchJump />,
         colSpan: 1,
         leaderboardId: 'merch_jump'
     },
@@ -387,7 +389,7 @@ const games = [
         category: 'retro',
         desc: 'Reel in Rare Cyber Leviathans',
         gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
-        icon: <img src='/assets/merchboy_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #0072FF)'}} />,
+        icon: <EmblemFishing />,
         colSpan: 1,
         leaderboardId: 'crazy_fishing'
     },
@@ -397,7 +399,7 @@ const games = [
         category: 'retro',
         desc: 'Fast Reflex Mascot Bonking',
         gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)',
-        icon: <img src='/assets/mole_normal.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #FF416C)'}} />,
+        icon: <EmblemWhack />,
         colSpan: 1,
         leaderboardId: 'whack_a_mole'
     },
@@ -407,7 +409,7 @@ const games = [
         category: 'retro',
         desc: 'Cyber Deck Pattern Recall',
         gradient: 'linear-gradient(135deg, #f79d00 0%, #64f38c 100%)',
-        icon: <img src='/assets/skins/face_cat.png' style={{height:'60px', objectFit:'contain', filter: 'drop-shadow(0 0 10px #64f38c)'}} />,
+        icon: <EmblemMemory />,
         colSpan: 1,
         leaderboardId: 'memory_match'
     }
