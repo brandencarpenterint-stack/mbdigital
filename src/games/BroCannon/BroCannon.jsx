@@ -361,7 +361,7 @@ const BroCannon = () => {
             triggerConfetti();
             playWin();
             const playerName = userProfile?.name || 'Player';
-            feedService.publish(`launched a record ${finalDist}m in Bro Cannon! 🚀💥`, 'win', playerName);
+            feedService.publish(`launched a record ${finalDist}m in Bro Cannon!`, 'win', playerName);
         }
     };
 
@@ -456,7 +456,17 @@ const BroCannon = () => {
                     {distance}m
                 </div>
                 <div style={{ fontSize: '1rem', color: '#00e5ff', textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
-                    ALT: {altitude}m {altitude > 1500 ? '🌌 [ORBIT]' : altitude > 600 ? '☁️ [CLOUDS]' : '🌲 [SURFACE]'}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    ALT: {altitude}m
+                    <span style={{
+                        background: altitude > 1500 ? 'rgba(168, 85, 247, 0.3)' : altitude > 600 ? 'rgba(0, 240, 255, 0.3)' : 'rgba(0, 255, 136, 0.3)',
+                        border: `1px solid ${altitude > 1500 ? '#a855f7' : altitude > 600 ? '#00f0ff' : '#00ff88'}`,
+                        color: altitude > 1500 ? '#c084fc' : altitude > 600 ? '#00f0ff' : '#00ff88',
+                        padding: '1px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', fontFamily: 'monospace'
+                    }}>
+                        {altitude > 1500 ? 'ORBIT' : altitude > 600 ? 'CLOUDS' : 'SURFACE'}
+                    </span>
+                </span>
                 </div>
                 <div style={{ color: 'gold', fontSize: '0.9rem', marginTop: '4px' }}>
                     COINS: {coins.toLocaleString()}
@@ -554,7 +564,7 @@ const BroCannon = () => {
                     onClick={e => e.stopPropagation()}
                 >
                     <h1 style={{ fontSize: '3rem', color: 'gold', margin: 0, textShadow: '0 0 20px gold' }}>
-                        BRO CANNON 🚀
+                        BRO CANNON <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '6px' }}><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
                     </h1>
                     <p style={{ color: '#aaa', margin: '10px 0 25px 0' }}>CHOOSE YOUR BRAVE PILOT</p>
 
@@ -630,7 +640,10 @@ const BroCannon = () => {
                     <h1 style={{ fontSize: '4.5rem', color: 'gold', margin: 0, textShadow: '0 0 30px gold' }}>
                         {distance}m
                     </h1>
-                    <h3 style={{ color: '#00e5ff', margin: '10px 0' }}>EARNED +{coinsEarned} COINS 🪙</h3>
+                    <h3 style={{ color: '#00e5ff', margin: '10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <span>EARNED +{coinsEarned} CP</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5"/><path d="M12 7v10"/></svg>
+                    </h3>
                     <div style={{ color: '#aaa', marginBottom: '25px' }}>
                         BEST RECORD: {stats?.broCannonHighScore || distance}m
                     </div>
@@ -640,13 +653,19 @@ const BroCannon = () => {
                             onClick={resetGame}
                             style={{ fontSize: '1.2rem', padding: '16px 36px', background: '#00ffcc', color: 'black' }}
                         >
-                            LAUNCH AGAIN 🚀
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <span>LAUNCH AGAIN</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+                            </span>
                         </SquishyButton>
                         <SquishyButton
                             onClick={goToMenu}
                             style={{ fontSize: '1.2rem', padding: '16px 36px', background: '#333', color: 'white' }}
                         >
-                            GARAGE & PILOTS 🛠️
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <span>GARAGE & PILOTS</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            </span>
                         </SquishyButton>
                     </div>
                 </div>
@@ -699,17 +718,31 @@ const BroCannon = () => {
                             filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.4))'
                         }}
                     >
-                        {item.type === 'BOOST'
-                            ? '🚀'
-                            : item.type === 'FUEL'
-                            ? '⛽'
-                            : item.type === 'TRAMPOLINE'
-                            ? '☁️'
-                            : item.type === 'UFO'
-                            ? '🛸'
-                            : item.type === 'DIAMOND'
-                            ? '💎'
-                            : '🪙'}
+                        {item.type === 'BOOST' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 0, 85, 0.25)', border: '1.5px solid #ff0055', borderRadius: '50%', boxShadow: '0 0 15px #ff0055' }}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff0055" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+                            </div>
+                        ) : item.type === 'FUEL' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 240, 255, 0.25)', border: '1.5px solid #00f0ff', borderRadius: '50%', boxShadow: '0 0 15px #00f0ff' }}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="7" width="12" height="14" rx="2"/><line x1="9" y1="3" x2="15" y2="3"/><line x1="12" y1="3" x2="12" y2="7"/><polygon points="11 11 13 11 11 17 14 14" fill="#00f0ff"/></svg>
+                            </div>
+                        ) : item.type === 'TRAMPOLINE' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 255, 136, 0.25)', border: '1.5px solid #00ff88', borderRadius: '50%', boxShadow: '0 0 15px #00ff88' }}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8"/><path d="m16 6-4-4-4 4"/><rect x="3" y="16" width="18" height="4" rx="1"/><line x1="7" y1="20" x2="5" y2="23"/><line x1="17" y1="20" x2="19" y2="23"/></svg>
+                            </div>
+                        ) : item.type === 'UFO' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(168, 85, 247, 0.25)', border: '1.5px solid #a855f7', borderRadius: '50%', boxShadow: '0 0 15px #a855f7' }}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="14" rx="9" ry="4"/><path d="M7 13c0-3 2-5 5-5s5 2 5 5"/><line x1="9" y1="18" x2="8" y2="21"/><line x1="15" y1="18" x2="16" y2="21"/></svg>
+                            </div>
+                        ) : item.type === 'DIAMOND' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 240, 255, 0.25)', border: '1.5px solid #00f0ff', borderRadius: '50%', boxShadow: '0 0 15px #00f0ff' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(0,240,255,0.3)" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 18 3 22 9 12 22 2 9"/><line x1="12" y1="22" x2="12" y2="9"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
+                            </div>
+                        ) : (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 215, 0, 0.25)', border: '1.5px solid #ffd700', borderRadius: '50%', boxShadow: '0 0 15px #ffd700' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,215,0,0.3)" stroke="#ffd700" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5"/><path d="M12 7v10"/></svg>
+                            </div>
+                        )}
                     </div>
                 ))}
 
@@ -787,9 +820,13 @@ const BroCannon = () => {
                                 left: -22,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                fontSize: '24px'
+                                display: 'flex',
+                                alignItems: 'center',
+                                filter: 'drop-shadow(0 0 10px #ff5500)'
                             }}>
-                                🔥
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="#ff5500" stroke="#ffaa00" strokeWidth="1">
+                                    <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.37 2.1-6.7 4.77-8.8.44-.35 1.09-.16 1.25.38.64 2.15 1.83 3.67 3.03 4.54.27.2.65.1.78-.2.53-1.2.97-3.07.97-5.42 0-.6.64-1 1.14-.66C17.5 5.9 21 10.3 21 14.5 21 19.2 16.97 23 12 23z" />
+                                </svg>
                             </div>
                         )}
                         <img

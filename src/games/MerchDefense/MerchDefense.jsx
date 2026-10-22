@@ -131,7 +131,7 @@ const MerchDefense = () => {
                             setGameState('WIN');
                             addCoins(1000);
                             playWin();
-                                                        feedService.publish({ text: '🏰 ' + (userProfile?.name || 'Commander') + ' conquered all 10 Waves in Merch Defense!', type: 'jackpot' });
+                                                        feedService.publish({ text: (userProfile?.name || 'Commander') + ' conquered all 10 Waves in Merch Defense!', type: 'jackpot' });
                         }
                         return next;
                     });
@@ -159,7 +159,7 @@ const MerchDefense = () => {
                                 setGameState('GAMEOVER');
                                 playCrash();
                                                                 if (stateRef.current.wave >= 3) {
-                                    feedService.publish({ text: '🛡️ ' + (userProfile?.name || 'Defender') + ' defended to Wave ' + stateRef.current.wave + ' in Merch Defense!', type: 'game' });
+                                    feedService.publish({ text: (userProfile?.name || 'Defender') + ' defended to Wave ' + stateRef.current.wave + ' in Merch Defense!', type: 'game' });
                                 }
                             }
                             return nl;
@@ -381,9 +381,21 @@ const MerchDefense = () => {
     return (
         <div className="page-enter" style={{ minHeight: '100vh', background: '#0a0a0a', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
             <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <Link to="/arcade" style={{ color: '#fff', textDecoration: 'none', fontSize: '1.2rem' }}>â ARCADE</Link>
-                <h1 style={{ margin: 0, color: '#00ffcc', textShadow: '0 0 10px #00ffcc', fontFamily: '"Press Start 2P"' }}>MERCH DEFENSE</h1>
-                <div style={{ color: '#ffcc00', fontWeight: 'bold' }}>HYPE: {hype} | LIVES: {lives}</div>
+                <Link to="/arcade" style={{ color: '#00f0ff', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>ARCADE</span>
+                </Link>
+                <h1 style={{ margin: 0, color: '#00ffcc', textShadow: '0 0 15px rgba(0,255,204,0.6)', fontFamily: '"Orbitron", monospace', fontWeight: '900', letterSpacing: '2px', fontSize: '1.6rem' }}>MERCH DEFENSE</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontFamily: 'monospace' }}>
+                    <div style={{ background: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.4)', borderRadius: '8px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#00f0ff', fontWeight: 'bold' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>HYPE: {hype}</span>
+                    </div>
+                    <div style={{ background: 'rgba(255, 0, 85, 0.15)', border: '1px solid rgba(255, 0, 85, 0.4)', borderRadius: '8px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#ff0055', fontWeight: 'bold' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>LIVES: {lives}</span>
+                    </div>
+                </div>
             </div>
 
             {gameState === 'START' && (

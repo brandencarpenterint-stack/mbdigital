@@ -157,7 +157,7 @@ const FlappyMascot = () => {
 
             if (score > 10) {
                 const playerName = userProfile?.name || 'Player';
-                feedService.publish(`is flying high! Score: ${score} in FlappyBro 🦅`, 'win', playerName);
+                feedService.publish(`is flying high! Score: ${score} in FlappyBro!`, 'win', playerName);
             }
         }
 
@@ -354,7 +354,7 @@ const FlappyMascot = () => {
                     pipe.nearMissTriggered = true;
                     state.slowMoFrames = 12; // 12-frame cinematic bullet-time!
                     state.floatingTexts.push({
-                        text: '⚡ CLOSE SHAVE! +100 CP',
+                        text: 'CLOSE SHAVE! +100 CP',
                         x: birdX - 30,
                         y: birdY - 32,
                         life: 38,
@@ -653,8 +653,9 @@ const FlappyMascot = () => {
                     }}>
                         {score} <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>PTS</span>
                     </span>
-                    <span style={{ color: '#ffd700', fontSize: '0.85rem' }}>
-                        🪙 {coins?.toLocaleString() || 0}
+                    <span style={{ color: '#ffd700', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5"/><path d="M12 7v10"/></svg>
+                        {(coins || 0).toLocaleString()} CP
                     </span>
                 </div>
             </div>
@@ -694,7 +695,10 @@ const FlappyMascot = () => {
                                 boxShadow: '0 0 25px rgba(0, 240, 255, 0.6)'
                             }}
                         >
-                            FLY! 🦅
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <span>FLY!</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h4v4"/><path d="m22 2-7.5 7.5"/><path d="M21.5 13V8.5a6.5 6.5 0 0 0-6.5-6.5H10.5A6.5 6.5 0 0 0 4 8.5V13"/><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/></svg>
+                            </span>
                         </SquishyButton>
                         <div style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '12px', fontFamily: 'monospace' }}>
                             [SPACE] OR TAP SCREEN TO FLAP
@@ -740,7 +744,10 @@ const FlappyMascot = () => {
                                 }}
                                 style={{ marginBottom: '12px', padding: '10px 30px', background: '#00f0ff', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 'bold' }}
                             >
-                                🛡️ USE SHIELD ({shopState.inventory['flappy_shield']})
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <span>USE SHIELD ({shopState.inventory['flappy_shield']})</span>
+                                </span>
                             </SquishyButton>
                         )}
 
@@ -766,8 +773,10 @@ const FlappyMascot = () => {
                                     gap: '8px'
                                 }}
                             >
-                                <span>📺</span>
-                                <span>FREE REVIVE (WATCH SPOT ❤️)</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                                    <span>FREE REVIVE (WATCH SPONSOR SPOT)</span>
+                                </span>
                             </button>
                         )}
 
@@ -854,7 +863,10 @@ const FlappyMascot = () => {
 
             <div style={{ textAlign: 'center', marginTop: '8px' }}>
                 <Link to="/shop" style={{ color: '#ffd700', textDecoration: 'none', fontSize: '0.85rem', fontFamily: 'monospace' }}>
-                    🛍️ Unlock More Pilots in Shop
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span>Unlock More Pilots in Shop</span>
+                </span>
                 </Link>
             </div>
 

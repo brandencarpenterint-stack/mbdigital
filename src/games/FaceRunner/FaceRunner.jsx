@@ -366,14 +366,18 @@ const FaceRunner = () => {
                 textDecoration: 'none'
             }}>
                 <div style={{
-                    background: '#ff0055', color: 'white',
-                    padding: '10px 20px', borderRadius: '30px',
-                    fontWeight: 'bold', boxShadow: '0 5px 15px rgba(255, 0, 85, 0.4)',
+                    background: 'rgba(15, 23, 42, 0.85)', color: '#fff',
+                    border: '1px solid rgba(0, 240, 255, 0.4)',
+                    padding: '10px 22px', borderRadius: '30px',
+                    fontWeight: 'bold', boxShadow: '0 5px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 240, 255, 0.25)',
                     boxSizing: 'border-box',
-                    fontSize: '1rem',
-                    display: 'flex', alignItems: 'center', gap: '5px'
+                    fontSize: '0.95rem',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    backdropFilter: 'blur(10px)',
+                    fontFamily: 'monospace'
                 }}>
-                    🏠 EXIT
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>EXIT</span>
                 </div>
             </Link>
         </div>

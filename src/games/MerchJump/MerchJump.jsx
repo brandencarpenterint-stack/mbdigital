@@ -353,7 +353,7 @@ const MerchJump = () => {
                     player.vy = -60; // SUPER BOOST
                     playCollect();
                     itemsRef.current.splice(idx, 1);
-                    feedService.publish(`found a Merch Balloon! 🎈`, 'win', userProfile?.name);
+                    feedService.publish(`found a Merch Balloon!`, 'win', userProfile?.name);
                 }
             }
         });
@@ -496,7 +496,7 @@ const MerchJump = () => {
             setHighScore(finalScore);
             if (updateStat) updateStat('merchJumpHighScore', finalScore);
             const playerName = userProfile?.name || 'Player';
-            feedService.publish(`set a new Merch Jump High Score: ${finalScore}m! 🚀`, 'win', playerName);
+            feedService.publish(`set a new Merch Jump High Score: ${finalScore}m!`, 'win', playerName);
         }
     };
 
@@ -605,8 +605,18 @@ const MerchJump = () => {
                 }
             `}</style>
 
-            <button className="shop-toggle" onClick={() => setIsShopOpen(!isShopOpen)}>
-                {isShopOpen ? 'CLOSE SHOP 🔽' : 'BOOST SHOP 🛒'}
+            <button className="shop-toggle" onClick={() => setIsShopOpen(!isShopOpen)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isShopOpen ? (
+                    <>
+                        <span>CLOSE SHOP</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </>
+                ) : (
+                    <>
+                        <span>BOOST SHOP</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    </>
+                )}
             </button>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
@@ -642,7 +652,10 @@ const MerchJump = () => {
                                         ))}
                                     </div>
                                     <SquishyButton onClick={initGame} style={{ padding: '20px 50px', background: '#333', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', border: 'none', borderRadius: '100px' }}>JUMP</SquishyButton>
-                                    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#666' }}>CHECK SHOP FOR TRAILS 👉</p>
+                                    <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        <span>CHECK BOOST SHOP FOR AURA TRAILS</span>
+                                    </div>
                                 </div>
                             )}
                         </>
@@ -654,7 +667,10 @@ const MerchJump = () => {
             <div className={`boost-shop ${isShopOpen ? 'open' : ''}`} style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>BOOST SHOP</h2>
-                    <span style={{ color: 'gold' }}>${coins || 0}</span>
+                    <span style={{ color: 'gold', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5"/><path d="M12 7v10"/></svg>
+                        {coins || 0} CP
+                    </span>
                 </div>
                 {STREAKS.map(streak => {
                     const isUnlocked = unlockedStreaks.includes(streak.id);
@@ -673,8 +689,11 @@ const MerchJump = () => {
 
             {/* FLOATING EXIT IS HANDLED BY LAYOUT, REMOVE LOCAL ONE IF DUPLICATE OR KEEP? */}
             {/* Keeping it won't hurt, but Layout one is better. I'll remove the local one in favor of Layout's if desired, or keep it as backup. */}
-            <Link to="/arcade" className="mobile-hide" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
-                <SquishyButton style={{ borderRadius: '50px', padding: '10px 20px', fontSize: '1.2rem', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(5px)' }}>🏠 EXIT</SquishyButton>
+            <Link to="/arcade" className="mobile-hide" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, textDecoration: 'none' }}>
+                <SquishyButton style={{ borderRadius: '50px', padding: '10px 22px', fontSize: '1rem', background: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>EXIT</span>
+                </SquishyButton>
             </Link>
             <style>{`@media (max-width: 500px) { .mobile-hide { display: none !important; } }`}</style>
         </div>
