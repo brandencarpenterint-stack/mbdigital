@@ -6,7 +6,7 @@ import './Home.css';
 import TiltCard from '../components/TiltCard';
 import TheButton from '../components/TheButton';
 import CinematicGameCard from '../components/CinematicGameCard';
-import { EmblemCrash, EmblemDozer, EmblemMines, EmblemBlackjack, EmblemSlots } from '../components/GameEmblems';
+import { EmblemCrash, EmblemDozer, EmblemMines, EmblemBlackjack, EmblemSlots, EmblemMerchJump, EmblemDefense, EmblemBroCannon } from '../components/GameEmblems';
 import SponsorStationModal from '../components/SponsorStationModal';
 import { useGamification } from '../context/GamificationContext';
 import useRetroSound from '../hooks/useRetroSound';
@@ -23,6 +23,18 @@ const item = {
 };
 
 const HERO_SHOWCASE = [
+    {
+        id: 'merch-jump',
+        tag: 'ORIGINAL FLAGSHIP',
+        title: 'MERCH JUMP 2088',
+        desc: 'The iconic MerchBoy platform leaper. Ascend through cyberspace on kinetic trampolines, jetpack boosters, and dodge neon gravity voids.',
+        path: '/arcade/merch-jump',
+        badge: 'MERCH ORIGINAL',
+        badgeColor: '#ff0055',
+        gradient: 'linear-gradient(135deg, rgba(255, 0, 85, 0.3), rgba(0, 240, 255, 0.2))',
+        border: '#ff0055',
+        accentColor: '#ff0055'
+    },
     {
         id: 'crash',
         tag: 'FLAGSHIP MULTIPLAYER',
@@ -75,6 +87,38 @@ const HERO_SHOWCASE = [
 
 const PREMIER_GAMES = [
     {
+        id: 'merch-jump',
+        title: 'MERCH JUMP',
+        desc: 'The original iconic MerchBoy platform leaper & boost trampolines.',
+        icon: <EmblemMerchJump />,
+        category: 'retro',
+        isOriginal: true,
+        isHighlighted: true,
+        gradient: 'linear-gradient(135deg, #00f0ff 0%, #ff0055 100%)',
+        path: '/arcade/merch-jump'
+    },
+    {
+        id: 'merch-defense',
+        title: 'MERCH DEFENSE',
+        desc: 'Our original cyber tower defense with multi-lane creeps & tactical turrets.',
+        icon: <EmblemDefense />,
+        category: 'action',
+        isOriginal: true,
+        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+        path: '/arcade/merch-defense'
+    },
+    {
+        id: 'bro-cannon',
+        title: 'BRO CANNON',
+        desc: 'Signature trajectory launch physics & maximum air distance scoring.',
+        icon: <EmblemBroCannon />,
+        category: 'action',
+        isOriginal: true,
+        isHighlighted: true,
+        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
+        path: '/arcade/bro-cannon'
+    },
+    {
         id: 'crash',
         title: 'CYBER CRASH 2088',
         desc: 'Exponential starship trajectory with manual bail-out controls.',
@@ -100,15 +144,6 @@ const PREMIER_GAMES = [
         category: 'action',
         gradient: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
         path: '/arcade/dozer'
-    },
-    {
-        id: 'blackjack',
-        title: 'CYBER 21 VIP',
-        desc: 'Penthouse royal blackjack with animated cyber croupier hologram.',
-        icon: <EmblemBlackjack />,
-        category: 'casino',
-        gradient: 'linear-gradient(135deg, #00ff88 0%, #00b4d8 100%)',
-        path: '/arcade/blackjack'
     }
 ];
 

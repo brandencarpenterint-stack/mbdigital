@@ -121,12 +121,154 @@ const OnlinePlaza = () => {
 
 const CATEGORIES = [
     { id: 'all', label: 'ALL GAMES', count: 27, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2"/></svg> },
-    { id: 'casino', label: 'CYBER CASINO', count: 9, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg> },
+    { id: 'merch', label: 'MERCH ORIGINALS', count: 7, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
     { id: 'action', label: 'ACTION & SKILL', count: 10, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
+    { id: 'casino', label: 'CYBER CASINO', count: 9, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg> },
     { id: 'retro', label: 'RETRO CLASSICS', count: 8, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg> }
 ];
 
 const games = [
+    // MERCH ORIGINALS (FLAGSHIP SUITE)
+    {
+        id: 'merch-jump',
+        title: 'MERCH JUMP',
+        category: 'retro',
+        isOriginal: true,
+        desc: 'Endless Platform Jumping & Boost Trampolines',
+        gradient: 'linear-gradient(135deg, #00f0ff 0%, #ff0055 100%)',
+        icon: <EmblemMerchJump />,
+        colSpan: 1,
+        path: '/arcade/merch-jump',
+        leaderboardId: 'merch_jump'
+    },
+    {
+        id: 'merch-defense',
+        title: 'MERCH DEFENSE',
+        category: 'action',
+        isOriginal: true,
+        desc: 'Branded Cyber Tower Defense & Multi-Lane Creeps',
+        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+        icon: <EmblemDefense />,
+        colSpan: 2,
+        path: '/arcade/merch-defense',
+        leaderboardId: 'merch_defense'
+    },
+    {
+        id: 'bro-cannon',
+        title: 'BRO CANNON',
+        category: 'action',
+        isOriginal: true,
+        desc: 'Trajectory Launch Physics & Air Bounces',
+        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
+        icon: <EmblemBroCannon />,
+        colSpan: 1,
+        path: '/arcade/bro-cannon',
+        leaderboardId: 'bro_cannon'
+    },
+    {
+        id: 'face-runner',
+        title: 'FACE WARP',
+        category: 'action',
+        isOriginal: true,
+        desc: 'High-Speed 3D Tunnel Chaos Mapped to Your Custom Skin',
+        gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
+        icon: <EmblemFaceRunner />,
+        colSpan: 2,
+        path: '/arcade/face-runner',
+        leaderboardId: 'face_runner'
+    },
+    {
+        id: 'flappy',
+        title: 'FLAPPY BRO',
+        category: 'retro',
+        isOriginal: true,
+        desc: 'Physics Pipe Dodging & Coin Milestones',
+        gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
+        icon: <EmblemFlappy />,
+        colSpan: 1,
+        path: '/arcade/flappy',
+        leaderboardId: 'flappy_mascot'
+    },
+    {
+        id: 'fishing',
+        title: 'CRAZY FISHING',
+        category: 'retro',
+        isOriginal: true,
+        desc: 'Reel in Rare Cyber Leviathans & Crypto Treasures',
+        gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
+        icon: <EmblemFishing />,
+        colSpan: 1,
+        path: '/arcade/fishing',
+        leaderboardId: 'crazy_fishing'
+    },
+    {
+        id: 'arena',
+        title: 'THE ARENA',
+        category: 'action',
+        isOriginal: true,
+        desc: 'Turn-Based RPG Squad Battles & Tactical Ultimates',
+        gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+        icon: <EmblemArena />,
+        colSpan: 2,
+        path: '/arena'
+    },
+
+    // ACTION & SKILL
+    {
+        id: 'dozer',
+        title: 'CYBER COIN DOZER',
+        category: 'action',
+        desc: 'Mechanical Neon Pusher, Figurines & Quakes',
+        gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
+        icon: <EmblemDozer />,
+        colSpan: 2,
+        path: '/arcade/dozer',
+        leaderboardId: 'cyber_dozer'
+    },
+    {
+        id: 'pinball',
+        title: 'CYBER PINBALL 2088',
+        category: 'action',
+        desc: 'Bumper Chaos, B-R-O Drop Targets & Multiball',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
+        icon: <EmblemPinball />,
+        colSpan: 2,
+        path: '/arcade/pinball',
+        leaderboardId: 'cyber_pinball'
+    },
+    {
+        id: 'plinko',
+        title: 'CYBER PLINKO',
+        category: 'action',
+        desc: 'Pegged Gravity 100x High-Multiplier Drops',
+        gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
+        icon: <EmblemPlinko />,
+        colSpan: 2,
+        path: '/arcade/plinko',
+        leaderboardId: 'cyber_plinko'
+    },
+    {
+        id: 'drift',
+        title: 'NEON DRIFT: 2088',
+        category: 'action',
+        desc: 'Pseudo-3D Synthwave Supercar Racer',
+        gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
+        icon: <EmblemDrift />,
+        colSpan: 2,
+        path: '/arcade/drift',
+        leaderboardId: 'neon_drift'
+    },
+    {
+        id: 'galaxy',
+        title: 'GALAXY DEFENDER',
+        category: 'action',
+        desc: 'Retro Space Shooter & Boss Battles',
+        gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
+        icon: <EmblemGalaxy />,
+        colSpan: 1,
+        leaderboardId: 'galaxy_defender'
+    },
+
     // CASINO & HIGH-ROLLER
     {
         id: 'crash',
@@ -226,102 +368,6 @@ const games = [
         path: '/underworld'
     },
 
-    // ACTION & SKILL
-    {
-        id: 'dozer',
-        title: 'CYBER COIN DOZER',
-        category: 'action',
-        desc: 'Mechanical Neon Pusher, Figurines & Quakes',
-        gradient: 'linear-gradient(135deg, #00e5ff 0%, #ff007f 100%)',
-        icon: <EmblemDozer />,
-        colSpan: 2,
-        path: '/arcade/dozer',
-        leaderboardId: 'cyber_dozer'
-    },
-    {
-        id: 'pinball',
-        title: 'CYBER PINBALL 2088',
-        category: 'action',
-        desc: 'Bumper Chaos, B-R-O Drop Targets & Multiball',
-        gradient: 'linear-gradient(135deg, #ff007f 0%, #00e5ff 100%)',
-        icon: <EmblemPinball />,
-        colSpan: 2,
-        path: '/arcade/pinball',
-        leaderboardId: 'cyber_pinball'
-    },
-    {
-        id: 'plinko',
-        title: 'CYBER PLINKO',
-        category: 'action',
-        desc: 'Pegged Gravity 100x High-Multiplier Drops',
-        gradient: 'linear-gradient(135deg, #f107a3 0%, #7b2ff7 100%)',
-        icon: <EmblemPlinko />,
-        colSpan: 2,
-        path: '/arcade/plinko',
-        leaderboardId: 'cyber_plinko'
-    },
-    {
-        id: 'drift',
-        title: 'NEON DRIFT: 2088',
-        category: 'action',
-        desc: 'Pseudo-3D Synthwave Supercar Racer',
-        gradient: 'linear-gradient(135deg, #ff007f 0%, #00ffcc 100%)',
-        icon: <EmblemDrift />,
-        colSpan: 2,
-        path: '/arcade/drift',
-        leaderboardId: 'neon_drift'
-    },
-    {
-        id: 'merch-defense',
-        title: 'MERCH DEFENSE',
-        category: 'action',
-        desc: 'Branded Cyber Tower Defense',
-        gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
-        icon: <EmblemDefense />,
-        colSpan: 2,
-        leaderboardId: 'merch_defense'
-    },
-    {
-        id: 'galaxy',
-        title: 'GALAXY DEFENDER',
-        category: 'action',
-        desc: 'Retro Space Shooter & Boss Battles',
-        gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
-        icon: <EmblemGalaxy />,
-        colSpan: 1,
-        leaderboardId: 'galaxy_defender'
-    },
-    {
-        id: 'face-runner',
-        title: 'FACE WARP',
-        category: 'action',
-        desc: 'High-Speed 3D Tunnel Chaos',
-        gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)',
-        icon: <EmblemFaceRunner />,
-        colSpan: 2,
-        leaderboardId: 'face_runner'
-    },
-    {
-        id: 'bro-cannon',
-        title: 'BRO CANNON',
-        category: 'action',
-        desc: 'Trajectory Launch Physics & Air Bounces',
-        gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
-        icon: <EmblemBroCannon />,
-        colSpan: 1,
-        leaderboardId: 'bro_cannon'
-    },
-    {
-        id: 'arena',
-        title: 'THE ARENA',
-        category: 'action',
-        desc: 'Turn-Based RPG Squad Battles',
-        gradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
-        icon: <EmblemArena />,
-        colSpan: 2,
-        path: '/arena'
-    },
-
     // RETRO CLASSICS
     {
         id: 'brick',
@@ -344,16 +390,6 @@ const games = [
         leaderboardId: 'neon_snake'
     },
     {
-        id: 'flappy',
-        title: 'FLAPPY BRO',
-        category: 'retro',
-        desc: 'Physics Pipe Dodging',
-        gradient: 'linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)',
-        icon: <EmblemFlappy />,
-        colSpan: 1,
-        leaderboardId: 'flappy_mascot'
-    },
-    {
         id: 'unboxing',
         title: 'HYPE DROP',
         category: 'retro',
@@ -373,26 +409,6 @@ const games = [
         colSpan: 2,
         path: '/arcade/wheel',
         leaderboardId: 'cyber_wheel'
-    },
-    {
-        id: 'merch-jump',
-        title: 'MERCH JUMP',
-        category: 'retro',
-        desc: 'Endless Platform Jumping',
-        gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
-        icon: <EmblemMerchJump />,
-        colSpan: 1,
-        leaderboardId: 'merch_jump'
-    },
-    {
-        id: 'fishing',
-        title: 'CRAZY FISHING',
-        category: 'retro',
-        desc: 'Reel in Rare Cyber Leviathans',
-        gradient: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)',
-        icon: <EmblemFishing />,
-        colSpan: 1,
-        leaderboardId: 'crazy_fishing'
     },
     {
         id: 'whack',
@@ -488,10 +504,36 @@ const ArcadeHub = () => {
 
     const displayName = userProfile?.name || 'OPERATOR';
 
-    // Filter games by category and search query
+    // Dynamic random spotlight: selects 5 games across the arcade to highlight with bigger icons
+    const [highlightedIds, setHighlightedIds] = useState(() => {
+        const merchOriginals = ['merch-jump', 'merch-defense', 'bro-cannon', 'face-runner', 'flappy', 'fishing', 'arena'];
+        const otherGames = [
+            'crash', 'mines', 'hilo', 'scratchers', 'roulette', 'blackjack', 'derby', 'slots', 'underworld',
+            'dozer', 'pinball', 'plinko', 'drift', 'galaxy', 'brick', 'snake', 'unboxing', 'wheel', 'whack', 'memory'
+        ];
+        const shuffledMerch = [...merchOriginals].sort(() => 0.5 - Math.random());
+        const shuffledOthers = [...otherGames].sort(() => 0.5 - Math.random());
+        return new Set([...shuffledMerch.slice(0, 2), ...shuffledOthers.slice(0, 3)]);
+    });
+
+    const shuffleSpotlight = () => {
+        try { playBoop?.(); } catch (e) { }
+        const merchOriginals = ['merch-jump', 'merch-defense', 'bro-cannon', 'face-runner', 'flappy', 'fishing', 'arena'];
+        const otherGames = [
+            'crash', 'mines', 'hilo', 'scratchers', 'roulette', 'blackjack', 'derby', 'slots', 'underworld',
+            'dozer', 'pinball', 'plinko', 'drift', 'galaxy', 'brick', 'snake', 'unboxing', 'wheel', 'whack', 'memory'
+        ];
+        const shuffledMerch = [...merchOriginals].sort(() => 0.5 - Math.random());
+        const shuffledOthers = [...otherGames].sort(() => 0.5 - Math.random());
+        setHighlightedIds(new Set([...shuffledMerch.slice(0, 2), ...shuffledOthers.slice(0, 3)]));
+        showToast('Spotlight shuffled! New games highlighted with bigger icons.', 'info');
+    };
+
+    // Filter games by category (including 'merch' originals) and search query
     const filteredGames = useMemo(() => {
         return games.filter(g => {
-            const matchesCategory = selectedCategory === 'all' || g.category === selectedCategory;
+            const matchesCategory = selectedCategory === 'all' ||
+                (selectedCategory === 'merch' ? g.isOriginal : g.category === selectedCategory);
             const matchesSearch = searchQuery === '' || 
                 g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 g.desc.toLowerCase().includes(searchQuery.toLowerCase());
@@ -721,8 +763,36 @@ const ArcadeHub = () => {
                     )}
                 </div>
 
-                {/* Category Pills */}
-                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+                {/* Category Pills & Spotlight Shuffler */}
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none', alignItems: 'center' }}>
+                    <button
+                        type="button"
+                        onClick={shuffleSpotlight}
+                        title="Re-roll random highlighted games with bigger icons"
+                        style={{
+                            flex: '0 0 auto',
+                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.25), rgba(0, 240, 255, 0.25))',
+                            color: '#00f0ff',
+                            border: '1px solid rgba(0, 240, 255, 0.45)',
+                            padding: '8px 14px',
+                            borderRadius: '14px',
+                            fontWeight: '900',
+                            fontSize: '0.8rem',
+                            fontFamily: 'monospace',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 0 14px rgba(0, 240, 255, 0.25)',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 4 23 10 17 10" />
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                        </svg>
+                        <span>SHUFFLE SPOTLIGHT</span>
+                    </button>
                     {CATEGORIES.map(cat => {
                         const isSelected = selectedCategory === cat.id;
                         return (
@@ -784,6 +854,7 @@ const ArcadeHub = () => {
                                 <CinematicGameCard
                                     game={game}
                                     highScore={getHighScore(game.id, stats)}
+                                    isHighlighted={highlightedIds.has(game.id)}
                                 />
                             </Link>
                         </motion.div>
