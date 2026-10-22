@@ -474,7 +474,7 @@ const CyberMines = () => {
                                 disabled={!isPlaying || !scoutAvailable || gameOver}
                                 className="w-full py-2 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-400/60 text-cyan-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-30 transition-all shadow-md active:scale-95"
                             >
-                                <span>🎯</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                                 <span>{scoutAvailable ? 'SCAN 1 SAFE TILE (FREE)' : 'DRONE DEPLETED'}</span>
                             </button>
                         </div>
@@ -483,7 +483,7 @@ const CyberMines = () => {
                         {lostWager > 0 && !hasClaimedInsurance && (
                             <div className="w-full p-3 rounded-2xl bg-gradient-to-r from-red-950/70 via-amber-950/50 to-slate-950/90 border border-amber-500/50 flex items-center justify-between gap-2 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">🛡️</span>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                                     <div>
                                         <div className="text-[11px] font-black text-amber-400 font-mono tracking-wide">
                                             SPONSOR LOSS INSURANCE
@@ -499,7 +499,7 @@ const CyberMines = () => {
                                     onClick={() => setShowSponsorModal(true)}
                                     className="px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black font-mono text-[11px] rounded-xl shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1 cursor-pointer flex-shrink-0"
                                 >
-                                    <span>📺</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
                                     <span>CLAIM +{Math.floor(lostWager / 2)} CP</span>
                                 </button>
                             </div>

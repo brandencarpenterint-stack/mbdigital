@@ -119,10 +119,10 @@ const OnlinePlaza = () => {
 };
 
 const CATEGORIES = [
-    { id: 'all', label: '🌟 ALL GAMES', count: 26 },
-    { id: 'casino', label: '🎰 CYBER CASINO', count: 9 },
-    { id: 'action', label: '⚡ ACTION & SKILL', count: 9 },
-    { id: 'retro', label: '👾 RETRO CLASSICS', count: 8 }
+    { id: 'all', label: 'ALL GAMES', count: 27, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2"/></svg> },
+    { id: 'casino', label: 'CYBER CASINO', count: 9, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg> },
+    { id: 'action', label: 'ACTION & SKILL', count: 10, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
+    { id: 'retro', label: 'RETRO CLASSICS', count: 8, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg> }
 ];
 
 const games = [
@@ -575,7 +575,7 @@ const ArcadeHub = () => {
                             display: 'flex', alignItems: 'center', gap: '6px'
                         }}
                     >
-                        <span>🚨</span> RAID BOSS
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> RAID BOSS
                     </button>
 
                     <Link to="/bunker" style={{ textDecoration: 'none' }}>
@@ -589,7 +589,7 @@ const ArcadeHub = () => {
                             fontSize: '0.78rem',
                             display: 'flex', alignItems: 'center', gap: '6px'
                         }}>
-                            <span>🍸</span> THE BUNKER
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg> THE BUNKER
                         </div>
                     </Link>
 
@@ -604,7 +604,7 @@ const ArcadeHub = () => {
                             fontSize: '0.78rem',
                             display: 'flex', alignItems: 'center', gap: '6px'
                         }}>
-                            <span>🎲</span> THE UNDERWORLD
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="8" cy="8" r="1.5" fill="currentColor" /><circle cx="16" cy="16" r="1.5" fill="currentColor" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /></svg> THE UNDERWORLD
                         </div>
                     </Link>
 
@@ -619,7 +619,7 @@ const ArcadeHub = () => {
                             fontSize: '0.78rem',
                             display: 'flex', alignItems: 'center', gap: '6px'
                         }}>
-                            <span>⚔️</span> THE ARENA
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="4" x2="20" y2="20" /><line x1="20" y1="4" x2="4" y2="20" /></svg> THE ARENA
                         </div>
                     </Link>
 
@@ -640,7 +640,7 @@ const ArcadeHub = () => {
                             fontFamily: 'monospace'
                         }}
                     >
-                        <span>⚡</span> SPONSOR (+1,500 CP)
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg> SPONSOR (+1,500 CP)
                     </button>
                 </div>
             </div>
@@ -663,7 +663,7 @@ const ArcadeHub = () => {
                 <div style={{ position: 'relative', width: '100%' }}>
                     <input
                         type="text"
-                        placeholder="🔍 Search games by name, genre, or keyword..."
+                        placeholder="Search 27 arcade games by title, genre, or mechanics..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{
@@ -719,7 +719,7 @@ const ArcadeHub = () => {
                                     transition: 'all 0.2s ease'
                                 }}
                             >
-                                {cat.label}
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{cat.icon}{cat.label}</span>
                             </button>
                         );
                     })}
@@ -782,10 +782,10 @@ const ArcadeHub = () => {
                 {/* Secondary Hub Navigation Tabs */}
                 <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #222', paddingBottom: '12px', marginBottom: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     {[
-                        { id: 'leaderboard', label: '🏆 LEADERBOARDS' },
-                        { id: 'feed', label: '📡 LIVE FEED' },
-                        { id: 'plaza', label: '🌐 ONLINE PLAZA' },
-                        { id: 'pocketbro', label: '👾 POCKET BRO' }
+                        { id: 'leaderboard', label: 'LEADERBOARDS', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> },
+                        { id: 'feed', label: 'LIVE FEED', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/></svg> },
+                        { id: 'plaza', label: 'ONLINE PLAZA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> },
+                        { id: 'pocketbro', label: 'POCKET BRO', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="3"/><circle cx="12" cy="14" r="3"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg> }
                     ].map(t => (
                         <button
                             key={t.id}
@@ -804,7 +804,7 @@ const ArcadeHub = () => {
                                 transition: 'all 0.2s'
                             }}
                         >
-                            {t.label}
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t.icon}{t.label}</span>
                         </button>
                     ))}
                 </div>

@@ -507,7 +507,7 @@ const CyberScratchers = () => {
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-center p-4">
-                                <span className="text-4xl mb-2">🎟️</span>
+                                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3" fill="rgba(255, 215, 0, 0.2)"/><path d="M6 12h.01M18 12h.01"/></svg>
                                 <h3 className="text-base font-black text-yellow-400">
                                     BUY A {selectedTier.name.toUpperCase()} TICKET
                                 </h3>
@@ -523,7 +523,7 @@ const CyberScratchers = () => {
                         <div className={`w-full mt-3 p-3 rounded-2xl border text-center font-mono font-black ${cardResult.won ? 'bg-emerald-950/60 border-emerald-400 text-emerald-300 shadow-[0_0_20px_#00ff66]' : 'bg-red-950/40 border-red-500 text-red-400'}`}>
                             {cardResult.won ? (
                                 <div>
-                                    🎉 YOU WON +{cardResult.prize.toLocaleString()} CP!
+                                    VICTORY! YOU WON +{cardResult.prize.toLocaleString()} CP!
                                 </div>
                             ) : (
                                 <div>

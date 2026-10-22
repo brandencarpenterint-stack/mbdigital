@@ -67,6 +67,12 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
                     pointerEvents: 'none'
                 }} />
 
+                {/* Cyber Corner Brackets */}
+                <div style={{ position: 'absolute', top: '8px', left: '8px', width: '8px', height: '8px', borderTop: '2px solid rgba(255,255,255,0.3)', borderLeft: '2px solid rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '8px', right: '8px', width: '8px', height: '8px', borderTop: '2px solid rgba(255,255,255,0.3)', borderRight: '2px solid rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '8px', left: '8px', width: '8px', height: '8px', borderBottom: '2px solid rgba(255,255,255,0.3)', borderLeft: '2px solid rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '8px', right: '8px', width: '8px', height: '8px', borderBottom: '2px solid rgba(255,255,255,0.3)', borderRight: '2px solid rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
+
                 {/* Top-Left Category Badge */}
                 <div style={{
                     position: 'absolute',
@@ -135,7 +141,15 @@ const CinematicGameCard = ({ game, highScore = 0 }) => {
                         fontSize: '2.5rem'
                     }}
                 >
-                    {game.icon || '🎮'}
+                    {game.icon || (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="6" y1="12" x2="10" y2="12" />
+                            <line x1="8" y1="10" x2="8" y2="14" />
+                            <line x1="15" y1="13" x2="15.01" y2="13" />
+                            <line x1="18" y1="11" x2="18.01" y2="11" />
+                            <rect x="2" y="6" width="20" height="12" rx="6" />
+                        </svg>
+                    )}
                 </motion.div>
             </div>
 
