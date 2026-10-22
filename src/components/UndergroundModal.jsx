@@ -122,9 +122,15 @@ const UndergroundModal = ({ onClose }) => {
                     onClick={onClose}
                     style={{
                         position: 'absolute', top: '10px', right: '10px',
-                        background: 'transparent', border: 'none', color: 'red', fontSize: '1.5rem', cursor: 'pointer'
+                        background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer',
+                        padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}
-                >✕</button>
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
 
                 <h2 style={{
                     textAlign: 'center', margin: '0 0 20px 0',
@@ -135,7 +141,14 @@ const UndergroundModal = ({ onClose }) => {
                 </h2>
 
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', color: '#666' }}>
-                    CRYPTO: <span style={{ color: 'red', marginLeft: '10px' }}>{coins} 🪙</span>
+                    CRYPTO: <span style={{ color: '#ef4444', marginLeft: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {coins}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5" />
+                        <path d="M12 7v10" />
+                    </svg>
+                </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>

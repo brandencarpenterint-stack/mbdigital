@@ -439,19 +439,29 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                         {unlockedLore?.length > 0 && (
                             <h2
                                 onClick={() => handleTabClick('SECRETS')}
+                                title="System Codex & Secrets"
                                 style={{
                                     margin: 0, fontSize: '1.5rem', cursor: 'pointer',
                                     color: activeTab === 'SECRETS' ? 'var(--neon-green)' : '#718096',
                                     paddingBottom: '5px',
                                     borderBottom: activeTab === 'SECRETS' ? '2px solid var(--neon-green)' : '2px solid transparent',
-                                    animation: 'pulse 2s infinite'
+                                    animation: 'pulse 2s infinite',
+                                    display: 'flex', alignItems: 'center'
                                 }}
                             >
-                                👁️
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
                             </h2>
                         )}
                     </div>
-                    <SquishyButton onClick={onClose} style={{ padding: '5px 15px', background: '#e53e3e' }}>X</SquishyButton>
+                    <SquishyButton onClick={onClose} style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.5)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </SquishyButton>
                 </div>
 
                 <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
@@ -1052,8 +1062,11 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                                     <SquishyButton onClick={() => {
                                                         triggerConfetti();
                                                         feedService.publish(`vibed with ${visitingFriend.name}'s room!`, 'love');
-                                                    }} style={{ background: 'var(--neon-pink)', width: '100%' }}>
-                                                        ✨ VIBE CHECK
+                                                    }} style={{ background: 'var(--neon-pink)', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z" />
+                                                        </svg>
+                                                        VIBE CHECK
                                                     </SquishyButton>
                                                 </div>
                                             </div>
@@ -1146,15 +1159,22 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
 
                                                             <SquishyButton
                                                                 onClick={() => handleFlex(friend.name)}
-                                                                style={{ fontSize: '0.8rem', padding: '8px 15px', background: '#ed64a6' }}
+                                                                title="Flex On Squad"
+                                                                style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#ed64a6', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                             >
-                                                                😈
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                                                </svg>
                                                             </SquishyButton>
                                                             <SquishyButton
                                                                 onClick={() => handleVisit(friend)}
-                                                                style={{ fontSize: '0.8rem', padding: '8px 15px', background: 'var(--neon-blue)', marginLeft: '10px' }}
+                                                                title="Visit Room"
+                                                                style={{ fontSize: '0.8rem', padding: '8px 12px', background: 'var(--neon-blue)', color: '#000', marginLeft: '10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                             >
-                                                                🏠
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                                                </svg>
                                                             </SquishyButton>
                                                         </div>
                                                     ))}

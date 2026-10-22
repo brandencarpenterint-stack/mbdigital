@@ -38,12 +38,15 @@ const DailyQuestModal = ({ onClose }) => {
                     style={{
                         position: 'absolute', top: '15px', right: '15px',
                         border: 'none', color: '#fff',
-                        fontSize: '1.5rem', cursor: 'pointer',
+                        cursor: 'pointer',
                         width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'rgba(255,255,255,0.1)', borderRadius: '50%'
                     }}
                 >
-                    ✕
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                 </button>
 
                 <h2 style={{
@@ -66,7 +69,11 @@ const DailyQuestModal = ({ onClose }) => {
                     <div>
                         <div style={{ fontSize: '0.8rem', color: '#aaa', letterSpacing: '1px' }}>CURRENT STREAK</div>
                         <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>
-                            {streak} DAYS <span style={{ fontSize: '1.2rem' }}>🔥</span>
+                            {streak} DAYS <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: '4px', color: '#ff0055' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.37 2.1-6.7 4.77-8.8.44-.35 1.09-.16 1.25.38.64 2.15 1.83 3.67 3.03 4.54.27.2.65.1.78-.2.53-1.2.97-3.07.97-5.42 0-.6.64-1 1.14-.66C17.5 5.9 21 10.3 21 14.5 21 19.2 16.97 23 12 23z" />
+                                </svg>
+                            </span>
                         </div>
                     </div>
 
@@ -85,7 +92,23 @@ const DailyQuestModal = ({ onClose }) => {
                             textTransform: 'uppercase'
                         }}
                     >
-                        {canCheckIn ? '💰 CLAIM REWARD (+100)' : '✅ CHECKED IN'}
+                        canCheckIn ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M14.5 9h-4a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3h-4.5" />
+                                    <path d="M12 7v10" />
+                                </svg>
+                                CLAIM REWARD (+100)
+                            </span>
+                        ) : (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                CHECKED IN
+                            </span>
+                        )
                     </button>
                 </div>
                 <style>{`
@@ -175,7 +198,13 @@ const DailyQuestModal = ({ onClose }) => {
                                                 fontSize: '0.7rem'
                                             }}
                                         >
-                                            SKIP 🔄
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                SKIP
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="23 4 23 10 17 10" />
+                                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                                                </svg>
+                                            </span>
                                         </button>
                                     )}
                                 </div>

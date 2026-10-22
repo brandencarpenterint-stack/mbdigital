@@ -117,9 +117,12 @@ const DailyStash = ({ onClose }) => {
             }}>
                 <button
                     onClick={onClose}
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#ff0055', fontSize: '1.5rem', cursor: 'pointer', zIndex: 20 }}
+                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#ff0055', cursor: 'pointer', zIndex: 20, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                    ✕
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                 </button>
 
                 <div style={{ position: 'relative', zIndex: 10 }}>
@@ -136,22 +139,39 @@ const DailyStash = ({ onClose }) => {
                     <div style={{
                         background: 'rgba(255, 0, 85, 0.1)',
                         color: 'var(--neon-pink)',
-                        display: 'inline-block',
-                        padding: '5px 15px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 16px',
                         borderRadius: '4px',
                         fontWeight: 'bold',
                         fontSize: '0.9rem',
                         border: '1px solid var(--neon-pink)',
                         marginBottom: '20px'
                     }}>
-                        🔥 STREAK: {streak} DAY{streak !== 1 ? 'S' : ''} (+{Math.round((streak * 0.1) * 100)}%)
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.37 2.1-6.7 4.77-8.8.44-.35 1.09-.16 1.25.38.64 2.15 1.83 3.67 3.03 4.54.27.2.65.1.78-.2.53-1.2.97-3.07.97-5.42 0-.6.64-1 1.14-.66C17.5 5.9 21 10.3 21 14.5 21 19.2 16.97 23 12 23z" />
+                        </svg>
+                        STREAK: {streak} DAY{streak !== 1 ? 'S' : ''} (+{Math.round((streak * 0.1) * 100)}%)
                     </div>
 
                     <div style={{ perspective: '800px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
                         {/* 3D CUBE - CYBERPUNK STYLE */}
                         <div className={`loot-box ${status === 'OPENING' ? 'shaking' : ''} ${status === 'OPENED' ? 'opened' : ''}`}>
                             <div className="face front">
-                                <div className="lock-icon">{status === 'CLAIMED' ? '🚫' : '🔒'}</div>
+                                <div className="lock-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {status === 'CLAIMED' ? (
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                                        </svg>
+                                    ) : (
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                        </svg>
+                                    )}
+                                </div>
                             </div>
                             <div className="face back"></div>
                             <div className="face right"></div>
@@ -161,8 +181,12 @@ const DailyStash = ({ onClose }) => {
 
                             {/* REWARD POPUP */}
                             <div className={`reward-item ${status === 'OPENED' ? 'visible' : ''}`}>
-                                <div style={{ fontSize: '5rem', filter: 'drop-shadow(0 0 20px gold)', animation: 'spinCoin 3s infinite linear' }}>
-                                    💰
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 20px gold)', animation: 'spinCoin 3s infinite linear' }}>
+                                    <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <ellipse cx="12" cy="7" rx="8" ry="4" fill="rgba(255,215,0,0.3)" />
+                                        <path d="M4 7v5c0 2.21 3.58 4 8 4s8-1.79 8-4V7" />
+                                        <path d="M4 12v5c0 2.21 3.58 4 8 4s8-1.79 8-4v-5" />
+                                    </svg>
                                 </div>
                                 <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'gold', textShadow: '0 0 10px gold', marginTop: '10px' }}>
                                     {reward?.amount}
@@ -245,8 +269,12 @@ const DailyStash = ({ onClose }) => {
                     `}</style>
 
                     {status === 'LOCKED' && (
-                        <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'var(--neon-pink)', color: 'white', fontSize: '1.2rem', textTransform: 'uppercase', boxShadow: '0 0 20px var(--neon-pink)' }}>
-                            DECRYPT LOOT 🔓
+                        <SquishyButton onClick={openChest} style={{ width: '100%', padding: '20px', background: 'var(--neon-pink)', color: 'white', fontSize: '1.2rem', textTransform: 'uppercase', boxShadow: '0 0 20px var(--neon-pink)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>DECRYPT LOOT</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                            </svg>
                         </SquishyButton>
                     )}
 

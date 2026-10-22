@@ -431,8 +431,13 @@ const SettingsPage = () => {
                             <span>Rewarded Revives / Day:</span>
                             <span style={{ color: '#00f0ff', fontFamily: 'monospace' }}>{adService.DAILY_MAX_SPONSOR_CLAIMS} Claims (1,500 CP + 150 XP each)</span>
                         </div>
-                        <p style={{ color: '#888', fontSize: '0.75rem', lineHeight: '1.4', margin: '4px 0 0 0' }}>
-                            💡 To earn real money from player views, set your Google AdSense Publisher ID in <code>.env</code> (<code>VITE_ADSENSE_PUB_ID=ca-pub-XXXXXXXX</code>) and update <code>public/ads.txt</code>.
+                        <p style={{ color: '#888', fontSize: '0.75rem', lineHeight: '1.4', margin: '4px 0 0 0', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
+                                <path d="M9 18h6" />
+                                <path d="M10 22h4" />
+                                <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                            </svg>
+                            <span>To earn real money from player views, set your Google AdSense Publisher ID in <code>.env</code> (<code>VITE_ADSENSE_PUB_ID=ca-pub-XXXXXXXX</code>) and update <code>public/ads.txt</code>.</span>
                         </p>
                     </div>
                 </section>

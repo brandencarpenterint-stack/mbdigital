@@ -74,7 +74,11 @@ const GachaponModal = ({ onClose }) => {
                                 return (
                                     <div key={col.id} style={{ marginBottom: '30px', background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '15px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                            <h3 style={{ margin: 0, color: isComplete ? 'gold' : 'white' }}>{col.name} {isComplete && '👑'}</h3>
+                                            <h3 style={{ margin: 0, color: isComplete ? 'gold' : 'white' }}>{col.name} {isComplete && (
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffd700" stroke="#b8860b" strokeWidth="1" style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '6px' }}>
+                                                    <path d="M2 4l3 12h14l3-12-5 4-5-6-5 6-5-4z" />
+                                                </svg>
+                                            )}</h3>
                                             <span style={{ color: '#aaa' }}>{collectedCount}/{col.items.length}</span>
                                         </div>
                                         <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
@@ -134,10 +138,22 @@ const GachaponModal = ({ onClose }) => {
                             ) : (
                                 <>
                                     <div style={{
-                                        fontSize: '10rem', marginBottom: '20px',
+                                        width: '140px',
+                                        height: '140px',
+                                        margin: '0 auto 20px',
+                                        borderRadius: '50%',
+                                        background: 'radial-gradient(circle at 35% 35%, rgba(0, 240, 255, 0.8), rgba(168, 85, 247, 0.6) 50%, rgba(10, 15, 30, 0.9) 100%)',
+                                        boxShadow: '0 0 40px rgba(0, 240, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.6)',
+                                        border: '2px solid rgba(0, 240, 255, 0.6)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         animation: animationState === 'SHAKING' ? 'shake 0.5s infinite' : 'float 3s infinite ease-in-out'
                                     }}>
-                                        🔮
+                                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5">
+                                            <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
+                                            <polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2" fill="rgba(255,255,255,0.2)" />
+                                        </svg>
                                     </div>
 
                                     {animationState === 'SHAKING' || animationState === 'OPENING' ? (
