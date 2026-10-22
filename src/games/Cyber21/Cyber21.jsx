@@ -683,42 +683,71 @@ const Cyber21 = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '15px',
-                background: 'rgba(12, 14, 28, 0.85)',
+                marginBottom: '18px',
+                background: 'rgba(15, 15, 30, 0.75)',
                 padding: '12px 20px',
-                borderRadius: '14px',
+                borderRadius: '16px',
                 border: '1px solid rgba(0, 229, 255, 0.25)',
-                backdropFilter: 'blur(8px)'
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
                 <Link to="/arcade" style={{
                     color: '#00e5ff',
                     textDecoration: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                    display: 'flex',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 229, 255, 0.08)',
+                    border: '1px solid rgba(0, 229, 255, 0.3)'
                 }}>
-                    ◄ ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#ff007f' }}>
-                        🔥 STREAK: <span style={{ fontWeight: 'bold' }}>{winStreak}</span>
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#ffd700' }}>
-                        🏆 BEST 21 WIN: <span style={{ fontWeight: 'bold' }}>{(stats?.blackjackHighScore || 0).toLocaleString()} CP</span>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{
+                        fontSize: '0.8rem',
+                        color: '#ff007f',
+                        fontWeight: '800',
+                        letterSpacing: '0.5px'
+                    }}>
+                        STREAK: <span style={{ color: '#fff' }}>{winStreak}</span>
                     </div>
                     <div style={{
-                        background: 'rgba(255, 215, 0, 0.12)',
-                        border: '1px solid #ffd700',
-                        padding: '6px 14px',
-                        borderRadius: '20px',
-                        fontWeight: 'bold',
-                        color: '#ffd700',
-                        fontSize: '0.95rem'
+                        fontSize: '0.8rem',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        letterSpacing: '0.5px'
                     }}>
-                        🪙 {(coins || 0).toLocaleString()} CP
+                        BEST WIN: <span style={{ fontWeight: '900', color: '#ffd700' }}>{(stats?.blackjackHighScore || 0).toLocaleString()} CP</span>
+                    </div>
+                    <div style={{
+                        background: 'rgba(255, 215, 0, 0.08)',
+                        border: '1px solid rgba(255, 215, 0, 0.3)',
+                        padding: '6px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '800',
+                        color: '#ffd700',
+                        fontSize: '0.9rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#ffd700',
+                            boxShadow: '0 0 8px #ffd700'
+                        }} />
+                        {(coins || 0).toLocaleString()} CP
                     </div>
                 </div>
             </div>
@@ -796,7 +825,7 @@ const Cyber21 = () => {
                     fontSize: '0.75rem',
                     color: '#00e5ff'
                 }}>
-                    <div>⚡ HI-LO COUNT: <b style={{ color: hilo.count > 0 ? '#00ff66' : hilo.count < 0 ? '#ff0055' : '#fff' }}>{hilo.count > 0 ? '+' : ''}{hilo.count}</b> (TRUE: {hilo.trueCount})</div>
+                    <div>CARD MATRIX COUNT: <b style={{ color: hilo.count > 0 ? '#00ff66' : hilo.count < 0 ? '#ff0055' : '#fff' }}>{hilo.count > 0 ? '+' : ''}{hilo.count}</b> (TRUE: {hilo.trueCount})</div>
                     <div style={{ color: '#888', fontSize: '0.7rem' }}>SHOE: {deck.length} CARDS LEFT ({hilo.penetration}%)</div>
                 </div>
 
@@ -1163,7 +1192,7 @@ const Cyber21 = () => {
                                 letterSpacing: '1px'
                             }}
                         >
-                            {phase === 'ROUND_OVER' ? `🪙 RE-BET & DEAL (${bet} CP)` : `🪙 PLACE BET & DEAL (${bet} CP)`}
+                            {phase === 'ROUND_OVER' ? `RE-BET & DEAL (${bet} CP)` : `PLACE BET & DEAL (${bet} CP)`}
                         </SquishyButton>
                     </div>
                 )}

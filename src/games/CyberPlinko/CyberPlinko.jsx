@@ -445,25 +445,62 @@ const CyberPlinko = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '20px',
-                borderBottom: '1px solid #222',
-                paddingBottom: '15px'
+                marginBottom: '24px',
+                padding: '12px 20px',
+                background: 'rgba(15, 15, 28, 0.7)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 0, 127, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
-                <Link to="/arcade" style={{ textDecoration: 'none', color: '#00ffcc', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                    ◄ ARCADE
+                <Link to="/arcade" style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 255, 204, 0.08)',
+                    border: '1px solid rgba(0, 255, 204, 0.3)',
+                    color: '#00ffcc',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
                 </Link>
                 <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ff007f', textShadow: '0 0 15px rgba(255, 0, 127, 0.7)', letterSpacing: '2px' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ff007f', textShadow: '0 0 20px rgba(255, 0, 127, 0.6)', letterSpacing: '3px', fontWeight: '900' }}>
                         CYBER PLINKO
                     </h1>
-                    <div style={{ fontSize: '0.65rem', color: '#888', letterSpacing: '1px' }}>
-                        DROP THE BRO • PEGGED GRAVITY MATRIX
+                    <div style={{ fontSize: '0.65rem', color: '#00ffcc', letterSpacing: '2px', opacity: 0.8, textTransform: 'uppercase' }}>
+                        GRAVITATIONAL PEGGED MATRIX
                     </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: '#ffd700', fontWeight: '900', fontSize: '1.1rem' }}>
-                        🪙 {coins.toLocaleString()} CP
-                    </div>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.9rem'
+                }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffd700',
+                        boxShadow: '0 0 8px #ffd700'
+                    }} />
+                    {coins.toLocaleString()} CP
                 </div>
             </div>
 

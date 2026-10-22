@@ -270,14 +270,17 @@ const CyberHiLo = () => {
             <div className="relative z-10 w-full max-w-[760px] flex items-center justify-between mb-3 px-1">
                 <Link
                     to="/arcade"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-fuchsia-500/30 text-fuchsia-400 hover:text-fuchsia-300 hover:border-fuchsia-400/60 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
                 >
-                    <span>◄</span> ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-1.5 shadow-lg">
-                        <span>🪙</span>
+                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-2 shadow-lg">
+                        <span className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffd700]" />
                         <span>{(coins ?? 0).toLocaleString()} CP</span>
                     </div>
                 </div>

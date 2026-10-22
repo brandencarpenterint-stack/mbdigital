@@ -621,14 +621,17 @@ const CyberCrash = () => {
             <div className="relative z-10 w-full max-w-[760px] flex items-center justify-between mb-3 px-1">
                 <Link
                     to="/arcade"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 hover:border-cyan-400/60 transition-all font-mono text-xs font-bold shadow-lg active:scale-95"
                 >
-                    <span>◄</span> ARCADE HUB
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE HUB
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-1.5 shadow-lg">
-                        <span>🪙</span>
+                    <div className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-xs font-black flex items-center gap-2 shadow-lg">
+                        <span className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffd700]" />
                         <span>{(coins ?? 0).toLocaleString()} CP</span>
                     </div>
                 </div>
@@ -639,7 +642,14 @@ const CyberCrash = () => {
                 {/* Header Title & Marquee */}
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl animate-pulse">🚀</span>
+                        <div className="w-7 h-7 text-cyan-400 animate-pulse">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                                <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+                            </svg>
+                        </div>
                         <h1 className="text-xl sm:text-2xl font-black italic tracking-wider bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(0,229,255,0.6)]">
                             CYBER CRASH: MOONSHOT
                         </h1>
@@ -774,7 +784,12 @@ const CyberCrash = () => {
                                 onClick={handleCashout}
                                 className="w-full h-full min-h-[75px] bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 text-black font-black text-lg tracking-wider uppercase rounded-2xl shadow-[0_0_30px_rgba(0,255,102,0.8)] active:scale-95 transition-all flex flex-col items-center justify-center animate-pulse"
                             >
-                                <span>⚡ BAIL OUT NOW!</span>
+                                <span className="flex items-center gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                    </svg>
+                                    BAIL OUT NOW!
+                                </span>
                                 <span className="text-xs font-mono font-extrabold mt-0.5">
                                     +{(wager * multiplier).toFixed(0)} CP ({multiplier.toFixed(2)}x)
                                 </span>
@@ -790,9 +805,12 @@ const CyberCrash = () => {
                             <SquishyButton
                                 onClick={handlePlaceBet}
                                 disabled={gameState === 'flying' || (coins ?? 0) < wager}
-                                className="w-full h-full min-h-[75px] bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-yellow-400 text-black font-black text-base uppercase rounded-2xl shadow-[0_0_25px_rgba(0,229,255,0.6)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-40"
+                                className="w-full h-full min-h-[75px] bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-yellow-400 text-black font-black text-base uppercase rounded-2xl shadow-[0_0_25px_rgba(0,229,255,0.6)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                             >
-                                🚀 PLACE BET ({wager} CP)
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                <span>PLACE BET ({wager} CP)</span>
                             </SquishyButton>
                         )}
                     </div>
