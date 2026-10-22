@@ -183,12 +183,70 @@ const CosmicSlots = () => {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: '20px'
         }}>
-            {/* Header */}
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <h1 style={{ fontFamily: '"Press Start 2P", display', color: '#ffd700', fontSize: '2.5rem', textShadow: '0 0 20px #ff00ff', margin: 0 }}>
-                    COSMIC SLOTS
-                </h1>
-                <p style={{ color: '#aaa', marginTop: '10px' }}>SPIN 15 🪙 FOR 8-LINE ACTION!</p>
+            {/* STUDIO CONSOLE HEADER */}
+            <div style={{
+                width: '100%',
+                maxWidth: '920px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '24px',
+                padding: '12px 20px',
+                background: 'rgba(15, 15, 28, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 0, 127, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+            }}>
+                <Link to="/arcade" style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 255, 204, 0.08)',
+                    border: '1px solid rgba(0, 255, 204, 0.3)',
+                    color: '#00ffcc',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
+                </Link>
+                <div style={{ textAlign: 'center' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.6rem', color: '#ffd700', textShadow: '0 0 20px rgba(255, 215, 0, 0.6)', letterSpacing: '3px', fontWeight: '900' }}>
+                        COSMIC SLOTS
+                    </h1>
+                    <div style={{ fontSize: '0.65rem', color: '#00ffcc', letterSpacing: '2px', opacity: 0.8, textTransform: 'uppercase' }}>
+                        15 CP PER SPIN • 8-LINE PAYOUT MATRIX
+                    </div>
+                </div>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.9rem'
+                }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffd700',
+                        boxShadow: '0 0 8px #ffd700'
+                    }} />
+                    {coins.toLocaleString()} CP
+                </div>
             </div>
 
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -217,13 +275,22 @@ const CosmicSlots = () => {
                 <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px'
                 }}>
-                    {/* WALLET */}
+                    {/* WALLET DISPLAY */}
                     <div style={{
-                        background: '#333', padding: '10px 30px', borderRadius: '50px',
-                        border: '2px solid gold', fontSize: '1.5rem',
-                        boxShadow: '0 0 15px gold'
+                        background: 'rgba(20, 20, 35, 0.9)',
+                        padding: '8px 24px',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255, 215, 0, 0.35)',
+                        fontSize: '1.1rem',
+                        fontWeight: '900',
+                        color: '#ffd700',
+                        boxShadow: '0 0 20px rgba(255, 215, 0, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                     }}>
-                        🪙 {coins}
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffd700', boxShadow: '0 0 8px #ffd700' }} />
+                        BALANCE: {coins.toLocaleString()} CP
                     </div>
 
                     <div style={{
@@ -291,13 +358,13 @@ const CosmicSlots = () => {
                             transform: 'rotate(10deg)', boxShadow: '0 0 15px #ff4500',
                             animation: 'pulse 1s infinite'
                         }}>
-                            x{streak} 🔥
+                            COMBO x{streak}
                         </div>
                     )}
 
                     {winAmount > 0 && (
                         <div style={{ fontSize: '2rem', color: '#00ffaa', fontWeight: 'bold', textShadow: '0 0 20px #00ffaa' }}>
-                            WIN: {winAmount} 🪙
+                            WIN: +{winAmount.toLocaleString()} CP
                         </div>
                     )}
 
@@ -312,7 +379,7 @@ const CosmicSlots = () => {
                             animation: 'jackpot-pulse 0.5s infinite alternate'
                         }}>
                             <h1 style={{ fontSize: '6rem', color: 'gold', margin: 0, textShadow: '0 0 20px #fff' }}>JACKPOT!</h1>
-                            <h2 style={{ fontSize: '4rem', color: '#00ffaa', margin: '20px 0' }}>+{winAmount} 🪙</h2>
+                            <h2 style={{ fontSize: '4rem', color: '#00ffaa', margin: '20px 0' }}>+{winAmount.toLocaleString()} CP</h2>
                         </div>
                     )}
                 </div>
@@ -324,7 +391,7 @@ const CosmicSlots = () => {
                 @keyframes pulse { 0% { transform: rotate(10deg) scale(1); } 50% { transform: rotate(10deg) scale(1.1); } 100% { transform: rotate(10deg) scale(1); } }
             `}</style>
 
-            <Link to="/arcade" style={{ marginTop: '40px', color: '#666' }}>Back to Arcade</Link>
+            
         </div>
     );
 };

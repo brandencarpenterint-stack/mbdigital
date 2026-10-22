@@ -255,14 +255,60 @@ const HypeDrop = () => {
             alignItems: 'center'
         }} className={isShake ? 'shake-viewport' : ''}>
             
-            <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <Link to="/arcade" style={{ color: '#00ffcc', textDecoration: 'none', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>◄</span> BACK TO ARCADE
+            <div style={{
+                width: '100%',
+                maxWidth: '1000px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
+                padding: '12px 20px',
+                background: 'rgba(15, 15, 28, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 0, 127, 0.25)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+            }}>
+                <Link to="/arcade" style={{
+                    color: '#00ffcc',
+                    textDecoration: 'none',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 255, 204, 0.08)',
+                    border: '1px solid rgba(0, 255, 204, 0.3)'
+                }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ARCADE
                 </Link>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid gold', padding: '8px 18px', borderRadius: '20px', color: 'gold', fontWeight: 'bold' }}>
-                        🪙 {coins ? coins.toLocaleString() : 0} COINS
-                    </div>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255, 215, 0, 0.08)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffd700',
+                    fontWeight: '800',
+                    fontSize: '0.9rem'
+                }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffd700',
+                        boxShadow: '0 0 8px #ffd700'
+                    }} />
+                    {coins ? coins.toLocaleString() : 0} CP
                 </div>
             </div>
 
@@ -277,7 +323,7 @@ const HypeDrop = () => {
                     letterSpacing: '3px',
                     fontWeight: 900
                 }}>
-                    HYPE DROP 📦
+                    HYPE DROP: CASE UNBOXING
                 </h1>
                 <p style={{ color: '#aaa', margin: '8px 0 0 0', fontSize: '0.9rem', letterSpacing: '1px' }}>
                     CS:GO STYLE MYSTERY CRATES // UNBOX LEGENDARY SKINS & JACKPOTS
@@ -309,7 +355,7 @@ const HypeDrop = () => {
                         >
                             <div style={{ fontSize: '2rem', marginBottom: '4px' }}>{crate.icon}</div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: crate.color }}>{crate.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#ffea00', marginTop: '4px' }}>🪙 {crate.cost} COINS</div>
+                            <div style={{ fontSize: '0.75rem', color: '#ffd700', fontWeight: '800', marginTop: '4px' }}>{crate.cost} CP</div>
                         </div>
                     );
                 })}

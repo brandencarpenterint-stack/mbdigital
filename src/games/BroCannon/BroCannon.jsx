@@ -469,7 +469,7 @@ const BroCannon = () => {
                     zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none'
                 }}>
                     <div style={{ fontSize: '0.85rem', color: isBoosting ? '#ff5500' : 'white', fontWeight: 'bold', marginBottom: '4px' }}>
-                        {isBoosting ? '🔥 THRUSTERS FIRING!' : 'HOLD [SPACE] / TAP SCREEN TO BOOST'}
+                        {isBoosting ? 'THRUSTERS FIRING // OVERDRIVE' : 'HOLD [SPACE] / TAP SCREEN TO BOOST'}
                     </div>
                     <div style={{
                         width: '280px', height: '16px', background: 'rgba(0,0,0,0.6)',
@@ -505,8 +505,8 @@ const BroCannon = () => {
                     onClick={e => e.stopPropagation()}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <h4 style={{ margin: 0, color: 'gold' }}>🛠️ CANNON GARAGE</h4>
-                        <span style={{ fontSize: '0.8rem', color: '#ffea00' }}>🪙 {coins}</span>
+                        <h4 style={{ margin: 0, color: 'gold', fontWeight: '900', letterSpacing: '1px' }}>CANNON ARMORY</h4>
+                        <span style={{ fontSize: '0.8rem', color: '#ffd700', fontWeight: '800' }}>{coins.toLocaleString()} CP</span>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                         {Object.keys(UPGRADE_BASE_COSTS).map(key => {
@@ -514,12 +514,12 @@ const BroCannon = () => {
                             const cost = UPGRADE_BASE_COSTS[key] * lvl;
                             const canAfford = coins >= cost;
                             const labels = {
-                                power: '💥 POW',
-                                fuel: '⛽ FUEL',
-                                thrust: '🚀 JETS',
-                                aero: '🪂 AERO',
-                                bounce: '🏈 BNCE',
-                                magnet: '🧲 MAG'
+                                power: 'POWER',
+                                fuel: 'FUEL',
+                                thrust: 'THRUST',
+                                aero: 'AERO',
+                                bounce: 'BOUNCE',
+                                magnet: 'MAGNET'
                             };
 
                             return (
@@ -536,7 +536,7 @@ const BroCannon = () => {
                                 >
                                     <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{labels[key]}</div>
                                     <div style={{ fontSize: '0.65rem', color: '#aaa' }}>LVL {lvl}</div>
-                                    <div style={{ color: 'gold', fontSize: '0.7rem' }}>🪙 {cost}</div>
+                                    <div style={{ color: '#ffd700', fontSize: '0.7rem', fontWeight: 'bold' }}>{cost} CP</div>
                                 </div>
                             );
                         })}
