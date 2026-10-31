@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import { triggerConfetti } from '../../utils/confetti';
 import SquishyButton from '../../components/SquishyButton';
@@ -57,6 +57,14 @@ const FlappyMascot = () => {
 
     // --- GHOST DUEL STATES ---
     const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const location = useLocation();
+    useEffect(() => {
+        const duel = getGhostDuelFromUrl();
+        if (duel) {
+            setActiveGhost(duel);
+        }
+    }, [location.search]);
+
     const [ghostPos, setGhostPos] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [lastFinishedRun, setLastFinishedRun] = useState(null);

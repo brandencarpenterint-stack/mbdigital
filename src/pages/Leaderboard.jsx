@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import GhostSyndicateLeaderboard from '../components/GhostSyndicateLeaderboard';
 import { useGamification } from '../context/GamificationContext';
 import { useSquad } from '../context/SquadContext';
 import { motion } from 'framer-motion';
@@ -25,7 +27,15 @@ const Leaderboard = () => {
 
     const [players, setPlayers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [mainTab, setMainTab] = useState(() => searchParams.get('tab') === 'duels' ? 'duels' : 'legends');
     const [filter, setFilter] = useState('ALL'); // ALL, CYBER, SOLAR, VOID
+
+    useEffect(() => {
+        if (searchParams.get('tab') === 'duels') {
+            setMainTab('duels');
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -91,13 +101,90 @@ const Leaderboard = () => {
             paddingBottom: '120px',
             color: 'white',
             fontFamily: '"Rajdhani", sans-serif',
-            maxWidth: '800px', margin: '0 auto'
+            maxWidth: mainTab === 'duels' ? '960px' : '800px', margin: '0 auto', transition: 'max-width 0.3s ease'
         }}>
             <h1 style={{ textAlign: 'center', fontSize: '3rem', margin: '0 0 10px 0', textShadow: '0 0 20px rgba(255,255,255,0.5)' }}>
                 HALL OF LEGENDS
             </h1>
             <p style={{ textAlign: 'center', opacity: 0.7, marginBottom: '40px' }}>GLOBAL RANKINGS // SEASON 1</p>
 
+            {/* TOP-LEVEL MODE SWITCH TABS */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '12px',
+                marginBottom: '32px',
+                flexWrap: 'wrap'
+            }}>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setMainTab('legends');
+                        setSearchParams({});
+                    }}
+                    style={{
+                        background: mainTab === 'legends' ? 'linear-gradient(135deg, #00f0ff, #0072ff)' : 'rgba(255,255,255,0.06)',
+                        color: mainTab === 'legends' ? '#000' : '#e2e8f0',
+                        border: mainTab === 'legends' ? '1.5px solid #00f0ff' : '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '16px',
+                        padding: '10px 22px',
+                        fontFamily: '"Orbitron", sans-serif',
+                        fontSize: '0.82rem',
+                        fontWeight: '900',
+                        cursor: 'pointer',
+                        boxShadow: mainTab === 'legends' ? '0 0 20px rgba(0, 240, 255, 0.4)' : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <span>🏆</span>
+                    <span>GLOBAL EXP & SQUADS</span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                        setMainTab('duels');
+                        setSearchParams({ tab: 'duels' });
+                    }}
+                    style={{
+                        background: mainTab === 'duels' ? 'linear-gradient(135deg, #ffd700, #ff5500)' : 'rgba(255,255,255,0.06)',
+                        color: mainTab === 'duels' ? '#000' : '#e2e8f0',
+                        border: mainTab === 'duels' ? '1.5px solid #ffd700' : '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '16px',
+                        padding: '10px 22px',
+                        fontFamily: '"Orbitron", sans-serif',
+                        fontSize: '0.82rem',
+                        fontWeight: '900',
+                        cursor: 'pointer',
+                        boxShadow: mainTab === 'duels' ? '0 0 20px rgba(255, 215, 0, 0.45)' : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <span>👻</span>
+                    <span>GHOST DUEL SYNDICATE</span>
+                    <span style={{
+                        background: mainTab === 'duels' ? '#000' : '#ffd700',
+                        color: mainTab === 'duels' ? '#ffd700' : '#000',
+                        fontSize: '0.55rem',
+                        padding: '1px 5px',
+                        borderRadius: '4px',
+                        fontWeight: '900'
+                    }}>
+                        HOT
+                    </span>
+                </button>
+            </div>
+
+            {mainTab === 'duels' ? (
+                <GhostSyndicateLeaderboard />
+            ) : (
+                <>
             {/* SQUAD SCOREBOARD */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '30px' }}>
                 {Object.entries(squadScores || { CYBER: 0, SOLAR: 0, VOID: 0 }).map(([squad, score]) => {
@@ -191,6 +278,8 @@ const Leaderboard = () => {
                     </motion.div>
                 ))}
             </div>
+                </>
+            )}
         </div>
     );
 };

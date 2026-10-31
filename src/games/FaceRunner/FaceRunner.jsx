@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
@@ -48,6 +48,14 @@ const FaceRunner = () => {
 
     // --- GHOST DUEL STATES ---
     const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const location = useLocation();
+    useEffect(() => {
+        const duel = getGhostDuelFromUrl();
+        if (duel) {
+            setActiveGhost(duel);
+        }
+    }, [location.search]);
+
     const [ghostPos, setGhostPos] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [lastFinishedRun, setLastFinishedRun] = useState(null);

@@ -83,6 +83,14 @@ const BroCannon = () => {
 
     // --- GHOST DUEL STATES ---
     const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const location = useLocation();
+    useEffect(() => {
+        const duel = getGhostDuelFromUrl();
+        if (duel) {
+            setActiveGhost(duel);
+        }
+    }, [location.search]);
+
     const [ghostPos, setGhostPos] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [lastFinishedRun, setLastFinishedRun] = useState(null);

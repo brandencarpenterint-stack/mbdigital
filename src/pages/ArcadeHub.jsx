@@ -623,6 +623,24 @@ const ArcadeHub = () => {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> RAID BOSS
                     </button>
 
+                    <Link to="/leaderboard?tab=duels" style={{ textDecoration: 'none' }}>
+                        <div style={{
+                            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 102, 0, 0.18))',
+                            border: '1.5px solid #ffd700',
+                            color: '#ffd700',
+                            borderRadius: '16px',
+                            padding: '6px 14px',
+                            fontWeight: '900',
+                            fontSize: '0.78rem',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 16px rgba(255, 215, 0, 0.35)',
+                            fontFamily: 'monospace'
+                        }}>
+                            <span>👻</span> GHOST SYNDICATE
+                        </div>
+                    </Link>
+
                     <Link to="/bunker" style={{ textDecoration: 'none' }}>
                         <div style={{
                             background: 'rgba(0, 229, 255, 0.15)',
@@ -838,18 +856,46 @@ const ArcadeHub = () => {
                     textAlign: 'left',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
                     gap: '16px',
                     fontFamily: '"Orbitron", sans-serif'
                 }}>
-                    <div style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px #00f0ff)' }}>👻</div>
-                    <div>
-                        <div style={{ fontSize: '1rem', fontWeight: '900', color: '#00f0ff', letterSpacing: '1px' }}>
-                            ASYNC GHOST DUEL SYNDICATE
-                        </div>
-                        <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', lineHeight: '1.45', fontFamily: 'monospace' }}>
-                            Race against live player telemetry runs with zero server lag! Beat the rival phantom to claim +250 CP winner bounties, or click ⚡ CHALLENGE on Game Over to generate instant viral duel links for friends.
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
+                        <div style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px #00f0ff)' }}>👻</div>
+                        <div>
+                            <div style={{ fontSize: '1rem', fontWeight: '900', color: '#00f0ff', letterSpacing: '1px' }}>
+                                ASYNC GHOST DUEL SYNDICATE
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', lineHeight: '1.45', fontFamily: 'monospace' }}>
+                                Race against live player telemetry runs with zero server lag! Beat the rival phantom to claim +250 to +500 CP bounties, or challenge world records.
+                            </div>
                         </div>
                     </div>
+
+                    <Link to="/leaderboard?tab=duels" style={{ textDecoration: 'none' }}>
+                        <button
+                            type="button"
+                            style={{
+                                background: 'linear-gradient(135deg, #00f0ff 0%, #0072ff 100%)',
+                                border: 'none',
+                                color: '#000',
+                                borderRadius: '12px',
+                                padding: '10px 18px',
+                                fontSize: '0.76rem',
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace',
+                                cursor: 'pointer',
+                                boxShadow: '0 0 18px rgba(0, 240, 255, 0.45)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <span>⚡ SYNDICATE LEADERBOARD</span>
+                        </button>
+                    </Link>
                 </div>
             )}
 
