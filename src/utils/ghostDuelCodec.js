@@ -222,6 +222,12 @@ export const generateDuelShareUrl = (gamePath, ghostData) => {
     const encoded = encodeGhostRun(ghostData);
     if (!encoded) return '';
     const origin = window.location.origin;
+    const pathname = window.location.pathname || '';
+    const segments = pathname.split('/').filter(Boolean);
+    let prefix = '';
+    if (segments.length > 0 && segments[0] !== 'arcade' && segments[0] !== 'play') {
+        prefix = `/${segments[0]}`;
+    }
     const cleanPath = gamePath.startsWith('/') ? gamePath : `/${gamePath}`;
-    return `${origin}${cleanPath}?duel=${encoded}`;
+    return `${origin}${prefix}${cleanPath}?duel=${encoded}`;
 };

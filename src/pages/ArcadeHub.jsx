@@ -122,6 +122,7 @@ const OnlinePlaza = () => {
 const CATEGORIES = [
     { id: 'all', label: 'ALL GAMES', count: 27, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2"/></svg> },
     { id: 'merch', label: 'MERCH ORIGINALS', count: 7, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+    { id: 'duels', label: '👻 GHOST DUELS', count: 4, icon: <span style={{ fontSize: '0.85rem' }}>👻</span> },
     { id: 'action', label: 'ACTION & SKILL', count: 10, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
     { id: 'casino', label: 'CYBER CASINO', count: 9, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg> },
     { id: 'retro', label: 'RETRO CLASSICS', count: 8, icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg> }
@@ -533,7 +534,8 @@ const ArcadeHub = () => {
     const filteredGames = useMemo(() => {
         return games.filter(g => {
             const matchesCategory = selectedCategory === 'all' ||
-                (selectedCategory === 'merch' ? g.isOriginal : g.category === selectedCategory);
+                (selectedCategory === 'duels' ? ['merch-jump', 'bro-cannon', 'flappy', 'face-runner'].includes(g.id) :
+                (selectedCategory === 'merch' ? g.isOriginal : g.category === selectedCategory));
             const matchesSearch = searchQuery === '' || 
                 g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 g.desc.toLowerCase().includes(searchQuery.toLowerCase());
@@ -822,6 +824,34 @@ const ArcadeHub = () => {
                     })}
                 </div>
             </div>
+
+            {/* GHOST DUEL SYNDICATE BANNER */}
+            {selectedCategory === 'duels' && (
+                <div style={{
+                    maxWidth: '920px',
+                    margin: '-10px auto 26px auto',
+                    padding: '16px 22px',
+                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(168, 85, 247, 0.12))',
+                    border: '1.5px solid rgba(0, 240, 255, 0.45)',
+                    borderRadius: '20px',
+                    boxShadow: '0 0 30px rgba(0, 240, 255, 0.18)',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
+                    fontFamily: '"Orbitron", sans-serif'
+                }}>
+                    <div style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px #00f0ff)' }}>👻</div>
+                    <div>
+                        <div style={{ fontSize: '1rem', fontWeight: '900', color: '#00f0ff', letterSpacing: '1px' }}>
+                            ASYNC GHOST DUEL SYNDICATE
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', lineHeight: '1.45', fontFamily: 'monospace' }}>
+                            Race against live player telemetry runs with zero server lag! Beat the rival phantom to claim +250 CP winner bounties, or click ⚡ CHALLENGE on Game Over to generate instant viral duel links for friends.
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ARCADE CABINETS GRID (FRONT & CENTER) */}
             <motion.div

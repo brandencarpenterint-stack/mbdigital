@@ -7,6 +7,10 @@ import UniversalGameOver from '../../components/UniversalGameOver';
 import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
+import { GhostDuelHUD } from '../../components/GhostDuelHUD';
+import { ShareDuelModal } from '../../components/ShareDuelModal';
+import { getGhostDuelFromUrl, interpolateGhostPosition, savePersonalBestGhost } from '../../utils/ghostDuelCodec';
+
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
@@ -50,6 +54,29 @@ const FlappyMascot = () => {
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [gameActive, setGameActive] = useState(false);
     const [scoreScale, setScoreScale] = useState(1);
+
+    // --- GHOST DUEL STATES ---
+    const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const [ghostPos, setGhostPos] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [lastFinishedRun, setLastFinishedRun] = useState(null);
+    const [duelWon, setDuelWon] = useState(null);
+
+    const runStartTimeRef = useRef(0);
+    const runKeyframesRef = useRef([]);
+    const lastSampleTimeRef = useRef(0);
+    const ghostImgRef = useRef(null);
+
+    // Preload Ghost Rival Skin
+    useEffect(() => {
+        if (activeGhost?.skinId) {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            const src = activeGhost.skinId.startsWith('/') ? activeGhost.skinId : `/assets/skins/${activeGhost.skinId}.png`;
+            img.src = src;
+            ghostImgRef.current = img;
+        }
+    }, [activeGhost]);
 
     // Sync high score
     useEffect(() => {
@@ -105,6 +132,13 @@ const FlappyMascot = () => {
         setHasRevived(false);
         gameActiveRef.current = true;
 
+        // Reset Ghost Duel telemetry
+        runStartTimeRef.current = performance.now();
+        runKeyframesRef.current = [];
+        lastSampleTimeRef.current = 0;
+        setGhostPos(null);
+        setDuelWon(null);
+
         gameState.current = {
             birdY: GAME_HEIGHT / 2,
             velocity: 0,
@@ -127,6 +161,34 @@ const FlappyMascot = () => {
         setGameOver(true);
         cancelAnimationFrame(gameState.current.animationId);
         playCrash();
+
+        // Sample final telemetry point and build ghost record
+        const elapsed = performance.now() - (runStartTimeRef.current || performance.now());
+        runKeyframesRef.current.push({
+            t: Math.round(elapsed),
+            x: 50,
+            y: Math.round(gameState.current.birdY),
+            score: score
+        });
+
+        const skinName = selectedId?.replace('flappy_', '') || 'face_default';
+        const runData = {
+            gameId: 'flappy_mascot',
+            playerName: userProfile?.name || 'Bro',
+            skinId: skinName.startsWith('face_') ? skinName : 'face_default',
+            finalScore: score,
+            keyframes: runKeyframesRef.current
+        };
+        setLastFinishedRun(runData);
+        savePersonalBestGhost('flappy_mascot', runData);
+
+        if (activeGhost) {
+            const won = score > (activeGhost.finalScore || 0);
+            setDuelWon(won);
+            if (won && addCoins) {
+                addCoins(250);
+            }
+        }
 
         // Screen shake + haptics on death
         gameState.current.shake = 22;
@@ -483,6 +545,60 @@ const FlappyMascot = () => {
         ctx.save();
         ctx.translate(birdX + BIRD_SIZE / 2, birdY + BIRD_SIZE / 2);
 
+        // --- GHOST DUEL TELEMETRY SAMPLING & RENDERING ---
+        const now = performance.now();
+        const elapsedLoop = now - (runStartTimeRef.current || now);
+        if (!lastSampleTimeRef.current || now - lastSampleTimeRef.current >= 150) {
+            runKeyframesRef.current.push({
+                t: Math.round(elapsedLoop),
+                x: 50,
+                y: Math.round(birdY),
+                score: score
+            });
+            lastSampleTimeRef.current = now;
+        }
+
+        // Render Ghost Rival in Canvas
+        if (activeGhost) {
+            const gPos = interpolateGhostPosition(activeGhost, elapsedLoop);
+            if (gPos) {
+                setGhostPos(gPos);
+                const ghostBirdX = 42;
+                const ghostBirdY = gPos.y;
+
+                ctx.save();
+                ctx.globalAlpha = 0.55;
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 14;
+
+                if (ghostImgRef.current && ghostImgRef.current.complete) {
+                    ctx.drawImage(ghostImgRef.current, ghostBirdX - BIRD_SIZE / 2, ghostBirdY - BIRD_SIZE / 2, BIRD_SIZE, BIRD_SIZE);
+                } else {
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.beginPath();
+                    ctx.arc(ghostBirdX, ghostBirdY, BIRD_SIZE / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Floating Ghost Name Tag
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 1;
+                const tagW = 78;
+                ctx.beginPath();
+                ctx.roundRect(ghostBirdX - tagW / 2, ghostBirdY - 26, tagW, 16, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#00f0ff';
+                ctx.font = 'bold 8px "Orbitron", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`👻 ${(activeGhost.playerName || 'Rival').slice(0, 8)}`, ghostBirdX, ghostBirdY - 15);
+
+                ctx.restore();
+            }
+        }
+
         // Dynamic Squash-and-Stretch on Flap & Dive
         let scaleX = 1.0;
         let scaleY = 1.0;
@@ -661,6 +777,25 @@ const FlappyMascot = () => {
             </div>
 
             <div style={{ position: 'relative' }}>
+                {/* GHOST DUEL LIVE TELEMETRY HUD */}
+                {activeGhost && gameActive && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '14px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 60,
+                        pointerEvents: 'none'
+                    }}>
+                        <GhostDuelHUD
+                            ghost={activeGhost}
+                            currentScore={score}
+                            ghostCurrentScore={ghostPos ? ghostPos.score : 0}
+                            isGhostFinished={ghostPos?.isFinished}
+                            unit="pts"
+                        />
+                    </div>
+                )}
                 <canvas
                     ref={canvasRef}
                     width={GAME_WIDTH}
@@ -681,6 +816,21 @@ const FlappyMascot = () => {
 
                 {!gameActive && !gameOver && (
                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                        {activeGhost && (
+                            <div style={{
+                                background: 'rgba(0, 240, 255, 0.12)',
+                                border: '1px solid #00f0ff',
+                                borderRadius: '20px',
+                                padding: '6px 16px',
+                                marginBottom: '16px',
+                                fontSize: '0.75rem',
+                                color: '#00f0ff',
+                                fontFamily: '"Orbitron", monospace',
+                                boxShadow: '0 0 14px rgba(0, 240, 255, 0.3)'
+                            }}>
+                                👻 DUEL CHALLENGE: Beat <strong>{activeGhost.playerName}</strong> ({activeGhost.finalScore} pts)!
+                            </div>
+                        )}
                         <SquishyButton
                             onClick={startGame}
                             style={{
@@ -798,6 +948,67 @@ const FlappyMascot = () => {
                             }}
                         />
 
+                        {activeGhost && (
+                            <div style={{
+                                background: 'rgba(0, 240, 255, 0.12)',
+                                border: '1px solid #00f0ff',
+                                borderRadius: '20px',
+                                padding: '6px 16px',
+                                marginBottom: '16px',
+                                fontSize: '0.75rem',
+                                color: '#00f0ff',
+                                fontFamily: '"Orbitron", monospace',
+                                boxShadow: '0 0 14px rgba(0, 240, 255, 0.3)'
+                            }}>
+                                👻 DUEL CHALLENGE: Beat <strong>{activeGhost.playerName}</strong> ({activeGhost.finalScore} pts)!
+                            </div>
+                        )}
+                        {/* DUEL RESULTS BANNER */}
+                        {activeGhost && (
+                            <div style={{
+                                background: duelWon ? 'rgba(0, 255, 136, 0.15)' : 'rgba(255, 0, 85, 0.15)',
+                                border: `1.5px solid ${duelWon ? '#00ff88' : '#ff0055'}`,
+                                borderRadius: '12px',
+                                padding: '8px 16px',
+                                marginBottom: '14px',
+                                textAlign: 'center',
+                                fontFamily: '"Orbitron", sans-serif',
+                                boxShadow: `0 0 16px ${duelWon ? 'rgba(0,255,136,0.3)' : 'rgba(255,0,85,0.3)'}`
+                            }}>
+                                <div style={{ fontSize: '0.78rem', color: duelWon ? '#00ff88' : '#ff3366', fontWeight: '900' }}>
+                                    {duelWon ? '🏆 DUEL VICTORY (+250 CP)' : '💀 DUEL DEFEATED'}
+                                </div>
+                                <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px' }}>
+                                    Rival: {activeGhost.playerName} ({activeGhost.finalScore} pts) | You: {score} pts
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 1-TAP CHALLENGE A BRO BUTTON */}
+                        <button
+                            type="button"
+                            onClick={() => setIsShareModalOpen(true)}
+                            style={{
+                                marginBottom: '14px',
+                                padding: '10px 22px',
+                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%)',
+                                border: '1.5px solid #00f0ff',
+                                borderRadius: '10px',
+                                color: '#00f0ff',
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace',
+                                fontSize: '0.76rem',
+                                cursor: 'pointer',
+                                boxShadow: '0 0 16px rgba(0, 240, 255, 0.35)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            <span>⚡ CHALLENGE A FRIEND (COPY DUEL)</span>
+                        </button>
+
                         <SquishyButton
                             onClick={startGame}
                             style={{
@@ -812,6 +1023,14 @@ const FlappyMascot = () => {
                         >
                             Try Again
                         </SquishyButton>
+
+                        <ShareDuelModal
+                            isOpen={isShareModalOpen}
+                            onClose={() => setIsShareModalOpen(false)}
+                            gamePath="/arcade/flappy"
+                            ghostData={lastFinishedRun}
+                            unit="pts"
+                        />
                         <Link to="/arcade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginTop: '6px' }}>
                             ← Back to Base
                         </Link>

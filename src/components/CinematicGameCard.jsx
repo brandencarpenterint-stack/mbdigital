@@ -9,6 +9,8 @@ const GENRE_COLORS = {
     default: { bg: 'rgba(255, 255, 255, 0.1)', text: '#fff', border: 'rgba(255, 255, 255, 0.2)' }
 };
 
+const GHOST_DUEL_GAMES = new Set(['merch-jump', 'bro-cannon', 'flappy', 'face-runner']);
+
 const CinematicGameCard = ({ game, highScore = 0, isHighlighted = false }) => {
     const isSpotlight = isHighlighted || game?.isHighlighted;
     const isOriginal = game?.isOriginal || false;
@@ -147,6 +149,28 @@ const CinematicGameCard = ({ game, highScore = 0, isHighlighted = false }) => {
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                             </svg>
                             FEATURED
+                        </div>
+                    )}
+
+                    {GHOST_DUEL_GAMES.has(game.id) && (
+                        <div style={{
+                            background: 'rgba(0, 240, 255, 0.18)',
+                            border: '1px solid rgba(0, 240, 255, 0.5)',
+                            color: '#00f0ff',
+                            borderRadius: '6px',
+                            padding: '2px 7px',
+                            fontSize: '0.6rem',
+                            fontWeight: '900',
+                            letterSpacing: '0.5px',
+                            fontFamily: 'monospace',
+                            backdropFilter: 'blur(6px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            boxShadow: '0 0 10px rgba(0, 240, 255, 0.25)'
+                        }}>
+                            <span>👻</span>
+                            <span>DUEL</span>
                         </div>
                     )}
 

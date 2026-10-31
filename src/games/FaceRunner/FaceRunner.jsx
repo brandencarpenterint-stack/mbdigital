@@ -8,6 +8,10 @@ import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
 import { drawCanvasAura } from '../../utils/skinAuraCanvas';
 import { getSkinAura } from '../../config/SkinAuras';
+import { GhostDuelHUD } from '../../components/GhostDuelHUD';
+import { ShareDuelModal } from '../../components/ShareDuelModal';
+import { getGhostDuelFromUrl, interpolateGhostPosition, savePersonalBestGhost } from '../../utils/ghostDuelCodec';
+
 
 const BIOMES = [
     { name: 'NEON CITY', bg: '#0d0221', grid: '#ff00ff', obs: ['#00ffaa', '#ff00ff'] },
@@ -41,6 +45,29 @@ const FaceRunner = () => {
         }
     }, [stats]);
     const [selectedFace, setSelectedFace] = useState('face_default');
+
+    // --- GHOST DUEL STATES ---
+    const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const [ghostPos, setGhostPos] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [lastFinishedRun, setLastFinishedRun] = useState(null);
+    const [duelWon, setDuelWon] = useState(null);
+
+    const runStartTimeRef = useRef(0);
+    const runKeyframesRef = useRef([]);
+    const lastSampleTimeRef = useRef(0);
+    const ghostImgRef = useRef(null);
+
+    // Preload Ghost Rival Skin
+    useEffect(() => {
+        if (activeGhost?.skinId) {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            const src = activeGhost.skinId.startsWith('/') ? activeGhost.skinId : `/assets/skins/${activeGhost.skinId}.png`;
+            img.src = src;
+            ghostImgRef.current = img;
+        }
+    }, [activeGhost]);
 
     // Refs for Loop
     const playingRef = useRef(false);
@@ -98,6 +125,13 @@ const FaceRunner = () => {
         setCanRestart(false);
         playingRef.current = true;
         setScore(0);
+
+        // Reset Ghost Duel telemetry
+        runStartTimeRef.current = performance.now();
+        runKeyframesRef.current = [];
+        lastSampleTimeRef.current = 0;
+        setGhostPos(null);
+        setDuelWon(null);
         speedRef.current = 30; // Faster start speed
         scoreRef.current = 0;
         biomeIndexRef.current = 0;
@@ -229,6 +263,63 @@ const FaceRunner = () => {
             ctx.restore();
         });
 
+        // --- GHOST DUEL TELEMETRY & PLAYBACK ---
+        const now = performance.now();
+        const elapsedLoop = now - (runStartTimeRef.current || now);
+        if (playingRef.current) {
+            if (!lastSampleTimeRef.current || now - lastSampleTimeRef.current >= 150) {
+                runKeyframesRef.current.push({
+                    t: Math.round(elapsedLoop),
+                    x: Math.round(playerRef.current.x),
+                    y: Math.round(playerRef.current.y),
+                    score: Math.round(scoreRef.current)
+                });
+                lastSampleTimeRef.current = now;
+            }
+        }
+
+        // Render Rival Phantom Ghost in 3D Tunnel
+        if (activeGhost && playingRef.current) {
+            const gPos = interpolateGhostPosition(activeGhost, elapsedLoop);
+            if (gPos) {
+                setGhostPos(gPos);
+                const gx = cx + gPos.x;
+                const gy = cy + gPos.y;
+
+                ctx.save();
+                ctx.globalAlpha = 0.55;
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = '#00f0ff';
+
+                const gSize = 85;
+                if (ghostImgRef.current && ghostImgRef.current.complete) {
+                    ctx.drawImage(ghostImgRef.current, gx - gSize / 2, gy - gSize / 2, gSize, gSize);
+                } else {
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.beginPath();
+                    ctx.arc(gx, gy, gSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Nameplate
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 1;
+                const tagW = 86;
+                ctx.beginPath();
+                ctx.roundRect(gx - tagW / 2, gy - 62, tagW, 18, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#00f0ff';
+                ctx.font = 'bold 9px "Orbitron", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`👻 ${(activeGhost.playerName || 'Rival').slice(0, 9)}`, gx, gy - 49);
+
+                ctx.restore();
+            }
+        }
+
         // Player
         if (playingRef.current) {
             const p = playerRef.current;
@@ -278,6 +369,33 @@ const FaceRunner = () => {
             const playerName = userProfile?.name || 'Runner';
             feedService.publish(`reached ${finalScore}m in Face Runner!`, 'win', playerName);
         }
+        // Sample final telemetry frame
+        const elapsed = performance.now() - (runStartTimeRef.current || performance.now());
+        runKeyframesRef.current.push({
+            t: Math.round(elapsed),
+            x: Math.round(playerRef.current.x),
+            y: Math.round(playerRef.current.y),
+            score: finalScore
+        });
+
+        const runData = {
+            gameId: 'face_runner',
+            playerName: userProfile?.name || 'Runner',
+            skinId: selectedFace || 'face_default',
+            finalScore: finalScore,
+            keyframes: runKeyframesRef.current
+        };
+        setLastFinishedRun(runData);
+        savePersonalBestGhost('face_runner', runData);
+
+        if (activeGhost) {
+            const won = finalScore > (activeGhost.finalScore || 0);
+            setDuelWon(won);
+            if (won && addCoins) {
+                addCoins(250);
+            }
+        }
+
         setGameState('GAME_OVER');
         playingRef.current = false;
         playCrash();
@@ -313,6 +431,26 @@ const FaceRunner = () => {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             touchAction: 'none' // DISALLOW SCROLLING
         }}>
+            {/* GHOST DUEL LIVE TELEMETRY HUD */}
+            {activeGhost && gameState === 'PLAYING' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 9999,
+                    pointerEvents: 'none'
+                }}>
+                    <GhostDuelHUD
+                        ghost={activeGhost}
+                        currentScore={Math.floor(score)}
+                        ghostCurrentScore={ghostPos ? ghostPos.score : 0}
+                        isGhostFinished={ghostPos?.isFinished}
+                        unit="m"
+                    />
+                </div>
+            )}
+
             <canvas
                 ref={canvasRef}
                 width={CANVAS_WIDTH}
@@ -339,6 +477,22 @@ const FaceRunner = () => {
                 <div style={{ position: 'absolute', textAlign: 'center', background: 'rgba(0,0,0,0.9)', padding: '40px', borderRadius: '20px', border: '2px solid cyan', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <h1 style={{ color: 'cyan', fontSize: '3rem', margin: 0, fontFamily: '"Orbitron"' }}>FACE WARP</h1>
                     <p style={{ color: 'white', marginBottom: '20px', fontFamily: 'monospace' }}>Avoid the Void.</p>
+
+                    {activeGhost && (
+                        <div style={{
+                            background: 'rgba(0, 240, 255, 0.12)',
+                            border: '1px solid #00f0ff',
+                            borderRadius: '20px',
+                            padding: '6px 16px',
+                            marginBottom: '18px',
+                            fontSize: '0.75rem',
+                            color: '#00f0ff',
+                            fontFamily: '"Orbitron", monospace',
+                            boxShadow: '0 0 14px rgba(0, 240, 255, 0.3)'
+                        }}>
+                            👻 DUEL CHALLENGE: Beat <strong>{activeGhost.playerName}</strong> ({activeGhost.finalScore}m)!
+                        </div>
+                    )}
                     
                     {/* SKIN SELECTOR */}
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '300px' }}>
@@ -387,6 +541,60 @@ const FaceRunner = () => {
                     <h1 style={{ color: 'red', fontSize: '3rem', margin: 0 }}>CRASHED!</h1>
                     <p style={{ color: 'white', fontSize: '2rem', fontWeight: 'bold' }}>{Math.floor(score)}m</p>
                     <p style={{ color: '#aaa', marginBottom: '20px' }}>BEST: {highScore}m</p>
+                    {/* DUEL RESULTS BANNER */}
+                    {activeGhost && (
+                        <div style={{
+                            background: duelWon ? 'rgba(0, 255, 136, 0.15)' : 'rgba(255, 0, 85, 0.15)',
+                            border: `1.5px solid ${duelWon ? '#00ff88' : '#ff0055'}`,
+                            borderRadius: '12px',
+                            padding: '8px 16px',
+                            marginBottom: '14px',
+                            textAlign: 'center',
+                            fontFamily: '"Orbitron", sans-serif',
+                            boxShadow: `0 0 16px ${duelWon ? 'rgba(0,255,136,0.3)' : 'rgba(255,0,85,0.3)'}`
+                        }}>
+                            <div style={{ fontSize: '0.78rem', color: duelWon ? '#00ff88' : '#ff3366', fontWeight: '900' }}>
+                                {duelWon ? '🏆 DUEL VICTORY (+250 CP)' : '💀 DUEL DEFEATED'}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px' }}>
+                                Rival: {activeGhost.playerName} ({activeGhost.finalScore}m) | You: {Math.floor(score)}m
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 1-TAP CHALLENGE A BRO BUTTON */}
+                    <button
+                        type="button"
+                        onClick={() => setIsShareModalOpen(true)}
+                        style={{
+                            marginBottom: '14px',
+                            padding: '10px 22px',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%)',
+                            border: '1.5px solid #00f0ff',
+                            borderRadius: '10px',
+                            color: '#00f0ff',
+                            fontWeight: '900',
+                            fontFamily: '"Orbitron", monospace',
+                            fontSize: '0.76rem',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 16px rgba(0, 240, 255, 0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>⚡ CHALLENGE A BRO (COPY DUEL)</span>
+                    </button>
+
+                    <ShareDuelModal
+                        isOpen={isShareModalOpen}
+                        onClose={() => setIsShareModalOpen(false)}
+                        gamePath="/arcade/face-runner"
+                        ghostData={lastFinishedRun}
+                        unit="m"
+                    />
+
                     <SquishyButton
                         onClick={() => canRestart && startGame()}
                         style={{
