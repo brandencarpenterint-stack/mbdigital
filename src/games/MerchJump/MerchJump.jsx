@@ -5,6 +5,8 @@ import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
+import { drawCanvasAura, createAuraTrailParticle, updateAndRenderAuraParticles } from '../../utils/skinAuraCanvas';
+import { getSkinAura } from '../../config/SkinAuras';
 
 const BIOMES = [
     { name: 'STREETS', limit: 3000, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
@@ -92,6 +94,8 @@ const MerchJump = () => {
     const requestRef = useRef(null);
     const inputRef = useRef(WIDTH / 2);
     const skinImgRef = useRef(null);
+    const auraParticlesRef = useRef([]);
+    const frameRef = useRef(0);
     const biomeRef = useRef(BIOMES[0]);
 
     // Image Loader
@@ -141,7 +145,8 @@ const MerchJump = () => {
         scoreRef.current = 0;
         cameraYRef.current = 0;
         biomeRef.current = BIOMES[0];
-        trailRef.current = []; // Reset Trail
+        trailRef.current = [];
+        auraParticlesRef.current = []; // Reset Trail
 
         // Random Rocket Start 🚀 (2000m to 5000m)
         // v = sqrt(2gh)
@@ -259,6 +264,9 @@ const MerchJump = () => {
         ctx.strokeStyle = selectedSkin.hoodie || '#111'; ctx.lineWidth = 8; ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(-18, 5); ctx.lineTo(-30, vy < 0 ? -10 : 15); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(18, 5); ctx.lineTo(30, vy < 0 ? -10 : 15); ctx.stroke();
+
+        // MYTHIC SKIN AURA HALO
+        drawCanvasAura(ctx, 0, -15, 26, selectedSkin, frameRef.current);
 
         // HEAD
         if (skinImgRef.current && skinImgRef.current.complete) {
@@ -476,6 +484,20 @@ const MerchJump = () => {
             }
         });
 
+        frameRef.current = (frameRef.current || 0) + 1;
+
+        // Procedural Mythic Aura Particle Emission
+        if (player.vy < -4 && Math.random() > 0.3) {
+            auraParticlesRef.current.push(createAuraTrailParticle(player.x, player.y + 15, selectedSkin, {
+                vy: (Math.random() * 2) + 1,
+                size: 3 + Math.random() * 4
+            }));
+        }
+        if (shift > 0) {
+            auraParticlesRef.current.forEach(pt => pt.y += shift);
+        }
+        updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
+
         const tilt = (inputRef.current - player.x) * 0.05;
         drawRig(ctx, player.x, player.y, player.vy, tilt);
 
@@ -644,12 +666,35 @@ const MerchJump = () => {
                                 <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
                                     <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>SKIN SELECT</h2>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
-                                        {SKINS.map(skin => (
-                                            <button key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop(); }}
-                                                style={{ background: selectedSkin.id === skin.id ? '#87CEEB' : '#eee', border: 'none', borderRadius: '10px', padding: '10px', cursor: 'pointer', transform: selectedSkin.id === skin.id ? 'scale(1.1)' : 'scale(1)' }}>
-                                                <img src={skin.src} width="40" height="40" style={{ display: 'block', margin: '0 auto' }} />
-                                            </button>
-                                        ))}
+                                        {SKINS.map(skin => {
+                                            const { aura, tier } = getSkinAura(skin);
+                                            const isSelected = selectedSkin.id === skin.id;
+                                            const tierColor = tier === 'MYTHIC' ? '#ff0055' : (tier === 'LEGENDARY' ? '#ffd700' : '#a855f7');
+                                            return (
+                                                <button key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop(); }}
+                                                    style={{
+                                                        position: 'relative',
+                                                        background: isSelected ? `radial-gradient(circle, ${aura.glowColor} 0%, #1e293b 80%)` : '#0f172a',
+                                                        border: isSelected ? `2px solid ${aura.primaryColor}` : '1px solid rgba(255,255,255,0.1)',
+                                                        boxShadow: isSelected ? `0 0 14px ${aura.glowColor}` : 'none',
+                                                        borderRadius: '12px', padding: '8px 4px', cursor: 'pointer',
+                                                        transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                                                        transition: 'all 0.15s ease'
+                                                    }}>
+                                                    <span style={{
+                                                        position: 'absolute', top: '3px', right: '3px',
+                                                        background: tierColor, color: '#000', fontSize: '0.48rem', fontWeight: '900',
+                                                        fontFamily: '"Orbitron", monospace', padding: '1px 3px', borderRadius: '3px'
+                                                    }}>
+                                                        {tier === 'MYTHIC' ? '★' : tier[0]}
+                                                    </span>
+                                                    <img src={skin.src} width="38" height="38" style={{ display: 'block', margin: '4px auto', filter: `drop-shadow(0 0 4px ${aura.primaryColor}88)` }} />
+                                                    <div style={{ fontSize: '0.52rem', fontWeight: 'bold', color: aura.primaryColor, textTransform: 'uppercase' }}>
+                                                        {aura.name.split(' ')[0]}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                     <SquishyButton onClick={initGame} style={{ padding: '20px 50px', background: '#333', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', border: 'none', borderRadius: '100px' }}>JUMP</SquishyButton>
                                     <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>

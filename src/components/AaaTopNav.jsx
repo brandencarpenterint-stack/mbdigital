@@ -4,6 +4,7 @@ import { useGamification } from '../context/GamificationContext';
 import { useSettings } from '../context/SettingsContext';
 import useRetroSound from '../hooks/useRetroSound';
 import { getTotalGamerscore } from '../config/AchievementDefinitions';
+import { getSkinAura } from '../config/SkinAuras';
 
 const NAV_LINKS = [
     {
@@ -81,6 +82,7 @@ const AaaTopNav = ({ onOpenStash, onOpenQuests, onOpenSponsor }) => {
     const showQuestDot = hasUnclaimedQuests || hasUncheckedDaily;
 
     const avatarUrl = userProfile?.avatar_url || '/assets/skins/face_default.png';
+    const { aura: skinAura, tier: skinTier } = getSkinAura(avatarUrl);
 
     return (
         <header style={{
@@ -409,7 +411,8 @@ const AaaTopNav = ({ onOpenStash, onOpenQuests, onOpenSponsor }) => {
                         height: '28px',
                         borderRadius: '50%',
                         overflow: 'hidden',
-                        border: '1px solid #00f0ff'
+                        border: `1.5px solid ${skinAura.primaryColor}`,
+                        boxShadow: `0 0 10px ${skinAura.glowColor}`
                     }}>
                         <img
                             src={avatarUrl}

@@ -6,6 +6,8 @@ import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
 import { feedService } from '../../utils/feed';
+import { drawCanvasAura } from '../../utils/skinAuraCanvas';
+import { getSkinAura } from '../../config/SkinAuras';
 
 const BIOMES = [
     { name: 'NEON CITY', bg: '#0d0221', grid: '#ff00ff', obs: ['#00ffaa', '#ff00ff'] },
@@ -55,9 +57,29 @@ const FaceRunner = () => {
     const SKINS = [
         { id: 'face_default', name: 'OG', src: '/assets/skins/face_default.png' },
         { id: 'jump_guy', name: 'JUMPER', src: '/assets/skins/jump_guy.png' },
+        { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png' },
+        { id: 'face_astro', name: 'ASTRO', src: '/assets/skins/face_astro.png' },
+        { id: 'face_gamer', name: 'GAMER', src: '/assets/skins/face_gamer.png' },
+        { id: 'face_star', name: 'STAR', src: '/assets/skins/face_star.png' },
+        { id: 'face_star_dark', name: 'DARK STAR', src: '/assets/skins/face_star_dark.jpg' },
+        { id: 'face_space', name: 'COSMIC', src: '/assets/skins/face_space.png' },
+        { id: 'face_space_dark', name: 'OBSIDIAN', src: '/assets/skins/face_space_dark.jpg' },
+        { id: 'face_dino', name: 'DINO', src: '/assets/skins/face_dino.png' },
+        { id: 'face_dino_dark', name: 'DARK DINO', src: '/assets/skins/face_dino_dark.jpg' },
         { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png' },
         { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png' },
-
+        { id: 'face_bunny_hoodie', name: 'STREET BUNNY', src: '/assets/skins/face_bunny_hoodie.png' },
+        { id: 'face_bunny_blue', name: 'CYAN BUNNY', src: '/assets/skins/face_bunny_blue.png' },
+        { id: 'face_cat', name: 'NEKO', src: '/assets/skins/face_cat.png' },
+        { id: 'face_frog', name: 'PEPE', src: '/assets/skins/face_frog.png' },
+        { id: 'face_pumpkin', name: 'SPOOKY', src: '/assets/skins/face_pumpkin.png' },
+        { id: 'face_rainbow', name: 'PRISM', src: '/assets/skins/face_rainbow.png' },
+        { id: 'face_hoodie', name: 'HYPE HOODIE', src: '/assets/skins/face_hoodie.png' },
+        { id: 'face_hoodie_brown', name: 'BRONZE HOODIE', src: '/assets/skins/face_hoodie_brown.png' },
+        { id: 'face_skater', name: 'SKATER', src: '/assets/skins/face_skater.jpg' },
+        { id: 'face_standard_bw', name: 'MONOCHROME', src: '/assets/skins/face_standard_bw.png' },
+        { id: 'logo_main', name: 'FOUNDER', src: '/assets/skins/logo_main.png' },
+        { id: 'logo_typography', name: 'CYBER LOGO', src: '/assets/skins/logo_typography.png' },
     ];
     const faceImgs = useRef({});
 
@@ -216,6 +238,9 @@ const FaceRunner = () => {
             ctx.translate(cx + p.x, cy + p.y);
             ctx.scale(p.squash, 1 / p.squash);
 
+            const { aura: playerAura } = getSkinAura(selectedFace);
+            drawCanvasAura(ctx, 0, 0, 48, selectedFace, performance.now() * 0.05);
+
             const img = faceImgs.current[selectedFace];
             const size = 100;
 
@@ -317,23 +342,40 @@ const FaceRunner = () => {
                     
                     {/* SKIN SELECTOR */}
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '300px' }}>
-                        {SKINS.map(skin => (
-                            <button 
-                                key={skin.id}
-                                onClick={() => setSelectedFace(skin.id)}
-                                style={{
-                                    background: selectedFace === skin.id ? 'cyan' : '#222',
-                                    border: 'none',
-                                    borderRadius: '10px',
-                                    padding: '5px',
-                                    cursor: 'pointer',
-                                    transform: selectedFace === skin.id ? 'scale(1.1)' : 'scale(1)',
-                                    transition: 'transform 0.1s'
-                                }}
-                            >
-                                <img src={skin.src} alt={skin.name} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-                            </button>
-                        ))}
+                        {SKINS.map(skin => {
+                            const { aura, tier } = getSkinAura(skin);
+                            const isSelected = selectedFace === skin.id;
+                            const tierColor = tier === 'MYTHIC' ? '#ff0055' : (tier === 'LEGENDARY' ? '#ffd700' : '#a855f7');
+                            return (
+                                <button 
+                                    key={skin.id}
+                                    onClick={() => setSelectedFace(skin.id)}
+                                    style={{
+                                        position: 'relative',
+                                        background: isSelected ? `radial-gradient(circle, ${aura.glowColor} 0%, #111 80%)` : '#18181b',
+                                        border: isSelected ? `2px solid ${aura.primaryColor}` : '1px solid rgba(255,255,255,0.1)',
+                                        boxShadow: isSelected ? `0 0 12px ${aura.glowColor}` : 'none',
+                                        borderRadius: '10px',
+                                        padding: '6px 4px',
+                                        cursor: 'pointer',
+                                        transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                                        transition: 'all 0.15s ease'
+                                    }}
+                                >
+                                    <span style={{
+                                        position: 'absolute', top: '2px', right: '2px',
+                                        background: tierColor, color: '#000', fontSize: '0.45rem', fontWeight: '900',
+                                        fontFamily: '"Orbitron", monospace', padding: '1px 3px', borderRadius: '3px'
+                                    }}>
+                                        {tier === 'MYTHIC' ? '★' : tier[0]}
+                                    </span>
+                                    <img src={skin.src} alt={skin.name} style={{ width: '38px', height: '38px', objectFit: 'contain', filter: `drop-shadow(0 0 4px ${aura.primaryColor}88)` }} />
+                                    <div style={{ fontSize: '0.5rem', fontWeight: 'bold', color: aura.primaryColor, textTransform: 'uppercase' }}>
+                                        {aura.name.split(' ')[0]}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <SquishyButton onClick={startGame} style={{ background: 'cyan', color: 'black', fontSize: '1.5rem', padding: '15px 40px', fontWeight: 'bold' }}>RUN</SquishyButton>

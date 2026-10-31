@@ -5,28 +5,38 @@ import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
+import { getSkinAura } from '../../config/SkinAuras';
 
 const GRAVITY = 0.24;
 const GROUND_LEVEL = 60;
 
-// ALL 16 SKINS
+// ALL 25 PROTECTED SKINS WITH MYTHIC AURAS
 const SKINS = [
     { id: 'face_default', name: 'OG BRO', src: '/assets/skins/face_default.png' },
     { id: 'face_money', name: 'MONEY', src: '/assets/skins/face_money.png' },
     { id: 'face_astro', name: 'ASTRO', src: '/assets/skins/face_astro.png' },
     { id: 'face_space', name: 'COSMIC', src: '/assets/skins/face_space.png' },
+    { id: 'face_space_dark', name: 'OBSIDIAN', src: '/assets/skins/face_space_dark.jpg' },
     { id: 'face_gamer', name: 'GAMER', src: '/assets/skins/face_gamer.png' },
     { id: 'face_star', name: 'STAR', src: '/assets/skins/face_star.png' },
+    { id: 'face_star_dark', name: 'DARK STAR', src: '/assets/skins/face_star_dark.jpg' },
     { id: 'face_dino', name: 'DINO', src: '/assets/skins/face_dino.png' },
+    { id: 'face_dino_dark', name: 'DARK DINO', src: '/assets/skins/face_dino_dark.jpg' },
     { id: 'face_bear', name: 'BEAR', src: '/assets/skins/face_bear.png' },
     { id: 'face_cat', name: 'NEKO', src: '/assets/skins/face_cat.png' },
     { id: 'face_bunny', name: 'BUNNY', src: '/assets/skins/face_bunny.png' },
     { id: 'face_bunny_hoodie', name: 'STREET BUNNY', src: '/assets/skins/face_bunny_hoodie.png' },
+    { id: 'face_bunny_blue', name: 'CYAN BUNNY', src: '/assets/skins/face_bunny_blue.png' },
     { id: 'face_frog', name: 'PEPE', src: '/assets/skins/face_frog.png' },
     { id: 'face_pumpkin', name: 'SPOOKY', src: '/assets/skins/face_pumpkin.png' },
     { id: 'face_rainbow', name: 'PRISM', src: '/assets/skins/face_rainbow.png' },
     { id: 'face_hoodie', name: 'HYPE HOODIE', src: '/assets/skins/face_hoodie.png' },
-    { id: 'face_bunny_blue', name: 'CYAN BUNNY', src: '/assets/skins/face_bunny_blue.png' },
+    { id: 'face_hoodie_brown', name: 'BRONZE HOODIE', src: '/assets/skins/face_hoodie_brown.png' },
+    { id: 'face_skater', name: 'SKATER', src: '/assets/skins/face_skater.jpg' },
+    { id: 'face_standard_bw', name: 'MONOCHROME', src: '/assets/skins/face_standard_bw.png' },
+    { id: 'jump_guy', name: 'JUMPER', src: '/assets/skins/jump_guy.png' },
+    { id: 'logo_main', name: 'FOUNDER LOGO', src: '/assets/skins/logo_main.png' },
+    { id: 'logo_typography', name: 'CYBER LOGO', src: '/assets/skins/logo_typography.png' },
 ];
 
 const UPGRADE_BASE_COSTS = {
@@ -169,14 +179,15 @@ const BroCannon = () => {
         return () => clearInterval(timer);
     }, [gameState]);
 
-    const spawnParticles = (x, y, count = 10, color = 'white', speed = 8) => {
+    const spawnParticles = (x, y, count = 10, color = 'white', speed = 8, extra = {}) => {
         for (let i = 0; i < count; i++) {
             particlesRef.current.push({
                 x, y,
                 vx: (Math.random() - 0.5) * speed,
                 vy: (Math.random() - 0.5) * speed,
                 life: 1.0,
-                color
+                color,
+                ...extra
             });
         }
     };
@@ -204,6 +215,32 @@ const BroCannon = () => {
             setFuel(f => Math.max(0, f - 0.6));
             spawnParticles(p.x - 20, p.y - 10, 3, Math.random() > 0.5 ? '#ff5500' : '#ffcc00', 4);
             if (Math.random() > 0.6) playShoot();
+        }
+
+        // Procedural Skin Aura Particle Emission
+        const activeAura = getSkinAura(selectedSkin).aura;
+        if (Math.random() > 0.45) {
+            let pColor = Math.random() > 0.5 ? activeAura.primaryColor : activeAura.secondaryColor;
+            let extraData = {};
+            if (activeAura.id === 'VOID_MATRIX') {
+                extraData = { char: Math.random() > 0.5 ? '1' : '0', size: 10 };
+            } else if (activeAura.id === 'CYBER_GLITCH') {
+                extraData = { shape: 'slice', size: 12 };
+            } else if (activeAura.id === 'SOLAR_FLARE') {
+                extraData = { vyBoost: Math.random() * 2 + 1, size: 5 };
+            } else if (activeAura.id === 'PRISM_NOVA') {
+                extraData = { shape: 'sparkle', size: 6 };
+            }
+            particlesRef.current.push({
+                x: p.x - 22 + (Math.random() - 0.5) * 8,
+                y: p.y + (Math.random() - 0.5) * 8,
+                vx: -p.vx * 0.15 + (Math.random() - 0.5) * 2,
+                vy: (extraData.vyBoost || 0) + (Math.random() - 0.5) * 2,
+                life: 1.0,
+                decay: 0.035,
+                color: pColor,
+                ...extraData
+            });
         }
 
         p.vx *= drag;
@@ -573,25 +610,54 @@ const BroCannon = () => {
                         maxHeight: '340px', overflowY: 'auto', padding: '10px',
                         background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid #333'
                     }}>
-                        {SKINS.map(skin => (
-                            <div
-                                key={skin.id}
-                                onClick={() => { setSelectedSkin(skin); playBoop(); }}
-                                style={{
-                                    border: selectedSkin.id === skin.id ? '3px solid gold' : '1px solid #444',
-                                    borderRadius: '12px', padding: '8px',
-                                    background: selectedSkin.id === skin.id ? 'rgba(255, 215, 0, 0.25)' : '#111',
-                                    cursor: 'pointer', textAlign: 'center',
-                                    transform: selectedSkin.id === skin.id ? 'scale(1.06)' : 'scale(1)',
-                                    transition: 'all 0.15s ease'
-                                }}
-                            >
-                                <img src={skin.src} width="55" height="55" style={{ display: 'block', margin: '0 auto', objectFit: 'contain' }} />
-                                <div style={{ fontSize: '0.65rem', marginTop: '6px', color: selectedSkin.id === skin.id ? 'gold' : '#ccc' }}>
-                                    {skin.name}
+                        {SKINS.map(skin => {
+                            const { aura, tier } = getSkinAura(skin);
+                            const isSelected = selectedSkin.id === skin.id;
+                            const tierColor = tier === 'MYTHIC' ? '#ff0055' : (tier === 'LEGENDARY' ? '#ffd700' : '#a855f7');
+                            return (
+                                <div
+                                    key={skin.id}
+                                    onClick={() => { setSelectedSkin(skin); playBoop(); }}
+                                    style={{
+                                        position: 'relative',
+                                        border: isSelected ? `2.5px solid ${aura.primaryColor}` : '1px solid rgba(255,255,255,0.12)',
+                                        borderRadius: '14px',
+                                        padding: '10px 6px',
+                                        background: isSelected ? `radial-gradient(circle, ${aura.glowColor} 0%, rgba(15,23,42,0.9) 80%)` : 'rgba(15,23,42,0.6)',
+                                        boxShadow: isSelected ? `0 0 18px ${aura.glowColor}` : 'none',
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                                        transition: 'all 0.18s ease'
+                                    }}
+                                >
+                                    {/* Rarity Tag */}
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '6px',
+                                        right: '6px',
+                                        background: tierColor,
+                                        color: '#000',
+                                        fontSize: '0.52rem',
+                                        fontWeight: '900',
+                                        fontFamily: '"Orbitron", monospace',
+                                        padding: '1px 5px',
+                                        borderRadius: '4px',
+                                        boxShadow: `0 0 6px ${tierColor}`
+                                    }}>
+                                        {tier === 'MYTHIC' ? '★ MYTHIC' : tier}
+                                    </span>
+
+                                    <img src={skin.src} width="52" height="52" style={{ display: 'block', margin: '8px auto 4px auto', objectFit: 'contain', filter: `drop-shadow(0 0 6px ${aura.primaryColor}88)` }} />
+                                    <div style={{ fontSize: '0.72rem', fontWeight: '800', fontFamily: '"Orbitron", sans-serif', color: isSelected ? '#fff' : '#cbd5e1' }}>
+                                        {skin.name}
+                                    </div>
+                                    <div style={{ fontSize: '0.58rem', fontWeight: 'bold', color: aura.primaryColor, letterSpacing: '0.5px', marginTop: '2px', textTransform: 'uppercase' }}>
+                                        {aura.name}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <SquishyButton
@@ -829,10 +895,29 @@ const BroCannon = () => {
                                 </svg>
                             </div>
                         )}
-                        <img
-                            src={selectedSkin.src}
-                            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.8))' }}
-                        />
+                        {/* Mythic Procedural Skin Aura Halo */}
+                        {(() => {
+                            const { aura } = getSkinAura(selectedSkin);
+                            return (
+                                <>
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            inset: '-12px',
+                                            borderRadius: '50%',
+                                            background: `radial-gradient(circle, ${aura.glowColor} 0%, rgba(0,0,0,0) 70%)`,
+                                            border: `1.5px dashed ${aura.primaryColor}88`,
+                                            boxShadow: `0 0 22px ${aura.glowColor}`,
+                                            pointerEvents: 'none'
+                                        }}
+                                    />
+                                    <img
+                                        src={selectedSkin.src}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain', position: 'relative', zIndex: 2, filter: `drop-shadow(0 0 10px ${aura.primaryColor}aa)` }}
+                                    />
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
             </div>

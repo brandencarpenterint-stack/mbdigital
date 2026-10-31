@@ -22,20 +22,34 @@ import { DECOR_ITEMS } from '../config/DecorItems';
 import { supabase } from '../lib/supabaseClient';
 import ViralShareCard from './ViralShareCard';
 import RoastModal from './RoastModal';
+import { getSkinAura } from '../config/SkinAuras';
 
 const AVATARS = [
     '/assets/skins/face_default.png',
     '/assets/skins/jump_guy.png',
+    '/assets/skins/face_money.png',
+    '/assets/skins/face_astro.png',
+    '/assets/skins/face_gamer.png',
+    '/assets/skins/face_star.png',
+    '/assets/skins/face_star_dark.jpg',
+    '/assets/skins/face_space.png',
+    '/assets/skins/face_space_dark.jpg',
+    '/assets/skins/face_dino.png',
+    '/assets/skins/face_dino_dark.jpg',
     '/assets/skins/face_bear.png',
     '/assets/skins/face_bunny.png',
-    '/assets/skins/face_dino.png',
-    '/assets/skins/face_star.png',
-    '/assets/skins/face_space.png',
-    '/assets/skins/face_pumpkin.png',
-    '/assets/skins/face_gamer.png',
+    '/assets/skins/face_bunny_hoodie.png',
+    '/assets/skins/face_bunny_blue.png',
+    '/assets/skins/face_cat.png',
     '/assets/skins/face_frog.png',
-    '/assets/skins/face_astro.png',
-    '/assets/skins/face_rainbow.png'
+    '/assets/skins/face_pumpkin.png',
+    '/assets/skins/face_rainbow.png',
+    '/assets/skins/face_hoodie.png',
+    '/assets/skins/face_hoodie_brown.png',
+    '/assets/skins/face_skater.jpg',
+    '/assets/skins/face_standard_bw.png',
+    '/assets/skins/logo_main.png',
+    '/assets/skins/logo_typography.png'
 ];
 
 const MODEL_FRIENDS = [
@@ -500,23 +514,41 @@ const ProfileModal = ({ onClose, readOnlyProfile }) => {
                                         <div style={{ marginBottom: '20px' }}>
                                             <label style={{ display: 'block', marginBottom: '10px', color: 'var(--neon-blue)', fontWeight: 'bold' }}>AVATAR (PRESETS)</label>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                                                {AVATARS.map(src => (
-                                                    <div
-                                                        key={src}
-                                                        onClick={() => setEditAvatar(src)}
-                                                        style={{
-                                                            border: editAvatar === src ? '2px solid var(--neon-pink)' : '1px solid #444',
-                                                            borderRadius: '15px', overflow: 'hidden',
-                                                            cursor: 'pointer', aspectRatio: '1/1',
-                                                            background: 'rgba(0,0,0,0.3)',
-                                                            transform: editAvatar === src ? 'scale(1.1)' : 'scale(1)',
-                                                            boxShadow: editAvatar === src ? '0 0 15px var(--neon-pink)' : 'none',
-                                                            transition: 'all 0.2s'
-                                                        }}
-                                                    >
-                                                        <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    </div>
-                                                ))}
+                                                {AVATARS.map(src => {
+                                                    const { aura, tier } = getSkinAura(src);
+                                                    const isSelected = editAvatar === src;
+                                                    const tierColor = tier === 'MYTHIC' ? '#ff0055' : (tier === 'LEGENDARY' ? '#ffd700' : '#a855f7');
+                                                    return (
+                                                        <div
+                                                            key={src}
+                                                            onClick={() => setEditAvatar(src)}
+                                                            style={{
+                                                                position: 'relative',
+                                                                border: isSelected ? `2.5px solid ${aura.primaryColor}` : '1px solid rgba(255,255,255,0.1)',
+                                                                borderRadius: '14px',
+                                                                padding: '6px',
+                                                                cursor: 'pointer',
+                                                                background: isSelected ? `radial-gradient(circle, ${aura.glowColor} 0%, rgba(0,0,0,0.6) 80%)` : 'rgba(0,0,0,0.4)',
+                                                                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                                                                boxShadow: isSelected ? `0 0 16px ${aura.glowColor}` : 'none',
+                                                                transition: 'all 0.18s ease',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        >
+                                                            <span style={{
+                                                                position: 'absolute', top: '4px', right: '4px',
+                                                                background: tierColor, color: '#000', fontSize: '0.48rem', fontWeight: '900',
+                                                                fontFamily: '"Orbitron", monospace', padding: '1px 3px', borderRadius: '3px'
+                                                            }}>
+                                                                {tier === 'MYTHIC' ? '★' : tier[0]}
+                                                            </span>
+                                                            <img src={src} style={{ width: '100%', height: '48px', objectFit: 'contain', filter: `drop-shadow(0 0 6px ${aura.primaryColor}88)` }} />
+                                                            <div style={{ fontSize: '0.52rem', fontWeight: 'bold', color: aura.primaryColor, marginTop: '2px', textTransform: 'uppercase' }}>
+                                                                {aura.name}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
 
