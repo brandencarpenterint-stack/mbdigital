@@ -7,6 +7,14 @@ import useRetroSound from '../../hooks/useRetroSound';
 import { feedService } from '../../utils/feed';
 import { drawCanvasAura, createAuraTrailParticle, updateAndRenderAuraParticles } from '../../utils/skinAuraCanvas';
 import { getSkinAura } from '../../config/SkinAuras';
+import GhostDuelHUD from '../../components/GhostDuelHUD';
+import ShareDuelModal from '../../components/ShareDuelModal';
+import {
+    getGhostDuelFromUrl,
+    interpolateGhostPosition,
+    savePersonalBestGhost,
+    getPersonalBestGhost
+} from '../../utils/ghostDuelCodec';
 
 const BIOMES = [
     { name: 'STREETS', limit: 3000, bgTop: '#87CEEB', bgBot: '#E0F7FA', plat: '#999', text: '#333', border: '#666' },
@@ -74,6 +82,18 @@ const MerchJump = () => {
     const [unlockedStreaks, setUnlockedStreaks] = useState(['none']);
     const [isShopOpen, setIsShopOpen] = useState(window.innerWidth > 500); // Open by default on desktop
 
+    // --- GHOST DUEL STATES ---
+    const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const [ghostPos, setGhostPos] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [lastFinishedRun, setLastFinishedRun] = useState(null);
+    const [duelWon, setDuelWon] = useState(null);
+
+    const runStartTimeRef = useRef(0);
+    const runKeyframesRef = useRef([]);
+    const lastSampleTimeRef = useRef(0);
+    const ghostImgRef = useRef(null);
+
     // Sync Stats
     useEffect(() => {
         if (stats?.merchJumpHighScore > highScore) {
@@ -97,6 +117,17 @@ const MerchJump = () => {
     const auraParticlesRef = useRef([]);
     const frameRef = useRef(0);
     const biomeRef = useRef(BIOMES[0]);
+
+    // Preload Ghost Skin
+    useEffect(() => {
+        if (activeGhost?.skinId) {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            const src = activeGhost.skinId.startsWith('/') ? activeGhost.skinId : `/assets/skins/${activeGhost.skinId}.png`;
+            img.src = src;
+            ghostImgRef.current = img;
+        }
+    }, [activeGhost]);
 
     // Image Loader
     useEffect(() => {
@@ -145,6 +176,11 @@ const MerchJump = () => {
         scoreRef.current = 0;
         cameraYRef.current = 0;
         biomeRef.current = BIOMES[0];
+        runStartTimeRef.current = performance.now();
+        runKeyframesRef.current = [];
+        lastSampleTimeRef.current = 0;
+        setGhostPos(null);
+        setDuelWon(null);
         trailRef.current = [];
         auraParticlesRef.current = []; // Reset Trail
 
@@ -498,6 +534,67 @@ const MerchJump = () => {
         }
         updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
 
+        // --- GHOST TELEMETRY SAMPLING & PLAYBACK ---
+        const now = performance.now();
+        const elapsed = now - runStartTimeRef.current;
+
+        // Sample position every 160ms for duel recording
+        if (!lastSampleTimeRef.current || now - lastSampleTimeRef.current >= 160) {
+            runKeyframesRef.current.push({
+                t: Math.round(elapsed),
+                x: Math.round(player.x),
+                y: Math.round(scoreRef.current),
+                score: Math.round(scoreRef.current)
+            });
+            lastSampleTimeRef.current = now;
+        }
+
+        // Interpolate and Draw Phantom Ghost
+        if (activeGhost) {
+            const gPos = interpolateGhostPosition(activeGhost, elapsed);
+            if (gPos) {
+                setGhostPos(gPos);
+                const deltaWorldY = gPos.score - scoreRef.current;
+                const ghostScreenY = player.y - deltaWorldY;
+                const ghostScreenX = gPos.x;
+
+                // Render ghost only if in view range
+                if (ghostScreenY >= -80 && ghostScreenY <= HEIGHT + 80) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.55;
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.shadowBlur = 12;
+
+                    // Ghost head/body
+                    if (ghostImgRef.current && ghostImgRef.current.complete) {
+                        ctx.drawImage(ghostImgRef.current, ghostScreenX - 25, ghostScreenY - 35, 50, 50);
+                    } else {
+                        ctx.fillStyle = '#00f0ff';
+                        ctx.beginPath();
+                        ctx.arc(ghostScreenX, ghostScreenY - 15, 20, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Floating Name Pill
+                    ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1;
+                    const tagW = 86;
+                    ctx.beginPath();
+                    ctx.roundRect(ghostScreenX - tagW / 2, ghostScreenY - 58, tagW, 17, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = 'bold 9px "Orbitron", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`👻 ${activeGhost.playerName} ${Math.floor(gPos.score)}m`, ghostScreenX, ghostScreenY - 46);
+
+                    ctx.restore();
+                }
+            }
+        }
+
         const tilt = (inputRef.current - player.x) * 0.05;
         drawRig(ctx, player.x, player.y, player.vy, tilt);
 
@@ -514,6 +611,26 @@ const MerchJump = () => {
         const finalScore = Math.floor(scoreRef.current);
         if (addCoins) addCoins(Math.floor(finalScore / 200));
         if (updateStat) updateStat('gamesPlayed', 'merch_jump');
+
+        // Finalize Ghost Run for Sharing
+        const completedGhost = {
+            gameId: 'merch-jump',
+            playerName: userProfile?.name || 'Player',
+            skinId: selectedSkin.id,
+            finalScore: finalScore,
+            keyframes: runKeyframesRef.current
+        };
+        setLastFinishedRun(completedGhost);
+        savePersonalBestGhost('merch-jump', completedGhost);
+
+        // Check Duel Status
+        if (activeGhost) {
+            const won = finalScore > (activeGhost.finalScore || 0);
+            setDuelWon(won);
+            if (won && addCoins) {
+                addCoins(250); // Winner bounty bonus!
+            }
+        }
         if (finalScore > highScore) {
             setHighScore(finalScore);
             if (updateStat) updateStat('merchJumpHighScore', finalScore);
@@ -660,11 +777,88 @@ const MerchJump = () => {
                                         onReplay={initGame}
                                         onHome={() => window.location.href = '/arcade'}
                                         onRevive={handleRevive}
+                                    >
+                                        {/* DUEL RESULTS BADGE */}
+                                        {activeGhost && (
+                                            <div style={{
+                                                background: duelWon ? 'rgba(0, 255, 136, 0.15)' : 'rgba(255, 0, 85, 0.15)',
+                                                border: `1.5px solid ${duelWon ? '#00ff88' : '#ff0055'}`,
+                                                borderRadius: '14px',
+                                                padding: '10px 14px',
+                                                marginBottom: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                fontFamily: '"Orbitron", sans-serif'
+                                            }}>
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <div style={{ fontSize: '0.65rem', color: duelWon ? '#00ff88' : '#ff3366', fontWeight: '900' }}>
+                                                        {duelWon ? '🏆 DUEL VICTORY (+250 CP)' : '💀 DUEL DEFEATED'}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.75rem', color: '#fff', fontWeight: '700' }}>
+                                                        vs {activeGhost.playerName} ({activeGhost.finalScore}m)
+                                                    </div>
+                                                </div>
+                                                <div style={{ fontSize: '1rem', fontWeight: '900', color: duelWon ? '#00ff88' : '#ff3366' }}>
+                                                    {duelWon ? `+${Math.floor(scoreRef.current - activeGhost.finalScore)}m` : `-${Math.floor(activeGhost.finalScore - scoreRef.current)}m`}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* CHALLENGE LINK BUTTON */}
+                                        <button
+                                            onClick={() => setIsShareModalOpen(true)}
+                                            style={{
+                                                width: '100%',
+                                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(112, 0, 255, 0.3))',
+                                                border: '1.5px solid #00f0ff',
+                                                color: '#00f0ff',
+                                                borderRadius: '12px',
+                                                padding: '12px',
+                                                fontWeight: '900',
+                                                fontSize: '0.82rem',
+                                                fontFamily: '"Orbitron", sans-serif',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                boxShadow: '0 0 16px rgba(0, 240, 255, 0.3)',
+                                                letterSpacing: '1px'
+                                            }}
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                                <polyline points="16 6 12 2 8 6" />
+                                                <line x1="12" y1="2" x2="12" y2="15" />
+                                            </svg>
+                                            <span>⚡ CHALLENGE A FRIEND (COPY DUEL)</span>
+                                        </button>
+                                    </UniversalGameOver>
+
+                                    <ShareDuelModal
+                                        isOpen={isShareModalOpen}
+                                        onClose={() => setIsShareModalOpen(false)}
+                                        gamePath="/arcade/merch-jump"
+                                        ghostData={lastFinishedRun}
+                                        unit="m"
                                     />
                                 </div>
                             ) : (
                                 <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
-                                    <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>SKIN SELECT</h2>
+                                    <h2 style={{ fontWeight: 'bold', marginBottom: '12px', fontFamily: '"Orbitron", sans-serif' }}>SKIN SELECT</h2>
+                                    {/* DUEL CHALLENGE STATUS BADGE */}
+                                    {activeGhost && (
+                                        <div style={{
+                                            background: 'rgba(0, 240, 255, 0.12)', border: '1px solid #00f0ff',
+                                            borderRadius: '20px', padding: '4px 14px', marginBottom: '14px',
+                                            fontSize: '0.72rem', color: '#00f0ff', fontFamily: '"Orbitron", monospace',
+                                            display: 'flex', alignItems: 'center', gap: '6px'
+                                        }}>
+                                            <span>👻 DUEL READY:</span>
+                                            <span style={{ color: '#fff' }}>{activeGhost.playerName} ({activeGhost.finalScore}m)</span>
+                                        </div>
+                                    )}
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                         {SKINS.map(skin => {
                                             const { aura, tier } = getSkinAura(skin);

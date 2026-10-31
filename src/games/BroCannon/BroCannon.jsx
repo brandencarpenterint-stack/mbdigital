@@ -6,6 +6,13 @@ import { useGamification } from '../../context/GamificationContext';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
 import { getSkinAura } from '../../config/SkinAuras';
+import GhostDuelHUD from '../../components/GhostDuelHUD';
+import ShareDuelModal from '../../components/ShareDuelModal';
+import {
+    getGhostDuelFromUrl,
+    interpolateGhostPosition,
+    savePersonalBestGhost
+} from '../../utils/ghostDuelCodec';
 
 const GRAVITY = 0.24;
 const GROUND_LEVEL = 60;
@@ -73,6 +80,17 @@ const BroCannon = () => {
     const particlesRef = useRef([]);
     const shakeRef = useRef(0);
     const [selectedSkin, setSelectedSkin] = useState(SKINS[0]);
+
+    // --- GHOST DUEL STATES ---
+    const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
+    const [ghostPos, setGhostPos] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [lastFinishedRun, setLastFinishedRun] = useState(null);
+    const [duelWon, setDuelWon] = useState(null);
+
+    const runStartTimeRef = useRef(0);
+    const runKeyframesRef = useRef([]);
+    const lastSampleTimeRef = useRef(0);
 
     const [upgrades, setUpgrades] = useState(() => {
         return stats?.broCannonUpgrades || {
@@ -328,6 +346,24 @@ const BroCannon = () => {
 
         const currentDist = Math.floor(p.x / 10);
         const currentAlt = Math.floor(Math.max(0, p.y - GROUND_LEVEL) / 5);
+
+        // --- GHOST DUEL SAMPLING & PLAYBACK ---
+        const now = performance.now();
+        const elapsed = now - runStartTimeRef.current;
+        if (!lastSampleTimeRef.current || now - lastSampleTimeRef.current >= 150) {
+            runKeyframesRef.current.push({
+                t: Math.round(elapsed),
+                x: currentDist,
+                y: currentAlt,
+                score: currentDist
+            });
+            lastSampleTimeRef.current = now;
+        }
+
+        if (activeGhost) {
+            const gPos = interpolateGhostPosition(activeGhost, elapsed);
+            if (gPos) setGhostPos(gPos);
+        }
         setDistance(currentDist);
         setAltitude(currentAlt);
 
@@ -370,6 +406,11 @@ const BroCannon = () => {
 
             setGameState('FLYING');
             gameStateRef.current = 'FLYING';
+            runStartTimeRef.current = performance.now();
+            runKeyframesRef.current = [];
+            lastSampleTimeRef.current = 0;
+            setGhostPos(null);
+            setDuelWon(null);
             raFrame.current = requestAnimationFrame(tick);
         } else if (gameState === 'FLYING') {
             isBoostingRef.current = true;
@@ -393,6 +434,26 @@ const BroCannon = () => {
         addCoins(flightCoins);
 
         const best = stats?.broCannonHighScore || 0;
+        // Finalize Ghost Run for Sharing
+        const completedGhost = {
+            gameId: 'bro-cannon',
+            playerName: userProfile?.name || 'Pilot',
+            skinId: selectedSkin.id,
+            finalScore: finalDist,
+            keyframes: runKeyframesRef.current
+        };
+        setLastFinishedRun(completedGhost);
+        savePersonalBestGhost('bro-cannon', completedGhost);
+
+        // Check Duel Status
+        if (activeGhost) {
+            const won = finalDist > (activeGhost.finalScore || 0);
+            setDuelWon(won);
+            if (won && addCoins) {
+                addCoins(250); // Winner bounty bonus!
+            }
+        }
+
         if (finalDist > best) {
             updateStat('broCannonHighScore', finalDist);
             triggerConfetti();
@@ -714,6 +775,70 @@ const BroCannon = () => {
                         BEST RECORD: {stats?.broCannonHighScore || distance}m
                     </div>
 
+                    {/* DUEL RESULTS CARD */}
+                    {activeGhost && (
+                        <div style={{
+                            background: duelWon ? 'rgba(0, 255, 136, 0.15)' : 'rgba(255, 0, 85, 0.15)',
+                            border: `1.5px solid ${duelWon ? '#00ff88' : '#ff0055'}`,
+                            borderRadius: '16px',
+                            padding: '12px 24px',
+                            marginBottom: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '20px',
+                            fontFamily: '"Orbitron", sans-serif'
+                        }}>
+                            <div style={{ textAlign: 'left' }}>
+                                <div style={{ fontSize: '0.75rem', color: duelWon ? '#00ff88' : '#ff3366', fontWeight: '900' }}>
+                                    {duelWon ? '🏆 DUEL VICTORY (+250 CP)' : '💀 DUEL DEFEATED'}
+                                </div>
+                                <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: '700' }}>
+                                    vs {activeGhost.playerName} ({activeGhost.finalScore}m)
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: '900', color: duelWon ? '#00ff88' : '#ff3366' }}>
+                                {duelWon ? `+${distance - activeGhost.finalScore}m` : `-${activeGhost.finalScore - distance}m`}
+                            </div>
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <button
+                            onClick={() => setIsShareModalOpen(true)}
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(112, 0, 255, 0.35))',
+                                border: '1.5px solid #00f0ff',
+                                color: '#00f0ff',
+                                borderRadius: '12px',
+                                padding: '14px 28px',
+                                fontWeight: '900',
+                                fontSize: '0.95rem',
+                                fontFamily: '"Orbitron", sans-serif',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: '0 0 20px rgba(0, 240, 255, 0.3)',
+                                letterSpacing: '1px'
+                            }}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                <polyline points="16 6 12 2 8 6" />
+                                <line x1="12" y1="2" x2="12" y2="15" />
+                            </svg>
+                            <span>⚡ CHALLENGE A BRO (COPY DUEL)</span>
+                        </button>
+                    </div>
+
+                    <ShareDuelModal
+                        isOpen={isShareModalOpen}
+                        onClose={() => setIsShareModalOpen(false)}
+                        gamePath="/arcade/bro-cannon"
+                        ghostData={lastFinishedRun}
+                        unit="m"
+                    />
+
                     <div style={{ display: 'flex', gap: '20px' }}>
                         <SquishyButton
                             onClick={resetGame}
@@ -868,6 +993,59 @@ const BroCannon = () => {
                         border: '2px solid gold'
                     }}
                 />
+
+                {/* Render Rival Phantom Ghost Pod in Flight */}
+                {activeGhost && ghostPos && (gameState === 'FLYING' || gameState === 'LANDED') && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: ghostPos.x * 10,
+                            bottom: ghostPos.y * 5 + GROUND_LEVEL,
+                            width: '48px',
+                            height: '48px',
+                            transform: 'translate(-50%, 50%)',
+                            opacity: 0.55,
+                            pointerEvents: 'none',
+                            zIndex: 8
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: 'absolute',
+                                inset: '-8px',
+                                borderRadius: '50%',
+                                border: '1.5px dashed #00f0ff',
+                                boxShadow: '0 0 16px rgba(0, 240, 255, 0.4)',
+                                animation: 'spin 8s linear infinite'
+                            }}
+                        />
+                        <img
+                            src={activeGhost.skinId?.startsWith('/') ? activeGhost.skinId : `/assets/skins/${activeGhost.skinId}.png`}
+                            alt="Ghost"
+                            onError={(e) => { e.target.src = '/assets/skins/face_default.png'; }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px #00f0ff)' }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '-22px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                background: 'rgba(5, 10, 25, 0.85)',
+                                border: '1px solid #00f0ff',
+                                borderRadius: '6px',
+                                padding: '1px 6px',
+                                fontSize: '0.55rem',
+                                color: '#00f0ff',
+                                fontWeight: '900',
+                                fontFamily: '"Orbitron", monospace',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            👻 {activeGhost.playerName}
+                        </div>
+                    </div>
+                )}
 
                 {(gameState === 'FLYING' || gameState === 'LANDED') && (
                     <div
