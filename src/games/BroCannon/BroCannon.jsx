@@ -40,7 +40,7 @@ const UPGRADE_BASE_COSTS = {
 
 const BroCannon = () => {
     const navigate = useNavigate();
-    const { playJump, playBoop, playCollect, playCrash, playWin, playShoot } = useRetroSound();
+    const { playJump, playBoop, playCollect, playCrash, playWin, playShoot, playCannonBlast } = useRetroSound();
     const { coins, spendCoins, addCoins, stats, updateStat, userProfile } = useGamification();
 
     const [gameState, setGameState] = useState('MENU');
@@ -327,7 +327,7 @@ const BroCannon = () => {
                 lastTime: 0
             };
 
-            playJump();
+            playCannonBlast();
             shakeRef.current = 20;
             spawnParticles(0, GROUND_LEVEL + 40, 30, '#ff9100', 14);
 
