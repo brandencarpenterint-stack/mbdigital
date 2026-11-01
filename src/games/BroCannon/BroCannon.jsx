@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
@@ -57,7 +57,8 @@ const UPGRADE_BASE_COSTS = {
 
 const BroCannon = () => {
     const navigate = useNavigate();
-    const { playJump, playBoop, playCollect, playCrash, playWin, playShoot, playCannonBlast } = useRetroSound();
+    const location = useLocation();
+    const { playJump, playBoop, playCollect, playCrash, playWin, playShoot, playLaser, playPowerUp, playFanfare, playExplosion, playHit, playCannonBlast } = useRetroSound();
     const { coins, spendCoins, addCoins, stats, updateStat, userProfile } = useGamification();
 
     const [gameState, setGameState] = useState('MENU');
@@ -77,13 +78,38 @@ const BroCannon = () => {
     const [isBoosting, setIsBoosting] = useState(false);
     const isBoostingRef = useRef(false);
 
+    // --- EPIC POWER-UPS & BOSS ENCOUNTERS ---
+    const [activeBumper, setActiveBumper] = useState(false);
+    const [activeWarp, setActiveWarp] = useState(false);
+    const [bossEncounter, setBossEncounter] = useState(null); // { name, shieldsLeft }
+    const [lunarTouchdown, setLunarTouchdown] = useState(false);
+
+    const activeBumperRef = useRef(false);
+    const activeWarpRef = useRef(false);
+    const warpTimerRef = useRef(0);
+
+    const dreadnoughtRef = useRef({
+        active: true,
+        x: 35000, // 3,500m distance
+        y: 1800,  // orbital altitude
+        shields: 3,
+        destroyed: false
+    });
+
+    const lunarPadRef = useRef({
+        x: 50000, // 5,000m milestone
+        y: 2200,
+        w: 360,
+        h: 40,
+        landed: false
+    });
+
     const particlesRef = useRef([]);
     const shakeRef = useRef(0);
     const [selectedSkin, setSelectedSkin] = useState(SKINS[0]);
 
     // --- GHOST DUEL STATES ---
     const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
-    const location = useLocation();
     useEffect(() => {
         const duel = getGhostDuelFromUrl();
         if (duel) {
@@ -125,19 +151,25 @@ const BroCannon = () => {
         for (let x = 250; x < 150000; x += Math.random() * 80 + 40) {
             const rand = Math.random();
             let type = 'COIN';
-            let y = Math.random() * 1200 + 40;
+            let y = Math.random() * 1400 + 40;
 
-            if (rand < 0.15) {
+            if (rand < 0.12) {
                 type = 'BOOST';
-            } else if (rand < 0.28) {
+            } else if (rand < 0.22) {
                 type = 'FUEL';
-            } else if (rand < 0.38) {
+            } else if (rand < 0.30) {
                 type = 'TRAMPOLINE';
                 y = Math.min(y, 180);
-            } else if (rand < 0.44) {
+            } else if (rand < 0.36) {
                 type = 'UFO';
-                y = Math.random() * 2000 + 800;
-            } else if (rand < 0.55) {
+                y = Math.random() * 2200 + 800;
+            } else if (rand < 0.44) {
+                type = 'WARP'; // Wormhole Portal
+                y = Math.random() * 2000 + 600;
+            } else if (rand < 0.50) {
+                type = 'BUMPER'; // Kinetic Bumper Shield
+                y = Math.random() * 1000 + 100;
+            } else if (rand < 0.58) {
                 type = 'DIAMOND';
             } else {
                 type = 'COIN';
@@ -232,7 +264,19 @@ const BroCannon = () => {
         }
 
         const p = physics.current;
-        const drag = 0.993 + (upgrades.aero * 0.001);
+        let drag = 0.993 + (upgrades.aero * 0.001);
+
+        // Hyper-Warp Booster active: 0 drag, high velocity
+        if (activeWarpRef.current) {
+            warpTimerRef.current--;
+            drag = 1.0;
+            p.vx = Math.max(p.vx, 42);
+            spawnParticles(p.x - 25, p.y, 4, '#38bdf8', 6);
+            if (warpTimerRef.current <= 0) {
+                activeWarpRef.current = false;
+                setActiveWarp(false);
+            }
+        }
 
         if (isBoostingRef.current && fuel > 0) {
             const thrustForce = 0.55 + (upgrades.thrust * 0.15);
@@ -240,37 +284,30 @@ const BroCannon = () => {
             p.vy += thrustForce * 1.1;
             setFuel(f => Math.max(0, f - 0.6));
             spawnParticles(p.x - 20, p.y - 10, 3, Math.random() > 0.5 ? '#ff5500' : '#ffcc00', 4);
-            if (Math.random() > 0.6) playShoot();
+            if (Math.random() > 0.6) playShoot?.();
         }
 
         // Procedural Skin Aura Particle Emission
         const activeAura = getSkinAura(selectedSkin).aura;
         if (Math.random() > 0.45) {
             let pColor = Math.random() > 0.5 ? activeAura.primaryColor : activeAura.secondaryColor;
-            let extraData = {};
-            if (activeAura.id === 'VOID_MATRIX') {
-                extraData = { char: Math.random() > 0.5 ? '1' : '0', size: 10 };
-            } else if (activeAura.id === 'CYBER_GLITCH') {
-                extraData = { shape: 'slice', size: 12 };
-            } else if (activeAura.id === 'SOLAR_FLARE') {
-                extraData = { vyBoost: Math.random() * 2 + 1, size: 5 };
-            } else if (activeAura.id === 'PRISM_NOVA') {
-                extraData = { shape: 'sparkle', size: 6 };
-            }
             particlesRef.current.push({
                 x: p.x - 22 + (Math.random() - 0.5) * 8,
                 y: p.y + (Math.random() - 0.5) * 8,
                 vx: -p.vx * 0.15 + (Math.random() - 0.5) * 2,
-                vy: (extraData.vyBoost || 0) + (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
                 life: 1.0,
                 decay: 0.035,
-                color: pColor,
-                ...extraData
+                color: pColor
             });
         }
 
         p.vx *= drag;
-        p.vy -= GRAVITY;
+
+        // Zero-G Physics Glide in Orbital Deep Space (altitude > 1500m)
+        const currentAltitudeVal = Math.floor(Math.max(0, p.y - GROUND_LEVEL) / 5);
+        const gravityFactor = currentAltitudeVal > 2500 ? 0.35 : (currentAltitudeVal > 1500 ? 0.65 : 1.0);
+        p.vy -= GRAVITY * gravityFactor;
 
         p.x += p.vx;
         p.y += p.vy;
@@ -280,6 +317,57 @@ const BroCannon = () => {
 
         const magnetRange = 40 + (upgrades.magnet * 30);
 
+        // --- CHECK ORBITAL MOTHERSHIP DREADNOUGHT COLLISION ---
+        const boss = dreadnoughtRef.current;
+        if (boss.active && !boss.destroyed) {
+            const bDist = Math.hypot(p.x - boss.x, p.y - boss.y);
+            if (bDist < 700) {
+                setBossEncounter({ name: 'ORBITAL MOTHERSHIP DREADNOUGHT', shieldsLeft: boss.shields });
+            } else {
+                setBossEncounter(null);
+            }
+
+            if (bDist < 160) {
+                // Ramming Mothership Shield Node!
+                boss.shields -= 1;
+                playExplosion?.();
+                shakeRef.current = 24;
+                spawnParticles(p.x, p.y, 25, '#ff0055', 12);
+                p.vy = Math.abs(p.vy) + 18;
+                p.vx += 16;
+
+                if (boss.shields <= 0) {
+                    boss.destroyed = true;
+                    boss.active = false;
+                    setBossEncounter(null);
+                    playFanfare?.();
+                    addCoins(1000);
+                    setCoinsEarned(c => c + 1000);
+                    // Catapult into hyper-warp!
+                    activeWarpRef.current = true;
+                    warpTimerRef.current = 150;
+                    setActiveWarp(true);
+                } else {
+                    setBossEncounter({ name: 'ORBITAL MOTHERSHIP DREADNOUGHT', shieldsLeft: boss.shields });
+                }
+            }
+        }
+
+        // --- CHECK LUNAR LANDING PAD TOUCHDOWN (5,000m+) ---
+        const pad = lunarPadRef.current;
+        if (!pad.landed && p.x >= pad.x - pad.w / 2 && p.x <= pad.x + pad.w / 2 &&
+            p.y >= pad.y && p.y <= pad.y + 60 && Math.abs(p.vy) < 14) {
+            pad.landed = true;
+            setLunarTouchdown(true);
+            playWin?.();
+            triggerConfetti();
+            addCoins(2500);
+            setCoinsEarned(c => c + 2500);
+            finishRun(true);
+            return;
+        }
+
+        // --- COLLECTIBLES & POWER-UPS ---
         itemsRef.current.forEach(item => {
             if (!item.active) return;
             const dx = item.x - p.x;
@@ -295,50 +383,72 @@ const BroCannon = () => {
                 item.active = false;
                 if (item.type === 'BOOST') {
                     p.vx += 22; p.vy += 18;
-                    playCollect();
+                    playCollect?.();
                     spawnParticles(item.x, item.y, 16, '#00ffff', 12);
                     shakeRef.current = 12;
                 } else if (item.type === 'FUEL') {
-                    const refill = maxFuel * 0.4;
+                    const refill = maxFuel * 0.5;
                     setFuel(f => Math.min(maxFuel, f + refill));
-                    playCollect();
+                    playCollect?.();
                     spawnParticles(item.x, item.y, 12, '#ffcc00', 8);
                 } else if (item.type === 'TRAMPOLINE') {
                     p.vy = Math.max(Math.abs(p.vy) * 1.4, 25);
                     p.vx += 10;
-                    playJump();
+                    playJump?.();
                     spawnParticles(item.x, item.y, 15, '#ff00ff', 10);
                     shakeRef.current = 8;
                 } else if (item.type === 'UFO') {
                     p.vy += 35; p.vx += 15;
-                    playWin();
+                    playWin?.();
                     spawnParticles(item.x, item.y, 25, '#76ff03', 15);
                     shakeRef.current = 15;
+                } else if (item.type === 'WARP') {
+                    // Wormhole Portal: +800m warp
+                    p.x += 8000;
+                    playLaser?.();
+                    shakeRef.current = 18;
+                    spawnParticles(p.x, p.y, 30, '#a855f7', 15);
+                } else if (item.type === 'BUMPER') {
+                    activeBumperRef.current = true;
+                    setActiveBumper(true);
+                    playPowerUp?.();
+                    spawnParticles(item.x, item.y, 15, '#00f0ff', 10);
                 } else if (item.type === 'DIAMOND') {
                     setCoinsEarned(c => c + 25);
                     addCoins(25);
-                    playWin();
+                    playWin?.();
                     spawnParticles(item.x, item.y, 10, '#00e5ff', 8);
                 } else {
                     setCoinsEarned(c => c + 5);
                     addCoins(5);
-                    playCollect();
+                    playCollect?.();
                     spawnParticles(item.x, item.y, 6, '#ffd700', 6);
                 }
             }
         });
 
+        // Ground Collision with Kinetic Bumper Shield Support
         if (p.y <= GROUND_LEVEL) {
             p.y = GROUND_LEVEL;
-            if (Math.abs(p.vy) > 1.8 || Math.abs(p.vx) > 2) {
+
+            if (activeBumperRef.current) {
+                // Kinetic Bumper absorbs ground impact and super-bounces!
+                activeBumperRef.current = false;
+                setActiveBumper(false);
+                p.vy = 32;
+                p.vx += 18;
+                playJump?.();
+                shakeRef.current = 14;
+                spawnParticles(p.x, p.y, 20, '#00f0ff', 10);
+            } else if (Math.abs(p.vy) > 1.8 || Math.abs(p.vx) > 2) {
                 const bounceFactor = 0.58 + (upgrades.bounce * 0.06);
                 p.vy = Math.abs(p.vy) * bounceFactor;
                 p.vx *= 0.82;
-                playCrash();
+                playCrash?.();
                 spawnParticles(p.x, p.y, 8, '#76ff03', 6);
                 if (Math.abs(p.vy) > 8) shakeRef.current = 6;
             } else {
-                finishRun();
+                finishRun(false);
                 return;
             }
         }
@@ -393,7 +503,7 @@ const BroCannon = () => {
 
     const interact = () => {
         if (gameState === 'AIM') {
-            playBoop();
+            playBoop?.();
             setGameState('POWER');
         } else if (gameState === 'POWER') {
             const rad = (angle * Math.PI) / 180;
@@ -408,7 +518,7 @@ const BroCannon = () => {
                 lastTime: 0
             };
 
-            playCannonBlast();
+            playCannonBlast?.();
             shakeRef.current = 20;
             spawnParticles(0, GROUND_LEVEL + 40, 30, '#ff9100', 14);
 
@@ -430,7 +540,7 @@ const BroCannon = () => {
         }
     };
 
-    const finishRun = () => {
+    const finishRun = (isMoonLanding = false) => {
         setGameState('LANDED');
         gameStateRef.current = 'LANDED';
         cancelAnimationFrame(raFrame.current);
@@ -442,7 +552,6 @@ const BroCannon = () => {
         addCoins(flightCoins);
 
         const best = stats?.broCannonHighScore || 0;
-        // Finalize Ghost Run for Sharing
         const completedGhost = {
             gameId: 'bro-cannon',
             playerName: userProfile?.name || 'Pilot',
@@ -453,19 +562,18 @@ const BroCannon = () => {
         setLastFinishedRun(completedGhost);
         savePersonalBestGhost('bro-cannon', completedGhost);
 
-        // Check Duel Status
         if (activeGhost) {
             const won = finalDist > (activeGhost.finalScore || 0);
             setDuelWon(won);
             if (won && addCoins) {
-                addCoins(250); // Winner bounty bonus!
+                addCoins(250);
             }
         }
 
         if (finalDist > best) {
-            updateStat('broCannonHighScore', finalDist);
+            updateStat?.('broCannonHighScore', finalDist);
             triggerConfetti();
-            playWin();
+            playWin?.();
             const playerName = userProfile?.name || 'Player';
             feedService.publish(`launched a record ${finalDist}m in Bro Cannon!`, 'win', playerName);
         }
@@ -480,6 +588,29 @@ const BroCannon = () => {
         setFuel(maxFuel);
         setGameState('AIM');
         gameStateRef.current = 'AIM';
+        activeBumperRef.current = false;
+        setActiveBumper(false);
+        activeWarpRef.current = false;
+        setActiveWarp(false);
+        setBossEncounter(null);
+        setLunarTouchdown(false);
+
+        dreadnoughtRef.current = {
+            active: true,
+            x: 35000,
+            y: 1800,
+            shields: 3,
+            destroyed: false
+        };
+
+        lunarPadRef.current = {
+            x: 50000,
+            y: 2200,
+            w: 360,
+            h: 40,
+            landed: false
+        };
+
         physics.current = { x: 0, y: GROUND_LEVEL, vx: 0, vy: 0, rot: 0, lastTime: 0 };
         cameraRef.current = { x: -100, y: 0 };
         itemsRef.current.forEach(i => (i.active = true));
@@ -497,25 +628,31 @@ const BroCannon = () => {
         const cost = UPGRADE_BASE_COSTS[key] * lvl;
 
         if (spendCoins(cost)) {
-            playCollect();
+            playCollect?.();
             const next = { ...upgrades, [key]: lvl + 1 };
             setUpgrades(next);
-            updateStat('broCannonUpgrades', next);
+            updateStat?.('broCannonUpgrades', next);
         } else {
-            playCrash();
+            playCrash?.();
         }
     };
 
+    // Altitude & Atmospheric Gradient
     const altRatio = Math.min(1, altitude / 2500);
     let skyGradient;
-    if (altRatio < 0.25) {
-        skyGradient = 'linear-gradient(to top, #64b5f6 0%, #1976d2 100%)';
-    } else if (altRatio < 0.55) {
-        skyGradient = 'linear-gradient(to top, #ffb74d 0%, #7b1fa2 100%)';
-    } else if (altRatio < 0.85) {
-        skyGradient = 'linear-gradient(to top, #4a148c 0%, #0d001a 100%)';
-    } else {
+    let currentLayerName = 'LAYER 1: DESERT TROPOSPHERE';
+    if (altitude > 2500) {
         skyGradient = 'radial-gradient(ellipse at bottom, #1b003a 0%, #02000a 100%)';
+        currentLayerName = 'LAYER 4: LUNAR ORBIT';
+    } else if (altitude > 1500) {
+        skyGradient = 'linear-gradient(to top, #4a148c 0%, #0d001a 100%)';
+        currentLayerName = 'LAYER 3: ORBITAL DEEP SPACE';
+    } else if (altitude > 600) {
+        skyGradient = 'linear-gradient(to top, #ffb74d 0%, #7b1fa2 100%)';
+        currentLayerName = 'LAYER 2: SUPERSONIC STRATOSPHERE';
+    } else {
+        skyGradient = 'linear-gradient(to top, #64b5f6 0%, #1976d2 100%)';
+        currentLayerName = 'LAYER 1: DESERT TROPOSPHERE';
     }
 
     return (
@@ -557,27 +694,89 @@ const BroCannon = () => {
             }}
             onClick={interact}
         >
+            {/* STUDIO TELEMETRY HEADER */}
             <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 100, pointerEvents: 'none' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: '900', textShadow: '0 0 15px rgba(0,0,0,0.8)', color: '#ffea00' }}>
+                <div style={{ fontSize: '2.4rem', fontWeight: '900', textShadow: '0 0 15px rgba(0,0,0,0.8)', color: '#ffea00' }}>
                     {distance}m
                 </div>
-                <div style={{ fontSize: '1rem', color: '#00e5ff', textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
+                <div style={{ fontSize: '0.9rem', color: '#00e5ff', textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    ALT: {altitude}m
-                    <span style={{
-                        background: altitude > 1500 ? 'rgba(168, 85, 247, 0.3)' : altitude > 600 ? 'rgba(0, 240, 255, 0.3)' : 'rgba(0, 255, 136, 0.3)',
-                        border: `1px solid ${altitude > 1500 ? '#a855f7' : altitude > 600 ? '#00f0ff' : '#00ff88'}`,
-                        color: altitude > 1500 ? '#c084fc' : altitude > 600 ? '#00f0ff' : '#00ff88',
-                        padding: '1px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', fontFamily: 'monospace'
-                    }}>
-                        {altitude > 1500 ? 'ORBIT' : altitude > 600 ? 'CLOUDS' : 'SURFACE'}
+                        ALT: {altitude}m
+                        <span style={{
+                            background: altitude > 2500 ? 'rgba(255, 0, 85, 0.3)' : altitude > 1500 ? 'rgba(168, 85, 247, 0.3)' : altitude > 600 ? 'rgba(0, 240, 255, 0.3)' : 'rgba(0, 255, 136, 0.3)',
+                            border: `1px solid ${altitude > 2500 ? '#ff0055' : altitude > 1500 ? '#a855f7' : altitude > 600 ? '#00f0ff' : '#00ff88'}`,
+                            color: altitude > 2500 ? '#ff0055' : altitude > 1500 ? '#c084fc' : altitude > 600 ? '#00f0ff' : '#00ff88',
+                            padding: '1px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 'bold', fontFamily: 'monospace'
+                        }}>
+                            {currentLayerName}
+                        </span>
                     </span>
-                </span>
                 </div>
-                <div style={{ color: 'gold', fontSize: '0.9rem', marginTop: '4px' }}>
+                <div style={{ color: 'gold', fontSize: '0.85rem', marginTop: '4px' }}>
                     COINS: {coins.toLocaleString()}
                 </div>
             </div>
+
+            {/* MOTHERSHIP DREADNOUGHT BOSS HUD */}
+            {bossEncounter && gameState === 'FLYING' && (
+                <div style={{
+                    position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 100, background: 'rgba(255, 0, 85, 0.25)', border: '1.5px solid #ff0055',
+                    borderRadius: '14px', padding: '8px 18px', textAlign: 'center', boxShadow: '0 0 20px rgba(255,0,85,0.4)',
+                    pointerEvents: 'none'
+                }}>
+                    <div style={{ fontSize: '0.75rem', color: '#ff3366', fontWeight: '900', marginBottom: '4px' }}>
+                        ⚠️ {bossEncounter.name}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} style={{
+                                width: '28px', height: '8px', borderRadius: '4px',
+                                background: i < bossEncounter.shieldsLeft ? '#ff0055' : '#333',
+                                boxShadow: i < bossEncounter.shieldsLeft ? '0 0 8px #ff0055' : 'none'
+                            }}></div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ACTIVE BUFF STATUS BADGE */}
+            {(activeBumper || activeWarp) && gameState === 'FLYING' && (
+                <div style={{
+                    position: 'absolute', top: 75, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 100, display: 'flex', gap: '8px', pointerEvents: 'none'
+                }}>
+                    {activeBumper && (
+                        <div style={{ background: 'rgba(0, 240, 255, 0.25)', border: '1px solid #00f0ff', borderRadius: '20px', padding: '3px 12px', fontSize: '0.72rem', color: '#00f0ff' }}>
+                            🛡️ KINETIC BUMPER READY
+                        </div>
+                    )}
+                    {activeWarp && (
+                        <div style={{ background: 'rgba(255, 215, 0, 0.25)', border: '1px solid #ffd700', borderRadius: '20px', padding: '3px 12px', fontSize: '0.72rem', color: '#ffd700' }}>
+                            ⚡ HYPER-WARP ACTIVE
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* GHOST DUEL LIVE TELEMETRY HUD */}
+            {activeGhost && gameState === 'FLYING' && (
+                <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '110px',
+                    zIndex: 100,
+                    pointerEvents: 'none'
+                }}>
+                    <GhostDuelHUD
+                        ghost={activeGhost}
+                        currentScore={distance}
+                        ghostCurrentScore={ghostPos ? ghostPos.score : 0}
+                        isGhostFinished={ghostPos?.isFinished}
+                        unit="m"
+                    />
+                </div>
+            )}
 
             {gameState === 'FLYING' && (
                 <div style={{
@@ -686,7 +885,7 @@ const BroCannon = () => {
                             return (
                                 <div
                                     key={skin.id}
-                                    onClick={() => { setSelectedSkin(skin); playBoop(); }}
+                                    onClick={() => { setSelectedSkin(skin); playBoop?.(); }}
                                     style={{
                                         position: 'relative',
                                         border: isSelected ? `2.5px solid ${aura.primaryColor}` : '1px solid rgba(255,255,255,0.12)',
@@ -700,7 +899,6 @@ const BroCannon = () => {
                                         transition: 'all 0.18s ease'
                                     }}
                                 >
-                                    {/* Rarity Tag */}
                                     <span style={{
                                         position: 'absolute',
                                         top: '6px',
@@ -766,12 +964,22 @@ const BroCannon = () => {
             {gameState === 'LANDED' && (
                 <div
                     style={{
-                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)',
+                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.88)',
                         zIndex: 200, display: 'flex', flexDirection: 'column',
                         alignItems: 'center', justifyContent: 'center'
                     }}
                     onClick={e => e.stopPropagation()}
                 >
+                    {lunarTouchdown && (
+                        <div style={{
+                            background: 'rgba(255, 215, 0, 0.2)', border: '2px solid #ffd700',
+                            borderRadius: '20px', padding: '10px 24px', marginBottom: '16px',
+                            color: '#ffd700', fontSize: '1.2rem', fontWeight: '900',
+                            boxShadow: '0 0 25px rgba(255, 215, 0, 0.5)'
+                        }}>
+                            🌕 LUNAR TOUCHDOWN JACKPOT (+2,500 CP)!
+                        </div>
+                    )}
                     <h1 style={{ fontSize: '4.5rem', color: 'gold', margin: 0, textShadow: '0 0 30px gold' }}>
                         {distance}m
                     </h1>
@@ -902,6 +1110,66 @@ const BroCannon = () => {
                     </div>
                 )}
 
+                {/* ORBITAL MOTHERSHIP DREADNOUGHT SPRITE AT 3,500m */}
+                {dreadnoughtRef.current.active && !dreadnoughtRef.current.destroyed && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: dreadnoughtRef.current.x,
+                            bottom: dreadnoughtRef.current.y,
+                            width: '260px',
+                            height: '120px',
+                            transform: 'translate(-50%, 50%)',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            border: '3px solid #ff0055',
+                            borderRadius: '24px',
+                            boxShadow: '0 0 40px rgba(255, 0, 85, 0.5)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <div style={{ fontSize: '0.75rem', color: '#ff0055', fontWeight: '900', letterSpacing: '1px' }}>
+                            MOTHERSHIP DREADNOUGHT
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} style={{
+                                    width: '36px', height: '14px', borderRadius: '4px',
+                                    background: i < dreadnoughtRef.current.shields ? '#ff0055' : '#333',
+                                    border: '1px solid #fff'
+                                }}></div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* LUNAR COLONY TOUCHDOWN LANDING PAD AT 5,000m */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: lunarPadRef.current.x,
+                        bottom: lunarPadRef.current.y,
+                        width: `${lunarPadRef.current.w}px`,
+                        height: `${lunarPadRef.current.h}px`,
+                        transform: 'translate(-50%, 50%)',
+                        background: 'linear-gradient(90deg, #ffd700, #ff0055)',
+                        border: '3px solid #fff',
+                        borderRadius: '12px',
+                        boxShadow: '0 0 50px rgba(255, 215, 0, 0.8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1rem',
+                        fontWeight: '900',
+                        letterSpacing: '2px',
+                        color: '#000'
+                    }}
+                >
+                    🌕 LUNAR TOUCHDOWN BASE
+                </div>
+
                 {visibleItems.map(item => (
                     <div
                         key={item.id}
@@ -933,6 +1201,14 @@ const BroCannon = () => {
                             <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(168, 85, 247, 0.25)', border: '1.5px solid #a855f7', borderRadius: '50%', boxShadow: '0 0 15px #a855f7' }}>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="14" rx="9" ry="4"/><path d="M7 13c0-3 2-5 5-5s5 2 5 5"/><line x1="9" y1="18" x2="8" y2="21"/><line x1="15" y1="18" x2="16" y2="21"/></svg>
                             </div>
+                        ) : item.type === 'WARP' ? (
+                            <div style={{ width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(168, 85, 247, 0.35)', border: '2px solid #c084fc', borderRadius: '50%', boxShadow: '0 0 20px #c084fc' }}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
+                        ) : item.type === 'BUMPER' ? (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 240, 255, 0.3)', border: '2px solid #00f0ff', borderRadius: '50%', boxShadow: '0 0 18px #00f0ff' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
                         ) : item.type === 'DIAMOND' ? (
                             <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 240, 255, 0.25)', border: '1.5px solid #00f0ff', borderRadius: '50%', boxShadow: '0 0 15px #00f0ff' }}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(0,240,255,0.3)" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 18 3 22 9 12 22 2 9"/><line x1="12" y1="22" x2="12" y2="9"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
@@ -958,7 +1234,8 @@ const BroCannon = () => {
                             borderRadius: '50%',
                             opacity: pt.life,
                             transform: 'translate(-50%, -50%)',
-                            boxShadow: `0 0 8px ${pt.color}`,}}
+                            boxShadow: `0 0 8px ${pt.color}`,
+                        }}
                     />
                 ))}
 
@@ -1081,6 +1358,22 @@ const BroCannon = () => {
                                 </svg>
                             </div>
                         )}
+
+                        {/* Kinetic Bumper Shield Bubble */}
+                        {activeBumper && (
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: '-14px',
+                                    borderRadius: '50%',
+                                    border: '2px solid #00f0ff',
+                                    boxShadow: '0 0 20px #00f0ff',
+                                    background: 'rgba(0, 240, 255, 0.2)',
+                                    pointerEvents: 'none'
+                                }}
+                            />
+                        )}
+
                         {/* Mythic Procedural Skin Aura Halo */}
                         {(() => {
                             const { aura } = getSkinAura(selectedSkin);

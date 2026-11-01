@@ -12,8 +12,7 @@ import ShareDuelModal from '../../components/ShareDuelModal';
 import {
     getGhostDuelFromUrl,
     interpolateGhostPosition,
-    savePersonalBestGhost,
-    getPersonalBestGhost
+    savePersonalBestGhost
 } from '../../utils/ghostDuelCodec';
 
 const BIOMES = [
@@ -34,7 +33,7 @@ const BIOMES = [
 
 const MerchJump = () => {
     const canvasRef = useRef(null);
-    const { playJump, playCollect, playCrash, playBoop } = useRetroSound();
+    const { playJump, playCollect, playCrash, playBoop, playShoot, playLaser, playPowerUp, playFanfare, playExplosion, playHit } = useRetroSound();
     const { updateStat, addCoins, coins, spendCoins, userProfile, stats } = useGamification() || {};
 
     // Game Constants
@@ -77,10 +76,32 @@ const MerchJump = () => {
     const [selectedSkin, setSelectedSkin] = useState(SKINS[0]);
 
     // Shop State
-    // Shop State
     const [selectedStreak, setSelectedStreak] = useState(STREAKS[0]);
     const [unlockedStreaks, setUnlockedStreaks] = useState(['none']);
-    const [isShopOpen, setIsShopOpen] = useState(window.innerWidth > 500); // Open by default on desktop
+    const [isShopOpen, setIsShopOpen] = useState(window.innerWidth > 500);
+
+    // --- EPIC POWER-UPS & BOSS ENCOUNTERS ---
+    const [activeForcefield, setActiveForcefield] = useState(false);
+    const [activeBuff, setActiveBuff] = useState(null); // { type, label, timeLeft }
+    const [bossDisplay, setBossDisplay] = useState(null); // { name, hp, maxHp }
+
+    const activeForcefieldRef = useRef(false);
+    const activeBuffRef = useRef(null); // { type, label, expiresAt, charges }
+    const bossRef = useRef({
+        active: false,
+        name: 'CHRONO-DRONE MK-IV',
+        hp: 6,
+        maxHp: 6,
+        x: WIDTH / 2,
+        y: -100,
+        targetY: 130,
+        vx: 2.2,
+        attackTimer: 0,
+        hitFlash: 0,
+        bombs: [], // [{ x, y, vy }]
+        rockets: [], // [{ x, y, vy, targetX, targetY }]
+        stage: 1 // 1: Chrono-Drone (1500m), 2: Nebula Colossus (3500m)
+    });
 
     // --- GHOST DUEL STATES ---
     const [activeGhost, setActiveGhost] = useState(() => getGhostDuelFromUrl());
@@ -116,7 +137,7 @@ const MerchJump = () => {
     const playerRef = useRef({ x: WIDTH / 2, y: HEIGHT - 150, vy: 0, width: 40, height: 60 });
     const platformsRef = useRef([]);
     const itemsRef = useRef([]);
-    const trailRef = useRef([]); // Trail Ref
+    const trailRef = useRef([]);
     const cameraYRef = useRef(0);
     const scoreRef = useRef(0);
     const requestRef = useRef(null);
@@ -164,17 +185,16 @@ const MerchJump = () => {
     const buyStreak = (streak) => {
         if (unlockedStreaks.includes(streak.id)) {
             setSelectedStreak(streak);
-            playBoop();
+            playBoop?.();
         } else {
             if (spendCoins(streak.price)) {
-                playCollect();
+                playCollect?.();
                 const newUnlocked = [...unlockedStreaks, streak.id];
                 setUnlockedStreaks(newUnlocked);
-                // We persist the unlocks in stats, but money is global
-                updateStat('unlockedStreaks', newUnlocked);
+                updateStat?.('unlockedStreaks', newUnlocked);
                 setSelectedStreak(streak);
             } else {
-                playCrash();
+                playCrash?.();
             }
         }
     };
@@ -190,12 +210,31 @@ const MerchJump = () => {
         setGhostPos(null);
         setDuelWon(null);
         trailRef.current = [];
-        auraParticlesRef.current = []; // Reset Trail
+        auraParticlesRef.current = [];
 
-        // Random Rocket Start 🚀 (2000m to 5000m)
-        // v = sqrt(2gh)
-        // h=2000 -> v=40. h=5000 -> v=63.
-        const startVy = -(40 + Math.random() * 23); // Range [40, 63]
+        // Reset Epic Buffs & Boss
+        activeForcefieldRef.current = false;
+        setActiveForcefield(false);
+        activeBuffRef.current = null;
+        setActiveBuff(null);
+        setBossDisplay(null);
+        bossRef.current = {
+            active: false,
+            name: 'CHRONO-DRONE MK-IV',
+            hp: 6,
+            maxHp: 6,
+            x: WIDTH / 2,
+            y: -100,
+            targetY: 130,
+            vx: 2.2,
+            attackTimer: 0,
+            hitFlash: 0,
+            bombs: [],
+            rockets: [],
+            stage: 1
+        };
+
+        const startVy = -(40 + Math.random() * 23);
         playerRef.current = { x: WIDTH / 2, y: HEIGHT - 150, vy: startVy, width: 40, height: 60 };
 
         platformsRef.current = [];
@@ -212,16 +251,33 @@ const MerchJump = () => {
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
+    const handleRevive = () => {
+        setGameState('PLAYING');
+        playerRef.current.vy = -35;
+        playerRef.current.y = HEIGHT / 2;
+        activeForcefieldRef.current = true;
+        setActiveForcefield(true);
+        requestRef.current = requestAnimationFrame(gameLoop);
+    };
+
     const generatePlatform = (y, biome) => {
         const score = scoreRef.current;
 
-        // MERCH BALLOON (Rainbow Glow & Boost)
-        // Spawn chance between 2000m and 6000m? Or just around specific milestones?
-        // User wants "no more red balloon", implies standard boost is now Merch Balloon.
-        // Let's make it spawn periodically or at key milestones.
+        // Spawn In-Game Power-Ups on platforms (Jetpack, Spring Sneakers, Forcefield, Vacuum)
+        if (Math.random() < 0.12) {
+            const puTypes = ['jetpack', 'sneakers', 'forcefield', 'vacuum'];
+            const chosen = puTypes[Math.floor(Math.random() * puTypes.length)];
+            itemsRef.current.push({
+                x: Math.random() * (WIDTH - 50) + 15,
+                y: y - 26,
+                type: chosen,
+                w: 32,
+                h: 32
+            });
+        }
 
-        // Spawn rule: Rare chance if score > 1000 and no items present
-        if (score > 1000 && Math.random() < 0.055 && itemsRef.current.length === 0) {
+        // Rare Merch Balloon
+        if (score > 1000 && Math.random() < 0.045) {
             itemsRef.current.push({
                 x: Math.random() * (WIDTH - 60), y: y - 100, type: 'merch_balloon', w: 50, h: 50
             });
@@ -231,15 +287,10 @@ const MerchJump = () => {
         let w = 70 + Math.random() * 30;
         let type = 'normal';
 
-        // Platform variety scaling by biome limit
         if (score > 4000 && Math.random() > 0.7) type = 'moving';
         if (score > 8000 && Math.random() > 0.8) type = 'crumble';
-        
-        // Ice Biome Slippery Platforms
         if (biome.name === 'ICE AGE' && Math.random() > 0.5) type = 'slippery';
-        // Volcano Biome Melting Platforms
         if (biome.name === 'VOLCANO' && Math.random() > 0.5) type = 'melting';
-        // Void/Deep Space shrinking platforms
         if ((biome.name === 'THE VOID' || biome.name === 'DEEP SPACE') && Math.random() > 0.6) type = 'shrinking';
 
         if (score > 12000 && Math.random() > 0.8) {
@@ -276,11 +327,11 @@ const MerchJump = () => {
         ctx.fillStyle = '#ccc';
         ctx.fillRect(-15, -10, 10, 30);
         ctx.fillRect(5, -10, 10, 30);
-        if (vy < 0) {
+        if (vy < 0 || activeBuffRef.current?.type === 'jetpack') {
             ctx.fillStyle = '#ff9900';
             ctx.beginPath();
-            ctx.moveTo(-10, 20); ctx.lineTo(-5, 35 + Math.random() * 10); ctx.lineTo(0, 20);
-            ctx.moveTo(10, 20); ctx.lineTo(15, 35 + Math.random() * 10); ctx.lineTo(5, 20);
+            ctx.moveTo(-10, 20); ctx.lineTo(-5, 35 + Math.random() * 12); ctx.lineTo(0, 20);
+            ctx.moveTo(10, 20); ctx.lineTo(15, 35 + Math.random() * 12); ctx.lineTo(5, 20);
             ctx.fill();
         }
 
@@ -295,8 +346,16 @@ const MerchJump = () => {
         ctx.beginPath(); ctx.moveTo(10, 20); ctx.quadraticCurveTo(15, 25, 12, legRightY);
         ctx.stroke();
 
-        ctx.fillStyle = 'white';
-        ctx.fillRect(-16, legLeftY, 8, 5); ctx.fillRect(8, legRightY, 8, 5);
+        // Spring Sneakers on feet if active
+        if (activeBuffRef.current?.type === 'sneakers') {
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(-18, legLeftY, 12, 7);
+            ctx.fillRect(6, legRightY, 12, 7);
+        } else {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(-16, legLeftY, 8, 5);
+            ctx.fillRect(8, legRightY, 8, 5);
+        }
 
         // BODY
         ctx.fillStyle = selectedSkin.hoodie || '#111';
@@ -320,6 +379,22 @@ const MerchJump = () => {
             ctx.fillStyle = 'white';
             ctx.beginPath(); ctx.arc(0, -20, 20, 0, Math.PI * 2); ctx.fill();
         }
+
+        // BUBBLE FORCEFIELD SURROUNDING MASCOT
+        if (activeForcefieldRef.current) {
+            ctx.save();
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 14;
+            ctx.beginPath();
+            ctx.arc(0, 5, 42, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
+            ctx.fill();
+            ctx.restore();
+        }
+
         ctx.restore();
     };
 
@@ -339,14 +414,73 @@ const MerchJump = () => {
         const player = playerRef.current;
         const currentBiome = getCurrentBiome(scoreRef.current);
         biomeRef.current = currentBiome;
+        const now = performance.now();
 
-        // --- UPDATE ---
+        // Active Buff countdown
+        if (activeBuffRef.current) {
+            if (activeBuffRef.current.expiresAt) {
+                const timeLeft = Math.max(0, Math.ceil((activeBuffRef.current.expiresAt - now) / 1000));
+                if (timeLeft <= 0) {
+                    activeBuffRef.current = null;
+                    setActiveBuff(null);
+                } else {
+                    setActiveBuff(prev => prev ? { ...prev, timeLeft } : null);
+                }
+            }
+        }
+
+        const boss = bossRef.current;
+
+        // --- BOSS SUMMON TRIGGERS ---
+        if (!boss.active) {
+            if (scoreRef.current >= 1500 && boss.stage === 1) {
+                boss.active = true;
+                boss.name = 'CHRONO-DRONE MK-IV';
+                boss.hp = 6;
+                boss.maxHp = 6;
+                boss.x = WIDTH / 2;
+                boss.y = 120;
+                boss.bombs = [];
+                boss.rockets = [];
+                setBossDisplay({ name: boss.name, hp: 6, maxHp: 6 });
+                playLaser?.();
+
+                // Spawn a wide hovering safety platform for the boss duel
+                platformsRef.current.push({
+                    x: WIDTH / 2 - 100, y: HEIGHT - 120, w: 200, h: 20,
+                    type: 'normal', color: '#00f0ff', border: '#fff'
+                });
+            } else if (scoreRef.current >= 3500 && boss.stage === 2) {
+                boss.active = true;
+                boss.name = 'NEBULA COLOSSUS';
+                boss.hp = 10;
+                boss.maxHp = 10;
+                boss.x = WIDTH / 2;
+                boss.y = 110;
+                boss.bombs = [];
+                boss.rockets = [];
+                setBossDisplay({ name: boss.name, hp: 10, maxHp: 10 });
+                playLaser?.();
+
+                platformsRef.current.push({
+                    x: WIDTH / 2 - 110, y: HEIGHT - 120, w: 220, h: 20,
+                    type: 'normal', color: '#a855f7', border: '#fff'
+                });
+            }
+        }
+
+        // --- UPDATE PLAYER ---
         const targetX = inputRef.current;
         player.x += (targetX - player.x) * 0.15;
         if (player.x < -20) player.x = WIDTH + 20;
         if (player.x > WIDTH + 20) player.x = -20;
 
-        player.vy += GRAVITY;
+        // Rocket Jetpack continuous climb
+        if (activeBuffRef.current?.type === 'jetpack') {
+            player.vy = -18;
+        } else {
+            player.vy += GRAVITY;
+        }
         player.y += player.vy;
 
         let shift = 0;
@@ -360,9 +494,12 @@ const MerchJump = () => {
             platformsRef.current = platformsRef.current.filter(p => p.y < HEIGHT);
             itemsRef.current.forEach(i => i.y += shift);
             itemsRef.current = itemsRef.current.filter(i => i.y < HEIGHT);
-            const lastP = platformsRef.current[platformsRef.current.length - 1];
-            if (lastP && lastP.y > 100) {
-                generatePlatform(lastP.y - (80 - Math.min(20, scoreRef.current / 1000) + Math.random() * 40), currentBiome);
+
+            if (!boss.active) {
+                const lastP = platformsRef.current[platformsRef.current.length - 1];
+                if (lastP && lastP.y > 100) {
+                    generatePlatform(lastP.y - (80 - Math.min(20, scoreRef.current / 1000) + Math.random() * 40), currentBiome);
+                }
             }
         }
 
@@ -376,40 +513,78 @@ const MerchJump = () => {
             if (trailRef.current[i].age <= 0) trailRef.current.splice(i, 1);
         }
 
-        // COLLISION
+        // --- PLATFORM COLLISIONS ---
         if (player.vy > 0) {
             platformsRef.current.forEach((p, idx) => {
                 if (player.x > p.x - 20 && player.x < p.x + p.w + 20 && player.y + 30 > p.y && player.y + 30 < p.y + p.h + 20) {
-                    
-                    if (p.type === 'slippery') {
-                         player.vy = JUMP_FORCE * 0.7; // Lower jump
-                         playJump();
+                    // Check Spring Sneakers
+                    if (activeBuffRef.current?.type === 'sneakers' && activeBuffRef.current.charges > 0) {
+                        player.vy = JUMP_FORCE * 2.3;
+                        activeBuffRef.current.charges -= 1;
+                        setActiveBuff(prev => prev ? { ...prev, label: `SNEAKERS (${activeBuffRef.current.charges} left)` } : null);
+                        if (activeBuffRef.current.charges <= 0) {
+                            activeBuffRef.current = null;
+                            setActiveBuff(null);
+                        }
+                        playJump?.();
+                    } else if (p.type === 'slippery') {
+                        player.vy = JUMP_FORCE * 0.7;
+                        playJump?.();
                     } else {
-                         player.vy = JUMP_FORCE;
-                         playJump();
+                        player.vy = JUMP_FORCE;
+                        playJump?.();
                     }
                     
                     if (p.type === 'crumble') {
-                        platformsRef.current.splice(idx, 1); playCrash();
+                        platformsRef.current.splice(idx, 1);
+                        playCrash?.();
                     }
                     if (p.type === 'melting') {
-                        p.w = Math.max(20, p.w - 15); // Shrinks when jumped on
+                        p.w = Math.max(20, p.w - 15);
                     }
                 }
             });
         }
 
+        // --- ITEM PICKUPS ---
         itemsRef.current.forEach((item, idx) => {
+            // Vacuum suction
+            if (activeBuffRef.current?.type === 'vacuum') {
+                item.x += (player.x - item.x) * 0.12;
+                item.y += (player.y - item.y) * 0.12;
+            }
+
             if (player.x > item.x - 30 && player.x < item.x + item.w + 30 && player.y > item.y - 30 && player.y < item.y + item.h + 30) {
                 if (item.type === 'merch_balloon') {
-                    player.vy = -60; // SUPER BOOST
-                    playCollect();
+                    player.vy = -60;
+                    playCollect?.();
                     itemsRef.current.splice(idx, 1);
                     feedService.publish(`found a Merch Balloon!`, 'win', userProfile?.name);
+                } else if (item.type === 'jetpack') {
+                    activeBuffRef.current = { type: 'jetpack', label: 'ROCKET JETPACK', expiresAt: now + 4000 };
+                    setActiveBuff({ type: 'jetpack', label: 'ROCKET JETPACK', timeLeft: 4 });
+                    playPowerUp?.();
+                    itemsRef.current.splice(idx, 1);
+                } else if (item.type === 'sneakers') {
+                    activeBuffRef.current = { type: 'sneakers', label: 'SPRING SNEAKERS (5)', charges: 5 };
+                    setActiveBuff({ type: 'sneakers', label: 'SPRING SNEAKERS (5)', charges: 5 });
+                    playPowerUp?.();
+                    itemsRef.current.splice(idx, 1);
+                } else if (item.type === 'forcefield') {
+                    activeForcefieldRef.current = true;
+                    setActiveForcefield(true);
+                    playPowerUp?.();
+                    itemsRef.current.splice(idx, 1);
+                } else if (item.type === 'vacuum') {
+                    activeBuffRef.current = { type: 'vacuum', label: 'CP VACUUM', expiresAt: now + 8000 };
+                    setActiveBuff({ type: 'vacuum', label: 'CP VACUUM', timeLeft: 8 });
+                    playPowerUp?.();
+                    itemsRef.current.splice(idx, 1);
                 }
             }
         });
 
+        // Moving platforms
         platformsRef.current.forEach(p => {
             if (p.type === 'moving') {
                 p.x += p.vx;
@@ -417,9 +592,79 @@ const MerchJump = () => {
             }
         });
 
+        // --- BOSS BATTLE LOOP ---
+        if (boss.active) {
+            boss.x += boss.vx;
+            if (boss.x < 50 || boss.x > WIDTH - 50) boss.vx *= -1;
+
+            // Boss attack: drop bombs
+            boss.attackTimer++;
+            if (boss.attackTimer >= 90) {
+                boss.attackTimer = 0;
+                boss.bombs.push({ x: boss.x, y: boss.y + 20, vy: 3 });
+                playLaser?.();
+            }
+
+            // Stomp on boss weak point!
+            if (player.vy > 0 && Math.hypot(player.x - boss.x, player.y - boss.y) < 45) {
+                boss.hp -= 2;
+                boss.hitFlash = 12;
+                player.vy = -24; // Super bounce on boss head!
+                playHit?.();
+                setBossDisplay({ name: boss.name, hp: boss.hp, maxHp: boss.maxHp });
+            }
+
+            // Move & Draw Boss Bombs
+            for (let bi = boss.bombs.length - 1; bi >= 0; bi--) {
+                const b = boss.bombs[bi];
+                b.y += b.vy + (shift > 0 ? shift : 0);
+
+                if (Math.hypot(player.x - b.x, player.y - b.y) < 30) {
+                    if (activeForcefieldRef.current) {
+                        activeForcefieldRef.current = false;
+                        setActiveForcefield(false);
+                        player.vy = -20;
+                        playCrash?.();
+                        boss.bombs.splice(bi, 1);
+                        continue;
+                    } else {
+                        handleGameOver();
+                        return;
+                    }
+                }
+
+                if (b.y > HEIGHT) {
+                    boss.bombs.splice(bi, 1);
+                }
+            }
+
+            // Boss Defeat
+            if (boss.hp <= 0) {
+                boss.active = false;
+                setBossDisplay(null);
+                playFanfare?.();
+                playExplosion?.();
+
+                const bonusCP = boss.stage === 1 ? 500 : 1000;
+                if (addCoins) addCoins(bonusCP);
+
+                // Victory launch catapult!
+                player.vy = -55;
+                boss.stage += 1;
+            }
+        }
+
+        // --- FALL / DEATH CHECK (WITH FORCEFIELD SAVE) ---
         if (player.y > HEIGHT) {
-            handleGameOver();
-            return;
+            if (activeForcefieldRef.current) {
+                activeForcefieldRef.current = false;
+                setActiveForcefield(false);
+                player.vy = -36; // Forcefield bounce saves run!
+                playCrash?.();
+            } else {
+                handleGameOver();
+                return;
+            }
         }
 
         // --- DRAW ---
@@ -432,7 +677,7 @@ const MerchJump = () => {
             if (Math.random() > 0.5) ctx.filter = 'invert(1)';
         }
 
-        // Decor
+        // Decor clouds/stars
         const cloudBiomes = ['STREETS', 'SUNSET WAVE', 'TOXIC WASTE', 'ICE AGE', 'STRATOSPHERE', 'ASCENSION'];
         if (cloudBiomes.includes(currentBiome.name)) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
@@ -456,14 +701,14 @@ const MerchJump = () => {
         // Platforms
         platformsRef.current.forEach(p => {
             if (p.type === 'shrinking') {
-                p.w = Math.max(10, p.w - 0.2); // Shrink continuously
+                p.w = Math.max(10, p.w - 0.2);
             }
 
             ctx.fillStyle = p.color || currentBiome.plat;
             if (p.type === 'crumble') ctx.fillStyle = '#A0522D';
-            if (p.type === 'slippery') ctx.fillStyle = '#ff0000'; // Powder Blue
-            if (p.type === 'melting') ctx.fillStyle = '#ff4500'; // OrangeRed
-            if (p.type === 'shrinking') ctx.fillStyle = '#8a2be2'; // BlueViolet
+            if (p.type === 'slippery') ctx.fillStyle = '#ff0000';
+            if (p.type === 'melting') ctx.fillStyle = '#ff4500';
+            if (p.type === 'shrinking') ctx.fillStyle = '#8a2be2';
             
             ctx.fillRect(p.x, p.y, p.w, p.h);
             
@@ -474,7 +719,7 @@ const MerchJump = () => {
                 ctx.fillStyle = 'black'; ctx.font = '12px Courier'; ctx.fillText('DANGER', p.x + 5, p.y + 12);
             }
             if (p.type === 'melting') {
-                ctx.fillStyle = '#ff8c00'; // DarkOrange drips
+                ctx.fillStyle = '#ff8c00';
                 for(let i=10; i<p.w; i+=15) {
                      ctx.fillRect(p.x + i, p.y + p.h, 4, 6 + Math.random() * 5);
                 }
@@ -484,49 +729,91 @@ const MerchJump = () => {
             ctx.strokeStyle = p.border || currentBiome.border; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h);
         });
 
-        // DRAW TRAIL
-        if (selectedStreak.id !== 'none') {
-            const t = trailRef.current;
-            if (t.length > 1) {
-                if (selectedStreak.id === 'rainbow') {
-                    t.forEach((p, i) => {
-                        ctx.globalAlpha = p.age; ctx.fillStyle = `hsl(${i * 20}, 100%, 50%)`;
-                        ctx.beginPath(); ctx.arc(p.x, p.y + 20, 20 * p.age, 0, Math.PI * 2); ctx.fill();
-                    });
-                } else if (selectedStreak.id === 'black_death') {
-                    t.forEach((p, i) => {
-                        ctx.globalAlpha = p.age; ctx.fillStyle = i % 2 === 0 ? 'black' : '#330000';
-                        ctx.beginPath(); ctx.arc(p.x + (Math.random() - 0.5) * 10, p.y + 20, 25 * p.age, 0, Math.PI * 2); ctx.fill();
-                    });
-                } else {
-                    t.forEach((p, i) => {
-                        const colors = selectedStreak.gradient;
-                        ctx.globalAlpha = p.age; ctx.fillStyle = colors[i % colors.length];
-                        ctx.beginPath(); ctx.arc(p.x, p.y + 20, 15 * p.age, 0, Math.PI * 2); ctx.fill();
-                    });
-                }
-                ctx.globalAlpha = 1;
-            }
-        }
-
-        // Items
+        // Items & Power-Ups Drawing
         itemsRef.current.forEach(item => {
             if (item.type === 'merch_balloon') {
-                // RAINBOW GLOW
                 if (merchBalloonImgRef.current) {
                     ctx.save();
                     const glowColor = `hsl(${performance.now() * 0.1}, 100%, 50%)`;
                     ctx.shadowColor = glowColor;
                     ctx.shadowBlur = 20;
-                    // Float animation
                     const floatY = Math.sin(performance.now() * 0.005) * 10;
                     ctx.drawImage(merchBalloonImgRef.current, item.x, item.y + floatY, item.w, item.h);
                     ctx.restore();
-                } else {
-                    ctx.fillStyle = 'purple'; ctx.fillRect(item.x, item.y, item.w, item.h);
                 }
+            } else {
+                ctx.save();
+                ctx.translate(item.x + 16, item.y + 16);
+                const colMap = { jetpack: '#ff0055', sneakers: '#ffd700', forcefield: '#00f0ff', vacuum: '#ec4899' };
+                const c = colMap[item.type] || '#fff';
+                ctx.strokeStyle = c;
+                ctx.lineWidth = 2;
+                ctx.shadowColor = c;
+                ctx.shadowBlur = 12;
+                ctx.strokeRect(-14, -14, 28, 28);
+                ctx.fillStyle = 'rgba(15,23,42,0.85)';
+                ctx.fillRect(-14, -14, 28, 28);
+
+                ctx.fillStyle = c;
+                ctx.font = '14px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const iconMap = { jetpack: '🚀', sneakers: '👟', forcefield: '🛡', vacuum: '🧲' };
+                ctx.fillText(iconMap[item.type] || '★', 0, 1);
+                ctx.restore();
             }
         });
+
+        // Draw Boss Entity
+        if (boss.active) {
+            ctx.save();
+            ctx.translate(boss.x, boss.y);
+            if (boss.hitFlash > 0) {
+                boss.hitFlash--;
+                ctx.filter = 'brightness(2.2)';
+            }
+
+            // Mechanical drone wings
+            const wingOsc = Math.sin(now * 0.02) * 10;
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = boss.stage === 1 ? '#00f0ff' : '#a855f7';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = boss.stage === 1 ? '#00f0ff' : '#a855f7';
+            ctx.shadowBlur = 14;
+
+            ctx.strokeRect(-35, -15, 70, 30);
+            ctx.fillRect(-35, -15, 70, 30);
+
+            // Left Rotor
+            ctx.beginPath();
+            ctx.ellipse(-45, wingOsc, 18, 6, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Right Rotor
+            ctx.beginPath();
+            ctx.ellipse(45, -wingOsc, 18, 6, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Eye / Weak Point
+            ctx.fillStyle = '#ff0055';
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Draw Boss Bombs
+            boss.bombs.forEach(b => {
+                ctx.save();
+                ctx.fillStyle = '#ff0055';
+                ctx.shadowColor = '#ff0055';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
 
         frameRef.current = (frameRef.current || 0) + 1;
 
@@ -543,10 +830,8 @@ const MerchJump = () => {
         updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
 
         // --- GHOST TELEMETRY SAMPLING & PLAYBACK ---
-        const now = performance.now();
         const elapsed = now - runStartTimeRef.current;
 
-        // Sample position every 160ms for duel recording
         if (!lastSampleTimeRef.current || now - lastSampleTimeRef.current >= 160) {
             runKeyframesRef.current.push({
                 t: Math.round(elapsed),
@@ -566,14 +851,12 @@ const MerchJump = () => {
                 const ghostScreenY = player.y - deltaWorldY;
                 const ghostScreenX = gPos.x;
 
-                // Render ghost only if in view range
                 if (ghostScreenY >= -80 && ghostScreenY <= HEIGHT + 80) {
                     ctx.save();
                     ctx.globalAlpha = 0.55;
                     ctx.shadowColor = '#00f0ff';
                     ctx.shadowBlur = 12;
 
-                    // Ghost head/body
                     if (ghostImgRef.current && ghostImgRef.current.complete) {
                         ctx.drawImage(ghostImgRef.current, ghostScreenX - 25, ghostScreenY - 35, 50, 50);
                     } else {
@@ -615,12 +898,12 @@ const MerchJump = () => {
     };
 
     const handleGameOver = () => {
-        setGameState('GAMEOVER'); playCrash();
+        setGameState('GAMEOVER');
+        playCrash?.();
         const finalScore = Math.floor(scoreRef.current);
         if (addCoins) addCoins(Math.floor(finalScore / 200));
         if (updateStat) updateStat('gamesPlayed', 'merch_jump');
 
-        // Finalize Ghost Run for Sharing
         const completedGhost = {
             gameId: 'merch-jump',
             playerName: userProfile?.name || 'Player',
@@ -631,12 +914,11 @@ const MerchJump = () => {
         setLastFinishedRun(completedGhost);
         savePersonalBestGhost('merch-jump', completedGhost);
 
-        // Check Duel Status
         if (activeGhost) {
             const won = finalScore > (activeGhost.finalScore || 0);
             setDuelWon(won);
             if (won && addCoins) {
-                addCoins(250); // Winner bounty bonus!
+                addCoins(250);
             }
         }
         if (finalScore > highScore) {
@@ -687,21 +969,20 @@ const MerchJump = () => {
                         align-items: flex-start;
                         background: #000;
                     }
-                    /* FORCE FULL SCREEN SNAP */
                     .game-wrapper {
                         width: 100vw !important;
                         height: 100vh !important;
                         max-width: none !important;
                         max-height: none !important;
                         border-radius: 0 !important;
-                        margin: 0 !important; /* Ensure no margin */
+                        margin: 0 !important;
                     }
                     .game-canvas {
                         border-radius: 0 !important;
                         border: none !important;
                         object-fit: contain; 
-                        background: #000 !important; /* Black bars instead of blue */
-                        box-shadow: none !important; /* Remove shadow */
+                        background: #000 !important;
+                        box-shadow: none !important;
                     }
                     .boost-shop {
                         display: flex !important; 
@@ -718,8 +999,8 @@ const MerchJump = () => {
                         right: 0;
                         z-index: 200;
                         transition: transform 0.3s ease-in-out;
-                        height: 50vh !important; /* Half screen */
-                        transform: translateY(100%); /* Hidden by default via transform if closed */
+                        height: 50vh !important;
+                        transform: translateY(100%);
                     }
                     .boost-shop.open {
                         transform: translateY(0);
@@ -768,7 +1049,78 @@ const MerchJump = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                 <h1 className="game-header" style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>MERCH JUMP</h1>
+                
+                {/* ACTIVE BUFF / SHIELD PILL */}
+                {(activeBuff || activeForcefield) && gameState === 'PLAYING' && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        marginBottom: '8px',
+                        padding: '4px 14px',
+                        background: 'rgba(0, 240, 255, 0.15)',
+                        border: '1px solid rgba(0, 240, 255, 0.4)',
+                        borderRadius: '20px',
+                        fontFamily: '"Orbitron", monospace',
+                        fontSize: '0.72rem',
+                        color: '#00f0ff',
+                        boxShadow: '0 0 12px rgba(0, 240, 255, 0.25)'
+                    }}>
+                        {activeForcefield && <span style={{ color: '#38bdf8' }}>🛡️ FORCEFIELD READY</span>}
+                        {activeBuff && (
+                            <span style={{ color: '#ffd700' }}>
+                                ⚡ {activeBuff.label} {activeBuff.timeLeft ? `(${activeBuff.timeLeft}s)` : ''}
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* BOSS HP BAR OVERLAY */}
+                {bossDisplay && gameState === 'PLAYING' && (
+                    <div style={{
+                        width: '100%', maxWidth: '400px',
+                        marginBottom: '8px',
+                        padding: '6px 14px',
+                        background: 'rgba(255, 0, 85, 0.15)',
+                        border: '1.5px solid #ff0055',
+                        borderRadius: '12px',
+                        fontFamily: '"Orbitron", monospace',
+                        boxShadow: '0 0 16px rgba(255, 0, 85, 0.4)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#ff3366', fontWeight: '900', marginBottom: '4px' }}>
+                            <span>⚠️ {bossDisplay.name}</span>
+                            <span>{bossDisplay.hp} / {bossDisplay.maxHp} HP</span>
+                        </div>
+                        <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{
+                                width: `${(bossDisplay.hp / bossDisplay.maxHp) * 100}%`,
+                                height: '100%',
+                                background: 'linear-gradient(90deg, #ff0055, #ffd700)',
+                                transition: 'width 0.2s ease-out'
+                            }}></div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="game-wrapper" style={{ position: 'relative' }}>
+                    {/* GHOST DUEL LIVE TELEMETRY HUD */}
+                    {activeGhost && gameState === 'PLAYING' && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '14px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 60,
+                            pointerEvents: 'none'
+                        }}>
+                            <GhostDuelHUD
+                                ghost={activeGhost}
+                                currentScore={Math.floor(score)}
+                                ghostCurrentScore={ghostPos ? ghostPos.score : 0}
+                                isGhostFinished={ghostPos?.isFinished}
+                                unit="m"
+                            />
+                        </div>
+                    )}
                     <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} onMouseMove={handleInput} onTouchMove={(e) => { e.preventDefault(); handleInput(e); }} onTouchStart={handleInput}
                         className="game-canvas"
                         style={{ width: '100%', height: '100%', background: '#87CEEB', border: '4px solid white', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }} />
@@ -786,7 +1138,6 @@ const MerchJump = () => {
                                         onHome={() => window.location.href = '/arcade'}
                                         onRevive={handleRevive}
                                     >
-                                        {/* DUEL RESULTS BADGE */}
                                         {activeGhost && (
                                             <div style={{
                                                 background: duelWon ? 'rgba(0, 255, 136, 0.15)' : 'rgba(255, 0, 85, 0.15)',
@@ -813,7 +1164,6 @@ const MerchJump = () => {
                                             </div>
                                         )}
 
-                                        {/* CHALLENGE LINK BUTTON */}
                                         <button
                                             onClick={() => setIsShareModalOpen(true)}
                                             style={{
@@ -853,9 +1203,8 @@ const MerchJump = () => {
                                     />
                                 </div>
                             ) : (
-                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
+                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#333', borderRadius: '10px' }}>
                                     <h2 style={{ fontWeight: 'bold', marginBottom: '12px', fontFamily: '"Orbitron", sans-serif' }}>SKIN SELECT</h2>
-                                    {/* DUEL CHALLENGE STATUS BADGE */}
                                     {activeGhost && (
                                         <div style={{
                                             background: 'rgba(0, 240, 255, 0.12)', border: '1px solid #00f0ff',
@@ -873,7 +1222,7 @@ const MerchJump = () => {
                                             const isSelected = selectedSkin.id === skin.id;
                                             const tierColor = tier === 'MYTHIC' ? '#ff0055' : (tier === 'LEGENDARY' ? '#ffd700' : '#a855f7');
                                             return (
-                                                <button key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop(); }}
+                                                <button key={skin.id} onClick={() => { setSelectedSkin(skin); playBoop?.(); }}
                                                     style={{
                                                         position: 'relative',
                                                         background: isSelected ? `radial-gradient(circle, ${aura.glowColor} 0%, #1e293b 80%)` : '#0f172a',
@@ -908,7 +1257,7 @@ const MerchJump = () => {
                         </>
                     )}
                 </div>
-                <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Reach 2500m for Next Biome</p>
+                <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Defeat Bosses at 1500m & 3500m</p>
             </div>
 
             <div className={`boost-shop ${isShopOpen ? 'open' : ''}`} style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
@@ -934,8 +1283,6 @@ const MerchJump = () => {
                 })}
             </div>
 
-            {/* FLOATING EXIT IS HANDLED BY LAYOUT, REMOVE LOCAL ONE IF DUPLICATE OR KEEP? */}
-            {/* Keeping it won't hurt, but Layout one is better. I'll remove the local one in favor of Layout's if desired, or keep it as backup. */}
             <Link to="/arcade" className="mobile-hide" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, textDecoration: 'none' }}>
                 <SquishyButton style={{ borderRadius: '50px', padding: '10px 22px', fontSize: '1rem', background: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
