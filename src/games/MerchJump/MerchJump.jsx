@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useGamification } from '../../context/GamificationContext';
+import { usePocketBro } from '../../context/PocketBroContext';
 import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
@@ -35,6 +36,7 @@ const MerchJump = () => {
     const canvasRef = useRef(null);
     const { playJump, playCollect, playCrash, playBoop, playShoot, playLaser, playPowerUp, playFanfare, playExplosion, playHit } = useRetroSound();
     const { updateStat, addCoins, coins, spendCoins, userProfile, stats } = useGamification() || {};
+    const { awardArcadeXP } = usePocketBro?.() || {};
 
     // Game Constants
     const GRAVITY = 0.35;
@@ -898,9 +900,10 @@ const MerchJump = () => {
     };
 
     const handleGameOver = () => {
+        const finalScore = Math.floor(scoreRef.current);
+        if (awardArcadeXP) awardArcadeXP('merch_jump', finalScore);
         setGameState('GAMEOVER');
         playCrash?.();
-        const finalScore = Math.floor(scoreRef.current);
         if (addCoins) addCoins(Math.floor(finalScore / 200));
         if (updateStat) updateStat('gamesPlayed', 'merch_jump');
 

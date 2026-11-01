@@ -6,6 +6,7 @@ import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 import RewardedSponsorModal from '../../components/RewardedSponsorModal';
 import { useGamification } from '../../context/GamificationContext';
+import { usePocketBro } from '../../context/PocketBroContext';
 import { feedService } from '../../utils/feed';
 import { GhostDuelHUD } from '../../components/GhostDuelHUD';
 import { ShareDuelModal } from '../../components/ShareDuelModal';
@@ -46,6 +47,7 @@ const SKYLINE_TOTAL_WIDTH = SKYLINE_BUILDINGS.reduce((sum, b) => sum + b.w, 0);
 const FlappyMascot = () => {
     const canvasRef = useRef(null);
     const { shopState, updateStat, incrementStat, equipItem, addCoins, userProfile, stats, coins, consumeItem } = useGamification() || {};
+    const { awardArcadeXP } = usePocketBro?.() || {};
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(parseInt(localStorage.getItem('flappyHighScore')) || 0);
     const [gameOver, setGameOver] = useState(false);
@@ -230,6 +232,7 @@ const FlappyMascot = () => {
     };
 
     const endGame = () => {
+        if (awardArcadeXP) awardArcadeXP('flappy_mascot', score);
         setGameActive(false);
         gameActiveRef.current = false;
         setGameOver(true);

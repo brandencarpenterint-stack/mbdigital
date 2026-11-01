@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import useRetroSound from '../../hooks/useRetroSound';
 import SquishyButton from '../../components/SquishyButton';
 import { useGamification } from '../../context/GamificationContext';
+import { usePocketBro } from '../../context/PocketBroContext';
 import { triggerConfetti } from '../../utils/confetti';
 import { feedService } from '../../utils/feed';
 import { getSkinAura } from '../../config/SkinAuras';
@@ -60,6 +61,7 @@ const BroCannon = () => {
     const location = useLocation();
     const { playJump, playBoop, playCollect, playCrash, playWin, playShoot, playLaser, playPowerUp, playFanfare, playExplosion, playHit, playCannonBlast } = useRetroSound();
     const { coins, spendCoins, addCoins, stats, updateStat, userProfile } = useGamification();
+    const { awardArcadeXP } = usePocketBro?.() || {};
 
     const [gameState, setGameState] = useState('MENU');
     const gameStateRef = useRef('MENU');
@@ -541,11 +543,11 @@ const BroCannon = () => {
     };
 
     const finishRun = (isMoonLanding = false) => {
+        const finalDist = Math.floor(physics.current.x / 10);
+        if (awardArcadeXP) awardArcadeXP('bro_cannon', finalDist);
         setGameState('LANDED');
         gameStateRef.current = 'LANDED';
         cancelAnimationFrame(raFrame.current);
-
-        const finalDist = Math.floor(physics.current.x / 10);
         const flightCoins = Math.floor(finalDist / 8);
 
         setCoinsEarned(flightCoins);

@@ -178,6 +178,54 @@ export const PocketBroProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, []);
 
+    // --- CYBER EVOLUTIONS, ARCADE LEVELING & SNACKS ---
+    const awardArcadeXP = (gameName, score) => {
+        const xpGained = Math.max(25, Math.min(250, Math.floor((score || 10) / 15)));
+        setStats(prev => ({
+            ...prev,
+            xp: (prev.xp || 0) + xpGained,
+            happy: Math.min(100, (prev.happy || 50) + 15),
+            hunger: Math.max(0, (prev.hunger || 50) - 5),
+            lastArcadeGame: gameName
+        }));
+        return xpGained;
+    };
+
+    const feedCyberSnack = (snackType) => {
+        const snacks = {
+            battery: { name: 'Quantum Battery', energy: 40, hunger: 15, happy: 20, xp: 25, effect: 'shiny' },
+            donut: { name: 'Glitch Donut', energy: 10, hunger: 40, happy: 35, xp: 30, effect: 'glitch' },
+            crystal: { name: 'CP Crystal', energy: 25, hunger: 25, happy: 50, xp: 60, effect: 'rainbow' },
+            pepper: { name: 'Overdrive Pepper', energy: 35, hunger: 20, happy: 30, xp: 45, effect: 'flame' }
+        };
+        const snack = snacks[snackType] || snacks.battery;
+        setStats(prev => ({
+            ...prev,
+            energy: Math.min(100, (prev.energy || 50) + snack.energy),
+            hunger: Math.min(100, (prev.hunger || 50) + snack.hunger),
+            happy: Math.min(100, (prev.happy || 50) + snack.happy),
+            xp: (prev.xp || 0) + snack.xp,
+            tempStatus: snack.effect
+        }));
+        return snack;
+    };
+
+    const getCompanionPerks = () => {
+        const stage = stats.stage || 'EGG';
+        const type = stats.type || 'SOOT';
+        const happy = stats.happy || 50;
+
+        return {
+            coinMultiplier: happy >= 75 ? 1.25 : 1.0,
+            hasMagnetPerk: ['SLIME', 'KING_SLIME', 'ALIEN'].includes(type),
+            hasShieldPerk: ['ROBOT', 'MECH', 'ANGEL'].includes(type),
+            hasStompPerk: ['DINO', 'DRAGON'].includes(type),
+            hasWarpPerk: ['GHOST', 'SHADOW', 'ORB'].includes(type),
+            stageName: POCKET_BRO_STAGES[stage]?.name || 'Egg',
+            typeName: type
+        };
+    };
+
     // Auto-Save & Economy Link
     useEffect(() => {
         // Calculate Coin Multiplier based on Happiness
@@ -556,7 +604,8 @@ export const PocketBroProvider = ({ children }) => {
             stats, feed, play, sleep, clean,
             triggerEffect, unlockDecor, equipDecor, equipAccessory,
             getMood, isCritical, placeItem, removeItem, interactWithItem,
-            debugUpdate, explore, returnFromExplore, speedUpAdventure, consumeItem
+            debugUpdate, explore, returnFromExplore, speedUpAdventure, consumeItem,
+            awardArcadeXP, feedCyberSnack, getCompanionPerks
         }}>
             {children}
         </PocketBroContext.Provider>

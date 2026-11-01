@@ -5,6 +5,7 @@ import SquishyButton from '../../components/SquishyButton';
 import UniversalGameOver from '../../components/UniversalGameOver';
 import useRetroSound from '../../hooks/useRetroSound';
 import { useGamification } from '../../context/GamificationContext';
+import { usePocketBro } from '../../context/PocketBroContext';
 import { feedService } from '../../utils/feed';
 import { drawCanvasAura } from '../../utils/skinAuraCanvas';
 import { getSkinAura } from '../../config/SkinAuras';
@@ -22,6 +23,7 @@ const BIOMES = [
 
 const FaceRunner = () => {
     const { updateStat, addCoins, userProfile, stats, coins } = useGamification() || {};
+    const { awardArcadeXP } = usePocketBro?.() || {};
     const canvasRef = useRef(null);
     const { soundEnabled } = useSettings();
     const { playCrash, playCollect, playWin, playShoot, playLaser, playPowerUp, playFanfare, playExplosion, playHit, playBeep } = useRetroSound();
@@ -870,6 +872,7 @@ const FaceRunner = () => {
 
     const handleCrash = () => {
         const finalScore = Math.floor(scoreRef.current);
+        if (awardArcadeXP) awardArcadeXP('face_runner', finalScore);
 
         if (updateStat) updateStat('gamesPlayed', 'face_runner');
         if (addCoins) addCoins(Math.floor(finalScore / 10));

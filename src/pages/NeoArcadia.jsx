@@ -2,11 +2,21 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGamification } from '../context/GamificationContext';
+import { usePocketBro, POCKET_BRO_STAGES } from '../context/PocketBroContext';
 import useRetroSound from '../hooks/useRetroSound';
 import { triggerConfetti } from '../utils/confetti';
 import { getSkinAura } from '../config/SkinAuras';
 import { drawCanvasAura, createAuraTrailParticle, updateAndRenderAuraParticles } from '../utils/skinAuraCanvas';
 import { useToast } from '../context/ToastContext';
+import {
+    startCyberRadio,
+    stopCyberRadio,
+    setCyberRadioBPM,
+    isCyberRadioPlaying,
+    getCyberRadioBPM,
+    subscribeBeat,
+    getVisualizerEnergy
+} from '../utils/cyberRadioSynth';
 
 // City Map Dimensions
 const MAP_WIDTH = 2200;
@@ -149,11 +159,44 @@ const CITIZENS = [
     { id: 'c5', name: 'NekoBro', skinId: 'face_cat', x: 1650, y: 1100, vx: 0.4, vy: -0.2, text: 'Hooked a 40kg Neon Tuna! 🎣' }
 ];
 
+// Cyber Snacks Catalog for Companion
+const CYBER_SNACKS = [
+    {
+        id: 'battery',
+        name: 'Quantum Battery',
+        cost: 20,
+        desc: '+40 Energy, +15 Hunger, +25 XP',
+        iconColor: '#00f0ff'
+    },
+    {
+        id: 'donut',
+        name: 'Glitch Donut',
+        cost: 25,
+        desc: '+40 Hunger, +35 Happy, +30 XP',
+        iconColor: '#ec4899'
+    },
+    {
+        id: 'crystal',
+        name: 'CP Crystal',
+        cost: 50,
+        desc: '+50 Happy, +60 XP, Rainbow Aura',
+        iconColor: '#ffd700'
+    },
+    {
+        id: 'pepper',
+        name: 'Overdrive Pepper',
+        cost: 35,
+        desc: '+35 Energy, +45 XP, Flame Boost',
+        iconColor: '#ef4444'
+    }
+];
+
 export const NeoArcadia = () => {
     const navigate = useNavigate();
     const canvasRef = useRef(null);
-    const { userProfile, shopState, addCoins, coins, incrementStat } = useGamification() || {};
-    const { playCoin, playClick, playJump, playWin, playFanfare, triggerHaptic } = useRetroSound();
+    const { userProfile, shopState, addCoins, spendCoins, coins, incrementStat } = useGamification() || {};
+    const { stats: petStats, feedCyberSnack, awardArcadeXP, getCompanionPerks, play: playWithPet } = usePocketBro?.() || {};
+    const { playCoin, playClick, playJump, playWin, playFanfare, playBoop, playCollect, playPowerUp, triggerHaptic } = useRetroSound();
     const { showToast } = useToast() || {};
 
     // Player State
@@ -170,6 +213,22 @@ export const NeoArcadia = () => {
         footstepTimer: 0
     });
 
+    // Companion State
+    const companionRef = useRef({
+        x: 1100 + 40,
+        y: 600 + 25,
+        targetX: 1100 + 40,
+        targetY: 600 + 25,
+        hoverAngle: 0,
+        speech: '',
+        speechTimer: 0,
+        petHearts: [],
+        radarPulse: 0,
+        isSniffingChest: false,
+        nearestChest: null,
+        beatBounce: 0
+    });
+
     const [currentDistrict, setCurrentDistrict] = useState(DISTRICTS[0]);
     const [nearbyLandmark, setNearbyLandmark] = useState(null);
     const [lootedChests, setLootedChests] = useState(() => {
@@ -180,9 +239,23 @@ export const NeoArcadia = () => {
         }
     });
 
-    // Touch joystick / Virtual controls
+    // Touch joystick / Virtual controls & Modals
     const [touchTarget, setTouchTarget] = useState(null);
     const [isMinimapOpen, setIsMinimapOpen] = useState(false);
+    const [isCompanionDrawerOpen, setIsCompanionDrawerOpen] = useState(false);
+
+    // Cyber Radio State
+    const [radioPlaying, setRadioPlaying] = useState(false);
+    const [radioBpm, setRadioBpm] = useState(128);
+    const [visualizerBars, setVisualizerBars] = useState([8, 12, 16, 12, 8, 14]);
+
+    // Cyber Beat Reflex Minigame State (Embedded in Companion Drawer)
+    const [isReflexPlaying, setIsReflexPlaying] = useState(false);
+    const [reflexTimeLeft, setReflexTimeLeft] = useState(15);
+    const [reflexScore, setReflexScore] = useState(0);
+    const [reflexCombo, setReflexCombo] = useState(1);
+    const [reflexFeedback, setReflexFeedback] = useState('');
+    const [beatPulseRing, setBeatPulseRing] = useState(1.0);
 
     // Camera
     const cameraRef = useRef({ x: 1100 - window.innerWidth / 2, y: 600 - window.innerHeight / 2 });
@@ -195,13 +268,14 @@ export const NeoArcadia = () => {
 
     const equippedSkinId = userProfile?.skinId || shopState?.equipped?.skin || 'face_default';
     const { aura } = getSkinAura(equippedSkinId);
+    const companionPerks = getCompanionPerks ? getCompanionPerks() : {};
 
     // Record Overworld Visit
     useEffect(() => {
         incrementStat?.('overworldVisits', 1);
     }, [incrementStat]);
 
-    // Preload player skin
+    // Preload player skin & citizens
     useEffect(() => {
         const img = new Image();
         img.crossOrigin = 'Anonymous';
@@ -209,7 +283,6 @@ export const NeoArcadia = () => {
         img.src = src;
         skinImgRef.current = img;
 
-        // Preload citizen avatars
         CITIZENS.forEach(c => {
             const cImg = new Image();
             cImg.crossOrigin = 'Anonymous';
@@ -217,6 +290,59 @@ export const NeoArcadia = () => {
             citizenImgsRef.current[c.id] = cImg;
         });
     }, [equippedSkinId]);
+
+    // Cyber Radio Beat Subscription
+    useEffect(() => {
+        const unsubscribe = subscribeBeat(({ beat, bpm }) => {
+            // Synchronize companion & mascot dance bounce
+            if (companionRef.current) {
+                companionRef.current.beatBounce = 1.0;
+            }
+            if (playerRef.current) {
+                playerRef.current.walkCycle += 0.2;
+            }
+            setBeatPulseRing(1.8);
+            setTimeout(() => setBeatPulseRing(1.0), 120);
+        });
+
+        // Visualizer Bar Loop
+        const visInterval = setInterval(() => {
+            const energy = getVisualizerEnergy ? getVisualizerEnergy() : 0.5;
+            setVisualizerBars(prev => prev.map(() => Math.floor(4 + Math.random() * 16 * Math.max(0.3, energy))));
+        }, 80);
+
+        return () => {
+            unsubscribe();
+            clearInterval(visInterval);
+            stopCyberRadio();
+        };
+    }, []);
+
+    // Cyber Beat Reflex Game Timer
+    useEffect(() => {
+        if (!isReflexPlaying) return;
+
+        const timer = setInterval(() => {
+            setReflexTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setIsReflexPlaying(false);
+                    // Reward completion
+                    const totalCoins = Math.floor(reflexScore * 0.5) + 50;
+                    const totalXP = Math.floor(reflexScore * 1.5) + 75;
+                    if (addCoins) addCoins(totalCoins);
+                    if (awardArcadeXP) awardArcadeXP('beat_reflex', totalXP);
+                    triggerConfetti?.();
+                    playFanfare?.();
+                    showToast?.(`Reflex Session Complete! +${totalXP} Pet XP, +${totalCoins} CP`, 'success');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [isReflexPlaying, reflexScore, addCoins, awardArcadeXP, playFanfare, showToast]);
 
     // Keyboard Listeners
     useEffect(() => {
@@ -227,6 +353,9 @@ export const NeoArcadia = () => {
                     e.preventDefault();
                     enterLandmark(nearbyLandmark);
                 }
+            }
+            if (e.code === 'KeyP') {
+                setIsCompanionDrawerOpen(prev => !prev);
             }
         };
 
@@ -249,18 +378,128 @@ export const NeoArcadia = () => {
         navigate(lm.path);
     };
 
-    // Canvas Tap to Walk
+    // Toggle Cyber Radio
+    const handleToggleRadio = () => {
+        if (radioPlaying) {
+            stopCyberRadio();
+            setRadioPlaying(false);
+        } else {
+            startCyberRadio(radioBpm);
+            setRadioPlaying(true);
+            playBoop?.();
+        }
+    };
+
+    const handleSelectBpm = (bpm) => {
+        setRadioBpm(bpm);
+        setCyberRadioBPM(bpm);
+        if (!radioPlaying) {
+            startCyberRadio(bpm);
+            setRadioPlaying(true);
+        }
+        playClick?.();
+    };
+
+    // Canvas Tap to Walk / Companion Pet Interaction
     const handleCanvasClick = (e) => {
         if (!canvasRef.current) return;
         const rect = canvasRef.current.getBoundingClientRect();
         const clientX = e.clientX - rect.left;
         const clientY = e.clientY - rect.top;
 
-        // Map screen to world
         const worldX = clientX + cameraRef.current.x;
         const worldY = clientY + cameraRef.current.y;
 
+        // Check if player clicked directly on the companion
+        const comp = companionRef.current;
+        const distToComp = Math.hypot(worldX - comp.x, worldY - comp.y);
+        if (distToComp < 42) {
+            // Pet Interaction!
+            comp.speech = '❤️ *PURRR!* LOVE YA, BRO!';
+            comp.speechTimer = 180;
+            comp.beatBounce = 1.3;
+            // Spawn 6 heart burst particles
+            for (let i = 0; i < 6; i++) {
+                comp.petHearts.push({
+                    x: comp.x,
+                    y: comp.y - 12,
+                    vx: (Math.random() - 0.5) * 2.5,
+                    vy: -1.8 - Math.random() * 2,
+                    alpha: 1.0,
+                    size: 14 + Math.random() * 6
+                });
+            }
+            playBoop?.();
+            playWithPet?.();
+            setIsCompanionDrawerOpen(true);
+            return;
+        }
+
+        // Otherwise set walk target
         setTouchTarget({ x: Math.max(50, Math.min(MAP_WIDTH - 50, worldX)), y: Math.max(50, Math.min(MAP_HEIGHT - 50, worldY)) });
+        playClick?.();
+    };
+
+    // Feeding Cyber Snack to Companion
+    const handleFeedSnack = (snack) => {
+        if (spendCoins && !spendCoins(snack.cost)) {
+            showToast?.('Insufficient CP! Earn more CP in arcade runs.', 'error');
+            return;
+        }
+        if (feedCyberSnack) {
+            const fed = feedCyberSnack(snack.id);
+            triggerConfetti?.();
+            playPowerUp?.();
+            showToast?.(`Fed ${fed.name}! +${fed.xp} Pet XP`, 'success');
+
+            const comp = companionRef.current;
+            if (comp) {
+                comp.speech = `😋 YUM! ${fed.name.toUpperCase()}! ⚡`;
+                comp.speechTimer = 180;
+                comp.beatBounce = 1.5;
+            }
+        }
+    };
+
+    // Handle Tap on Beat in Reflex Game
+    const handleReflexTap = () => {
+        if (!isReflexPlaying) return;
+
+        // Pulse ring distance from 1.0 (on-beat strike zone)
+        const diff = Math.abs(beatPulseRing - 1.0);
+        if (diff < 0.35) {
+            // PERFECT HIT
+            setReflexFeedback('PERFECT! +50 XP');
+            setReflexScore(prev => prev + 50 * reflexCombo);
+            setReflexCombo(prev => Math.min(8, prev + 1));
+            playPowerUp?.();
+        } else if (diff < 0.65) {
+            // GREAT HIT
+            setReflexFeedback('GREAT! +25 XP');
+            setReflexScore(prev => prev + 25);
+            setReflexCombo(prev => Math.min(8, prev + 1));
+            playCollect?.();
+        } else {
+            // MISS
+            setReflexFeedback('EARLY/LATE!');
+            setReflexCombo(1);
+            playBoop?.();
+        }
+
+        setTimeout(() => setReflexFeedback(''), 400);
+    };
+
+    // Start Reflex Rhythm Minigame
+    const startReflexMinigame = () => {
+        setIsReflexPlaying(true);
+        setReflexTimeLeft(15);
+        setReflexScore(0);
+        setReflexCombo(1);
+        setReflexFeedback('');
+        if (!radioPlaying) {
+            startCyberRadio(radioBpm);
+            setRadioPlaying(true);
+        }
         playClick?.();
     };
 
@@ -272,14 +511,23 @@ export const NeoArcadia = () => {
         setLootedChests(nextLooted);
         localStorage.setItem('mb_neo_arcadia_chests', JSON.stringify(nextLooted));
 
-        if (addCoins) addCoins(chest.reward);
+        // Companion Coin Multiplier Perk
+        const multiplier = companionPerks?.coinMultiplier || 1.0;
+        const finalReward = Math.round(chest.reward * multiplier);
+
+        if (addCoins) addCoins(finalReward);
         incrementStat?.('chestsOpened', 1);
         playFanfare?.();
         triggerConfetti?.();
         triggerHaptic?.([30, 40, 80]);
 
+        if (companionRef.current) {
+            companionRef.current.speech = `🎉 CHEST OPENED! +${finalReward} CP!`;
+            companionRef.current.speechTimer = 220;
+        }
+
         if (showToast) {
-            showToast(`💎 Found ${chest.name}! +${chest.reward} CP`, 'success');
+            showToast(`💎 Found ${chest.name}! +${finalReward} CP`, 'success');
         }
     };
 
@@ -292,6 +540,7 @@ export const NeoArcadia = () => {
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const p = playerRef.current;
+            const comp = companionRef.current;
             const keys = keysPressed.current;
 
             // 1. INPUT PROCESSING
@@ -364,6 +613,62 @@ export const NeoArcadia = () => {
             const camX = cameraRef.current.x;
             const camY = cameraRef.current.y;
 
+            // COMPANION SPRING-DAMPER FOLLOWER LOGIC
+            let compOffsetX = -44;
+            let compOffsetY = 14;
+            if (p.facing === 'right') { compOffsetX = -46; compOffsetY = 12; }
+            else if (p.facing === 'left') { compOffsetX = 46; compOffsetY = 12; }
+            else if (p.facing === 'up') { compOffsetX = 24; compOffsetY = 44; }
+            else if (p.facing === 'down') { compOffsetX = -24; compOffsetY = -44; }
+
+            const targetCompX = p.x + compOffsetX;
+            const targetCompY = p.y + compOffsetY;
+            comp.x += (targetCompX - comp.x) * 0.12;
+            comp.y += (targetCompY - comp.y) * 0.12;
+            comp.hoverAngle += 0.05;
+            if (comp.beatBounce > 0) comp.beatBounce *= 0.88;
+
+            // CURIOSITY RADAR DETECTOR FOR SECRET CHESTS
+            let nearestUnlootedChest = null;
+            let nearestDist = 9999;
+            SECRET_CHESTS.forEach(chest => {
+                if (!lootedChests.includes(chest.id)) {
+                    const dist = Math.hypot(comp.x - chest.x, comp.y - chest.y);
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearestUnlootedChest = chest;
+                    }
+                }
+            });
+
+            if (nearestUnlootedChest && nearestDist < 240) {
+                comp.isSniffingChest = true;
+                comp.nearestChest = nearestUnlootedChest;
+                comp.radarPulse = (comp.radarPulse + 0.04) % 1;
+                if (comp.speechTimer <= 0) {
+                    comp.speech = `‼️ SNIFF SNIFF! ${nearestUnlootedChest.name.toUpperCase()} DETECTED! 💎`;
+                    comp.speechTimer = 220;
+                    playCollect?.();
+                }
+            } else {
+                comp.isSniffingChest = false;
+                comp.nearestChest = null;
+                if (comp.speechTimer > 0) {
+                    comp.speechTimer--;
+                    if (comp.speechTimer === 0) comp.speech = '';
+                } else if (Math.random() < 0.002) {
+                    const phrases = [
+                        '⚡ Exploring Neo-Arcadia!',
+                        '❤️ Best buds!',
+                        '🎵 Loving these Cyber Radio beats!',
+                        '👾 Click me for Cyber Snacks & Reflex!',
+                        '🕹️ Ready for an arcade run!'
+                    ];
+                    comp.speech = phrases[Math.floor(Math.random() * phrases.length)];
+                    comp.speechTimer = 160;
+                }
+            }
+
             // Detect Current District
             const activeDist = DISTRICTS.find(d =>
                 p.x >= d.bounds.minX && p.x <= d.bounds.maxX &&
@@ -387,7 +692,7 @@ export const NeoArcadia = () => {
             });
             setNearbyLandmark(closestLm);
 
-            // Check Secret Chests Proximity
+            // Check Secret Chests Proximity to Player
             SECRET_CHESTS.forEach(chest => {
                 if (!lootedChests.includes(chest.id)) {
                     const dist = Math.hypot(p.x - chest.x, p.y - chest.y);
@@ -426,11 +731,8 @@ export const NeoArcadia = () => {
 
             // C. Main Cyber Boulevards (Wide Glowing Roadways)
             ctx.fillStyle = '#0c1222';
-            // Cyber Avenue (top horizontal)
             ctx.fillRect(60, 480, MAP_WIDTH - 120, 100);
-            // Neon Boulevard (mid horizontal)
             ctx.fillRect(60, 880, MAP_WIDTH - 120, 100);
-            // Syndicate Way (central vertical)
             ctx.fillRect(1040, 60, 120, MAP_HEIGHT - 120);
 
             // Glowing Road Dividers
@@ -440,19 +742,16 @@ export const NeoArcadia = () => {
             ctx.shadowBlur = 8;
             ctx.setLineDash([16, 16]);
 
-            // Top road divider
             ctx.beginPath();
             ctx.moveTo(80, 530);
             ctx.lineTo(MAP_WIDTH - 80, 530);
             ctx.stroke();
 
-            // Mid road divider
             ctx.beginPath();
             ctx.moveTo(80, 930);
             ctx.lineTo(MAP_WIDTH - 80, 930);
             ctx.stroke();
 
-            // Vertical divider
             ctx.beginPath();
             ctx.moveTo(1100, 80);
             ctx.lineTo(1100, MAP_HEIGHT - 80);
@@ -475,7 +774,6 @@ export const NeoArcadia = () => {
                 const isNear = closestLm && closestLm.id === lm.id;
 
                 ctx.save();
-                // Building Base
                 ctx.fillStyle = isNear ? 'rgba(20, 32, 55, 0.95)' : 'rgba(12, 18, 34, 0.92)';
                 ctx.strokeStyle = isNear ? lm.color : `${lm.color}88`;
                 ctx.lineWidth = isNear ? 3 : 1.5;
@@ -549,7 +847,6 @@ export const NeoArcadia = () => {
                     ctx.textBaseline = 'middle';
                     ctx.fillText('🎁', 0, 0);
 
-                    // Name badge
                     ctx.font = 'bold 8px monospace';
                     ctx.fillStyle = '#ffd700';
                     ctx.fillText('SECRET CHEST', 0, -22);
@@ -562,7 +859,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // G. Render Wandering Citizens (NPCs)
+            // G. Render Citizens (NPCs)
             CITIZENS.forEach(c => {
                 c.x += c.vx;
                 c.y += c.vy;
@@ -572,7 +869,6 @@ export const NeoArcadia = () => {
                 ctx.save();
                 ctx.translate(c.x, c.y);
 
-                // Citizen Avatar
                 const cImg = citizenImgsRef.current[c.id];
                 if (cImg && cImg.complete) {
                     ctx.drawImage(cImg, -18, -18, 36, 36);
@@ -581,7 +877,6 @@ export const NeoArcadia = () => {
                     ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
                 }
 
-                // Speech Bubble
                 if (c.text) {
                     ctx.fillStyle = 'rgba(10, 15, 30, 0.9)';
                     ctx.strokeStyle = '#00f0ff';
@@ -603,7 +898,7 @@ export const NeoArcadia = () => {
             // H. Update and Render Aura Particles
             updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
 
-            // I. Render Player Character
+            // I. Render Player Mascot Character
             ctx.save();
             ctx.translate(p.x, p.y);
 
@@ -630,7 +925,7 @@ export const NeoArcadia = () => {
                 ctx.fill();
             }
 
-            // Floating Player Name Tag
+            // Player Name Tag
             ctx.scale(p.facing === 'left' ? -1 : 1, 1 / walkSquash);
             ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
             ctx.strokeStyle = aura.primaryColor;
@@ -648,6 +943,221 @@ export const NeoArcadia = () => {
 
             ctx.restore();
 
+            // J. RENDER OVERWORLD WALKING COMPANION & RADAR
+            const hoverY = comp.y + Math.sin(comp.hoverAngle) * 5 - comp.beatBounce * 8;
+
+            // Sonar Radar Waves towards nearest unlooted chest
+            if (comp.isSniffingChest && comp.nearestChest) {
+                const angle = Math.atan2(comp.nearestChest.y - comp.y, comp.nearestChest.x - comp.x);
+                ctx.save();
+                for (let ring = 0; ring < 3; ring++) {
+                    const r = 20 + ((comp.radarPulse + ring * 0.33) % 1) * 60;
+                    const alpha = Math.max(0, 1 - (r - 20) / 60);
+                    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.8})`;
+                    ctx.lineWidth = 2.5;
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(comp.x, comp.y, r, angle - 0.45, angle + 0.45);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // Companion Ground Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(comp.x, comp.y + 16, 12, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Render Companion Creature based on Stage & Type
+            const stageKey = petStats?.stage || 'EGG';
+            const typeKey = petStats?.type || 'SOOT';
+            const petColor = petStats?.color || '#00f0ff';
+
+            ctx.save();
+            ctx.translate(comp.x, hoverY);
+
+            if (stageKey === 'EGG') {
+                // EGG: Glowing speckled egg with shine
+                ctx.shadowColor = petColor;
+                ctx.shadowBlur = 14;
+                ctx.fillStyle = petColor;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 14, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(-4, -6, 2.5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(5, 4, 2, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath(); ctx.ellipse(-5, -7, 4, 8, -0.4, 0, Math.PI * 2); ctx.fill();
+            } else if (typeKey.includes('SLIME')) {
+                // SLIME / KING SLIME: Jelly blob with crown
+                const squish = 1 + Math.sin(comp.hoverAngle * 2) * 0.08;
+                ctx.scale(1 / squish, squish);
+                ctx.shadowColor = petColor;
+                ctx.shadowBlur = 14;
+                ctx.fillStyle = petColor;
+                ctx.beginPath();
+                ctx.roundRect(-16, -14, 32, 28, [16, 16, 8, 8]);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Eyes & Smile
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.arc(-6, -2, 2.5, 0, Math.PI * 2); ctx.arc(6, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(-7, -3, 1, 0, Math.PI * 2); ctx.arc(5, -3, 1, 0, Math.PI * 2); ctx.fill();
+
+                if (typeKey === 'KING_SLIME') {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.beginPath();
+                    ctx.moveTo(-8, -14); ctx.lineTo(-12, -22); ctx.lineTo(-4, -17);
+                    ctx.lineTo(0, -24); ctx.lineTo(4, -17); ctx.lineTo(12, -22); ctx.lineTo(8, -14);
+                    ctx.closePath(); ctx.fill();
+                }
+            } else if (typeKey.includes('ROBOT') || typeKey.includes('MECH')) {
+                // ROBOT / MECH: Cyber Drone with Jet Flames & Neon Visor
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.8)';
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(-10, 12, 6, 8 + Math.random() * 5);
+                ctx.fillRect(4, 12, 6, 8 + Math.random() * 5);
+
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = petColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.roundRect(-15, -14, 30, 26, 6); ctx.fill(); ctx.stroke();
+
+                ctx.fillStyle = petColor;
+                ctx.beginPath(); ctx.roundRect(-10, -5, 20, 6, 2); ctx.fill();
+
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(0, -22); ctx.stroke();
+                ctx.fillStyle = '#ff0055';
+                ctx.beginPath(); ctx.arc(0, -23, 2.5, 0, Math.PI * 2); ctx.fill();
+            } else if (typeKey.includes('DRAGON') || typeKey.includes('DINO')) {
+                // DRAGON / DINO: Winged Cyber Dino
+                ctx.shadowColor = petColor;
+                ctx.shadowBlur = 14;
+                const wingFlap = Math.sin(comp.hoverAngle * 3) * 0.3;
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.6)';
+
+                ctx.save(); ctx.rotate(-wingFlap);
+                ctx.beginPath(); ctx.moveTo(-12, -2); ctx.lineTo(-24, -16); ctx.lineTo(-14, 6); ctx.closePath(); ctx.fill();
+                ctx.restore();
+
+                ctx.save(); ctx.rotate(wingFlap);
+                ctx.beginPath(); ctx.moveTo(12, -2); ctx.lineTo(24, -16); ctx.lineTo(14, 6); ctx.closePath(); ctx.fill();
+                ctx.restore();
+
+                ctx.fillStyle = petColor;
+                ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath(); ctx.moveTo(-4, -14); ctx.lineTo(0, -24); ctx.lineTo(4, -14); ctx.closePath(); ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(-5, -2, 3.5, 0, Math.PI * 2); ctx.arc(5, -2, 3.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#1e1b4b';
+                ctx.beginPath(); ctx.arc(-5, -2, 2, 0, Math.PI * 2); ctx.arc(5, -2, 2, 0, Math.PI * 2); ctx.fill();
+            } else {
+                // BABY / SOOT / GHOST / ORB / OTHERS
+                ctx.shadowColor = petColor;
+                ctx.shadowBlur = 14;
+                ctx.fillStyle = petColor;
+                ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(-5, -2, 3, 0, Math.PI * 2); ctx.arc(5, -2, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#00f0ff';
+                ctx.beginPath(); ctx.arc(-5, -2, 1.5, 0, Math.PI * 2); ctx.arc(5, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 100, 150, 0.4)';
+                ctx.beginPath(); ctx.arc(-8, 3, 2.5, 0, Math.PI * 2); ctx.arc(8, 3, 2.5, 0, Math.PI * 2); ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Companion Name Badge
+            ctx.fillStyle = 'rgba(10, 15, 30, 0.88)';
+            ctx.strokeStyle = petColor;
+            ctx.lineWidth = 1;
+            const cTagW = 82;
+            ctx.beginPath();
+            ctx.roundRect(comp.x - cTagW / 2, hoverY - 32, cTagW, 14, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = 'bold 7px "Orbitron", sans-serif';
+            ctx.textAlign = 'center';
+            const stageLabel = POCKET_BRO_STAGES[stageKey]?.name || 'Egg';
+            ctx.fillText(`${stageLabel} • ${typeKey}`.slice(0, 14), comp.x, hoverY - 22);
+
+            // Companion Emoji Speech Bubble
+            if (comp.speech) {
+                ctx.save();
+                ctx.font = 'bold 10px sans-serif';
+                const textWidth = ctx.measureText(comp.speech).width;
+                const bubbleW = textWidth + 18;
+                const bubbleH = 24;
+                const bubbleX = comp.x - bubbleW / 2;
+                const bubbleY = hoverY - 60;
+
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+                ctx.strokeStyle = comp.isSniffingChest ? '#ffd700' : '#00f0ff';
+                ctx.lineWidth = 1.5;
+                if (comp.isSniffingChest) {
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 10;
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(bubbleX, bubbleY, bubbleW, bubbleH, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Bubble tail pointer
+                ctx.beginPath();
+                ctx.moveTo(comp.x - 4, bubbleY + bubbleH);
+                ctx.lineTo(comp.x, bubbleY + bubbleH + 6);
+                ctx.lineTo(comp.x + 4, bubbleY + bubbleH);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = comp.isSniffingChest ? '#ffd700' : '#fff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(comp.speech, comp.x, bubbleY + bubbleH / 2);
+                ctx.restore();
+            }
+
+            // Update & Render Companion Pet Hearts
+            if (comp.petHearts && comp.petHearts.length > 0) {
+                for (let i = comp.petHearts.length - 1; i >= 0; i--) {
+                    const h = comp.petHearts[i];
+                    h.x += h.vx;
+                    h.y += h.vy;
+                    h.alpha -= 0.025;
+                    if (h.alpha <= 0) {
+                        comp.petHearts.splice(i, 1);
+                    } else {
+                        ctx.save();
+                        ctx.globalAlpha = h.alpha;
+                        ctx.font = `${Math.round(h.size)}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('❤️', h.x, h.y);
+                        ctx.restore();
+                    }
+                }
+            }
+
             ctx.restore(); // Undo camera translation
 
             animationFrameId = requestAnimationFrame(tick);
@@ -655,7 +1165,7 @@ export const NeoArcadia = () => {
 
         animationFrameId = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [currentDistrict, nearbyLandmark, touchTarget, lootedChests, equippedSkinId]);
+    }, [currentDistrict, nearbyLandmark, touchTarget, lootedChests, equippedSkinId, petStats, companionPerks]);
 
     // Handle Window Resize
     useEffect(() => {
@@ -669,6 +1179,12 @@ export const NeoArcadia = () => {
         window.addEventListener('resize', resize);
         return () => window.removeEventListener('resize', resize);
     }, []);
+
+    const petStageData = POCKET_BRO_STAGES[petStats?.stage || 'EGG'] || POCKET_BRO_STAGES.EGG;
+    const petXp = petStats?.xp || 0;
+    const petHunger = Math.round(petStats?.hunger ?? 80);
+    const petHappy = Math.round(petStats?.happy ?? 80);
+    const petEnergy = Math.round(petStats?.energy ?? 80);
 
     return (
         <div style={{
@@ -739,8 +1255,114 @@ export const NeoArcadia = () => {
                     </div>
                 </div>
 
-                {/* Right: CP & Minimap Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', pointerEvents: 'auto' }}>
+                {/* Right: Cyber Radio, Pocket Bro Hub, CP & Minimap */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {/* CYBER RADIO PROCEDURAL SYNTH ENGINE DOCK */}
+                    <div style={{
+                        background: 'rgba(15, 23, 42, 0.9)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(0, 240, 255, 0.35)',
+                        borderRadius: '30px',
+                        padding: '6px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 0 16px rgba(0, 240, 255, 0.15)'
+                    }}>
+                        {/* Radio Play/Pause Button */}
+                        <button
+                            type="button"
+                            onClick={handleToggleRadio}
+                            title={radioPlaying ? 'Pause Cyber Radio' : 'Play Procedural Cyber Radio'}
+                            style={{
+                                background: radioPlaying ? '#00f0ff' : 'rgba(255, 255, 255, 0.1)',
+                                color: radioPlaying ? '#000' : '#00f0ff',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '28px',
+                                height: '28px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            {radioPlaying ? (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
+                            ) : (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                            )}
+                        </button>
+
+                        {/* Animated 6-Bar Equalizer Visualizer */}
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '16px', padding: '0 2px' }}>
+                            {visualizerBars.map((height, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        width: '3px',
+                                        height: radioPlaying ? `${height}px` : '4px',
+                                        background: radioPlaying ? '#00f0ff' : 'rgba(255, 255, 255, 0.25)',
+                                        borderRadius: '1px',
+                                        transition: 'height 0.08s ease'
+                                    }}
+                                />
+                            ))}
+                        </div>
+
+                        {/* BPM Selector Pills */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {[100, 128, 140].map((bpm) => (
+                                <button
+                                    key={bpm}
+                                    type="button"
+                                    onClick={() => handleSelectBpm(bpm)}
+                                    style={{
+                                        background: radioBpm === bpm && radioPlaying ? 'rgba(0, 240, 255, 0.25)' : 'transparent',
+                                        color: radioBpm === bpm && radioPlaying ? '#00f0ff' : '#94a3b8',
+                                        border: radioBpm === bpm && radioPlaying ? '1px solid #00f0ff' : '1px solid transparent',
+                                        borderRadius: '12px',
+                                        padding: '2px 6px',
+                                        fontSize: '0.65rem',
+                                        fontWeight: '900',
+                                        fontFamily: '"Orbitron", monospace',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {bpm}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* POCKET COMPANION QUICK HUB BUTTON */}
+                    <button
+                        type="button"
+                        onClick={() => { setIsCompanionDrawerOpen(true); playClick?.(); }}
+                        style={{
+                            background: 'rgba(15, 23, 42, 0.9)',
+                            backdropFilter: 'blur(12px)',
+                            border: '1.5px solid #a855f7',
+                            boxShadow: '0 0 16px rgba(168, 85, 247, 0.25)',
+                            borderRadius: '30px',
+                            padding: '6px 14px',
+                            color: '#e2e8f0',
+                            fontSize: '0.75rem',
+                            fontWeight: '900',
+                            fontFamily: '"Orbitron", sans-serif',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" /><circle cx="9" cy="10" r="1.5" fill="#a855f7" /><circle cx="15" cy="10" r="1.5" fill="#a855f7" /><path d="M9 15c1 1 2 1.5 3 1.5s2-.5 3-1.5" /></svg>
+                        <span>{petStageData.name.toUpperCase()}</span>
+                        <span style={{ fontSize: '0.68rem', color: '#ffd700' }}>{petHappy}% ❤️</span>
+                    </button>
+
+                    {/* CP Balance */}
                     <div style={{
                         background: 'rgba(15, 23, 42, 0.85)',
                         backdropFilter: 'blur(12px)',
@@ -758,6 +1380,7 @@ export const NeoArcadia = () => {
                         <span>{(coins || 0).toLocaleString()} CP</span>
                     </div>
 
+                    {/* City Map Fast Travel Toggle */}
                     <button
                         type="button"
                         onClick={() => { setIsMinimapOpen(!isMinimapOpen); playClick?.(); }}
@@ -776,7 +1399,7 @@ export const NeoArcadia = () => {
                             gap: '6px'
                         }}
                     >
-                        <span>🗺️</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
                         <span>{isMinimapOpen ? 'CLOSE MAP' : 'CITY MAP'}</span>
                     </button>
                 </div>
@@ -842,7 +1465,261 @@ export const NeoArcadia = () => {
                 )}
             </AnimatePresence>
 
-            {/* FULL CITY MINIMAP MODAL */}
+            {/* POCKET BRO COMPANION CYBER DRAWER / HUB MODAL */}
+            <AnimatePresence>
+                {isCompanionDrawerOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 50, scale: 0.96 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 50, scale: 0.96 }}
+                        style={{
+                            position: 'absolute',
+                            top: '20px',
+                            bottom: '20px',
+                            right: '20px',
+                            width: '390px',
+                            maxWidth: 'calc(100vw - 40px)',
+                            background: 'rgba(7, 11, 24, 0.96)',
+                            backdropFilter: 'blur(20px)',
+                            border: '2px solid #a855f7',
+                            boxShadow: '0 0 40px rgba(168, 85, 247, 0.35)',
+                            borderRadius: '24px',
+                            padding: '22px',
+                            zIndex: 50,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            color: '#fff',
+                            overflowY: 'auto'
+                        }}
+                    >
+                        {/* Header */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <div>
+                                <div style={{ fontSize: '0.68rem', color: '#a855f7', fontWeight: '900', letterSpacing: '1px' }}>
+                                    OVERWORLD WALKING COMPANION
+                                </div>
+                                <h3 style={{ margin: '2px 0 0 0', fontSize: '1.25rem', color: '#fff' }}>
+                                    {petStats?.name || 'POCKET BRO'}
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsCompanionDrawerOpen(false)}
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: 'none',
+                                    color: '#fff',
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Companion Status & Evolution Card */}
+                        <div style={{
+                            background: 'rgba(15, 23, 42, 0.75)',
+                            border: '1px solid rgba(168, 85, 247, 0.3)',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            marginBottom: '16px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '1.6rem' }}>{petStageData.icon}</span>
+                                    <div>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: '900', color: '#a855f7' }}>
+                                            {petStageData.name.toUpperCase()} ({petStats?.type || 'SOOT'})
+                                        </div>
+                                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                            XP: {petXp.toLocaleString()} Total
+                                        </div>
+                                    </div>
+                                </div>
+                                <span style={{
+                                    background: companionPerks?.coinMultiplier > 1 ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                                    color: companionPerks?.coinMultiplier > 1 ? '#00ff88' : '#94a3b8',
+                                    border: `1px solid ${companionPerks?.coinMultiplier > 1 ? '#00ff88' : 'rgba(255,255,255,0.2)'}`,
+                                    borderRadius: '20px',
+                                    padding: '3px 8px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: '900'
+                                }}>
+                                    {companionPerks?.coinMultiplier > 1 ? '+25% CP BUFF' : 'NORMAL CP'}
+                                </span>
+                            </div>
+
+                            {/* Vitals Meters */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {/* Hunger */}
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
+                                        <span>HUNGER</span>
+                                        <span style={{ color: petHunger > 50 ? '#00ff88' : '#ef4444' }}>{petHunger}%</span>
+                                    </div>
+                                    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${petHunger}%`, height: '100%', background: '#00ff88', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                                    </div>
+                                </div>
+
+                                {/* Happiness */}
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
+                                        <span>HAPPINESS</span>
+                                        <span style={{ color: petHappy > 50 ? '#ffd700' : '#ef4444' }}>{petHappy}%</span>
+                                    </div>
+                                    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${petHappy}%`, height: '100%', background: '#ffd700', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                                    </div>
+                                </div>
+
+                                {/* Energy */}
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
+                                        <span>ENERGY</span>
+                                        <span style={{ color: petEnergy > 50 ? '#00f0ff' : '#ef4444' }}>{petEnergy}%</span>
+                                    </div>
+                                    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${petEnergy}%`, height: '100%', background: '#00f0ff', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* CYBER-SNACK BAR */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00f0ff', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                                FEED CYBER-SNACKS (LEVEL UP & HEAL)
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                {CYBER_SNACKS.map(snack => (
+                                    <button
+                                        key={snack.id}
+                                        type="button"
+                                        onClick={() => handleFeedSnack(snack)}
+                                        style={{
+                                            background: 'rgba(15, 23, 42, 0.8)',
+                                            border: `1.5px solid ${snack.iconColor}55`,
+                                            borderRadius: '12px',
+                                            padding: '10px',
+                                            textAlign: 'left',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.15s ease'
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = snack.iconColor; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${snack.iconColor}55`; }}
+                                    >
+                                        <div style={{ fontSize: '0.78rem', fontWeight: '900', color: snack.iconColor }}>
+                                            {snack.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.62rem', color: '#94a3b8', fontFamily: 'monospace', margin: '3px 0' }}>
+                                            {snack.desc}
+                                        </div>
+                                        <div style={{ fontSize: '0.68rem', fontWeight: '900', color: '#ffd700' }}>
+                                            🪙 {snack.cost} CP
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* CYBER BEAT REFLEX RHYTHM MINIGAME */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(0, 240, 255, 0.1))',
+                            border: '1.5px solid #a855f7',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#ffd700', marginBottom: '4px' }}>
+                                CYBER BEAT REFLEX RHYTHM TRIAL
+                            </div>
+                            <p style={{ margin: '0 0 12px 0', fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                Tap on beat with procedural synthwave tracks to earn Pet XP and CP jackpots!
+                            </p>
+
+                            {!isReflexPlaying ? (
+                                <button
+                                    type="button"
+                                    onClick={startReflexMinigame}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #a855f7, #00f0ff)',
+                                        border: 'none',
+                                        color: '#000',
+                                        borderRadius: '12px',
+                                        padding: '10px 20px',
+                                        fontSize: '0.78rem',
+                                        fontWeight: '900',
+                                        fontFamily: '"Orbitron", sans-serif',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 0 15px rgba(168, 85, 247, 0.5)'
+                                    }}
+                                >
+                                    START 15S REFLEX TRIAL
+                                </button>
+                            ) : (
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: '900', marginBottom: '8px' }}>
+                                        <span style={{ color: '#00f0ff' }}>TIME: {reflexTimeLeft}s</span>
+                                        <span style={{ color: '#ffd700' }}>SCORE: {reflexScore}</span>
+                                        <span style={{ color: '#a855f7' }}>COMBO: x{reflexCombo}</span>
+                                    </div>
+
+                                    {/* Beat Target Ring */}
+                                    <div style={{ position: 'relative', width: '100px', height: '100px', margin: '10px auto' }}>
+                                        {/* Outer pulse ring */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            borderRadius: '50%',
+                                            border: '2px solid #00f0ff',
+                                            transform: `scale(${beatPulseRing})`,
+                                            transition: 'transform 0.12s linear',
+                                            opacity: beatPulseRing > 1 ? 0.7 : 0.2
+                                        }} />
+                                        {/* Core hit button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleReflexTap}
+                                            style={{
+                                                position: 'absolute',
+                                                inset: '10px',
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #a855f7, #00f0ff)',
+                                                border: '2px solid #fff',
+                                                color: '#000',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '900',
+                                                fontFamily: '"Orbitron", sans-serif',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            TAP BEAT!
+                                        </button>
+                                    </div>
+
+                                    {reflexFeedback && (
+                                        <div style={{ fontSize: '0.85rem', fontWeight: '900', color: reflexFeedback.includes('PERFECT') ? '#ffd700' : '#00f0ff' }}>
+                                            {reflexFeedback}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* FULL CITY MINIMAP FAST TRAVEL DIRECTORY */}
             <AnimatePresence>
                 {isMinimapOpen && (
                     <motion.div
@@ -872,6 +1749,7 @@ export const NeoArcadia = () => {
                                 </p>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => setIsMinimapOpen(false)}
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.1)',
@@ -952,7 +1830,9 @@ export const NeoArcadia = () => {
                 <span>•</span>
                 <span>SHIFT: SPRINT</span>
                 <span>•</span>
-                <span>CLICK / TAP: DESTINATION BEACON</span>
+                <span>CLICK COMPANION: PET & SNACKS</span>
+                <span>•</span>
+                <span>[P]: COMPANION HUB</span>
             </div>
         </div>
     );

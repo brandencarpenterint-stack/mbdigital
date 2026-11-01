@@ -94,7 +94,7 @@ const PocketCompanion = () => {
     }, [stats.tempStatus]);
 
     // CONDITIONAL RENDER AT THE END
-    if (location.pathname === '/pocketbro') return null;
+    if (location.pathname === '/pocketbro' || location.pathname === '/overworld' || location.pathname === '/bunker') return null;
 
     const equippedSkin = shopState?.equipped?.pocketbro || null;
 
