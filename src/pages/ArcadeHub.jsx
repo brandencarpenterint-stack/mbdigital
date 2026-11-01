@@ -641,18 +641,25 @@ const ArcadeHub = () => {
                         </div>
                     </Link>
 
-                    <Link to="/bunker" style={{ textDecoration: 'none' }}>
+                    <Link to="/overworld" style={{ textDecoration: 'none' }}>
                         <div style={{
-                            background: 'rgba(0, 229, 255, 0.15)',
-                            border: '1px solid #00e5ff',
-                            color: '#00ffff',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.2))',
+                            border: '1px solid #00f0ff',
+                            color: '#00f0ff',
                             borderRadius: '16px',
                             padding: '6px 14px',
-                            fontWeight: 'bold',
+                            fontWeight: '900',
                             fontSize: '0.78rem',
-                            display: 'flex', alignItems: 'center', gap: '6px'
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            boxShadow: '0 0 14px rgba(0, 240, 255, 0.35)',
+                            fontFamily: 'monospace'
                         }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg> THE BUNKER
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                                <line x1="8" y1="2" x2="8" y2="18" />
+                                <line x1="16" y1="6" x2="16" y2="22" />
+                            </svg>
+                            <span>NEO-ARCADIA</span>
                         </div>
                     </Link>
 

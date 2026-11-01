@@ -9,7 +9,7 @@ const TheUnderworld = lazy(() => import('./pages/TheUnderworld'));
 const ShopPage = lazy(() => import('./pages/ShopPage'));
 const BeatLab = lazy(() => import('./pages/BeatLab'));
 const PocketBro = lazy(() => import('./pages/PocketBro'));
-const TheBunker = lazy(() => import('./pages/TheBunker'));
+const NeoArcadia = lazy(() => import('./pages/NeoArcadia'));
 const SubSlayer = lazy(() => import('./pages/SubSlayer'));
 const HustleMode = lazy(() => import('./pages/HustleMode'));
 const BroCard = lazy(() => import('./pages/BroCard'));
@@ -106,7 +106,8 @@ function App() {
             <Route path="coloring" element={<Coloring />} />
             <Route path="beatlab" element={<BeatLab />} />
             <Route path="pocketbro" element={<PocketBro />} />
-            <Route path="bunker" element={<TheBunker />} />
+            <Route path="overworld" element={<NeoArcadia />} />
+            <Route path="bunker" element={<NeoArcadia />} />
             <Route path="subslayer" element={<SubSlayer />} />
             <Route path="hustle" element={<HustleMode />} />
             <Route path="profile" element={<BroCard />} />

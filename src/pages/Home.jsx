@@ -570,15 +570,15 @@ const Home = () => {
 
                 {/* 2. TACTICAL DESTINATION PILLS */}
                 <motion.div variants={item} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                    <Link to="/bunker" style={{ textDecoration: 'none' }}>
-                        <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.2), rgba(255, 0, 255, 0.2))', border: '1px solid #ff0055', color: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', borderRadius: '16px' }}>
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff0055" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '6px' }}>
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="12" r="6" />
-                                <line x1="12" y1="2" x2="12" y2="12" />
+                    <Link to="/overworld" style={{ textDecoration: 'none' }}>
+                        <TiltCard className="bento-card" style={{ background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(168, 85, 247, 0.2))', border: '1px solid #00f0ff', color: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', borderRadius: '16px', boxShadow: '0 0 20px rgba(0, 240, 255, 0.25)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '6px' }}>
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                                <line x1="8" y1="2" x2="8" y2="18" />
+                                <line x1="16" y1="6" x2="16" y2="22" />
                             </svg>
-                            <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900' }}>THE BUNKER</h3>
-                            <div style={{ fontSize: '0.62rem', color: '#ff88aa', marginTop: '2px' }}>MULTIPLAYER LOBBY</div>
+                            <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#00f0ff', letterSpacing: '0.5px' }}>NEO-ARCADIA</h3>
+                            <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '2px', fontFamily: 'monospace' }}>16-BIT CYBER OVERWORLD</div>
                         </TiltCard>
                     </Link>
 

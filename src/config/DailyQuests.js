@@ -82,8 +82,8 @@ export const DAILY_TEMPLATES = [
     // FACTION & SOCIAL
     { id: 'faction_donate_100', desc: 'Donate 100 FP to your Faction', target: 100, reward: 50, type: 'factionPointsDonated', game: 'social' },
     { id: 'faction_donate_1000', desc: 'Donate 1,000 FP to your Faction', target: 1000, reward: 200, type: 'factionPointsDonated', game: 'social' },
-    { id: 'bunker_pie_1', desc: 'Throw a Custard Pie', target: 1, reward: 100, type: 'bunkerPiesThrown', game: 'social' },
-    { id: 'bunker_smoke_1', desc: 'Vanish with a Smoke Bomb', target: 1, reward: 100, type: 'bunkerSmokesUsed', game: 'social' },
+    { id: 'overworld_visit_1', desc: 'Explore Neo-Arcadia Overworld', target: 1, reward: 100, type: 'overworldVisits', game: 'social' },
+    { id: 'overworld_chest_1', desc: 'Find a Secret Alley Cache in Neo-Arcadia', target: 1, reward: 150, type: 'chestsOpened', game: 'social' },
     { id: 'underworld_duel_1', desc: 'Match an Underworld Wager', target: 1, reward: 250, type: 'underworldWagersMatched', game: 'social' },
 
     // GENERAL
