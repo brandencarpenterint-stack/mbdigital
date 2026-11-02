@@ -163,6 +163,16 @@ const INITIAL_STREET_CRATES = [
     { id: 'sc9', x: 1120, y: 1150, smashed: false, respawn: 0, reward: 35 }
 ];
 
+// Neon Stunt Jump Ramps & Floating Sky Rings
+const STUNT_RAMPS = [
+    { id: 'ramp_1', x: 480, y: 530, width: 44, height: 32, dir: 'right', ringX: 620, ringY: 530, ringCollected: false },
+    { id: 'ramp_2', x: 1520, y: 530, width: 44, height: 32, dir: 'left', ringX: 1380, ringY: 530, ringCollected: false },
+    { id: 'ramp_3', x: 500, y: 930, width: 44, height: 32, dir: 'right', ringX: 640, ringY: 930, ringCollected: false },
+    { id: 'ramp_4', x: 1560, y: 930, width: 44, height: 32, dir: 'left', ringX: 1420, ringY: 930, ringCollected: false },
+    { id: 'ramp_5', x: 1100, y: 360, width: 32, height: 44, dir: 'down', ringX: 1100, ringY: 480, ringCollected: false },
+    { id: 'ramp_6', x: 1100, y: 1180, width: 32, height: 44, dir: 'up', ringX: 1100, ringY: 1060, ringCollected: false }
+];
+
 // Living City Citizens
 const CITIZENS = [
     { id: 'c1', name: 'AstroPaul', skinId: 'face_astro', x: 580, y: 460, vx: 0.6, vy: 0, text: 'Heading to the Cannon! 🚀' },
@@ -236,12 +246,20 @@ export const NeoArcadia = () => {
         isBoosting: false,
         boostFuel: 100,
         skidTrails: [],
-        debrisParticles: []
+        debrisParticles: [],
+
+        // Stunt Jump & Mid-Air Flip Physics
+        altitude: 0,
+        verticalVelocity: 0,
+        stuntSpin: 0,
+        isAirborne: false,
+        stuntScoreMultiplier: 1
     });
 
     const [isVehicleMounted, setIsVehicleMounted] = useState(false);
     const [boostFuelPercent, setBoostFuelPercent] = useState(100);
     const streetCratesRef = useRef([...INITIAL_STREET_CRATES]);
+    const stuntRampsRef = useRef([...STUNT_RAMPS]);
 
     // Companion State
     const companionRef = useRef({
@@ -269,7 +287,7 @@ export const NeoArcadia = () => {
         }
     });
 
-    // Touch joystick / Virtual controls & Modals
+    // Modals & UI States
     const [touchTarget, setTouchTarget] = useState(null);
     const [isMinimapOpen, setIsMinimapOpen] = useState(false);
     const [isCompanionDrawerOpen, setIsCompanionDrawerOpen] = useState(false);
@@ -279,7 +297,7 @@ export const NeoArcadia = () => {
     const [radioBpm, setRadioBpm] = useState(128);
     const [visualizerBars, setVisualizerBars] = useState([8, 12, 16, 12, 8, 14]);
 
-    // Cyber Beat Reflex Minigame State (Embedded in Companion Drawer)
+    // Cyber Beat Reflex Minigame State
     const [isReflexPlaying, setIsReflexPlaying] = useState(false);
     const [reflexTimeLeft, setReflexTimeLeft] = useState(15);
     const [reflexScore, setReflexScore] = useState(0);
@@ -383,12 +401,14 @@ export const NeoArcadia = () => {
             p.vehicleSpeed = 0;
             playPowerUp?.();
             triggerHaptic?.([30, 50]);
-            comp.speech = '🏎️ VROOOM! LET\'S DRIFT, BRO!';
+            comp.speech = '🏎️ VROOOM! HIT THE RAMPS, BRO!';
             comp.speechTimer = 200;
             comp.beatBounce = 1.4;
-            if (showToast) showToast('Mounted Cyber Hover-Bike! [SPACE] Nitro • [H] Horn', 'success');
+            if (showToast) showToast('Mounted Cyber Hover-Bike! Hit ramps for Air Flips & Sky Rings!', 'success');
         } else {
             p.vehicleSpeed = 0;
+            p.altitude = 0;
+            p.isAirborne = false;
             playBoop?.();
             triggerHaptic?.([20]);
             comp.speech = '🚶 Exploring on foot!';
@@ -413,7 +433,7 @@ export const NeoArcadia = () => {
                 e.preventDefault();
                 playBoop?.();
                 if (companionRef.current) {
-                    companionRef.current.speech = '📢 *BEEP BEEP!* GET OUT THE WAY!';
+                    companionRef.current.speech = '📢 *BEEP BEEP!* WATCH OUT!';
                     companionRef.current.speechTimer = 140;
                 }
                 return;
@@ -484,7 +504,6 @@ export const NeoArcadia = () => {
         const worldX = clientX + cameraRef.current.x;
         const worldY = clientY + cameraRef.current.y;
 
-        // Check if player clicked directly on the companion
         const comp = companionRef.current;
         const distToComp = Math.hypot(worldX - comp.x, worldY - comp.y);
         if (distToComp < 44) {
@@ -507,7 +526,6 @@ export const NeoArcadia = () => {
             return;
         }
 
-        // Tap Destination Beacon
         setTouchTarget({ x: Math.max(50, Math.min(MAP_WIDTH - 50, worldX)), y: Math.max(50, Math.min(MAP_HEIGHT - 50, worldY)) });
         playClick?.();
     };
@@ -609,6 +627,7 @@ export const NeoArcadia = () => {
             const comp = companionRef.current;
             const keys = keysPressed.current;
             const crates = streetCratesRef.current;
+            const ramps = stuntRampsRef.current;
 
             // --- 1. MOVEMENT & VEHICLE PHYSICS ---
             if (p.isMounted) {
@@ -622,7 +641,7 @@ export const NeoArcadia = () => {
                 if (keys['KeyS'] || keys['ArrowDown']) accel -= 1;
 
                 // Nitro Boost
-                p.isBoosting = !!(keys['Space'] && p.boostFuel > 4 && accel > 0);
+                p.isBoosting = !!(keys['Space'] && p.boostFuel > 4 && accel > 0 && !p.isAirborne);
                 if (p.isBoosting) {
                     p.boostFuel = Math.max(0, p.boostFuel - 0.9);
                 } else {
@@ -630,21 +649,21 @@ export const NeoArcadia = () => {
                 }
                 setBoostFuelPercent(Math.round(p.boostFuel));
 
-                // Drifting Check
-                p.isDrifting = (keys['ShiftLeft'] || keys['ShiftRight'] || Math.abs(steer) > 0) && Math.abs(p.vehicleSpeed) > 4.5 && steer !== 0;
+                // Drifting Check (only while on ground)
+                p.isDrifting = !p.isAirborne && (keys['ShiftLeft'] || keys['ShiftRight'] || Math.abs(steer) > 0) && Math.abs(p.vehicleSpeed) > 4.5 && steer !== 0;
 
                 const turnRate = p.isDrifting ? 0.088 : 0.052;
-                if (Math.abs(p.vehicleSpeed) > 0.2) {
+                if (Math.abs(p.vehicleSpeed) > 0.2 && !p.isAirborne) {
                     p.vehicleAngle += steer * turnRate * (p.vehicleSpeed > 0 ? 1 : -1);
                 }
 
                 // Speed calculation
                 const currentMaxSpd = p.vehicleMaxSpeed * (p.isBoosting ? 1.48 : 1.0);
-                if (accel > 0) {
+                if (accel > 0 && !p.isAirborne) {
                     p.vehicleSpeed = Math.min(currentMaxSpd, p.vehicleSpeed + p.vehicleAccel * (p.isBoosting ? 1.8 : 1.0));
-                } else if (accel < 0) {
+                } else if (accel < 0 && !p.isAirborne) {
                     p.vehicleSpeed = Math.max(-3.5, p.vehicleSpeed - p.vehicleAccel * 0.8);
-                } else {
+                } else if (!p.isAirborne) {
                     p.vehicleSpeed *= p.vehicleDecel;
                     if (Math.abs(p.vehicleSpeed) < 0.05) p.vehicleSpeed = 0;
                 }
@@ -655,15 +674,15 @@ export const NeoArcadia = () => {
                 p.x += p.vx;
                 p.y += p.vy;
 
-                // Facing direction for landmarks
+                // Facing direction
                 if (Math.abs(p.vx) > Math.abs(p.vy)) {
                     p.facing = p.vx > 0 ? 'right' : 'left';
                 } else {
                     p.facing = p.vy > 0 ? 'down' : 'up';
                 }
 
-                // Drifting Skid Trails
-                if (p.isDrifting && Math.random() < 0.65) {
+                // Drifting Skid Trails on ground
+                if (p.isDrifting && !p.isAirborne && Math.random() < 0.65) {
                     const skidOffsetX = Math.cos(p.vehicleAngle + Math.PI / 2) * 12;
                     const skidOffsetY = Math.sin(p.vehicleAngle + Math.PI / 2) * 12;
                     p.skidTrails.push({
@@ -683,7 +702,96 @@ export const NeoArcadia = () => {
                     if (p.skidTrails.length > 70) p.skidTrails.splice(0, 10);
                 }
 
-                // Companion locks seamlessly into the sidecar pod!
+                // --- STUNT RAMP LAUNCH DETECTION ---
+                if (!p.isAirborne && Math.abs(p.vehicleSpeed) > 3.6) {
+                    ramps.forEach(ramp => {
+                        const dist = Math.hypot(p.x - ramp.x, p.y - ramp.y);
+                        if (dist < 32) {
+                            p.isAirborne = true;
+                            p.altitude = 4;
+                            p.verticalVelocity = Math.min(15, Math.abs(p.vehicleSpeed) * 1.35 + (p.isBoosting ? 3 : 0));
+                            p.stuntSpin = 0;
+                            p.stuntScoreMultiplier = p.isBoosting ? 2 : 1;
+                            playJump?.();
+                            playWin?.();
+                            triggerHaptic?.([50, 70]);
+
+                            comp.speech = '🚀 AIRBORNE FLIP!! WOOO!';
+                            comp.speechTimer = 140;
+                            comp.beatBounce = 2.0;
+
+                            for (let i = 0; i < 8; i++) {
+                                p.debrisParticles.push({
+                                    x: ramp.x,
+                                    y: ramp.y,
+                                    vx: (Math.random() - 0.5) * 6,
+                                    vy: (Math.random() - 0.5) * 6,
+                                    size: 3 + Math.random() * 3,
+                                    alpha: 1.0,
+                                    color: '#ffd700'
+                                });
+                            }
+                        }
+                    });
+                }
+
+                // --- AIRBORNE FLIP & SKY RINGS DYNAMICS ---
+                if (p.isAirborne) {
+                    p.altitude += p.verticalVelocity;
+                    p.verticalVelocity -= 0.65; // Gravity
+                    p.stuntSpin += 0.22; // Rapid 360 spin
+
+                    // Check floating sky rings
+                    ramps.forEach(ramp => {
+                        if (!ramp.ringCollected) {
+                            const distToRing = Math.hypot(p.x - ramp.ringX, p.y - ramp.ringY);
+                            if (distToRing < 42 && p.altitude > 15) {
+                                ramp.ringCollected = true;
+                                const bonus = 50 * p.stuntScoreMultiplier;
+                                if (addCoins) addCoins(bonus);
+                                playCollect?.();
+                                playPowerUp?.();
+                                triggerConfetti?.();
+                                if (showToast) showToast(`🌟 Sky Ring Snatched! +${bonus} CP`, 'success');
+                                comp.speech = `🌟 SKY RING! +${bonus} CP!`;
+                                comp.speechTimer = 160;
+
+                                setTimeout(() => { ramp.ringCollected = false; }, 20000);
+                            }
+                        }
+                    });
+
+                    // Landing on ground
+                    if (p.altitude <= 0) {
+                        p.altitude = 0;
+                        p.verticalVelocity = 0;
+                        p.isAirborne = false;
+                        p.stuntSpin = 0;
+
+                        const landingReward = 25 * p.stuntScoreMultiplier;
+                        if (addCoins) addCoins(landingReward);
+                        playExplosion?.();
+                        triggerHaptic?.([60, 80]);
+
+                        if (showToast) showToast(`🎯 SICK STUNT LANDING! +${landingReward} CP`, 'success');
+                        comp.speech = `🎯 PERFECT LANDING! +${landingReward} CP!`;
+                        comp.speechTimer = 180;
+
+                        for (let i = 0; i < 10; i++) {
+                            p.debrisParticles.push({
+                                x: p.x + (Math.random() - 0.5) * 20,
+                                y: p.y + (Math.random() - 0.5) * 10,
+                                vx: (Math.random() - 0.5) * 5,
+                                vy: (Math.random() - 0.5) * 5,
+                                size: 4 + Math.random() * 4,
+                                alpha: 0.9,
+                                color: '#ffffff'
+                            });
+                        }
+                    }
+                }
+
+                // Companion locks into the sidecar pod
                 const sidecarDist = 28;
                 const sidecarAngle = p.vehicleAngle + Math.PI / 2;
                 comp.x = p.x + Math.cos(sidecarAngle) * sidecarDist - Math.cos(p.vehicleAngle) * 2;
@@ -744,7 +852,7 @@ export const NeoArcadia = () => {
                     }
                 }
 
-                // Companion spring-damper trail logic on foot
+                // Companion trail logic on foot
                 let compOffsetX = -44;
                 let compOffsetY = 14;
                 if (p.facing === 'right') { compOffsetX = -46; compOffsetY = 12; }
@@ -767,7 +875,7 @@ export const NeoArcadia = () => {
 
             // Camera lerp towards player
             const targetCamX = p.x - canvas.width / 2;
-            const targetCamY = p.y - canvas.height / 2;
+            const targetCamY = (p.y - p.altitude * 0.6) - canvas.height / 2;
             cameraRef.current.x += (targetCamX - cameraRef.current.x) * 0.12;
             cameraRef.current.y += (targetCamY - cameraRef.current.y) * 0.12;
 
@@ -786,9 +894,9 @@ export const NeoArcadia = () => {
                 }
 
                 const dist = Math.hypot(p.x - crate.x, p.y - crate.y);
-                if (dist < 34 && p.isMounted && Math.abs(p.vehicleSpeed) > 3.0) {
+                if (dist < 34 && p.isMounted && Math.abs(p.vehicleSpeed) > 3.0 && !p.isAirborne) {
                     crate.smashed = true;
-                    crate.respawn = 1600; // ~26s respawn
+                    crate.respawn = 1600;
                     const reward = crate.reward;
                     if (addCoins) addCoins(reward);
                     playExplosion?.();
@@ -846,8 +954,8 @@ export const NeoArcadia = () => {
                         '⚡ Exploring Neo-Arcadia!',
                         '❤️ Best buds!',
                         '🎵 Loving these Cyber Radio beats!',
-                        '👾 Click me for Cyber Snacks & Reflex!',
-                        '🏎️ Press [V] to drift the Cyber-Bike!'
+                        '🏎️ Hit the Stunt Ramps on your Bike!',
+                        '🌟 Snatch the Sky Rings for CP!'
                     ];
                     comp.speech = phrases[Math.floor(Math.random() * phrases.length)];
                     comp.speechTimer = 160;
@@ -945,7 +1053,63 @@ export const NeoArcadia = () => {
             ctx.setLineDash([]);
             ctx.shadowBlur = 0;
 
-            // D. Render Drifting Skid Marks
+            // D. Render Stunt Ramps on Ground
+            ramps.forEach(ramp => {
+                ctx.save();
+                ctx.translate(ramp.x, ramp.y);
+
+                // Ramp Base Pad
+                ctx.fillStyle = '#1e1b4b';
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.roundRect(-ramp.width / 2, -ramp.height / 2, ramp.width, ramp.height, 4);
+                ctx.fill(); ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Animated Launch Chevron Arrows
+                ctx.fillStyle = '#00f0ff';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const pulse = Math.sin(Date.now() / 120) > 0 ? '>>>' : ' > ';
+                ctx.fillText(pulse, 0, 0);
+
+                ctx.restore();
+            });
+
+            // E. Render Floating Sky Rings
+            ramps.forEach(ramp => {
+                if (ramp.ringCollected) return;
+                ctx.save();
+                ctx.translate(ramp.ringX, ramp.ringY);
+
+                const ringFloat = Math.sin(Date.now() / 200 + ramp.ringX) * 4;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 16;
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+
+                // Holographic Floating Toroid
+                ctx.beginPath();
+                ctx.ellipse(0, ringFloat, 22, 10, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 7px "Orbitron", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('50 CP', 0, ringFloat - 14);
+
+                ctx.restore();
+            });
+
+            // F. Render Drifting Skid Marks
             if (p.skidTrails && p.skidTrails.length > 0) {
                 for (let i = p.skidTrails.length - 1; i >= 0; i--) {
                     const s = p.skidTrails[i];
@@ -960,7 +1124,7 @@ export const NeoArcadia = () => {
                 }
             }
 
-            // E. Render Touch Destination Ring
+            // G. Render Touch Destination Ring
             if (touchTarget) {
                 ctx.strokeStyle = '#00ff88';
                 ctx.lineWidth = 2;
@@ -969,7 +1133,7 @@ export const NeoArcadia = () => {
                 ctx.stroke();
             }
 
-            // F. Render Landmarks
+            // H. Render Landmarks
             LANDMARKS.forEach(lm => {
                 const isNear = closestLm && closestLm.id === lm.id;
 
@@ -988,22 +1152,18 @@ export const NeoArcadia = () => {
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Marquee Header
                 ctx.fillStyle = `${lm.color}22`;
                 ctx.fillRect(lm.x, lm.y, lm.width, 36);
 
-                // Icon & Title
                 ctx.fillStyle = '#fff';
                 ctx.font = 'bold 12px "Orbitron", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(`${lm.icon} ${lm.title}`, lm.x + lm.width / 2, lm.y + 24);
 
-                // Subtitle
                 ctx.fillStyle = '#94a3b8';
                 ctx.font = '9px monospace';
                 ctx.fillText(lm.category, lm.x + lm.width / 2, lm.y + 58);
 
-                // Entrance Gate
                 const gateW = 54;
                 const gateH = 28;
                 const gateX = lm.x + lm.width / 2 - gateW / 2;
@@ -1027,7 +1187,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // G. Render Smashable Street Crates
+            // I. Render Smashable Street Crates
             crates.forEach(crate => {
                 if (crate.smashed) return;
                 ctx.save();
@@ -1053,7 +1213,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // H. Render Debris Particles from smashed crates
+            // J. Render Debris Particles from smashed crates & stunt landing
             if (p.debrisParticles && p.debrisParticles.length > 0) {
                 for (let i = p.debrisParticles.length - 1; i >= 0; i--) {
                     const d = p.debrisParticles[i];
@@ -1073,7 +1233,7 @@ export const NeoArcadia = () => {
                 }
             }
 
-            // I. Render Secret Loot Chests
+            // K. Render Secret Loot Chests
             SECRET_CHESTS.forEach(chest => {
                 const isLooted = lootedChests.includes(chest.id);
                 ctx.save();
@@ -1104,7 +1264,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // J. Render Living Citizens (NPCs)
+            // L. Render Living Citizens (NPCs)
             CITIZENS.forEach(c => {
                 c.x += c.vx;
                 c.y += c.vy;
@@ -1140,26 +1300,32 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // K. Update and Render Aura Particles
+            // M. Update and Render Aura Particles
             updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
 
-            // L. RENDER PLAYER (ON FOOT OR IN CYBER HOVER-BIKE)
+            // N. RENDER PLAYER (ON FOOT OR IN CYBER HOVER-BIKE)
             if (p.isMounted) {
-                // --- CYBER HOVER-BIKE & SIDECAR RENDERING ---
+                // Ground Shadow under bike (scales down as altitude rises)
+                const shadowScale = Math.max(0.3, 1 - p.altitude / 120);
                 ctx.save();
                 ctx.translate(p.x, p.y);
-                ctx.rotate(p.vehicleAngle);
-
-                // Shadows
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.45 * shadowScale})`;
                 ctx.beginPath();
-                ctx.ellipse(-8, 16, 16, 7, 0, 0, Math.PI * 2);
-                ctx.ellipse(14, 16, 12, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(-8, 16, 16 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+                ctx.ellipse(14, 16, 12 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
+
+                // Airborne Hover-Bike & Sidecar rendering at (p.x, p.y - p.altitude)
+                ctx.save();
+                ctx.translate(p.x, p.y - p.altitude);
+                const airScale = 1 + p.altitude / 300;
+                ctx.scale(airScale, airScale);
+                ctx.rotate(p.vehicleAngle + p.stuntSpin);
 
                 // Twin Thruster Plasma Flames
-                if (Math.abs(p.vehicleSpeed) > 0.5 || p.isBoosting) {
-                    const flameLen = p.isBoosting ? 28 + Math.random() * 12 : 12 + Math.random() * 6;
+                if (Math.abs(p.vehicleSpeed) > 0.5 || p.isBoosting || p.isAirborne) {
+                    const flameLen = p.isBoosting ? 28 + Math.random() * 12 : p.isAirborne ? 22 + Math.random() * 8 : 12 + Math.random() * 6;
                     ctx.fillStyle = p.isBoosting ? '#a855f7' : '#00f0ff';
                     ctx.shadowColor = p.isBoosting ? '#a855f7' : '#00f0ff';
                     ctx.shadowBlur = 14;
@@ -1186,9 +1352,6 @@ export const NeoArcadia = () => {
                 // Sidecar Pod (Right side)
                 ctx.save();
                 ctx.translate(0, 26);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-                ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
-
                 ctx.fillStyle = '#0f172a';
                 ctx.strokeStyle = '#a855f7';
                 ctx.lineWidth = 2;
@@ -1243,7 +1406,7 @@ export const NeoArcadia = () => {
 
                 ctx.restore();
             } else {
-                // --- ON-FOOT MASCOT RENDERING ---
+                // ON-FOOT MASCOT RENDERING
                 ctx.save();
                 ctx.translate(p.x, p.y);
 
@@ -1266,7 +1429,6 @@ export const NeoArcadia = () => {
                     ctx.fill();
                 }
 
-                // Name tag
                 ctx.scale(p.facing === 'left' ? -1 : 1, 1 / walkSquash);
                 ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
                 ctx.strokeStyle = aura.primaryColor;
@@ -1285,10 +1447,9 @@ export const NeoArcadia = () => {
                 ctx.restore();
             }
 
-            // M. RENDER OVERWORLD WALKING/SIDECAR COMPANION & RADAR
-            const hoverY = comp.y + Math.sin(comp.hoverAngle) * 5 - comp.beatBounce * 8;
+            // O. RENDER OVERWORLD WALKING/SIDECAR COMPANION & RADAR
+            const hoverY = (p.isMounted ? comp.y - p.altitude : comp.y) + Math.sin(comp.hoverAngle) * 5 - comp.beatBounce * 8;
 
-            // Sonar Radar Waves towards nearest unlooted chest
             if (comp.isSniffingChest && comp.nearestChest) {
                 const angle = Math.atan2(comp.nearestChest.y - comp.y, comp.nearestChest.x - comp.x);
                 ctx.save();
@@ -1306,7 +1467,6 @@ export const NeoArcadia = () => {
                 ctx.restore();
             }
 
-            // Companion Ground Shadow (when on foot)
             if (!p.isMounted) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
                 ctx.beginPath();
@@ -1314,7 +1474,6 @@ export const NeoArcadia = () => {
                 ctx.fill();
             }
 
-            // Render Companion Creature based on Stage & Type
             const stageKey = petStats?.stage || 'EGG';
             const typeKey = petStats?.type || 'SOOT';
             const petColor = petStats?.color || '#00f0ff';
@@ -1418,7 +1577,7 @@ export const NeoArcadia = () => {
                 ctx.beginPath(); ctx.arc(-8, 3, 2.5, 0, Math.PI * 2); ctx.arc(8, 3, 2.5, 0, Math.PI * 2); ctx.fill();
             }
 
-            // Cute Pilot Goggles on Companion when Mounted in Sidecar!
+            // Pilot Goggles on Companion in Sidecar
             if (p.isMounted) {
                 ctx.strokeStyle = '#ffd700';
                 ctx.lineWidth = 1.8;
@@ -1434,7 +1593,7 @@ export const NeoArcadia = () => {
 
             ctx.restore();
 
-            // Companion Name Badge
+            // Name Badge
             ctx.fillStyle = 'rgba(10, 15, 30, 0.88)';
             ctx.strokeStyle = petColor;
             ctx.lineWidth = 1;
@@ -1450,7 +1609,7 @@ export const NeoArcadia = () => {
             const stageLabel = POCKET_BRO_STAGES[stageKey]?.name || 'Egg';
             ctx.fillText(`${stageLabel} • ${typeKey}`.slice(0, 14), comp.x, hoverY - 22);
 
-            // Companion Emoji Speech Bubble
+            // Speech Bubble
             if (comp.speech) {
                 ctx.save();
                 ctx.font = 'bold 10px sans-serif';
@@ -1488,7 +1647,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             }
 
-            // Update & Render Companion Pet Hearts
+            // Companion Pet Hearts
             if (comp.petHearts && comp.petHearts.length > 0) {
                 for (let i = comp.petHearts.length - 1; i >= 0; i--) {
                     const h = comp.petHearts[i];
@@ -2207,7 +2366,9 @@ export const NeoArcadia = () => {
                 <span>•</span>
                 <span style={{ color: '#00f0ff', fontWeight: 'bold' }}>[V]: HOVER-BIKE</span>
                 <span>•</span>
-                <span style={{ color: '#ffd700', fontWeight: 'bold' }}>[SPACE]: NITRO / DRIFT</span>
+                <span style={{ color: '#ffd700', fontWeight: 'bold' }}>[SPACE]: NITRO BOOST</span>
+                <span>•</span>
+                <span>RAMPS: AIR FLIPS</span>
                 <span>•</span>
                 <span>[H]: HORN</span>
                 <span>•</span>
