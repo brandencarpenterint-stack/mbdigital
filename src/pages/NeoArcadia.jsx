@@ -150,7 +150,20 @@ const SECRET_CHESTS = [
     { id: 'chest_harbor_pier', x: 2050, y: 1380, reward: 300, name: 'Abyssal Smuggler Drop' }
 ];
 
-// Simulated Living City Citizens
+// Smashable Street Crates (Respawnable with CP Loot)
+const INITIAL_STREET_CRATES = [
+    { id: 'sc1', x: 740, y: 520, smashed: false, respawn: 0, reward: 25 },
+    { id: 'sc2', x: 1220, y: 540, smashed: false, respawn: 0, reward: 30 },
+    { id: 'sc3', x: 1600, y: 510, smashed: false, respawn: 0, reward: 20 },
+    { id: 'sc4', x: 400, y: 920, smashed: false, respawn: 0, reward: 35 },
+    { id: 'sc5', x: 800, y: 940, smashed: false, respawn: 0, reward: 25 },
+    { id: 'sc6', x: 1350, y: 920, smashed: false, respawn: 0, reward: 30 },
+    { id: 'sc7', x: 1800, y: 940, smashed: false, respawn: 0, reward: 40 },
+    { id: 'sc8', x: 1080, y: 320, smashed: false, respawn: 0, reward: 20 },
+    { id: 'sc9', x: 1120, y: 1150, smashed: false, respawn: 0, reward: 35 }
+];
+
+// Living City Citizens
 const CITIZENS = [
     { id: 'c1', name: 'AstroPaul', skinId: 'face_astro', x: 580, y: 460, vx: 0.6, vy: 0, text: 'Heading to the Cannon! 🚀' },
     { id: 'c2', name: 'CyberBunny', skinId: 'face_bunny', x: 980, y: 470, vx: -0.4, vy: 0, text: 'Hit 1,200m in Merch Jump! 🦘' },
@@ -196,10 +209,10 @@ export const NeoArcadia = () => {
     const canvasRef = useRef(null);
     const { userProfile, shopState, addCoins, spendCoins, coins, incrementStat } = useGamification() || {};
     const { stats: petStats, feedCyberSnack, awardArcadeXP, getCompanionPerks, play: playWithPet } = usePocketBro?.() || {};
-    const { playCoin, playClick, playJump, playWin, playFanfare, playBoop, playCollect, playPowerUp, triggerHaptic } = useRetroSound();
+    const { playCoin, playClick, playJump, playWin, playFanfare, playBoop, playCollect, playPowerUp, playExplosion, triggerHaptic } = useRetroSound();
     const { showToast } = useToast() || {};
 
-    // Player State
+    // Player & Cyber Vehicle State
     const playerRef = useRef({
         x: 1100,
         y: 600,
@@ -210,8 +223,25 @@ export const NeoArcadia = () => {
         isSprinting: false,
         facing: 'down',
         walkCycle: 0,
-        footstepTimer: 0
+        footstepTimer: 0,
+
+        // Hover-Bike & Drift Vehicle Mode
+        isMounted: false,
+        vehicleAngle: 0,
+        vehicleSpeed: 0,
+        vehicleMaxSpeed: 9.8,
+        vehicleAccel: 0.35,
+        vehicleDecel: 0.95,
+        isDrifting: false,
+        isBoosting: false,
+        boostFuel: 100,
+        skidTrails: [],
+        debrisParticles: []
     });
+
+    const [isVehicleMounted, setIsVehicleMounted] = useState(false);
+    const [boostFuelPercent, setBoostFuelPercent] = useState(100);
+    const streetCratesRef = useRef([...INITIAL_STREET_CRATES]);
 
     // Companion State
     const companionRef = useRef({
@@ -294,18 +324,16 @@ export const NeoArcadia = () => {
     // Cyber Radio Beat Subscription
     useEffect(() => {
         const unsubscribe = subscribeBeat(({ beat, bpm }) => {
-            // Synchronize companion & mascot dance bounce
             if (companionRef.current) {
                 companionRef.current.beatBounce = 1.0;
             }
-            if (playerRef.current) {
+            if (playerRef.current && !playerRef.current.isMounted) {
                 playerRef.current.walkCycle += 0.2;
             }
             setBeatPulseRing(1.8);
             setTimeout(() => setBeatPulseRing(1.0), 120);
         });
 
-        // Visualizer Bar Loop
         const visInterval = setInterval(() => {
             const energy = getVisualizerEnergy ? getVisualizerEnergy() : 0.5;
             setVisualizerBars(prev => prev.map(() => Math.floor(4 + Math.random() * 16 * Math.max(0.3, energy))));
@@ -327,7 +355,6 @@ export const NeoArcadia = () => {
                 if (prev <= 1) {
                     clearInterval(timer);
                     setIsReflexPlaying(false);
-                    // Reward completion
                     const totalCoins = Math.floor(reflexScore * 0.5) + 50;
                     const totalXP = Math.floor(reflexScore * 1.5) + 75;
                     if (addCoins) addCoins(totalCoins);
@@ -344,16 +371,63 @@ export const NeoArcadia = () => {
         return () => clearInterval(timer);
     }, [isReflexPlaying, reflexScore, addCoins, awardArcadeXP, playFanfare, showToast]);
 
+    // Mount / Dismount Cyber Hover-Bike
+    const toggleVehicleMount = useCallback(() => {
+        const p = playerRef.current;
+        const comp = companionRef.current;
+        p.isMounted = !p.isMounted;
+        setIsVehicleMounted(p.isMounted);
+
+        if (p.isMounted) {
+            p.vehicleAngle = p.facing === 'right' ? 0 : p.facing === 'down' ? Math.PI / 2 : p.facing === 'left' ? Math.PI : -Math.PI / 2;
+            p.vehicleSpeed = 0;
+            playPowerUp?.();
+            triggerHaptic?.([30, 50]);
+            comp.speech = '🏎️ VROOOM! LET\'S DRIFT, BRO!';
+            comp.speechTimer = 200;
+            comp.beatBounce = 1.4;
+            if (showToast) showToast('Mounted Cyber Hover-Bike! [SPACE] Nitro • [H] Horn', 'success');
+        } else {
+            p.vehicleSpeed = 0;
+            playBoop?.();
+            triggerHaptic?.([20]);
+            comp.speech = '🚶 Exploring on foot!';
+            comp.speechTimer = 160;
+        }
+    }, [playPowerUp, playBoop, triggerHaptic, showToast]);
+
     // Keyboard Listeners
     useEffect(() => {
         const handleKeyDown = (e) => {
             keysPressed.current[e.code] = true;
-            if (e.code === 'KeyE' || e.code === 'Space') {
+
+            // Vehicle Mount / Dismount
+            if (e.code === 'KeyV') {
+                e.preventDefault();
+                toggleVehicleMount();
+                return;
+            }
+
+            // Horn Key on Vehicle
+            if (e.code === 'KeyH' && playerRef.current.isMounted) {
+                e.preventDefault();
+                playBoop?.();
+                if (companionRef.current) {
+                    companionRef.current.speech = '📢 *BEEP BEEP!* GET OUT THE WAY!';
+                    companionRef.current.speechTimer = 140;
+                }
+                return;
+            }
+
+            // Landmark Enter on foot or bike
+            if (e.code === 'KeyE' || (!playerRef.current.isMounted && e.code === 'Space')) {
                 if (nearbyLandmark) {
                     e.preventDefault();
                     enterLandmark(nearbyLandmark);
                 }
             }
+
+            // Companion Hub
             if (e.code === 'KeyP') {
                 setIsCompanionDrawerOpen(prev => !prev);
             }
@@ -369,7 +443,7 @@ export const NeoArcadia = () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
         };
-    }, [nearbyLandmark]);
+    }, [nearbyLandmark, toggleVehicleMount, playBoop]);
 
     const enterLandmark = (lm) => {
         if (!lm) return;
@@ -413,12 +487,10 @@ export const NeoArcadia = () => {
         // Check if player clicked directly on the companion
         const comp = companionRef.current;
         const distToComp = Math.hypot(worldX - comp.x, worldY - comp.y);
-        if (distToComp < 42) {
-            // Pet Interaction!
+        if (distToComp < 44) {
             comp.speech = '❤️ *PURRR!* LOVE YA, BRO!';
             comp.speechTimer = 180;
             comp.beatBounce = 1.3;
-            // Spawn 6 heart burst particles
             for (let i = 0; i < 6; i++) {
                 comp.petHearts.push({
                     x: comp.x,
@@ -435,7 +507,7 @@ export const NeoArcadia = () => {
             return;
         }
 
-        // Otherwise set walk target
+        // Tap Destination Beacon
         setTouchTarget({ x: Math.max(50, Math.min(MAP_WIDTH - 50, worldX)), y: Math.max(50, Math.min(MAP_HEIGHT - 50, worldY)) });
         playClick?.();
     };
@@ -465,22 +537,18 @@ export const NeoArcadia = () => {
     const handleReflexTap = () => {
         if (!isReflexPlaying) return;
 
-        // Pulse ring distance from 1.0 (on-beat strike zone)
         const diff = Math.abs(beatPulseRing - 1.0);
         if (diff < 0.35) {
-            // PERFECT HIT
             setReflexFeedback('PERFECT! +50 XP');
             setReflexScore(prev => prev + 50 * reflexCombo);
             setReflexCombo(prev => Math.min(8, prev + 1));
             playPowerUp?.();
         } else if (diff < 0.65) {
-            // GREAT HIT
             setReflexFeedback('GREAT! +25 XP');
             setReflexScore(prev => prev + 25);
             setReflexCombo(prev => Math.min(8, prev + 1));
             playCollect?.();
         } else {
-            // MISS
             setReflexFeedback('EARLY/LATE!');
             setReflexCombo(1);
             playBoop?.();
@@ -489,7 +557,6 @@ export const NeoArcadia = () => {
         setTimeout(() => setReflexFeedback(''), 400);
     };
 
-    // Start Reflex Rhythm Minigame
     const startReflexMinigame = () => {
         setIsReflexPlaying(true);
         setReflexTimeLeft(15);
@@ -511,7 +578,6 @@ export const NeoArcadia = () => {
         setLootedChests(nextLooted);
         localStorage.setItem('mb_neo_arcadia_chests', JSON.stringify(nextLooted));
 
-        // Companion Coin Multiplier Perk
         const multiplier = companionPerks?.coinMultiplier || 1.0;
         const finalReward = Math.round(chest.reward * multiplier);
 
@@ -542,59 +608,158 @@ export const NeoArcadia = () => {
             const p = playerRef.current;
             const comp = companionRef.current;
             const keys = keysPressed.current;
+            const crates = streetCratesRef.current;
 
-            // 1. INPUT PROCESSING
-            let dx = 0;
-            let dy = 0;
+            // --- 1. MOVEMENT & VEHICLE PHYSICS ---
+            if (p.isMounted) {
+                // VEHICLE DRIFT & DRIVE MODE
+                let steer = 0;
+                if (keys['KeyA'] || keys['ArrowLeft']) steer -= 1;
+                if (keys['KeyD'] || keys['ArrowRight']) steer += 1;
 
-            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
-            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
-            if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
-            if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+                let accel = 0;
+                if (keys['KeyW'] || keys['ArrowUp']) accel += 1;
+                if (keys['KeyS'] || keys['ArrowDown']) accel -= 1;
 
-            p.isSprinting = !!(keys['ShiftLeft'] || keys['ShiftRight']);
-
-            // Touch Target Lerp
-            if (touchTarget) {
-                const tdx = touchTarget.x - p.x;
-                const tdy = touchTarget.y - p.y;
-                const dist = Math.hypot(tdx, tdy);
-                if (dist > 10) {
-                    dx = tdx / dist;
-                    dy = tdy / dist;
+                // Nitro Boost
+                p.isBoosting = !!(keys['Space'] && p.boostFuel > 4 && accel > 0);
+                if (p.isBoosting) {
+                    p.boostFuel = Math.max(0, p.boostFuel - 0.9);
                 } else {
-                    setTouchTarget(null);
+                    p.boostFuel = Math.min(100, p.boostFuel + 0.35);
                 }
+                setBoostFuelPercent(Math.round(p.boostFuel));
+
+                // Drifting Check
+                p.isDrifting = (keys['ShiftLeft'] || keys['ShiftRight'] || Math.abs(steer) > 0) && Math.abs(p.vehicleSpeed) > 4.5 && steer !== 0;
+
+                const turnRate = p.isDrifting ? 0.088 : 0.052;
+                if (Math.abs(p.vehicleSpeed) > 0.2) {
+                    p.vehicleAngle += steer * turnRate * (p.vehicleSpeed > 0 ? 1 : -1);
+                }
+
+                // Speed calculation
+                const currentMaxSpd = p.vehicleMaxSpeed * (p.isBoosting ? 1.48 : 1.0);
+                if (accel > 0) {
+                    p.vehicleSpeed = Math.min(currentMaxSpd, p.vehicleSpeed + p.vehicleAccel * (p.isBoosting ? 1.8 : 1.0));
+                } else if (accel < 0) {
+                    p.vehicleSpeed = Math.max(-3.5, p.vehicleSpeed - p.vehicleAccel * 0.8);
+                } else {
+                    p.vehicleSpeed *= p.vehicleDecel;
+                    if (Math.abs(p.vehicleSpeed) < 0.05) p.vehicleSpeed = 0;
+                }
+
+                // Apply velocity
+                p.vx = Math.cos(p.vehicleAngle) * p.vehicleSpeed;
+                p.vy = Math.sin(p.vehicleAngle) * p.vehicleSpeed;
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Facing direction for landmarks
+                if (Math.abs(p.vx) > Math.abs(p.vy)) {
+                    p.facing = p.vx > 0 ? 'right' : 'left';
+                } else {
+                    p.facing = p.vy > 0 ? 'down' : 'up';
+                }
+
+                // Drifting Skid Trails
+                if (p.isDrifting && Math.random() < 0.65) {
+                    const skidOffsetX = Math.cos(p.vehicleAngle + Math.PI / 2) * 12;
+                    const skidOffsetY = Math.sin(p.vehicleAngle + Math.PI / 2) * 12;
+                    p.skidTrails.push({
+                        x1: p.x - Math.cos(p.vehicleAngle) * 16 + skidOffsetX,
+                        y1: p.y - Math.sin(p.vehicleAngle) * 16 + skidOffsetY,
+                        x2: p.x - Math.cos(p.vehicleAngle) * 22 + skidOffsetX,
+                        y2: p.y - Math.sin(p.vehicleAngle) * 22 + skidOffsetY,
+                        alpha: 0.85
+                    });
+                    p.skidTrails.push({
+                        x1: p.x - Math.cos(p.vehicleAngle) * 16 - skidOffsetX,
+                        y1: p.y - Math.sin(p.vehicleAngle) * 16 - skidOffsetY,
+                        x2: p.x - Math.cos(p.vehicleAngle) * 22 - skidOffsetX,
+                        y2: p.y - Math.sin(p.vehicleAngle) * 22 - skidOffsetY,
+                        alpha: 0.85
+                    });
+                    if (p.skidTrails.length > 70) p.skidTrails.splice(0, 10);
+                }
+
+                // Companion locks seamlessly into the sidecar pod!
+                const sidecarDist = 28;
+                const sidecarAngle = p.vehicleAngle + Math.PI / 2;
+                comp.x = p.x + Math.cos(sidecarAngle) * sidecarDist - Math.cos(p.vehicleAngle) * 2;
+                comp.y = p.y + Math.sin(sidecarAngle) * sidecarDist - Math.sin(p.vehicleAngle) * 2;
+                comp.hoverAngle += 0.08;
+
+                if (p.isBoosting && Math.random() < 0.04) {
+                    comp.speech = '🔥 SPEED OVERLOAD!! ⚡';
+                    comp.speechTimer = 60;
+                }
+            } else {
+                // FOOT ON-FOOT MOVEMENT
+                let dx = 0;
+                let dy = 0;
+
+                if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+                if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+                if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+                if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+
+                p.isSprinting = !!(keys['ShiftLeft'] || keys['ShiftRight']);
+
+                if (touchTarget) {
+                    const tdx = touchTarget.x - p.x;
+                    const tdy = touchTarget.y - p.y;
+                    const dist = Math.hypot(tdx, tdy);
+                    if (dist > 10) {
+                        dx = tdx / dist;
+                        dy = tdy / dist;
+                    } else {
+                        setTouchTarget(null);
+                    }
+                }
+
+                const moveLen = Math.hypot(dx, dy);
+                if (moveLen > 0) {
+                    dx /= moveLen;
+                    dy /= moveLen;
+                    const currentSpd = p.speed * (p.isSprinting ? p.sprintMultiplier : 1.0);
+                    p.x += dx * currentSpd;
+                    p.y += dy * currentSpd;
+                    p.walkCycle += 0.22;
+
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        p.facing = dx > 0 ? 'right' : 'left';
+                    } else {
+                        p.facing = dy > 0 ? 'down' : 'up';
+                    }
+
+                    p.footstepTimer += 1;
+                    if (p.footstepTimer >= 14) {
+                        p.footstepTimer = 0;
+                        playJump?.();
+                        auraParticlesRef.current.push(createAuraTrailParticle(p.x, p.y + 12, equippedSkinId, {
+                            vy: -0.4,
+                            size: 2.5
+                        }));
+                    }
+                }
+
+                // Companion spring-damper trail logic on foot
+                let compOffsetX = -44;
+                let compOffsetY = 14;
+                if (p.facing === 'right') { compOffsetX = -46; compOffsetY = 12; }
+                else if (p.facing === 'left') { compOffsetX = 46; compOffsetY = 12; }
+                else if (p.facing === 'up') { compOffsetX = 24; compOffsetY = 44; }
+                else if (p.facing === 'down') { compOffsetX = -24; compOffsetY = -44; }
+
+                const targetCompX = p.x + compOffsetX;
+                const targetCompY = p.y + compOffsetY;
+                comp.x += (targetCompX - comp.x) * 0.12;
+                comp.y += (targetCompY - comp.y) * 0.12;
+                comp.hoverAngle += 0.05;
             }
 
-            // Normalize diagonal movement
-            const moveLen = Math.hypot(dx, dy);
-            if (moveLen > 0) {
-                dx /= moveLen;
-                dy /= moveLen;
-                const currentSpd = p.speed * (p.isSprinting ? p.sprintMultiplier : 1.0);
-                p.x += dx * currentSpd;
-                p.y += dy * currentSpd;
-                p.walkCycle += 0.22;
-
-                // Facing direction
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    p.facing = dx > 0 ? 'right' : 'left';
-                } else {
-                    p.facing = dy > 0 ? 'down' : 'up';
-                }
-
-                // Footstep particles & haptic tap
-                p.footstepTimer += 1;
-                if (p.footstepTimer >= 14) {
-                    p.footstepTimer = 0;
-                    playJump?.();
-                    auraParticlesRef.current.push(createAuraTrailParticle(p.x, p.y + 12, equippedSkinId, {
-                        vy: -0.4,
-                        size: 2.5
-                    }));
-                }
-            }
+            if (comp.beatBounce > 0) comp.beatBounce *= 0.88;
 
             // Clamp player to city map bounds
             p.x = Math.max(60, Math.min(MAP_WIDTH - 60, p.x));
@@ -606,29 +771,49 @@ export const NeoArcadia = () => {
             cameraRef.current.x += (targetCamX - cameraRef.current.x) * 0.12;
             cameraRef.current.y += (targetCamY - cameraRef.current.y) * 0.12;
 
-            // Clamp camera to map bounds
             cameraRef.current.x = Math.max(0, Math.min(MAP_WIDTH - canvas.width, cameraRef.current.x));
             cameraRef.current.y = Math.max(0, Math.min(MAP_HEIGHT - canvas.height, cameraRef.current.y));
 
             const camX = cameraRef.current.x;
             const camY = cameraRef.current.y;
 
-            // COMPANION SPRING-DAMPER FOLLOWER LOGIC
-            let compOffsetX = -44;
-            let compOffsetY = 14;
-            if (p.facing === 'right') { compOffsetX = -46; compOffsetY = 12; }
-            else if (p.facing === 'left') { compOffsetX = 46; compOffsetY = 12; }
-            else if (p.facing === 'up') { compOffsetX = 24; compOffsetY = 44; }
-            else if (p.facing === 'down') { compOffsetX = -24; compOffsetY = -44; }
+            // --- CRATE RAMMING PHYSICS ---
+            crates.forEach(crate => {
+                if (crate.smashed) {
+                    crate.respawn--;
+                    if (crate.respawn <= 0) crate.smashed = false;
+                    return;
+                }
 
-            const targetCompX = p.x + compOffsetX;
-            const targetCompY = p.y + compOffsetY;
-            comp.x += (targetCompX - comp.x) * 0.12;
-            comp.y += (targetCompY - comp.y) * 0.12;
-            comp.hoverAngle += 0.05;
-            if (comp.beatBounce > 0) comp.beatBounce *= 0.88;
+                const dist = Math.hypot(p.x - crate.x, p.y - crate.y);
+                if (dist < 34 && p.isMounted && Math.abs(p.vehicleSpeed) > 3.0) {
+                    crate.smashed = true;
+                    crate.respawn = 1600; // ~26s respawn
+                    const reward = crate.reward;
+                    if (addCoins) addCoins(reward);
+                    playExplosion?.();
+                    playCoin?.();
+                    triggerHaptic?.([40, 60]);
 
-            // CURIOSITY RADAR DETECTOR FOR SECRET CHESTS
+                    for (let i = 0; i < 9; i++) {
+                        p.debrisParticles.push({
+                            x: crate.x,
+                            y: crate.y,
+                            vx: (Math.random() - 0.5) * 8 + p.vx * 0.4,
+                            vy: (Math.random() - 0.5) * 8 + p.vy * 0.4,
+                            size: 3 + Math.random() * 4,
+                            alpha: 1.0,
+                            color: Math.random() > 0.5 ? '#00f0ff' : '#ffd700'
+                        });
+                    }
+
+                    if (showToast) showToast(`💥 Rammed Street Crate! +${reward} CP`, 'success');
+                    comp.speech = `💥 SMASH! +${reward} CP!`;
+                    comp.speechTimer = 160;
+                }
+            });
+
+            // Curiosity Radar detector for secret loot chests
             let nearestUnlootedChest = null;
             let nearestDist = 9999;
             SECRET_CHESTS.forEach(chest => {
@@ -662,7 +847,7 @@ export const NeoArcadia = () => {
                         '❤️ Best buds!',
                         '🎵 Loving these Cyber Radio beats!',
                         '👾 Click me for Cyber Snacks & Reflex!',
-                        '🕹️ Ready for an arcade run!'
+                        '🏎️ Press [V] to drift the Cyber-Bike!'
                     ];
                     comp.speech = phrases[Math.floor(Math.random() * phrases.length)];
                     comp.speechTimer = 160;
@@ -729,7 +914,7 @@ export const NeoArcadia = () => {
                 ctx.stroke();
             }
 
-            // C. Main Cyber Boulevards (Wide Glowing Roadways)
+            // C. Main Cyber Boulevards
             ctx.fillStyle = '#0c1222';
             ctx.fillRect(60, 480, MAP_WIDTH - 120, 100);
             ctx.fillRect(60, 880, MAP_WIDTH - 120, 100);
@@ -760,7 +945,22 @@ export const NeoArcadia = () => {
             ctx.setLineDash([]);
             ctx.shadowBlur = 0;
 
-            // D. Render Touch Destination Ring
+            // D. Render Drifting Skid Marks
+            if (p.skidTrails && p.skidTrails.length > 0) {
+                for (let i = p.skidTrails.length - 1; i >= 0; i--) {
+                    const s = p.skidTrails[i];
+                    ctx.strokeStyle = `rgba(0, 240, 255, ${s.alpha * 0.7})`;
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(s.x1, s.y1);
+                    ctx.lineTo(s.x2, s.y2);
+                    ctx.stroke();
+                    s.alpha -= 0.007;
+                    if (s.alpha <= 0) p.skidTrails.splice(i, 1);
+                }
+            }
+
+            // E. Render Touch Destination Ring
             if (touchTarget) {
                 ctx.strokeStyle = '#00ff88';
                 ctx.lineWidth = 2;
@@ -769,7 +969,7 @@ export const NeoArcadia = () => {
                 ctx.stroke();
             }
 
-            // E. Render Landmarks (Buildings / Arcade Machines)
+            // F. Render Landmarks
             LANDMARKS.forEach(lm => {
                 const isNear = closestLm && closestLm.id === lm.id;
 
@@ -803,7 +1003,7 @@ export const NeoArcadia = () => {
                 ctx.font = '9px monospace';
                 ctx.fillText(lm.category, lm.x + lm.width / 2, lm.y + 58);
 
-                // Neon Entrance Gate
+                // Entrance Gate
                 const gateW = 54;
                 const gateH = 28;
                 const gateX = lm.x + lm.width / 2 - gateW / 2;
@@ -818,7 +1018,6 @@ export const NeoArcadia = () => {
                 ctx.font = 'bold 9px "Orbitron", monospace';
                 ctx.fillText('ENTER', gateX + gateW / 2, gateY + 18);
 
-                // Floating Near Marker Pulse
                 if (isNear) {
                     ctx.fillStyle = '#ffd700';
                     ctx.font = 'bold 10px "Orbitron", sans-serif';
@@ -828,7 +1027,53 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // F. Render Secret Loot Chests
+            // G. Render Smashable Street Crates
+            crates.forEach(crate => {
+                if (crate.smashed) return;
+                ctx.save();
+                ctx.translate(crate.x, crate.y);
+                ctx.fillStyle = '#1e1b4b';
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 1.5;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 8;
+                ctx.beginPath(); ctx.roundRect(-12, -12, 24, 24, 4); ctx.fill(); ctx.stroke();
+
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(-8, -8); ctx.lineTo(8, 8);
+                ctx.moveTo(8, -8); ctx.lineTo(-8, 8);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('CP', 0, 0);
+                ctx.restore();
+            });
+
+            // H. Render Debris Particles from smashed crates
+            if (p.debrisParticles && p.debrisParticles.length > 0) {
+                for (let i = p.debrisParticles.length - 1; i >= 0; i--) {
+                    const d = p.debrisParticles[i];
+                    d.x += d.vx;
+                    d.y += d.vy;
+                    d.vx *= 0.95;
+                    d.vy *= 0.95;
+                    d.alpha -= 0.025;
+                    if (d.alpha <= 0) {
+                        p.debrisParticles.splice(i, 1);
+                    } else {
+                        ctx.fillStyle = d.color;
+                        ctx.globalAlpha = d.alpha;
+                        ctx.fillRect(d.x - d.size / 2, d.y - d.size / 2, d.size, d.size);
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+
+            // I. Render Secret Loot Chests
             SECRET_CHESTS.forEach(chest => {
                 const isLooted = lootedChests.includes(chest.id);
                 ctx.save();
@@ -859,7 +1104,7 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // G. Render Citizens (NPCs)
+            // J. Render Living Citizens (NPCs)
             CITIZENS.forEach(c => {
                 c.x += c.vx;
                 c.y += c.vy;
@@ -895,55 +1140,152 @@ export const NeoArcadia = () => {
                 ctx.restore();
             });
 
-            // H. Update and Render Aura Particles
+            // K. Update and Render Aura Particles
             updateAndRenderAuraParticles(ctx, auraParticlesRef.current);
 
-            // I. Render Player Mascot Character
-            ctx.save();
-            ctx.translate(p.x, p.y);
+            // L. RENDER PLAYER (ON FOOT OR IN CYBER HOVER-BIKE)
+            if (p.isMounted) {
+                // --- CYBER HOVER-BIKE & SIDECAR RENDERING ---
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.vehicleAngle);
 
-            // Ground Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-            ctx.beginPath();
-            ctx.ellipse(0, 18, 16, 8, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Procedural Aura
-            drawCanvasAura(ctx, 0, 0, 32, equippedSkinId, Date.now() * 0.05);
-
-            // Squish-and-stretch walking animation
-            const walkSquash = moveLen > 0 ? 1 + Math.sin(p.walkCycle) * 0.08 : 1;
-            ctx.scale(p.facing === 'left' ? -1 : 1, walkSquash);
-
-            // Draw Skin Image
-            if (skinImgRef.current && skinImgRef.current.complete) {
-                ctx.drawImage(skinImgRef.current, -22, -22, 44, 44);
-            } else {
-                ctx.fillStyle = aura.primaryColor;
+                // Shadows
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
                 ctx.beginPath();
-                ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                ctx.ellipse(-8, 16, 16, 7, 0, 0, Math.PI * 2);
+                ctx.ellipse(14, 16, 12, 6, 0, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Twin Thruster Plasma Flames
+                if (Math.abs(p.vehicleSpeed) > 0.5 || p.isBoosting) {
+                    const flameLen = p.isBoosting ? 28 + Math.random() * 12 : 12 + Math.random() * 6;
+                    ctx.fillStyle = p.isBoosting ? '#a855f7' : '#00f0ff';
+                    ctx.shadowColor = p.isBoosting ? '#a855f7' : '#00f0ff';
+                    ctx.shadowBlur = 14;
+
+                    ctx.beginPath();
+                    ctx.moveTo(-22, -6); ctx.lineTo(-22 - flameLen, 0); ctx.lineTo(-22, 6);
+                    ctx.closePath(); ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.moveTo(-22, -3); ctx.lineTo(-22 - flameLen * 0.6, 0); ctx.lineTo(-22, 3);
+                    ctx.closePath(); ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Connecting Strut to Sidecar
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-6, 4); ctx.lineTo(-6, 26);
+                ctx.moveTo(8, 4); ctx.lineTo(8, 26);
+                ctx.stroke();
+
+                // Sidecar Pod (Right side)
+                ctx.save();
+                ctx.translate(0, 26);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(-16, -10, 32, 20, 8);
+                ctx.fill(); ctx.stroke();
+
+                // Windshield
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+                ctx.beginPath();
+                ctx.roundRect(4, -8, 8, 16, 4);
+                ctx.fill();
+                ctx.restore();
+
+                // Main Bike Chassis
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(-20, -9, 40, 18, 6);
+                ctx.fill(); ctx.stroke();
+
+                // Aerodynamic Nose
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.moveTo(20, -8); ctx.lineTo(28, 0); ctx.lineTo(20, 8);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+
+                // Headlight Beam
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.15)';
+                ctx.beginPath();
+                ctx.moveTo(28, 0); ctx.lineTo(100, -32); ctx.lineTo(100, 32);
+                ctx.closePath(); ctx.fill();
+
+                // Handlebars
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(10, -12); ctx.lineTo(10, 12);
+                ctx.stroke();
+
+                // Mascot Seated on Bike
+                if (skinImgRef.current && skinImgRef.current.complete) {
+                    ctx.save();
+                    ctx.rotate(Math.PI / 2);
+                    ctx.drawImage(skinImgRef.current, -14, -14, 28, 28);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+                }
+
+                ctx.restore();
+            } else {
+                // --- ON-FOOT MASCOT RENDERING ---
+                ctx.save();
+                ctx.translate(p.x, p.y);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+                ctx.beginPath();
+                ctx.ellipse(0, 18, 16, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                drawCanvasAura(ctx, 0, 0, 32, equippedSkinId, Date.now() * 0.05);
+
+                const walkSquash = Math.hypot(p.vx, p.vy) > 0 ? 1 + Math.sin(p.walkCycle) * 0.08 : 1;
+                ctx.scale(p.facing === 'left' ? -1 : 1, walkSquash);
+
+                if (skinImgRef.current && skinImgRef.current.complete) {
+                    ctx.drawImage(skinImgRef.current, -22, -22, 44, 44);
+                } else {
+                    ctx.fillStyle = aura.primaryColor;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Name tag
+                ctx.scale(p.facing === 'left' ? -1 : 1, 1 / walkSquash);
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                ctx.strokeStyle = aura.primaryColor;
+                ctx.lineWidth = 1;
+                const tagW = 74;
+                ctx.beginPath();
+                ctx.roundRect(-tagW / 2, -36, tagW, 16, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px "Orbitron", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText((userProfile?.name || 'Bro').slice(0, 10), 0, -24);
+
+                ctx.restore();
             }
 
-            // Player Name Tag
-            ctx.scale(p.facing === 'left' ? -1 : 1, 1 / walkSquash);
-            ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
-            ctx.strokeStyle = aura.primaryColor;
-            ctx.lineWidth = 1;
-            const tagW = 74;
-            ctx.beginPath();
-            ctx.roundRect(-tagW / 2, -36, tagW, 16, 6);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 8px "Orbitron", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText((userProfile?.name || 'Bro').slice(0, 10), 0, -24);
-
-            ctx.restore();
-
-            // J. RENDER OVERWORLD WALKING COMPANION & RADAR
+            // M. RENDER OVERWORLD WALKING/SIDECAR COMPANION & RADAR
             const hoverY = comp.y + Math.sin(comp.hoverAngle) * 5 - comp.beatBounce * 8;
 
             // Sonar Radar Waves towards nearest unlooted chest
@@ -964,11 +1306,13 @@ export const NeoArcadia = () => {
                 ctx.restore();
             }
 
-            // Companion Ground Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-            ctx.beginPath();
-            ctx.ellipse(comp.x, comp.y + 16, 12, 6, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Companion Ground Shadow (when on foot)
+            if (!p.isMounted) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                ctx.beginPath();
+                ctx.ellipse(comp.x, comp.y + 16, 12, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             // Render Companion Creature based on Stage & Type
             const stageKey = petStats?.stage || 'EGG';
@@ -979,7 +1323,6 @@ export const NeoArcadia = () => {
             ctx.translate(comp.x, hoverY);
 
             if (stageKey === 'EGG') {
-                // EGG: Glowing speckled egg with shine
                 ctx.shadowColor = petColor;
                 ctx.shadowBlur = 14;
                 ctx.fillStyle = petColor;
@@ -995,7 +1338,6 @@ export const NeoArcadia = () => {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                 ctx.beginPath(); ctx.ellipse(-5, -7, 4, 8, -0.4, 0, Math.PI * 2); ctx.fill();
             } else if (typeKey.includes('SLIME')) {
-                // SLIME / KING SLIME: Jelly blob with crown
                 const squish = 1 + Math.sin(comp.hoverAngle * 2) * 0.08;
                 ctx.scale(1 / squish, squish);
                 ctx.shadowColor = petColor;
@@ -1006,7 +1348,6 @@ export const NeoArcadia = () => {
                 ctx.fill();
                 ctx.shadowBlur = 0;
 
-                // Eyes & Smile
                 ctx.fillStyle = '#000';
                 ctx.beginPath(); ctx.arc(-6, -2, 2.5, 0, Math.PI * 2); ctx.arc(6, -2, 2.5, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = '#fff';
@@ -1020,7 +1361,6 @@ export const NeoArcadia = () => {
                     ctx.closePath(); ctx.fill();
                 }
             } else if (typeKey.includes('ROBOT') || typeKey.includes('MECH')) {
-                // ROBOT / MECH: Cyber Drone with Jet Flames & Neon Visor
                 ctx.fillStyle = 'rgba(0, 240, 255, 0.8)';
                 ctx.shadowColor = '#00f0ff';
                 ctx.shadowBlur = 10;
@@ -1040,7 +1380,6 @@ export const NeoArcadia = () => {
                 ctx.fillStyle = '#ff0055';
                 ctx.beginPath(); ctx.arc(0, -23, 2.5, 0, Math.PI * 2); ctx.fill();
             } else if (typeKey.includes('DRAGON') || typeKey.includes('DINO')) {
-                // DRAGON / DINO: Winged Cyber Dino
                 ctx.shadowColor = petColor;
                 ctx.shadowBlur = 14;
                 const wingFlap = Math.sin(comp.hoverAngle * 3) * 0.3;
@@ -1065,7 +1404,6 @@ export const NeoArcadia = () => {
                 ctx.fillStyle = '#1e1b4b';
                 ctx.beginPath(); ctx.arc(-5, -2, 2, 0, Math.PI * 2); ctx.arc(5, -2, 2, 0, Math.PI * 2); ctx.fill();
             } else {
-                // BABY / SOOT / GHOST / ORB / OTHERS
                 ctx.shadowColor = petColor;
                 ctx.shadowBlur = 14;
                 ctx.fillStyle = petColor;
@@ -1078,6 +1416,20 @@ export const NeoArcadia = () => {
 
                 ctx.fillStyle = 'rgba(255, 100, 150, 0.4)';
                 ctx.beginPath(); ctx.arc(-8, 3, 2.5, 0, Math.PI * 2); ctx.arc(8, 3, 2.5, 0, Math.PI * 2); ctx.fill();
+            }
+
+            // Cute Pilot Goggles on Companion when Mounted in Sidecar!
+            if (p.isMounted) {
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 1.8;
+                ctx.strokeRect(-9, -6, 7, 6);
+                ctx.strokeRect(2, -6, 7, 6);
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.65)';
+                ctx.fillRect(-8, -5, 5, 4);
+                ctx.fillRect(3, -5, 5, 4);
+                ctx.beginPath();
+                ctx.moveTo(-12, -3); ctx.lineTo(12, -3);
+                ctx.stroke();
             }
 
             ctx.restore();
@@ -1121,7 +1473,6 @@ export const NeoArcadia = () => {
                 ctx.fill();
                 ctx.stroke();
 
-                // Bubble tail pointer
                 ctx.beginPath();
                 ctx.moveTo(comp.x - 4, bubbleY + bubbleH);
                 ctx.lineTo(comp.x, bubbleY + bubbleH + 6);
@@ -1255,8 +1606,43 @@ export const NeoArcadia = () => {
                     </div>
                 </div>
 
-                {/* Right: Cyber Radio, Pocket Bro Hub, CP & Minimap */}
+                {/* Right: Cyber Bike Mount, Cyber Radio, Companion Hub, CP & Minimap */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {/* CYBER HOVER-BIKE MOUNT BUTTON & NITRO GAUGE */}
+                    <button
+                        type="button"
+                        onClick={toggleVehicleMount}
+                        style={{
+                            background: isVehicleMounted ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(0, 240, 255, 0.3))' : 'rgba(15, 23, 42, 0.9)',
+                            backdropFilter: 'blur(12px)',
+                            border: isVehicleMounted ? '1.5px solid #00f0ff' : '1px solid rgba(255, 255, 255, 0.15)',
+                            boxShadow: isVehicleMounted ? '0 0 18px rgba(0, 240, 255, 0.4)' : 'none',
+                            borderRadius: '30px',
+                            padding: '6px 14px',
+                            color: isVehicleMounted ? '#00f0ff' : '#e2e8f0',
+                            fontSize: '0.75rem',
+                            fontWeight: '900',
+                            fontFamily: '"Orbitron", sans-serif',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <circle cx="5" cy="18" r="3" />
+                            <circle cx="19" cy="18" r="3" />
+                            <path d="M12 18V9l4-4h4" />
+                            <path d="M5 18l5-9h4l-2 5" />
+                        </svg>
+                        <span>{isVehicleMounted ? 'DISMOUNT [V]' : 'CYBER BIKE [V]'}</span>
+                        {isVehicleMounted && (
+                            <span style={{ fontSize: '0.65rem', color: '#ffd700' }}>
+                                {boostFuelPercent}% ⚡
+                            </span>
+                        )}
+                    </button>
+
                     {/* CYBER RADIO PROCEDURAL SYNTH ENGINE DOCK */}
                     <div style={{
                         background: 'rgba(15, 23, 42, 0.9)',
@@ -1269,7 +1655,6 @@ export const NeoArcadia = () => {
                         gap: '8px',
                         boxShadow: '0 0 16px rgba(0, 240, 255, 0.15)'
                     }}>
-                        {/* Radio Play/Pause Button */}
                         <button
                             type="button"
                             onClick={handleToggleRadio}
@@ -1295,7 +1680,6 @@ export const NeoArcadia = () => {
                             )}
                         </button>
 
-                        {/* Animated 6-Bar Equalizer Visualizer */}
                         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '16px', padding: '0 2px' }}>
                             {visualizerBars.map((height, i) => (
                                 <div
@@ -1311,7 +1695,6 @@ export const NeoArcadia = () => {
                             ))}
                         </div>
 
-                        {/* BPM Selector Pills */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             {[100, 128, 140].map((bpm) => (
                                 <button
@@ -1557,7 +1940,6 @@ export const NeoArcadia = () => {
 
                             {/* Vitals Meters */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {/* Hunger */}
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
                                         <span>HUNGER</span>
@@ -1568,7 +1950,6 @@ export const NeoArcadia = () => {
                                     </div>
                                 </div>
 
-                                {/* Happiness */}
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
                                         <span>HAPPINESS</span>
@@ -1579,7 +1960,6 @@ export const NeoArcadia = () => {
                                     </div>
                                 </div>
 
-                                {/* Energy */}
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginBottom: '3px' }}>
                                         <span>ENERGY</span>
@@ -1671,9 +2051,7 @@ export const NeoArcadia = () => {
                                         <span style={{ color: '#a855f7' }}>COMBO: x{reflexCombo}</span>
                                     </div>
 
-                                    {/* Beat Target Ring */}
                                     <div style={{ position: 'relative', width: '100px', height: '100px', margin: '10px auto' }}>
-                                        {/* Outer pulse ring */}
                                         <div style={{
                                             position: 'absolute',
                                             inset: 0,
@@ -1683,7 +2061,6 @@ export const NeoArcadia = () => {
                                             transition: 'transform 0.12s linear',
                                             opacity: beatPulseRing > 1 ? 0.7 : 0.2
                                         }} />
-                                        {/* Core hit button */}
                                         <button
                                             type="button"
                                             onClick={handleReflexTap}
@@ -1826,13 +2203,15 @@ export const NeoArcadia = () => {
                 alignItems: 'center',
                 gap: '12px'
             }}>
-                <span>WASD / ARROWS: WALK</span>
+                <span>WASD / ARROWS: DRIVE/WALK</span>
                 <span>•</span>
-                <span>SHIFT: SPRINT</span>
+                <span style={{ color: '#00f0ff', fontWeight: 'bold' }}>[V]: HOVER-BIKE</span>
                 <span>•</span>
-                <span>CLICK COMPANION: PET & SNACKS</span>
+                <span style={{ color: '#ffd700', fontWeight: 'bold' }}>[SPACE]: NITRO / DRIFT</span>
                 <span>•</span>
-                <span>[P]: COMPANION HUB</span>
+                <span>[H]: HORN</span>
+                <span>•</span>
+                <span>[P]: COMPANION</span>
             </div>
         </div>
     );
