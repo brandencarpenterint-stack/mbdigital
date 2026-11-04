@@ -257,8 +257,13 @@ const MerchJump = () => {
         setGameState('PLAYING');
         playerRef.current.vy = -35;
         playerRef.current.y = HEIGHT / 2;
-        activeForcefieldRef.current = true;
-        setActiveForcefield(true);
+        if (scoreRef.current >= 40000) {
+            activeForcefieldRef.current = true;
+            setActiveForcefield(true);
+        } else {
+            activeForcefieldRef.current = false;
+            setActiveForcefield(false);
+        }
         requestRef.current = requestAnimationFrame(gameLoop);
     };
 
