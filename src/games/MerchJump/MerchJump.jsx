@@ -29,7 +29,7 @@ const BIOMES = [
     { name: 'DEEP SPACE', limit: 32000, bgTop: '#000011', bgBot: '#000033', plat: '#888', text: '#ccc', border: '#444' },
     { name: 'STRATOSPHERE', limit: 36000, bgTop: '#000046', bgBot: '#1CB5E0', plat: '#fff', text: '#fff', border: '#aaa' },
     { name: 'THE VOID', limit: 40000, bgTop: '#1a0033', bgBot: '#000', plat: '#5500ff', text: '#aa00ff', border: '#ff0055' },
-    { name: 'ASCENSION', limit: 999999, bgTop: '#FFD700', bgBot: '#FFFFFF', plat: '#FFFFFF', text: '#B8860B', border: '#FFD700' }
+    { name: 'ASCENSION', limit: 999999, bgTop: '#2b0938', bgBot: '#150024', plat: '#FFD700', text: '#FFD700', border: '#00F0FF' }
 ];
 
 const MerchJump = () => {
@@ -503,10 +503,15 @@ const MerchJump = () => {
             itemsRef.current.forEach(i => i.y += shift);
             itemsRef.current = itemsRef.current.filter(i => i.y < HEIGHT);
 
-            if (!boss.active) {
-                const lastP = platformsRef.current[platformsRef.current.length - 1];
-                if (lastP && lastP.y > 100) {
-                    generatePlatform(lastP.y - (80 - Math.min(20, scoreRef.current / 1000) + Math.random() * 40), currentBiome);
+            // Continuous platform generation (NEVER let platforms disappear!)
+            const lastP = platformsRef.current[platformsRef.current.length - 1];
+            if (lastP && lastP.y > 100) {
+                generatePlatform(lastP.y - (80 - Math.min(20, scoreRef.current / 1000) + Math.random() * 40), currentBiome);
+            } else if (!lastP || platformsRef.current.length < 5) {
+                let spawnY = lastP ? lastP.y - 80 : HEIGHT - 100;
+                for (let i = 0; i < 8; i++) {
+                    generatePlatform(spawnY, currentBiome);
+                    spawnY -= 80 + Math.random() * 30;
                 }
             }
         }
@@ -659,6 +664,13 @@ const MerchJump = () => {
                 // Victory launch catapult!
                 player.vy = -55;
                 boss.stage += 1;
+
+                // Pre-spawn safety runway of celestial platforms ahead of the catapult launch!
+                let runwayY = -50;
+                for (let i = 0; i < 14; i++) {
+                    generatePlatform(runwayY, currentBiome);
+                    runwayY -= 85 + Math.random() * 30;
+                }
             }
         }
 
@@ -955,8 +967,8 @@ const MerchJump = () => {
                     flex-direction: row;
                 }
                 .game-wrapper {
-                    width: 400px;
-                    height: 600px;
+                    width: min(440px, 95vw);
+                    height: min(680px, 86vh);
                 }
                 .boost-shop {
                     display: flex;
@@ -1136,7 +1148,7 @@ const MerchJump = () => {
                     {gameState !== 'PLAYING' && (
                         <>
                             {gameState === 'GAMEOVER' ? (
-                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, borderRadius: '10px', overflow: 'hidden' }}>
+                                <div className="game-overlay" style={{ position: 'absolute', inset: 0, borderRadius: '10px', overflowY: 'auto', overflowX: 'hidden' }}>
                                     <UniversalGameOver
                                         gameName="MERCH JUMP"
                                         score={Math.floor(scoreRef.current)}
