@@ -38,6 +38,7 @@ const LANDMARKS = [
         category: 'FLAGSHIP ARCADE',
         x: 440, y: 340, width: 170, height: 130,
         color: '#ff8800', glow: 'rgba(255, 136, 0, 0.45)', icon: '🚀',
+        characterImg: '/assets/skins/face_bear.png',
         path: '/arcade/bro-cannon',
         desc: 'Sub-Orbital Ballistics & Sky Gliding'
     },
@@ -47,6 +48,7 @@ const LANDMARKS = [
         category: 'FLAGSHIP ARCADE',
         x: 880, y: 320, width: 160, height: 140,
         color: '#00f0ff', glow: 'rgba(0, 240, 255, 0.45)', icon: '🦘',
+        characterImg: '/assets/skins/jump_guy.png',
         path: '/arcade/merch-jump',
         desc: 'Infinite Platform Ascent & Balloons'
     },
@@ -56,6 +58,7 @@ const LANDMARKS = [
         category: 'FLAGSHIP ARCADE',
         x: 1340, y: 340, width: 170, height: 130,
         color: '#ff007f', glow: 'rgba(255, 0, 127, 0.45)', icon: '🐦',
+        characterImg: '/assets/skins/face_default.png',
         path: '/arcade/flappy',
         desc: 'Precision Skyline Hazard Weaving'
     },
@@ -65,6 +68,7 @@ const LANDMARKS = [
         category: 'FLAGSHIP ARCADE',
         x: 1760, y: 340, width: 170, height: 130,
         color: '#a855f7', glow: 'rgba(168, 85, 247, 0.45)', icon: '⚡',
+        characterImg: '/assets/skins/face_rainbow.png',
         path: '/arcade/face-runner',
         desc: '3D Cyber Tunnel Void Trials'
     },
@@ -83,6 +87,7 @@ const LANDMARKS = [
         category: 'TACTICAL STRATEGY',
         x: 480, y: 730, width: 160, height: 130,
         color: '#00ff88', glow: 'rgba(0, 255, 136, 0.45)', icon: '🛡️',
+        characterImg: '/assets/skins/face_astro.png',
         path: '/arcade/merch-defense',
         desc: 'Tactical Turret Grid Defense'
     },
@@ -137,6 +142,7 @@ const LANDMARKS = [
         category: 'OCEANIC EXPEDITION',
         x: 1820, y: 1180, width: 170, height: 130,
         color: '#00ffff', glow: 'rgba(0, 255, 255, 0.45)', icon: '🎣',
+        characterImg: '/assets/merchboy_cat.png',
         path: '/arcade/fishing',
         desc: 'Deep Mariana Trench Monster Fishing'
     }
@@ -1971,7 +1977,11 @@ export const NeoArcadia = () => {
                             maxWidth: '90vw'
                         }}
                     >
-                        <div style={{ fontSize: '2.4rem' }}>{nearbyLandmark.icon}</div>
+                        {nearbyLandmark.characterImg ? (
+                            <img src={nearbyLandmark.characterImg} alt={nearbyLandmark.title} style={{ width: '56px', height: '56px', objectFit: 'contain', filter: `drop-shadow(0 0 12px ${nearbyLandmark.color})` }} />
+                        ) : (
+                            <div style={{ fontSize: '2.4rem' }}>{nearbyLandmark.icon}</div>
+                        )}
                         <div>
                             <div style={{ fontSize: '0.65rem', color: nearbyLandmark.color, fontWeight: '900', letterSpacing: '1px' }}>
                                 {nearbyLandmark.category}
@@ -2328,7 +2338,11 @@ export const NeoArcadia = () => {
                                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${lm.color}66`; }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                                        <span style={{ fontSize: '1.5rem' }}>{lm.icon}</span>
+                                        {lm.characterImg ? (
+                                            <img src={lm.characterImg} alt={lm.title} style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
+                                        ) : (
+                                            <span style={{ fontSize: '1.5rem' }}>{lm.icon}</span>
+                                        )}
                                         <div>
                                             <div style={{ fontSize: '0.85rem', fontWeight: '900', color: lm.color }}>{lm.title}</div>
                                             <div style={{ fontSize: '0.62rem', color: '#64748b', fontFamily: 'monospace' }}>{lm.category}</div>

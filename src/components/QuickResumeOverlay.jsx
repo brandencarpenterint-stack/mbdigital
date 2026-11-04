@@ -189,7 +189,11 @@ const QuickResumeOverlay = () => {
                                         border: '1px solid rgba(255, 255, 255, 0.2)',
                                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                                     }}>
-                                        {game.icon}
+                                        {game.characterImg ? (
+                                            <img src={game.characterImg} alt={game.title} style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+                                        ) : (
+                                            game.icon
+                                        )}
                                     </div>
 
                                     <div>
