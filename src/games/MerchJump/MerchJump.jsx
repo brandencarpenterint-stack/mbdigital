@@ -102,7 +102,7 @@ const MerchJump = () => {
         hitFlash: 0,
         bombs: [], // [{ x, y, vy }]
         rockets: [], // [{ x, y, vy, targetX, targetY }]
-        stage: 1 // 1: Chrono-Drone (1500m), 2: Nebula Colossus (3500m)
+        stage: 1 // 1: Chrono-Drone (40,000m Ascension), 2: Nebula Colossus (45,000m Ascension)
     });
 
     // --- GHOST DUEL STATES ---
@@ -265,8 +265,9 @@ const MerchJump = () => {
     const generatePlatform = (y, biome) => {
         const score = scoreRef.current;
 
-        // Spawn In-Game Power-Ups on platforms (Jetpack, Spring Sneakers, Forcefield, Vacuum)
-        if (Math.random() < 0.12) {
+        // Spawn In-Game Power-Ups on platforms ONLY AFTER ASCENSION (40,000m+)
+        const isAscension = score >= 40000 || biome?.name === 'ASCENSION';
+        if (isAscension && Math.random() < 0.14) {
             const puTypes = ['jetpack', 'sneakers', 'forcefield', 'vacuum'];
             const chosen = puTypes[Math.floor(Math.random() * puTypes.length)];
             itemsRef.current.push({
@@ -433,9 +434,9 @@ const MerchJump = () => {
 
         const boss = bossRef.current;
 
-        // --- BOSS SUMMON TRIGGERS ---
+        // --- BOSS SUMMON TRIGGERS (ASCENSION ONLY: 40,000m+) ---
         if (!boss.active) {
-            if (scoreRef.current >= 1500 && boss.stage === 1) {
+            if (scoreRef.current >= 40000 && boss.stage === 1) {
                 boss.active = true;
                 boss.name = 'CHRONO-DRONE MK-IV';
                 boss.hp = 6;
@@ -452,7 +453,7 @@ const MerchJump = () => {
                     x: WIDTH / 2 - 100, y: HEIGHT - 120, w: 200, h: 20,
                     type: 'normal', color: '#00f0ff', border: '#fff'
                 });
-            } else if (scoreRef.current >= 3500 && boss.stage === 2) {
+            } else if (scoreRef.current >= 45000 && boss.stage === 2) {
                 boss.active = true;
                 boss.name = 'NEBULA COLOSSUS';
                 boss.hp = 10;
@@ -1260,7 +1261,7 @@ const MerchJump = () => {
                         </>
                     )}
                 </div>
-                <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Defeat Bosses at 1500m & 3500m</p>
+                <p className="mobile-hide" style={{ color: '#888', marginTop: '20px', fontSize: '0.8rem' }}>Slide to Move • Classic Bounce & Boost • Ascension Bosses at 40,000m+</p>
             </div>
 
             <div className={`boost-shop ${isShopOpen ? 'open' : ''}`} style={{ width: '250px', height: '600px', background: '#1a1a1a', borderRadius: '20px', border: '2px solid #444', padding: '20px', flexDirection: 'column', color: 'white', overflowY: 'auto' }}>
